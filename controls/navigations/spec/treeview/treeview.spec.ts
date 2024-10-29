@@ -9328,6 +9328,15 @@ describe('TreeView control', () => {
                 expect(treeObj.element.className).toBe('');
                 expect(treeObj.element.childElementCount).toBe(0);
             });
+            it('addNodes method testing to add new node with pid and without target element', () => {
+                let newNodes = [
+                    { nodeId: 'newId1', nodeText: 'newText1', nodePid: '02-01' },
+                    { nodeId: 'newId2', nodeText: 'newText2', nodePid: '02-01' }
+                ]
+                treeObj.addNodes(newNodes);
+                expect(treeObj.element.querySelectorAll('.e-level-3')[0].innerText).toBe(newNodes[0].nodeText);
+                expect(treeObj.element.querySelectorAll('.e-level-3')[1].innerText).toBe(newNodes[1].nodeText);
+            });
         });
         describe('animation testing', () => {
             let mouseEventArgs: any;

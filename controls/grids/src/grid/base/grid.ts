@@ -86,6 +86,7 @@ import { DateFormatOptions, NumberFormatOptions, SanitizeHtmlHelper } from '@syn
 import * as literals from '../base/string-literals';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { HeaderCellRenderer } from '../renderer/header-cell-renderer';
+import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 
 /**
  * Represents the field name and direction of sort column.
@@ -2663,6 +2664,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const temp: string | Function = this.pageSettings.template;
         const settings: PageSettingsModel = Object.assign({template: undefined}, this.pageSettings);
+        if (this.enableVirtualization && this.enablePersistence && this.contentModule &&
+            (this.contentModule as VirtualContentRenderer).getPageFromTop) {
+            settings['properties']['currentPage'] = (this.contentModule as VirtualContentRenderer).getPageFromTop(this.scrollPosition.top, { block: 1});
+        }
         this.setProperties({pageSettings: settings}, true);
         const captionTemplateRef: string | Object | Function = this.groupSettings.captionTemplate;
         const isAngularCaptionTemplate: boolean = captionTemplateRef && this.isAngular;
@@ -7454,9 +7459,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const data: string = this.getLocalData();
         if (!(isNullOrUndefined(data) || (data === '')) || !isNullOrUndefined(persistedData)) {
             const dataObj: Grid = !isNullOrUndefined(persistedData) ? persistedData : JSON.parse(data);
-            if (this.enableVirtualization && dataObj.pageSettings) {
-                dataObj.pageSettings.currentPage = 1;
-            }
             const keys: string[] = Object.keys(dataObj);
             this.isProtectedOnChange = true;
             for (const key of keys) {

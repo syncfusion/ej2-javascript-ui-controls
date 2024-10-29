@@ -80,9 +80,11 @@ export class CommandColumn {
                 gObj.editModule.startEdit(<HTMLTableRowElement>closest(target, 'tr'));
                 break;
             case 'Cancel':
+                gObj.isFocusFirstCell = true;
                 gObj.editModule.closeEdit();
                 break;
             case 'Save':
+                gObj.isFocusFirstCell = true;
                 gObj.editModule.endEdit();
                 break;
             case 'Delete':
@@ -93,6 +95,7 @@ export class CommandColumn {
                 gObj.clearSelection();
                 //for toogle issue when dbl click
                 gObj.selectRow(gObj.commandDelIndex, false);
+                gObj.isFocusFirstCell = true;
                 gObj.editModule.deleteRecord();
                 gObj.commandDelIndex = undefined;
                 break;
@@ -136,7 +139,7 @@ export class CommandColumn {
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {
-        if (e.action === 'enter' && closest(<Node>e.target, '.e-unboundcelldiv')) {
+        if ((e.action === 'enter' || e.action === 'space') && closest(<Node>e.target, '.e-unboundcelldiv')) {
             this.commandClickHandler(e);
             e.preventDefault();
         }

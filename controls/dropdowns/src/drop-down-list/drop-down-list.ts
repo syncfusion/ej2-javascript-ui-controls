@@ -2354,7 +2354,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         return;
                     }
                     this.isCustomFilter = true;
-                    this.customFilterQuery = query.clone();
+                    this.customFilterQuery = query ? query.clone() : query;
                     this.filteringAction(dataSource, query, fields);
                 },
                 baseEventArgs: e,
@@ -2657,6 +2657,12 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.updateActionCompleteDataValues(ulElement, list);
                     }
                 }
+                if (this.isDynamicData) {
+                    const currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ?
+                        getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+                    this.itemData = this.getDataByValue(currentValue);
+                    this.isDynamicData = false;
+                }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (((this as any).allowCustom || (this.allowFiltering && !this.isValueInList(list, this.value) &&
                 this.dataSource instanceof DataManager)) && !this.enableVirtualization){
@@ -2666,7 +2672,12 @@ export class DropDownList extends DropDownBase implements IInput {
                 else if (((this as any).allowCustom || (this.allowFiltering && this.isValueInList(list, this.value))) &&
                 !this.enableVirtualization)
                 {
-                    this.addNewItem(list, selectedItem);
+                    const value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+                    const isValidAddition: boolean = !isNullOrUndefined(this.value) && selectedItem && selectedItem.getAttribute('data-value') === value.toString();
+                    if (isValidAddition)
+                    {
+                        this.addNewItem(list, selectedItem);
+                    }
                 }
                 if (!isNullOrUndefined(this.itemData) || (isNullOrUndefined(this.itemData) && this.enableVirtualization)) {
                     this.getSkeletonCount();

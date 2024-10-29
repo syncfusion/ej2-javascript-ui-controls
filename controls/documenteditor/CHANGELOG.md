@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 27.1.56 (2024-10-23)
+## 27.1.57 (2024-10-29)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I644412` - Resolved the issue of editor deletes all text in document.
+- `#I642436` - Resolve the issue with track Changes when pasting Word contents multiple times.
+- `F194706` - Now able to copy highlighted text from word processor when Restrict Editing property is true.
+- `#I640675` - Resolve script error when using track changes.
+- `#I639276` - Resolved the issue of page freezes when trying to load document in document editor.
+
+## 27.1.55 (2024-10-22)
 
 ### DocumentEditor
 

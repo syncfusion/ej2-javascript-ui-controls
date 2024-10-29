@@ -191,7 +191,7 @@ export class Signature {
             } else {
                 this.signatureDialog = new Dialog({
                     showCloseIcon: true, closeOnEscape: false, isModal: true, header: signaturePanelHeader, cssClass: 'e-pv-signature-dialog-height',
-                    target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: true, allowDragging: true,
+                    target: this.pdfViewerBase.mainContainer, content: appearanceTab, width: '750px', visible: true, allowDragging: true,
                     beforeClose: (): void => {
                         this.clearSignatureCanvas();
                         this.signatureDialog.destroy();
@@ -1169,11 +1169,18 @@ export class Signature {
         if (field) {
             field.remove();
         }
+        let canvasHeight: number = 305;
+        const viewerHeight: number = this.pdfViewer.element.clientHeight;
+        if (viewerHeight <= 500) {
+            canvasHeight = 250;
+        } else if (viewerHeight > 500 && viewerHeight <= 750) {
+            canvasHeight = 275;
+        }
         const appearanceDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'Signature_appearance', className: 'e-pv-signature-apperance', styles: 'margin-top:30px' });
         const canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_signatureCanvas_', className: 'e-pv-signature-canvas' }) as HTMLCanvasElement;
         canvas.classList.add('e-pv-canvas-signature');
-        canvas.height = 305;
-        canvas.style.height = '305px';
+        canvas.height = canvasHeight;
+        canvas.style.height = canvasHeight + 'px';
         canvas.style.border = '1px dotted #bdbdbd';
         canvas.style.backgroundColor = 'white';
         canvas.style.boxSizing = 'border-box';
@@ -1233,7 +1240,7 @@ export class Signature {
         inputobj.appendTo(inputText);
         const fontDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_font_appearance', className: 'e-pv-font-appearance-style' });
         fontDiv.classList.add('e-pv-canvas-signature');
-        fontDiv.style.height = '270px';
+        fontDiv.style.height = (canvasHeight - 35) + 'px';
         fontDiv.style.border = '1px dotted #bdbdbd';
         fontDiv.style.boxSizing = 'border-box';
         fontDiv.style.borderRadius = '2px';
@@ -1271,8 +1278,8 @@ export class Signature {
             uploadCanvas.width = this.pdfViewer.element.offsetWidth - 35;
         }
         uploadCanvas.classList.add('e-pv-canvas-signature');
-        uploadCanvas.height = 305;
-        uploadCanvas.style.height = '305px';
+        uploadCanvas.height = canvasHeight;
+        uploadCanvas.style.height = canvasHeight + 'px';
         uploadButton.element.style.left = ((uploadCanvas.width / 2) - 50) + 'px';
         uploadButton.element.style.top = ((parseFloat(uploadCanvas.style.height) / 2) + 20) + 'px';
         uploadCanvas.style.border = '1px dotted #bdbdbd';
@@ -1326,6 +1333,17 @@ export class Signature {
             fontSignature[parseInt(i.toString(), 10)] = document.createElement('div');
             fontSignature[parseInt(i.toString(), 10)].id = '_font_signature' + i + '';
             fontSignature[parseInt(i.toString(), 10)].classList.add('e-pv-font-sign');
+            if (canvasHeight === 275) {
+                fontSignature[parseInt(i.toString(), 10)].style.fontSize = '13px';
+                fontSignature[parseInt(i.toString(), 10)].style.paddingTop = '30px';
+                fontSignature[parseInt(i.toString(), 10)].style.height = '78px';
+
+            }
+            else if (canvasHeight === 250) {
+                fontSignature[parseInt(i.toString(), 10)].style.fontSize = '12px';
+                fontSignature[parseInt(i.toString(), 10)].style.paddingTop = '25px';
+                fontSignature[parseInt(i.toString(), 10)].style.height = '68px';
+            }
         }
         this.fontsign = fontSignature;
         // eslint-disable-next-line

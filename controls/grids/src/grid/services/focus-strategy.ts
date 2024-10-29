@@ -176,7 +176,7 @@ export class FocusStrategy {
         }
     }
 
-    public onClick(e: Event | { target: Element, type?: string }, force?: boolean): void {
+    public onClick(e: Event | { target: Element, type?: string }, force?: boolean, isFocusFirstCell?: boolean): void {
         if (parentsUntil(e.target as HTMLElement, 'e-filterbarcell') && (parentsUntil(e.target as HTMLElement, 'e-multiselect') ||
             (e.target as HTMLElement).classList.contains('e-input-group-icon'))) {
             return;
@@ -197,8 +197,11 @@ export class FocusStrategy {
             const returnVal: boolean = this.getContent().onClick(e, force);
             if (returnVal === false) { return; }
             this.focus();
-            if (this.currentInfo.element.classList.contains('e-rowcell') && e.type && e.type === 'click') {
+            if (this.currentInfo.element.classList.contains('e-rowcell') && e.type && e.type === 'click' && !isFocusFirstCell) {
                 addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
+            }
+            if (isFocusFirstCell && e && e.target){
+                addClass([<HTMLElement>e.target], ['e-focused', 'e-focus']);
             }
         }
     }

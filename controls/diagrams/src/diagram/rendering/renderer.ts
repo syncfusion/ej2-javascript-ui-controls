@@ -50,6 +50,8 @@ export class DiagramRenderer {
     /** @private */
 
     public isSvgMode: Boolean = true;
+    /** @private */
+    public touchMove: boolean = undefined;
     private svgRenderer: SvgRenderer;
     private nativeSvgLayer: SVGSVGElement;
     private diagramSvgLayer: SVGSVGElement;
@@ -471,6 +473,13 @@ export class DiagramRenderer {
             (constraints & ThumbsConstraints.Rotate && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions)))) {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
             this.renderRotateThumb(element, canvas, transform, selectorConstraints, canMask);
+        } else {
+            if (this.touchMove) {
+                const rotateThumb: HTMLElement = document.getElementById('rotateThumb');
+                if (rotateThumb) {
+                    rotateThumb.setAttribute('visibility', 'hidden');
+                }
+            }
         }
         this.renderBorder(
             element, canvas, transform, enableNode, nodeConstraints, isSwimlane);
@@ -812,7 +821,18 @@ export class DiagramRenderer {
         const desiredSize: Size = new Size(options.width, options.height);
         const pathElement: PathElement = new PathElement();
         options.data = pathElement.updatePath(options.data, absoluteBounds, desiredSize);
-        this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
+        //Bug 914365: Node is not resizable using touch interaction
+        //Added below code to update the element if it is already rendered during touch move interaction
+        if (this.touchMove) {
+            const thumb: HTMLElement = document.getElementById(id);
+            if (thumb) {
+                this.updateSegmentPosition(thumb, options);
+            } else {
+                this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
+            }
+        } else {
+            this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
+        }
     }
 
     /**
@@ -958,9 +978,32 @@ export class DiagramRenderer {
         if (canMask) {
             options.visible = false;
         }
-        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
-        this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true,
-                                       parentSvg, ariaLabel, true, enableSelector);
+        //Bug 914365: Node is not resizable using touch interaction
+        //Added below code to update the element if it is already rendered during touch move interaction
+        if (this.touchMove) {
+            const handle: HTMLElement = document.getElementById(id);
+            if (handle) {
+                this.updateResizeHandle(handle, options);
+            } else {
+                const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+                this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true,
+                                               parentSvg, ariaLabel, true, enableSelector);
+            }
+        } else {
+            const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+            this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true,
+                                           parentSvg, ariaLabel, true, enableSelector);
+        }
+    }
+    private updateResizeHandle(handle: HTMLElement, options: RectAttributes): void {
+        const  attr: Object = {
+            'id': options.id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
+            'height': options.height.toString(), 'visibility': options.visible ? 'visible' : 'hidden',
+            'transform': 'rotate(' + options.angle + ','
+                + (options.x + options.width / 2) + ',' + (options.y + options.height / 2) + ')',
+            'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity
+        };
+        setAttributeSvg(handle as any, attr);
     }
     //824805-Support to modify bezier connector segmentThumbShape
     /**
@@ -1041,8 +1084,28 @@ export class DiagramRenderer {
         const desiredSize: Size = new Size(options.width, options.height);
         const pathElement: PathElement = new PathElement();
         options.data = pathElement.updatePath(options.data, absoluteBounds, desiredSize);
-        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
-        this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId, true, parentSvg);
+        //Bug 914365: Node is not resizable using touch interaction
+        //Added below code to update the element if it is already rendered during touch move interaction
+        if (this.touchMove) {
+            const handle: HTMLElement = document.getElementById(id);
+            if (handle) {
+                this.updateSegmentPosition(handle, options);
+            } else {
+                const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+                this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId, true, parentSvg);
+            }
+        } else {
+            const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+            this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId, true, parentSvg);
+        }
+    }
+    private updateSegmentPosition(handle: HTMLElement, options: PathAttributes): void {
+        const attr: Object = {
+            'id': options.id, 'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
+                + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + ')',
+            'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity
+        };
+        setAttributeSvg(handle as any, attr);
     }
     /**
      * Method used to render border for the node element  \
@@ -1269,9 +1332,22 @@ export class DiagramRenderer {
             width: 20, height: 20, pivotX: 0, pivotY: 0, opacity: 1, visible: visible, id: wrapper.id, class: 'e-diagram-rotate-handle'
         };
         options.id = 'rotateThumb';
-        this.svgRenderer.drawPath(
-            canvas as SVGElement, options as PathAttributes, this.diagramId, true,
-            undefined, { 'aria-label': 'Thumb to rotate the selected object' });
+        //Bug 914365: Node is not resizable using touch interaction
+        //Added below code to update the element if it is already rendered during touch move interaction
+        if (this.touchMove) {
+            const thumb: HTMLElement = document.getElementById('rotateThumb');
+            if (thumb) {
+                this.updateSegmentPosition(thumb, options);
+            } else {
+                this.svgRenderer.drawPath(
+                    canvas as SVGElement, options as PathAttributes, this.diagramId, true,
+                    undefined, { 'aria-label': 'Thumb to rotate the selected object' });
+            }
+        } else {
+            this.svgRenderer.drawPath(
+                canvas as SVGElement, options as PathAttributes, this.diagramId, true,
+                undefined, { 'aria-label': 'Thumb to rotate the selected object' });
+        }
     }
 
     /**

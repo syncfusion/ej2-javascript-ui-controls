@@ -4,7 +4,7 @@ import { _PdfStream, _PdfNullStream, _PdfBaseStream } from './base-stream';
 import { PdfPredictorStream } from './predictor-stream';
 import { _PdfFlateStream } from './flate-stream';
 import { _PdfCrossReference } from './pdf-cross-reference';
-import { _CipherTransform } from './security/encryptor';
+import { _CipherTransform, _PdfEncryptor } from './security/encryptor';
 const maxCacheLength: number = 1000;
 const maxNumberLength: number = 5552;
 const endOfFile: string = 'EOF';
@@ -446,15 +446,17 @@ export class _PdfParser {
     second: any; // eslint-disable-line
     private _isColorSpace: boolean = false;
     private _isPassword: boolean = false;
+    _encryptor: _PdfEncryptor;
     constructor(lexicalOperator: _PdfLexicalOperator,
                 xref: _PdfCrossReference,
                 allowStreams: boolean = false,
-                recoveryMode: boolean = false) {
+                recoveryMode: boolean = false, encryptor?: _PdfEncryptor) {
         this.lexicalOperator = lexicalOperator;
         this.xref = xref;
         this.allowStreams = allowStreams;
         this.recoveryMode = recoveryMode;
         this.imageCache = new Map<string, _PdfBaseStream>();
+        this._encryptor = encryptor;
         this.refill();
     }
     refill(): void {
@@ -478,17 +480,31 @@ export class _PdfParser {
             return false;
         }
     }
-    getObject(cipherTransform ?: _CipherTransform): any { // eslint-disable-line
+    getObject(cipherTransform?: _CipherTransform): any // eslint-disable-line
+    getObject(objectNumber?: number, generationNumber?: number, isCipherTransform?: boolean): any // eslint-disable-line
+    getObject(arguement1?: number | _CipherTransform, arguement2?: number, arguement3?: boolean): any { // eslint-disable-line
+        let cipherTransform: _CipherTransform;
         const first: any = this.first; // eslint-disable-line
         this.shift();
         if (first instanceof _PdfCommand) {
             switch (first.command) {
             case 'BI':
-                return this.makeInlineImage(cipherTransform);
+                if (typeof arguement1 === 'number') {
+                    return this.makeInlineImage(arguement1, arguement2, arguement3);
+                } else {
+                    return this.makeInlineImage(arguement1);
+                }
             case '[':
                 const array = []; // eslint-disable-line
                 while (!_isCommand(this.first, ']') && this.first !== endOfFile) {
-                    let entry: any = this.getObject(cipherTransform); // eslint-disable-line
+                    let entry: any; // eslint-disable-line
+                    if (typeof arguement1 === 'number') {
+                        cipherTransform = this._encryptor._createCipherTransform(arguement1, arguement2);
+                        entry = this.getObject(arguement1, arguement2, arguement3);
+                    } else {
+                        cipherTransform = arguement1;
+                        entry = this.getObject(arguement1);
+                    }
                     if (array.length === 0 && _isName(entry, 'Indexed')) {
                         this._isColorSpace = true;
                     }
@@ -520,7 +536,15 @@ export class _PdfParser {
                     if (isEnd) {
                         break;
                     }
-                    let value: any = this.getObject(cipherTransform); // eslint-disable-line
+                    if (typeof arguement1 === 'number') {
+                        cipherTransform = this._encryptor._createCipherTransform(arguement1, arguement2);
+                    }
+                    let value: any; // eslint-disable-line
+                    if (typeof arguement1 === 'number') {
+                        value = this.getObject(arguement1, arguement2, arguement3);
+                    } else {
+                        value = this.getObject(arguement1);
+                    }
                     value = _decodeText(value, this._isColorSpace, this._isPassword);
                     this._isPassword = false;
                     dictionary.set(key, value);
@@ -533,6 +557,11 @@ export class _PdfParser {
                 }
                 if (_isCommand(this.second, 'stream')) {
                     if (this.allowStreams === true) {
+                        if (arguement1 instanceof _CipherTransform) {
+                            cipherTransform = arguement1;
+                        } else if (arguement3) {
+                            cipherTransform = this._encryptor._createCipherTransform(arguement1, arguement2);
+                        }
                         return this.makeStream(dictionary, cipherTransform);
                     } else {
                         return dictionary;
@@ -554,6 +583,11 @@ export class _PdfParser {
             return first;
         }
         if (typeof first === 'string') {
+            if (arguement1 instanceof _CipherTransform) {
+                cipherTransform = arguement1;
+            } else if (typeof arguement1 === 'number') {
+                cipherTransform = this._encryptor._createCipherTransform(arguement1, arguement2);
+            }
             if (cipherTransform) {
                 return cipherTransform.decryptString(first);
             }
@@ -704,11 +738,21 @@ export class _PdfParser {
             ch = stream.getByte();
         }
     }
-    makeInlineImage(cipherTransform ?: _CipherTransform): any { // eslint-disable-line
+    makeInlineImage(cipher?: _CipherTransform): any // eslint-disable-line
+    makeInlineImage(objectNumber?: number, generationNumber?: number, isCipherTransform?: boolean): any // eslint-disable-line
+    makeInlineImage(arguement1?: number | _CipherTransform, arguement2?: number, arguement3?: boolean): any { // eslint-disable-line
         const lexicalOperator: _PdfLexicalOperator = this.lexicalOperator;
         const stream: _PdfStream = lexicalOperator.stream;
         const dictionary: _PdfDictionary = new _PdfDictionary(this.xref);
         let dictLength: number;
+        let cipherTransform: _CipherTransform;
+        if (arguement3) {
+            if (arguement1 instanceof _CipherTransform) {
+                cipherTransform = arguement1;
+            } else {
+                cipherTransform = this._encryptor._createCipherTransform(arguement1, arguement2);
+            }
+        }
         while (!_isCommand(this.first, 'ID') && this.first !== endOfFile) {
             if (!(this.first instanceof _PdfName)) {
                 throw new FormatError('Dictionary key must be a name object');
@@ -718,7 +762,11 @@ export class _PdfParser {
             if (this.first.name === endOfFile) {
                 break;
             }
-            dictionary.set(key, this.getObject(cipherTransform));
+            if (arguement1 instanceof _CipherTransform) {
+                dictionary.set(key, this.getObject(arguement1));
+            } else {
+                dictionary.set(key, this.getObject(arguement1, arguement2, arguement3));
+            }
         }
         if (lexicalOperator.beginInlineImagePosition !== -1) {
             dictLength = stream.position - lexicalOperator.beginInlineImagePosition;

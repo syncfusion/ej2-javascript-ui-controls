@@ -606,6 +606,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     protected resize(): void {
+        if (!isNullOrUndefined(this.width) && this.width !== 'auto' && typeof this.width === 'string' && !this.width.includes('px')) {
+            this.setType(this.type);
+        }
         if (this.type === 'Auto') {
             if (Browser.isDevice) {
                 addClass([this.element], OVER);

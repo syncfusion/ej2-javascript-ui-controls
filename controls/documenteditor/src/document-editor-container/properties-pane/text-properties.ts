@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { createElement, L10n, classList, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { DocumentEditor, HighlightColor } from '../../document-editor/index';
+import { DocumentEditor, HighlightColor, SelectionCharacterFormat } from '../../document-editor/index';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButton, SplitButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -458,7 +458,8 @@ export class Text {
         this.fontSize.focus = (): void => {
             this.isRetrieving = false; (this.fontSize.element as HTMLInputElement).select();
         };
-        this.fontSize.value = this.documentEditor.selectionModule.characterFormat.fontSize.toString();
+        const format: SelectionCharacterFormat = this.documentEditor.selectionModule.characterFormat;
+        this.fontSize.value = (format.bidi || format.complexScript) ? format.fontSizeBidi.toString() : format.fontSize.toString();
         this.fontSize.appendTo(fontSelectElement);
         this.fontSize.element.parentElement.setAttribute('title', this.localObj.getConstant('Font Size'));
     }
@@ -667,7 +668,8 @@ export class Text {
                 this.fontFamily.value = '';
             }
             if (this.documentEditor.selectionModule.characterFormat.fontSize) {
-                this.fontSize.value = this.documentEditor.selectionModule.characterFormat.fontSize.toString();
+                const format: SelectionCharacterFormat = this.documentEditor.selectionModule.characterFormat;
+                this.fontSize.value = (format.bidi || format.complexScript) ? (!isNullOrUndefined(format.fontSizeBidi) ? format.fontSizeBidi.toString() : '') : format.fontSize.toString();
                 this.fontSize.dataBind();
             } else {
                 this.fontSize.value = '';

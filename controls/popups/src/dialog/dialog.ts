@@ -1842,7 +1842,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             case 'enableRtl':
                 this.setEnableRTL(); break;
             case 'enableResize':
-                this.setResize(); break;
+                this.setResize();
+                this.isModelResize = this.enableResize && this.isModal;
+                if (this.enableResize && this.dialogOpen) {
+                    this.resetResizeIcon();
+                }
+                break;
             case 'minHeight':
                 if (this.minHeight !== '') {
                     this.element.style.minHeight = formatUnit(this.minHeight);

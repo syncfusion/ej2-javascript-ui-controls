@@ -876,6 +876,9 @@ export class Audio {
             proxy.uploadUrl.cssClass = (proxy.parent.insertAudioSettings.layoutOption === 'Inline' ?
                 classes.CLS_AUDIOINLINE : classes.CLS_AUDIOBREAK);
             proxy.dialogObj.hide({ returnValue: false } as Event);
+            if (proxy.dialogObj !== null) {
+                return;
+            }
             proxy.parent.formatter.process(
                 proxy.parent, (this as IImageNotifyArgs).args,
                 ((this as IImageNotifyArgs).args as ClickEventArgs).originalEvent, proxy.uploadUrl);
@@ -897,9 +900,12 @@ export class Audio {
                 url: url, selection: (this as IImageNotifyArgs).selection, fileName: name,
                 selectParent: (this as IImageNotifyArgs).selectParent
             };
+            proxy.dialogObj.hide({ returnValue: false } as Event);
+            if (proxy.dialogObj !== null) {
+                return;
+            }
             proxy.parent.formatter.process(
                 proxy.parent, (this as IImageNotifyArgs).args, ((this as IImageNotifyArgs).args as ClickEventArgs).originalEvent, value);
-            proxy.dialogObj.hide({ returnValue: false } as Event);
         }
     }
 

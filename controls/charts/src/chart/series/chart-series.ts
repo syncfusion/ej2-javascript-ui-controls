@@ -2503,7 +2503,24 @@ export class Series extends SeriesBase {
                 this.createSeriesElements(chart);
             }
             this.visiblePoints = getVisiblePoints(this);
-            chart[seriesType + 'SeriesModule'].render(this, this.xAxis, this.yAxis, chart.requireInvertedAxis);
+            if (this.chart.enableCanvas) {
+                this.chart.canvasRender.ctx.save();
+                this.chart.canvasRender.ctx.beginPath();
+                if (chart.requireInvertedAxis) {
+                    this.chart.canvasRender.ctx.rect(this.yAxis.rect.x, this.xAxis.rect.y, this.yAxis.rect.width,
+                                                     this.xAxis.rect.height);
+                }
+                else {
+                    this.chart.canvasRender.ctx.rect(this.xAxis.rect.x, this.yAxis.rect.y, this.xAxis.rect.width,
+                                                     this.yAxis.rect.height);
+                }
+                this.chart.canvasRender.ctx.clip();
+                chart[seriesType + 'SeriesModule'].render(this, this.xAxis, this.yAxis, chart.requireInvertedAxis);
+                this.chart.canvasRender.ctx.restore();
+            }
+            else {
+                chart[seriesType + 'SeriesModule'].render(this, this.xAxis, this.yAxis, chart.requireInvertedAxis);
+            }
             if (this.category !== 'Indicator') {
                 if (this.errorBar.visible) {
                     this.chart.errorBarModule.render(this);

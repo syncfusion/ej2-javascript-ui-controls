@@ -446,6 +446,9 @@ export class Link {
         if (document.body.contains(proxy.dialogObj.element)) {
             (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: false } as Event);
         }
+        if ((this as NotifyArgs).selfLink.dialogObj !== null) {
+            return;
+        }
         if (isIDevice() && proxy.parent.iframeSettings.enable) {
             (<HTMLIFrameElement>select('iframe', proxy.parent.element)).contentWindow.focus();
         }

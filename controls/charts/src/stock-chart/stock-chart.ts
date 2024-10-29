@@ -1056,8 +1056,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Find range for financal chart.
      *
      * @returns {void}
+     * @private
      */
-    private findRange(): void {
+    public findRange(): void {
         this.seriesXMin = Infinity; this.seriesXMax = -Infinity;
         for (const value of this.chart.series as Series[]) {
             if (value.visible) {

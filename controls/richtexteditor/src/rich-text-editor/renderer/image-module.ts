@@ -18,7 +18,7 @@ import { RenderType, ImageInputSource } from '../base/enum';
 import { dispatchEvent, parseHtml, hasClass, convertToBlob } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
-import { imageResizeFactor } from '../../common/config';
+import { iframeResizeFactor, imageResizeFactor } from '../../common/config';
 import { IImageResizeFactor, ImageDimension } from '../../common/interface';
 /**
  * `Image` module is used to handle image actions.
@@ -265,8 +265,13 @@ export class Image {
             if (this.parent.formatter.getUndoRedoStack().length === 0) {
                 this.parent.formatter.saveData();
             }
-            this.pageX = this.getPointX(e);
-            this.pageY = this.getPointY(e);
+            if (this.parent.iframeSettings.enable) {
+                this.pageX = (e as PointerEvent).screenX;
+                this.pageY = (e as PointerEvent).screenY;
+            } else {
+                this.pageX = this.getPointX(e);
+                this.pageY = this.getPointY(e);
+            }
             e.preventDefault();
             e.stopImmediatePropagation();
             this.resizeBtnInit();
@@ -492,7 +497,7 @@ export class Image {
             width = Math.round(height * aspectRatio);
             height = Math.round(width / aspectRatio);
         }
-        return { width, height };
+        return { width: width, height: height };
     }
 
     private pixToPerc(expected: number, parentEle: Element): number {
@@ -524,32 +529,52 @@ export class Image {
     private resizing(e: PointerEvent | TouchEvent): void {
         if (!this.parent) { this.cancelResizeAction(); return; }
         if (this.resizeBtnStat.botRight || this.resizeBtnStat.botLeft || this.resizeBtnStat.topRight || this.resizeBtnStat.topLeft) {
-            const pageX: number = this.getPointX(e);
-            const pageY: number = this.getPointY(e);
-            const resizeFactor: number[] = this.getResizeFactor(this.currentResizeHandler);
-            const diffX: number = (pageX - this.pageX);
-            const diffY: number = (pageY - this.pageY);
-            const currentWidth: number  = this.imgEle.clientWidth;
-            const currentHeight: number = this.imgEle.clientHeight;
-            const width: number = diffX * resizeFactor[0] + currentWidth;
-            const height: number = diffY * resizeFactor[1] + currentHeight;
-            const dimensions: ImageDimension = this.adjustDimensions(width, height, diffX, diffY, this.aspectRatio);
-            this.pageX = pageX;
-            this.pageY = pageY;
-            this.imgDupMouseMove(dimensions.width + 'px', dimensions.height + 'px', e);
+            if (this.parent.iframeSettings.enable) {
+                const resizeFactor: number[] = this.getResizeFactor(this.currentResizeHandler);
+                const currentScreenX: number = (e as PointerEvent).screenX;
+                const currentScreenY: number = (e as PointerEvent).screenY;
+                const currentWidth: number  = this.imgEle.clientWidth;
+                const currentHeight: number = this.imgEle.clientHeight;
+                const deltaX: number = currentScreenX - this.pageX;
+                const deltaY: number = currentScreenY - this.pageY;
+                const width: number = deltaX * resizeFactor[0] + currentWidth;
+                const height: number = deltaY * resizeFactor[1] + currentHeight;
+                const dimensions: ImageDimension = this.adjustDimensions(width, height, deltaX, deltaY, this.aspectRatio);
+                this.pageX = currentScreenX;
+                this.pageY = currentScreenY;
+                this.imgDupMouseMove(dimensions.width + 'px', dimensions.height + 'px', e);
+                this.parent.autoResize();
+            } else {
+                const pageX: number = this.getPointX(e);
+                const pageY: number = this.getPointY(e);
+                const resizeFactor: number[] = this.getResizeFactor(this.currentResizeHandler);
+                const diffX: number = (pageX - this.pageX);
+                const diffY: number = (pageY - this.pageY);
+                const currentWidth: number  = this.imgEle.clientWidth;
+                const currentHeight: number = this.imgEle.clientHeight;
+                const width: number = diffX * resizeFactor[0] + currentWidth;
+                const height: number = diffY * resizeFactor[1] + currentHeight;
+                const dimensions: ImageDimension = this.adjustDimensions(width, height, diffX, diffY, this.aspectRatio);
+                this.pageX = pageX;
+                this.pageY = pageY;
+                this.imgDupMouseMove(dimensions.width + 'px', dimensions.height + 'px', e);
+            }
         }
     }
 
     private adjustDimensions (width: number, height: number, diffX: number, diffY: number, aspectRatio: number): ImageDimension {
         width = (width < 16) ? 16 : width;
         height = (height < 16) ? 16 : height;
-        const isWidthPrimary: boolean = Math.abs(diffX) > Math.abs(diffY);
+        const isWidthPrimary: boolean = width > height;
         const dimensions: { width: number, height: number } =
             this.adjustDimensionsByAspectRatio(width, height, aspectRatio, isWidthPrimary);
         return dimensions;
     }
 
     private getResizeFactor(value: string): number[] {
+        if (this.parent.iframeSettings.enable) {
+            return iframeResizeFactor[value as keyof IImageResizeFactor];
+        }
         return imageResizeFactor[value as keyof IImageResizeFactor];
     }
 
@@ -1643,6 +1668,9 @@ export class Image {
             proxy.uploadUrl.cssClass = (proxy.parent.insertImageSettings.display === 'inline' ?
                 classes.CLS_IMGINLINE : classes.CLS_IMGBREAK);
             proxy.dialogObj.hide({ returnValue: false } as Event);
+            if (proxy.dialogObj !== null) {
+                return;
+            }
             proxy.parent.formatter.process(
                 proxy.parent, (this as IImageNotifyArgs).args,
                 ((this as IImageNotifyArgs).args as ClickEventArgs).originalEvent, proxy.uploadUrl);
@@ -1676,9 +1704,12 @@ export class Image {
                     maxHeight: proxy.parent.insertImageSettings.maxHeight
                 }
             };
+            proxy.dialogObj.hide({ returnValue: false } as Event);
+            if (proxy.dialogObj !== null) {
+                return;
+            }
             proxy.parent.formatter.process(
                 proxy.parent, (this as IImageNotifyArgs).args, ((this as IImageNotifyArgs).args as ClickEventArgs).originalEvent, value);
-            proxy.dialogObj.hide({ returnValue: false } as Event);
         }
     }
 

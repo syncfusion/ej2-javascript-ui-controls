@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
-## 27.1.56 (2024-10-23)
+## 27.1.57 (2024-10-29)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I640083` - The issue causing a console error after selecting a value and subsequently emptying the datasource upon button click has been resolved.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I612750` - Fixed an issue where updateData was throwing an error when filtering in a DropDownList.
+
+## 27.1.55 (2024-10-22)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I639732` - Fixed an issue where removing one item using the cross icon caused all options to be removed from the select element in the DOM.
+
+## 27.1.53 (2024-10-15)
 
 ### ListBox
 

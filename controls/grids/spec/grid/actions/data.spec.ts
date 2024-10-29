@@ -84,7 +84,7 @@ describe('Data module', () => {
 
     describe('Remote data without columns testing', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
+        let elem: HTMLElement = createElement('div', { id: 'RemoteGrid' });
         let request: JasmineAjaxRequest;
         let dataManager: DataManager;
         let query: Query = new Query().take(5);
@@ -105,7 +105,7 @@ describe('Data module', () => {
                     dataSource: dataManager, dataBound: dataBound,
                     query: query, allowPaging: true,
                 });
-            gridObj.appendTo('#Grid');
+            gridObj.appendTo('#RemoteGrid');
             request = window.fetch['calls'].mostRecent();
         });
 
@@ -267,7 +267,7 @@ describe('Data module', () => {
                 };
             }
         };
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
+        let elem: HTMLElement = createElement('div', { id: 'RemoteGrid' });
         let actionComplete: (e?: Object) => void;
         beforeAll((done: Function) => {
             let dataBound: EmitType<Object> = () => { done(); };
@@ -287,7 +287,7 @@ describe('Data module', () => {
                     actionComplete: actionComplete,
                     actionFailure: actionFailure
                 });
-            gridObj.appendTo('#Grid');
+            gridObj.appendTo('#RemoteGrid');
         });
 
         it('Row count testing', () => {

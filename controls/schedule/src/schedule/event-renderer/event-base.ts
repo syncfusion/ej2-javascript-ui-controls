@@ -563,10 +563,13 @@ export class EventBase {
         if (eventsData.length > 0) {
             const selectedObject: Record<string, any> = eventsData[eventsData.length - 1];
             const eventStartTime: Date = <Date>selectedObject[this.parent.eventFields.startTime];
-            let nearestTime: number = new Date(+eventStartTime).setMinutes(0, 0, 0);
+            let nearestTime: number;
             const isAllDay: boolean = this.isAllDayAppointment(selectedObject);
-            if (this.parent.currentView === 'Month' || isAllDay) {
+            if (this.parent.currentView === 'Month' || isAllDay || !this.parent.activeViewOptions.timeScale.enable) {
                 nearestTime = new Date(+eventStartTime).setHours(0, 0, 0, 0);
+            }
+            else {
+                nearestTime = this.findNearestSlot(eventStartTime);
             }
             let targetArea: Element;
             if (isAllDay && ['Day', 'Week', 'WorkWeek'].indexOf(this.parent.currentView) !== -1) {
@@ -575,7 +578,8 @@ export class EventBase {
                 targetArea = this.parent.getContentTable();
             }
             let queryString: string = '[data-date="' + new Date(nearestTime).getTime() + '"]';
-            if (this.parent.activeViewOptions.group.resources.length > 0) {
+            if (!isNullOrUndefined(this.parent.activeViewOptions.group.resources) &&
+                this.parent.activeViewOptions.group.resources.length > 0) {
                 queryString += '[data-group-index="' + this.getGroupIndexFromEvent(selectedObject) + '"]';
             }
             target = targetArea.querySelector(queryString) as Element;
@@ -589,6 +593,27 @@ export class EventBase {
         }
         return target;
     }
+
+    private findNearestSlot(appointmentTime: Date): number {
+        const msMajorInterval: number = this.parent.activeViewOptions.timeScale.interval * util.MS_PER_MINUTE;
+        const msInterval: number = msMajorInterval / this.parent.activeViewOptions.timeScale.slotCount;
+        const numberOfSlots: number = Math.round(util.MS_PER_DAY / msInterval);
+        const startTime: Date = new Date(appointmentTime);
+        startTime.setHours(0, 0, 0, 0);
+        const slots: Date[] = Array.from({ length: numberOfSlots }, (_: any, i: number) => {
+            const slotTime: Date = new Date(startTime.getTime() + i * msInterval);
+            return slotTime;
+        });
+        const nearestSlot: Date = slots.reduce((nearest: Date, slot: Date) => {
+            const difference: number = Math.abs(appointmentTime.getTime() - slot.getTime());
+            if (!nearest || difference < Math.abs(appointmentTime.getTime() - nearest.getTime())) {
+                return slot;
+            }
+            return nearest;
+        }, null);
+        return Math.trunc(nearestSlot.getTime() / 1000) * 1000;
+    }
+
 
     public getGroupIndexFromEvent(eventData: Record<string, any>): number {
         let levelIndex: number;
@@ -889,7 +914,7 @@ export class EventBase {
         const newTimezone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
         const firstDay: number = this.parent.activeViewOptions.firstDayOfWeek;
         const calendarMode: CalendarType = this.parent.calendarMode;
-        if (event[this.parent.eventFields.recurrenceRule] && event[this.parent.eventFields.recurrenceRule].includes('BYMONTHDAY') &&
+        if (event[this.parent.eventFields.recurrenceRule] && this.isDayBasedRecurrence(event) &&
             this.parent.timezone && event[this.parent.eventFields.startTimezone] && event[this.parent.eventFields.endTimezone]) {
             startDate = this.parent.tzModule.convert(event[this.parent.eventFields.startTime],
                                                      this.parent.timezone, event[this.parent.eventFields.startTimezone]);
@@ -910,7 +935,7 @@ export class EventBase {
         }
         let isDSTAdjusted: boolean = false;
         let convertedDates: number[] = [];
-        if (event[this.parent.eventFields.recurrenceRule] && event[this.parent.eventFields.recurrenceRule].includes('BYMONTHDAY') &&
+        if (event[this.parent.eventFields.recurrenceRule] && this.isDayBasedRecurrence(event) &&
             this.parent.timezone && event[this.parent.eventFields.startTimezone] && event[this.parent.eventFields.endTimezone]) {
             isDSTAdjusted = true;
             convertedDates.push(...dates.map((date: number) =>
@@ -931,6 +956,11 @@ export class EventBase {
             occurrenceCollection.push(clonedObject);
         }
         return occurrenceCollection;
+    }
+
+    private isDayBasedRecurrence(event: Record<string, any>): boolean {
+        return (event[this.parent.eventFields.recurrenceRule].includes('BYMONTHDAY')
+        || event[this.parent.eventFields.recurrenceRule].includes('BYDAY'));
     }
 
     private getDSTAdjustedTime(date: number, event: Record<string, any>): number {

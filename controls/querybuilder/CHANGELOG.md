@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 27.1.56 (2024-10-23)
+## 27.1.57 (2024-10-29)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with "Input element value get selected while double clicking on query builder rules." has been fixed.
+
+## 27.1.55 (2024-10-22)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with "Script error thrown while clicking on svg element within the query builder" has been fixed.
+
+## 27.1.53 (2024-10-15)
 
 ### QueryBuilder
 

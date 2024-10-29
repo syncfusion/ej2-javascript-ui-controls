@@ -321,6 +321,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected virtualSelectAllData: { [key: string]: Object }[] | string[] | number[] | boolean[];
     protected firstItem: string | number | boolean | object;
     protected preventDefActionFilter: boolean;
+    protected isDynamicData: boolean = false;
     protected virtualListInfo: VirtualInfo = {
         currentPageNumber: null,
         direction: null,
@@ -1991,6 +1992,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     this.updateDataSource(updateData, oldProp);
                 }
             } else {
+                this.isDynamicData = true;
                 this.updateDataSource(updateData, oldProp);
             }
         }

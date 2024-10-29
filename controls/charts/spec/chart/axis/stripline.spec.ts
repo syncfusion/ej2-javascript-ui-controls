@@ -1196,9 +1196,9 @@ describe('Chart control checking', () => {
         it('Vertical Segmented stripline on Logarithmic Axis', (done: Function) => {
             loaded = () => {
 
-                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
+                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 1108.9 43.25 L 1108.9 77.0909090909091' || direction === 'M 663.4000000000001 43.25 L 663.4000000000001 77.00000000000001').toBe(true);
+                expect(direction === 'M 453.09999999999997 181.49004124019885 L 593.3 181.49004124019885' || direction === 'M 663.4000000000001 43.25 L 663.4000000000001 77.00000000000001').toBe(true);
                 done();
             };
             chart.primaryXAxis = {

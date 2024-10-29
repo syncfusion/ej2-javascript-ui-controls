@@ -2589,6 +2589,54 @@ describe('Carousel Testing', () => {
         });
     });
 
+    describe('ES-916474 test case for item with e-active class', () => {
+        beforeEach((): void => {
+            const carouselElement: HTMLElement = document.createElement('div');
+            carouselElement.id = 'carousel';
+            document.body.appendChild(carouselElement);
+            jasmine.clock().install();
+        });
+        afterEach(() => {
+            carousel.destroy();
+            carousel.element.remove();
+            carousel = null;
+            jasmine.clock().uninstall();
+        });
+        it('test case for changing slide with an item having e-active class', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            const carouselItems: CarouselItemModel[] = [
+                { template: '<div id="Grids"><div class="e-active"></div><div>' },
+                { template: 'base/demos/carousel/images/nature.jpg' },
+                { template: 'base/demos/carousel/images/night-view.jpg' },
+                { template: 'base/demos/carousel/images/sae-view.jpg' },
+                { template: 'base/demos/carousel/images/snowfall.jpg' }];
+            carousel = new Carousel({ items: carouselItems, animationEffect: 'None', autoPlay: true }, carouselElement);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(true);
+            jasmine.clock().tick(carousel.interval + 1500);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('e-active')).toBe(true);
+            jasmine.clock().tick(carousel.interval + 1500);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('e-active')).toBe(false);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[3].classList.contains('e-active')).toBe(true);
+        });
+
+        it('testing item having e-active class using autoSlide method', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            const carouselItems: CarouselItemModel[] = [
+                { template: '<div id="Grids"><div class="e-active"></div><div>' },
+                { template: 'base/demos/carousel/images/nature.jpg' },
+                { template: 'base/demos/carousel/images/night-view.jpg' },
+                { template: 'base/demos/carousel/images/sae-view.jpg' },
+                { template: 'base/demos/carousel/images/snowfall.jpg' }];
+            carousel = new Carousel({ items: carouselItems, animationEffect: 'None', autoPlay: true }, carouselElement);
+            removeClass(carouselElement.querySelectorAll('.e-carousel-item'), 'e-active');
+            (carousel as any).autoSlideChange();
+            expect(carousel.selectedIndex).toBe(0);
+            jasmine.clock().tick(6500);
+            expect(carousel.selectedIndex).toBe(1);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

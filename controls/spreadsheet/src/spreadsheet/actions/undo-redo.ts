@@ -3,7 +3,7 @@ import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRen
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo, getUpdateUsingRaf } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, SortCollectionModel } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, SortCollectionModel, isHeightCheckNeeded } from '../../workbook/index';
 import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, getSwapRange, setColumn } from '../../workbook/index';
 import { getIndexesFromAddress, getSheetNameFromAddress, updateSortedDataOnCell, getSheetIndexFromAddress } from '../../workbook/index';
 import { sortComplete, ConditionalFormatModel, ApplyCFArgs, ImageModel, isImported, cellValidation } from '../../workbook/index';
@@ -884,8 +884,14 @@ export class UndoRedo {
                     range[3] = range[1] + cell.colSpan - 1;
                 }
             }
+            let isHeightCheckFromUndo: boolean = false;
+            if (args.action === 'autofill' || args.action === 'clipboard') {
+                isHeightCheckFromUndo = true;
+            } else if (args.action === 'format' && args.eventArgs.requestType === 'CellFormat') {
+                isHeightCheckFromUndo = isHeightCheckNeeded(args.eventArgs.style, true);
+            }
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
-                range, false, false, true, false, isImported(this.parent), null, isFromAutoFillOption);
+                range, false, false, true, false, isImported(this.parent), null, isFromAutoFillOption, isHeightCheckFromUndo);
             if (cfRule.length || cfRefreshAll) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
             }

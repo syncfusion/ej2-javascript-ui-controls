@@ -217,7 +217,7 @@ export function _stringToAnnotationFlags(flag: string): PdfAnnotationFlag {
  * @returns {string} Valid string to write into PDF.
  */
 export function _stringToPdfString(value: string): string {
-    if (value.charCodeAt(0) >= '\xEF'.charCodeAt(0)) {
+    if (typeof value === 'string' && value.length > 0 && value.charCodeAt(0) >= '\xEF'.charCodeAt(0)) {
         let encoding: string;
         if (value[0] === '\xEF' && value[1] === '\xBB' && value[2] === '\xBF') {
             encoding = 'utf-8';
@@ -3932,7 +3932,7 @@ export function _decodeText(text: string, isColorSpace: boolean, isPassword: boo
             if (text.endsWith('ÿý')) {
                 text = text.substring(0, text.length - 2);
             }
-            const bytes: Uint8Array = _stringToBytes(text) as Uint8Array;
+            const bytes: Uint8Array = _stringToBytes(text, false, true) as Uint8Array;
             let result: string = '';
             for (let i: number = 0; i < bytes.length; i += 2) {
                 const x: number = bytes[Number.parseInt(i.toString(), 10)] << 8;

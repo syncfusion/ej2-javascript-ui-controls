@@ -159,8 +159,8 @@ describe('Context-', () => {
                 triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
                 expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length).toBe(1);
                 done(); 
-            }, 100); 
-        }, 500);
+            }, 1000);
+        });
     });      
     describe('Indent and adding record -', () => {
         beforeAll((done: Function) => {
@@ -3514,6 +3514,7 @@ describe('Context menu - split task for 2 day hour mode', () => {
                     unit: 'Hour',
                   },
             },
+            enableTimelineVirtualization: true,
             highlightWeekends: true,
             splitterSettings: {
                 position: "35%"
@@ -3785,6 +3786,7 @@ describe('Context menu - split task for 2 day minute mode', () => {
                     unit: 'Minutes',
                   },
             },
+            enableTimelineVirtualization: true,
             highlightWeekends: true,
             splitterSettings: {
                 position: "35%"

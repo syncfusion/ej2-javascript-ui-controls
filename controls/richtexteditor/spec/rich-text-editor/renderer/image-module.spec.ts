@@ -1819,7 +1819,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                 setTimeout(() => {
                     let updateImage: HTMLImageElement = rteObj.element.querySelector("#image");
                     expect(updateImage.getAttribute('width') as number | string !== "auto").toBe(true);
+                    expect(updateImage.getAttribute('width').includes("px")).toBe(false);
                     expect(updateImage.getAttribute('height') as number | string !== "auto").toBe(true);
+                    expect(updateImage.getAttribute('height').includes("px")).toBe(false);
                     done();
                 }, 100);
             }, 500);
@@ -1863,7 +1865,9 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 let updateImage: HTMLImageElement = rteObj.element.querySelector("img");
                 expect(updateImage.getAttribute('width') as number | string !== "auto").toBe(true);
+                expect(updateImage.getAttribute('width').includes("px")).toBe(false);
                 expect(updateImage.getAttribute('height') as number | string !== "auto").toBe(true);
+                expect(updateImage.getAttribute('height').includes("px")).toBe(false);
                 done();
             }, 100);
         });

@@ -52,11 +52,12 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
                 }
             }
         }
-        const isReactCompiler: boolean = this.parent.isReact && (column.footerTemplate ?
-            typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
-                : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false);
+        const isNotStringTemplate: boolean = column.footerTemplate ? typeof (column.footerTemplate) !== 'string'
+            : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
+                : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false;
+        const isReactCompiler: boolean = this.parent.isReact && isNotStringTemplate;
         const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
-            this.parent.parentDetails.parentInstObj.isReact;
+            this.parent.parentDetails.parentInstObj.isReact && isNotStringTemplate;
         if (isReactCompiler || isReactChild) {
             const prop: object = data[column.columnName];
             if (tempObj.property === 'groupCaptionTemplate' || tempObj.property === 'groupFooterTemplate') {

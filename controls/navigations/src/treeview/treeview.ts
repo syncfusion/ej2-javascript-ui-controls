@@ -1976,13 +1976,30 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const checkBoxEle: Element = element.getElementsByClassName(CHECKBOXWRAP)[0];
             let count: number = nodes.length;
             let checkedCount: number = checkedNodes.length;
+            let matchedChildNodes: { [key: string]: Object }[][] = [];
+            let oldChildCount: { [key: string]: Object }[] = [];
             const dataUid: string = element.getAttribute('data-uid');
+            let rootNodeChecked: boolean = true;
+            let childNodeChecked: boolean = false;
+            nodes.forEach((childNode: HTMLElement) => {
+                if (childNode instanceof HTMLElement) {
+                    const ariaChecked: string = childNode.getAttribute('aria-checked');
+                    if (ariaChecked === 'true') {
+                        childNodeChecked = true;
+                    } else {
+                        rootNodeChecked = false;
+                    }
+                }
+            });
+            let parentNodeChecked: boolean = false;
             if (this.element.classList.contains('e-filtering')) {
                 const oldCheckedNodes: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.OldCheckedData).executeLocal(new Query().where('parentID', 'equal', dataUid, true));
                 checkedCount = oldCheckedNodes.length;
                 const parentNode: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.OldCheckedData).executeLocal(new Query().where('hasChildren', 'equal', true, true));
-                if ((parentNode.length > 0) && (this.OldCheckedData.some((oldNode: { id: string }) => oldNode.id === dataUid))) {
+                if (parentNode.length > 0
+                    && (this.OldCheckedData.some((oldNode: { id: string }) => oldNode.id === dataUid) && childNodeChecked)) {
                     checkedCount = parentNode.length;
+                    parentNodeChecked = true;
                 }
                 let childItems: { [key: string]: Object }[] = [];
                 if (this.dataType === 1) {
@@ -1993,11 +2010,22 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 count = childItems.length;
             }
+            if (this.autoCheck && this.showCheckBox) {
+                const selectedChildNodeDetails: { [key: string]: object }[][] = this.getSelectedChildNodeDetails(dataUid);
+                matchedChildNodes = selectedChildNodeDetails;
+                oldChildCount = <{ [key: string]: Object }[]> new DataManager(this.checkActionNodes)
+                    .executeLocal(new Query().where('parentID', 'equal', dataUid, true));
+            }
             if (count === 0 && checkedCount === 0) {
                 return;
             }
-            else if (count === checkedCount) {
+            else if (count === checkedCount || ((parentNodeChecked && count > 0) && (oldChildCount.length === matchedChildNodes.length)
+                && (oldChildCount.length !== 0 && matchedChildNodes.length !== 0) && rootNodeChecked
+                && (this.autoCheck && this.showCheckBox))) {
                 this.changeState(checkBoxEle, 'check', null, true, true);
+            }
+            else if ((checkedCount > 0 && !parentNodeChecked && (this.autoCheck && this.showCheckBox))) {
+                this.changeState(checkBoxEle, 'indeterminate', null, true, true);
             } else if (checkedCount > 0 || indeterminateNodes.length > 0) {
                 this.changeState(checkBoxEle, 'indeterminate', null, true, true);
             } else if (checkedCount === 0) {
@@ -2009,6 +2037,20 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.ensureParentCheckState(currentParent);
             }
         }
+    }
+    private getSelectedChildNodeDetails(dataUid: string): { [key: string]: Object }[][] {
+        return this.checkedNodes
+            .map((checkedNodeId: string | number): { [key: string]: any }[] => {
+                return <{ [key: string]: Object }[]> new DataManager(this.DDTTreeData)
+                    .executeLocal(new Query().where('id', 'equal', checkedNodeId, true))[0];
+            })
+            .filter((childNode: object | null | undefined): boolean => {
+                if (childNode && typeof childNode === 'object' && 'pid' in childNode) {
+                    const childNodePid: string = (childNode as { pid: string }).pid;
+                    return childNodePid.toString() === dataUid;
+                }
+                return false;
+            });
     }
     private ensureChildCheckState(element: Element | Document, e?: MouseEvent | KeyboardEventArgs, isFromExpandAll?: boolean): void {
         if (!isNOU(element)) {
@@ -2623,6 +2665,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const index: number = this.OldCheckedData.findIndex((e: { [key: string]: Object; }) => e['id'] === uncheckedItems[0]['id']);
             if (index !== -1) {
                 this.OldCheckedData.splice(index, 1);
+                const childNodes: { [key: string]: Object }[] = this.OldCheckedData.filter((e: { [key: string]: Object }) => e['parentID'] === uncheckedItems[0]['id']);
+                if (childNodes.length > 0) {
+                    childNodes.forEach((child: { [key: string]: object }) => {
+                        const childIndex: number = this.OldCheckedData.findIndex((e: { [key: string]: Object }) => e['id'] === child.id);
+                        if (childIndex !== -1) {
+                            this.OldCheckedData.splice(childIndex, 1);
+                        }
+                    });
+                }
                 return;
             }
         }
@@ -6142,6 +6193,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 for (let i: number = 0; i < nodes.length; i++) {
                     const pid: Object = getValue(this.fields.parentID, nodes[parseInt(i.toString(), 10)]);
                     dropLi = pid ? this.getElement(pid.toString()) : <Element>pid;
+                    if (!isNullOrUndefined(pid) && isNullOrUndefined(dropLi)) {
+                        this.preventExpand = false;
+                        this.ensureVisible(pid as string);
+                        this.preventExpand = preventTargetExpand;
+                        dropLi = this.getElement(pid.toString());
+                    }
                     this.addGivenNodes([nodes[parseInt(i.toString(), 10)]], dropLi, index);
                 }
             }
@@ -6380,6 +6437,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {string | Element} target - Specifies the ID of TreeView node or TreeView node as target element.
      * @param  {Object[]} newData - Specifies the new data of TreeView node.
      * @returns {void}
+     * ```typescript
+     * var treeObj = document.getElementById("treeview").ej2_instances[0];
+     * var data = treeObj.getTreeData("01");
+     * var newData = {
+     *   id: data[0].id,
+     *   name: "new Text",
+     * };
+     * treeObj.refreshNode("01", [newData]);
+     * ```
      */
     public refreshNode(target: string | Element, newData: { [key: string]: Object }[]): void {
         if (isNOU(target) || isNOU(newData)) {
@@ -6490,7 +6556,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Replaces the text of the TreeView node with the given text.
+     * Replaces the text of the TreeView node with the given text only when the `allowEditing` property is enabled.
      *
      * @param  {string | Element} target - Specifies ID of TreeView node/TreeView node as target element.
      * @param  {string} newText - Specifies the new text of TreeView node.

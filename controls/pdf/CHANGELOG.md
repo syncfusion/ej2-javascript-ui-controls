@@ -10,6 +10,11 @@
 
 - Resolved the preservation issue in existing rubber stamp annotation when updating the rotation flatten.
 - Resolved an exception encountered while drawing a text with true type font without using string format.
+- Resolved the preservation issue while filling a check box form field in a PDF document.
+- Resolved the issue with font name preservation when drawing text using a true type font.
+- Resolved the issue with an undefined value while parsing the destination from the document link annotation.
+- Resolved an exception encountered while parsing the destination from the document link annotation.
+- Resolved an issue with text parsing from a text box field in a PDF document.
 
 ## 27.1.55 (2024-10-22)
 

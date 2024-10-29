@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.56 (2024-10-23)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F61285` - Resolved an issue with unwanted mouse wheel scrolling during row drag and drop operations.
+
 ## 27.1.55 (2024-10-22)
 
 ### Tree Grid
@@ -10,6 +18,7 @@
 
 - `#I625060` - Fixed an issue where the delete action would not function correctly when the expand/collapse icon was clicked repeatedly.
 - `F61804` - Fixed an issue where the selection was not clearing when a checkbox was selected and the row was expanded.
+- `#I637870` - White space when expand and collapse action issue has been fixed.
 
 ## 27.1.53 (2024-10-15)
 

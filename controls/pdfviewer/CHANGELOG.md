@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 27.1.57 (2024-10-29)
+
+### PDF Viewer
+
+#### Breaking Changes
+
+- The `getPageDetails` API has been renamed to `getPageInfo`. Additionally, the zoom factor parameter has been removed from the `getPageInfo` API, as the zoom factor can be accessed directly through the `zoomPercentage` API.
+
+| Existing API name| New API Name |
+|------|-------------|
+| `getPageDetails`| `getPageInfo`|
+
 ## 27.1.55 (2024-10-22)
 
 ### PDF Viewer
@@ -9,6 +21,9 @@
 #### Bug Fixes
 
 - `#I642195` - Now, the footer is visible in the organize dialog when the viewer size is small.
+- `#I634848` - Now, the signature dialog no longer overflows when the viewer size is small.
+
+## 27.1.55 (2024-10-22)
 
 ### PDF Viewer
 

@@ -12,6 +12,7 @@ import {
   dataSource,
   addVirtualData,
   dataSource1,
+  crData,
 } from "../base/datasource.spec";
 import { Edit } from "../../src/treegrid/actions/edit";
 import { Toolbar } from "../../src/treegrid/actions/toolbar";
@@ -3433,6 +3434,138 @@ describe("Virtual Scrolling with height", () => {
     expect(actionFailedFunction).toHaveBeenCalled();
   });
 
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+describe("Task disappear on collapse and expand action", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: crData.slice(0, 1),
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        childMapping: 'SubTasks',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Row',
+            newRowPosition: 'Child'
+        },
+        toolbar: ['Add', 'Edit', 'ExpandAll', 'CollapseAll', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+        height: 400,
+        columns: [
+            { field: 'TaskID', isPrimaryKey: true},
+            { field: 'TaskName', width: '230px' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+        ],
+      },
+      done
+    );
+  });
+  it('Checking for current view data', () => {
+    gridObj.collapseByKey(199);
+    gridObj.collapseByKey(14);
+    gridObj.collapseByKey(3);
+    gridObj.expandByKey(3);
+    gridObj.element.querySelector('.e-content').scrollTop = 200;
+    gridObj.collapseByKey(9);
+    gridObj.collapseByKey(4);
+    gridObj.collapseByKey(3);
+    gridObj.expandByKey(14);
+    expect(gridObj.getCurrentViewRecords().length > 7).toBe(true);
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+describe("Adding task at bottom coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: crData.slice(0, 1),
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        childMapping: 'SubTasks',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Row',
+            newRowPosition: 'Child'
+        },
+        toolbar: ['Add', 'Edit', 'ExpandAll', 'CollapseAll', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+        height: 400,
+        columns: [
+            { field: 'TaskID', isPrimaryKey: true},
+            { field: 'TaskName', width: '230px' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+        ],
+      },
+      done
+    );
+  });
+  beforeEach((done: Function) => {
+    setTimeout(done, 300);
+  });
+  it('Scrolling down', () => {
+    gridObj.element.querySelector('.e-content').scrollTop = 10000;
+  });
+  it('Checking flatdata after adding', () => {
+    gridObj.addRecord({
+      TaskID: 10,
+      TaskName: 'Identify Site location',
+      StartDate: new Date('04/02/2019'),
+      Duration: 3,
+      Progress: 50
+    }, 805, 'Bottom')
+    expect(gridObj.flatData.length > 805).toBe(true);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+describe("Freeze Row Coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: crData.slice(0, 1),
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        childMapping: 'SubTasks',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Row',
+            newRowPosition: 'Child'
+        },
+        toolbar: ['Add', 'Edit', 'ExpandAll', 'CollapseAll', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+        height: 400,
+        columns: [
+            { field: 'TaskID', isPrimaryKey: true},
+            { field: 'TaskName', width: '230px' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+        ],
+      },
+      done
+    );
+  });
+  it('Freeze row data index', () => {
+    let row = (gridObj.grid.contentModule as any).getFrozenRightVirtualRowByIndex(5);
+    expect(row.rowIndex === 5).toBe(true);
+  });
   afterAll(() => {
     destroy(gridObj);
   });

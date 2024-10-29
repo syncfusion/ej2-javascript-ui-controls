@@ -3056,7 +3056,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (eventArgs.cancel) {
                     this.removeIndex++;
                 } else {
-                    this.isRemoveSelection = true;
+                    this.isRemoveSelection = this.enableVirtualization ? true : this.isRemoveSelection;
                     this.currentRemoveValue = this.allowObjectBinding ? getValue(((this.fields.value) ?
                         this.fields.value : ''), value) : value;
                     this.virtualSelectAll = false;

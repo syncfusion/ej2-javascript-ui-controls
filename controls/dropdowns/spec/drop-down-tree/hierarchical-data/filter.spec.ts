@@ -1222,6 +1222,119 @@ describe('Hierarchial data filter testing', () => {
                 },350);
             },350);
         });
+        it('Filter with checkbox selection close and reopen the dropdown', (done) => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { loadOnDemand: true, autoCheck: true, expandOn:'Auto' },
+                showCheckBox: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'j';
+            filterObj.value = 'j';
+            let eventArgs: any = { value: 'j', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
+                let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+                let checkEle: Element = li[0];
+                let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                expect(checkEle.getAttribute('aria-checked')).toBe('true');
+                expect(ddtreeObj.value.length).toBe(2);
+                expect(ddtreeObj.value.indexOf('11') !== -1).toBe(true);
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(2);
+                filterEle.value = '';
+                filterObj.value = '';
+                eventArgs = { value: '', container: filterEle };
+                filterObj.input(eventArgs);
+                ddtreeObj.hidePopup(); 
+                setTimeout(function () {
+                    ddtreeObj.showPopup(); 
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(5);
+                    expect(ddtreeObj.value.length).toBe(5);
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(1);
+                    expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[0].parentElement.parentElement as HTMLElement).innerText).toBe("China");
+                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("China");
+                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('11') !== -1).toBe(true);
+                    done();
+                },350);
+            },350);
+        });
+        it('Filter with checkbox selection close and reopen again perform filter to check the checked items in the dropdown', (done) => { 
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { loadOnDemand: true, autoCheck: true, expandOn: 'Auto' },
+                showCheckBox: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'j';
+            filterObj.value = 'j';
+            let eventArgs: any = { value: 'j', container: filterEle };
+            filterObj.input(eventArgs);
+            
+            setTimeout(() => {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
+                let li: Element[] = ddtreeObj.treeObj.element.querySelectorAll('li');
+                let checkEle: Element = li[0];
+                let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                expect(checkEle.getAttribute('aria-checked')).toBe('true');
+                expect(ddtreeObj.value.length).toBe(2);
+                expect(ddtreeObj.value.indexOf('11') !== -1).toBe(true);
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(2);
+                filterEle.value = '';
+                filterObj.value = '';
+                eventArgs = { value: '', container: filterEle };
+                filterObj.input(eventArgs);
+                ddtreeObj.hidePopup();
+                ddtreeObj.showPopup();
+                setTimeout(() => {
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(5);
+                    expect(ddtreeObj.value.length).toBe(5);
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(1);
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[0].parentElement.parentElement.innerText).toBe("China");
+                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("China");
+                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('11') !== -1).toBe(true);
+                    filterEle.value = 'j';
+                    filterObj.value = 'j';
+                    eventArgs = { value: 'j', container: filterEle };
+                    filterObj.input(eventArgs);
+                    setTimeout(() => {
+                        expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
+                        expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(1);
+                        expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[0].parentElement.parentElement.innerText).toBe("Beijing");
+                        done();
+                    }, 350);
+        
+                }, 350);
+            }, 350);
+        });
     });
 });
 

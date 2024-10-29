@@ -2076,16 +2076,17 @@ private calculatePathBounds(data: string): Rect {
         let height: number = 0;
         let lineHeight: number = 0;
         for (let i: number = 0; i < lineWidget.children.length; i++) {
-            if (lineWidget.children[i] instanceof FieldElementBox ||
-                (lineWidget.children[i].width === 0 && lineWidget.children[i].height === 0)) {
+            let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
+            if (elementBox instanceof FieldElementBox ||
+                (elementBox.width === 0 && elementBox.height === 0)) {
                 continue;
             }
-            if (lineWidget.children[i] instanceof ShapeElementBox) {
+            if (elementBox instanceof ShapeElementBox || (elementBox instanceof ImageElementBox && elementBox.textWrappingStyle !== 'Inline')) {
                 continue;
             } else {
-                if (height < lineWidget.children[i].height + lineWidget.children[i].margin.top) {
-                    height = lineWidget.children[i].margin.top + lineWidget.children[i].height;
-                    lineHeight = (lineWidget.children[i] instanceof ImageElementBox) ? 0.9 : lineWidget.children[i].height / 20;
+                if (height < elementBox.height + elementBox.margin.top) {
+                    height = elementBox.margin.top + elementBox.height;
+                    lineHeight = (elementBox instanceof ImageElementBox) ? 0.9 : elementBox.height / 20;
                 }
             }
         }
@@ -2224,7 +2225,7 @@ private calculatePathBounds(data: string): Rect {
         let fontSize: number = 11;
         bold = isBidi ? (format.boldBidi ? 'bold' : '') : (format.bold ? 'bold' : '');
         italic = isBidi ? (format.italicBidi ? 'italic' : '') : (format.italic ? 'italic' : '');
-        fontSize = format.fontSize === 0 ? 0.5 : format.fontSize / (format.baselineAlignment === 'Normal' ? 1 : 1.5);
+        fontSize = format.fontSize === 0 ? 0.5 : (isBidi ? format.fontSizeBidi : format.fontSize) / (format.baselineAlignment === 'Normal' ? 1 : 1.5);
         fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
         let renderFontFamily: string = this.documentHelper.textHelper.getFontNameToRender(elementBox.scriptType, format);
         this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + renderFontFamily + '"';
@@ -2324,7 +2325,7 @@ private calculatePathBounds(data: string): Rect {
             left -= elementBox.width;
         }
         if (this.documentHelper.owner.isSpellCheck) {
-            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox)))) {
+            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
                 elementBox.canTrigger = true;
                 this.leftPosition = this.pageLeft;
                 this.topPosition = this.pageTop;
@@ -2477,6 +2478,13 @@ private calculatePathBounds(data: string): Rect {
             let markindex: number = elementBox.line.getOffset(elementBox, 0);
             let spaceValue: number = 1;
             if (splittedText.length > 1) {
+                for (let i: number = 0; i < elementBox.line.children.length; i++)
+                {
+                    if(elementBox.line.children[i] instanceof FieldElementBox)
+                    {
+                        markindex --;
+                    }
+                }
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
                     let retrievedText: string = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);

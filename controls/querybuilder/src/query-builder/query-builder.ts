@@ -906,7 +906,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (target.tagName === 'SPAN') {
             target = target.parentElement;
         }
-        if (target.className.indexOf('e-collapse-rule') > -1) {
+        if (typeof target.className === 'string' && target.className.indexOf('e-collapse-rule') > -1) {
             const animation: Animation = new Animation({ duration: 1000, delay: 0 });
             if (this.element.querySelectorAll('.e-summary-content').length < 1) {
                 this.renderSummary();
@@ -920,7 +920,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             summaryElem.style.display = 'block';
             txtareaElem.style.height = txtareaElem.scrollHeight + 'px';
         }
-        if (target.tagName === 'BUTTON' && target.className.indexOf('e-qb-toggle') < 0) {
+        if (target.tagName === 'BUTTON' && typeof target.className === 'string' && target.className.indexOf('e-qb-toggle') < 0) {
             const animation: Animation = new Animation({ duration: 1000, delay: 0 });
             switch (true) {
             case target.className.indexOf('e-removerule') > -1:
@@ -967,7 +967,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 break;
             }
         } else if ((target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) ||
-        target.className.indexOf('e-qb-toggle') > -1) {
+            (typeof target.className === 'string' && target.className.indexOf('e-qb-toggle') > -1)) {
             const element: Element = closest(target, '.e-group-container');
             if (!this.headerTemplate) {
                 const forIdValue: string = target.getAttribute('for');

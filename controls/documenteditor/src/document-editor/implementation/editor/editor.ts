@@ -2440,6 +2440,9 @@ export class Editor {
         if (!isNullOrUndefined(sFormat.italicBidi) && format.italicBidi !== sFormat.italicBidi) {
             insertFormat.italicBidi = sFormat.italicBidi;
         }
+        if (sFormat.fontSizeBidi > 0 && format.fontSizeBidi !== sFormat.fontSizeBidi) {
+            insertFormat.fontSizeBidi = sFormat.fontSizeBidi;
+        }
         return insertFormat;
     }
     private getResultContentControlText(element: ContentControl): string {
@@ -7349,6 +7352,9 @@ export class Editor {
         if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
             if (this.editorHistory.currentBaseHistoryInfo) {
                 if (this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
+                    if (this.editorHistory.currentBaseHistoryInfo.endRevisionLogicalIndex) {
+                        this.editorHistory.currentBaseHistoryInfo.endRevisionLogicalIndex = undefined;
+                    }
                     let start: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(this.editorHistory.currentBaseHistoryInfo.insertPosition);
                     let end: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(this.editorHistory.currentBaseHistoryInfo.endPosition);
                     if (!this.isRemoteAction) {
@@ -12454,6 +12460,9 @@ export class Editor {
             format.fontFamilyBidi = value as string;
         } else if (property === 'fontSize') {
             format.fontSize = value as number;
+            if (this.isRTLFormat(format)) {
+                format.fontSizeBidi = value as number;
+            }
         } else if (property === 'highlightColor') {
             format.highlightColor = value as HighlightColor;
         } else if (property === 'baselineAlignment') {
@@ -15150,7 +15159,11 @@ export class Editor {
             let prevParagraph: ParagraphWidget = (previousBlock instanceof ParagraphWidget) ? previousBlock : undefined;
             let nextWidget: BlockWidget = paragraph.nextRenderedWidget as BlockWidget;
             if (editAction < 4) {
-
+                let skipParaMarkdeletion: boolean = false;
+                const isLast = (paragraph == this.getLastParaForBodywidgetCollection(paragraph));
+                if (isLast && paragraph === start.paragraph && !paragraph.isInsideTable && !isNullOrUndefined(paragraph.containerWidget) && isNullOrUndefined(paragraph.containerWidget.containerWidget) && this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'Delete' && this.editorHistory.currentBaseHistoryInfo.action !== 'Enter') {
+                    skipParaMarkdeletion = true;
+                }
                 //Checks whether this is last paragraph of owner text body and previousBlock is not paragraph.
                 if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC') {
                     let removedNodeLength: number = -1;
@@ -15197,8 +15210,11 @@ export class Editor {
                     this.removeRevisionForBlock(paragraph, undefined, false, true);
                     // Added the condition to skip to add entair paragraph (with para mark) into history if the current widget has the last widget. 
                     const isLastChild = (paragraph == this.getLastParaForBodywidgetCollection(paragraph));
+                    if (!isNullOrUndefined(newParagraph) || !isLastChild) {
+                        skipParaMarkdeletion = false;
+                    }
                     let isRemoved: boolean = false;
-                    if (this.owner.enableTrackChanges && (isLastChild || isRemoveInline)) {
+                    if ((this.owner.enableTrackChanges || skipParaMarkdeletion) && (isLastChild || isRemoveInline)) {
                         for (let i: number = paragraph.childWidgets.length - 1; i > -1; i--) {
                             let line: LineWidget = (paragraph.childWidgets[i]) as LineWidget;
                             this.removeContent(line, 0, this.documentHelper.selection.getLineLength(line), undefined, false);
@@ -15246,9 +15262,15 @@ export class Editor {
                         this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(newParagraph, offset.toString());
                     }
                 } else if (paragraph === start.paragraph && (isNullOrUndefined(nextWidget) || (!isNullOrUndefined(nextWidget) && !isNullOrUndefined(nextWidget.bodyWidget) && !isNullOrUndefined(section) && section.index !== nextWidget.bodyWidget.index)) && !isNullOrUndefined(prevParagraph)) {
-                    let offset: number = this.selection.getParagraphLength(prevParagraph);
+                    let offset: number;
                     // if (isNullOrUndefined(block)) {
-                    selection.editPosition = this.selection.getHierarchicalIndex(prevParagraph, offset.toString());
+                    if (skipParaMarkdeletion) {
+                        offset = this.selection.getStartOffset(paragraph);
+                        selection.editPosition = this.selection.getHierarchicalIndex(paragraph, offset.toString());
+                    } else {
+                        offset = this.selection.getParagraphLength(prevParagraph);
+                        selection.editPosition = this.selection.getHierarchicalIndex(prevParagraph, offset.toString());
+                    }
                     if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                         this.updateHistoryPosition(selection.editPosition, true);
                         this.editorHistory.currentBaseHistoryInfo.endPosition = selection.editPosition;
@@ -19242,8 +19264,6 @@ export class Editor {
                     if (index !== -1 && revision.author !== this.owner.currentUser && revision.range.length > 0) {
                         let range: Object[] = revision.range;
                         let startOff: number = range[0] instanceof WCharacterFormat || range[0] instanceof WRowFormat ? 0 : (range[0] as ElementBox).line.getOffset(range[0] as ElementBox, 0);
-                        let lastEle: any = range[range.length - 1] instanceof WCharacterFormat ? range[range.length - 2] : range[range.length - 1];
-                        let endOff: number = lastEle.line.getOffset(lastEle, lastEle.length);
                         let isRevisionInserted: boolean = false;
                         let matchedRevisions: Revision[];
                         if ((indexInInline === 0 && endOffset >= this.selection.getLineLength(elementBox.line)) || (indexInInline + 1 === endOffset && elementBox instanceof TextElementBox && elementBox.length === 1)) {
@@ -22606,7 +22626,7 @@ export class Editor {
         let widget: IWidget = tocDomBody.childWidgets[0];
         while (widget !== undefined) {
 
-            if (widget instanceof ParagraphWidget && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
+            if (widget instanceof ParagraphWidget && !(isNavigationPane && widget.isInsideTable) && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
                 const bookmarkName: string = this.insertTocBookmark(widget);
                 if (!isNullOrUndefined(bookmarkName)) {
                     this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat, isNavigationPane);

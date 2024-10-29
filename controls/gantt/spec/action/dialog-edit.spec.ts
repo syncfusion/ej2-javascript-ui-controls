@@ -3,7 +3,7 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs, UndoRedo  } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource} from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -12885,6 +12885,104 @@ describe('Add Dialog ', () => {
     });
     it('dialog edit with additional params', () => {
         ganttObj.openAddDialog();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Automation break date change', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: breakIssue,
+            height: '450px',
+            allowSelection: true,
+            highlightWeekends: true,
+            allowUnscheduledTasks: true,
+            enableContextMenu: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+                allowNextRowEdit: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomToFit', 'Indent', 'Outdent'],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                resourceInfo: 'resources',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate',
+                notes: 'info',
+                indicators: 'Indicators'
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'ID', textAlign: 'Left' },
+                { field: 'TaskName', headerText: 'Name' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Predecessor', headerText: 'Dependency' },
+                { field: 'Progress', headerText: 'Progress' },
+                { field: 'BaselineStartDate', headerText: 'Baseline Start Date' },
+                { field: 'BaselineEndDate', headerText: 'Baseline End Date' },
+                { field: 'resources', headerText: 'Resources' },
+                { field: 'info', headerText: 'Notes' },
+                { field: 'amount', headerText: 'Amount' }
+            ],
+            renderBaseline: true,
+            labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            splitterSettings: {
+                position: "53%"
+            },
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('07/06/2019'),
+            resourceNameMapping: 'resourceName',
+            resourceIDMapping: 'resourceId',
+            resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer' },
+                { resourceId: 2, resourceName: 'Rose Fuller' },
+                { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                { resourceId: 4, resourceName: 'Fuller King' },
+                { resourceId: 5, resourceName: 'Davolio Fuller' },
+                { resourceId: 6, resourceName: 'Van Jack' },
+                { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                { resourceId: 8, resourceName: 'Jack Davolio' },
+                { resourceId: 9, resourceName: 'Tamer Vinet' },
+                { resourceId: 10, resourceName: 'Vinet Fuller' },
+                { resourceId: 11, resourceName: 'Bergs Anton' },
+                { resourceId: 12, resourceName: 'Construction Supervisor' }
+            ]
+        }, done);
+    });
+    beforeEach(function (done) {
+        setTimeout(done, 100);
+    });
+    it('Validate duration', () => {
+        ganttObj.openEditDialog(1);
+        let durationField: any = document.querySelector('#' + ganttObj.element.id + 'StartDate') as HTMLInputElement;
+        if (durationField) {
+            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            textObj.value = null;
+            textObj.dataBind();
+            let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button')[0] as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.flatData[0].ganttProperties.startDate.getDay()).toBe(2);
+        }
     });
     afterAll(() => {
         if (ganttObj) {

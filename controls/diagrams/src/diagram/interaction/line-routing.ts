@@ -275,17 +275,22 @@ export class LineRouting {
                 if (startGridNode) {
                     for (let i: number = 0; i < this.targetGridCollection.length; i++) {
                         const target: VirtualBoundaries = this.targetGridCollection[parseInt(i.toString(), 10)];
-                        if (startGridNode.gridX === target.gridX && startGridNode.gridY === target.gridY) {
-                            this.getIntermediatePoints(startGridNode);
-                            isBreak = this.updateConnectorSegments(diagram, this.intermediatePoints,
-                                                                   this.gridCollection, connector, isUpdate);
-                            if (!isBreak) {
-                                this.targetGridCollection.splice(this.targetGridCollection.indexOf(target), 1);
-                                startGridNode = this.startArray.pop();
-                            } else {
-                                this.considerWalkable = [];
-                                // eslint-disable-next-line no-labels
-                                break renderPathElement;
+                        if (startGridNode) {
+                            if (startGridNode.gridX === target.gridX && startGridNode.gridY === target.gridY) {
+                                this.getIntermediatePoints(startGridNode);
+                                if (startGridNode.nodeId && startGridNode.nodeId.length > 1) {
+                                    connector.segments = [];
+                                }
+                                isBreak = this.updateConnectorSegments(diagram, this.intermediatePoints,
+                                                                       this.gridCollection, connector, isUpdate);
+                                if (!isBreak) {
+                                    this.targetGridCollection.splice(this.targetGridCollection.indexOf(target), 1);
+                                    startGridNode = this.startArray.pop();
+                                } else {
+                                    this.considerWalkable = [];
+                                    // eslint-disable-next-line no-labels
+                                    break renderPathElement;
+                                }
                             }
                         }
                     }
@@ -394,7 +399,7 @@ export class LineRouting {
                 this.resetGridColl(this.targetGrid, 'left', false);
             }
         }
-        if (this.targetGridCollection.length > 0 && this.targetGridCollection[0].nodeId.length > 1) {
+        if (this.targetGridCollection.length > 1 && this.targetGridCollection[0].nodeId.length > 1) {
             for (let i: number = 0; i <= 1; i++) {
                 const gridX: number = this.targetGridCollection[parseInt(i.toString(), 10)].gridX;
                 const gridY: number = this.targetGridCollection[parseInt(i.toString(), 10)].gridY;
@@ -538,105 +543,133 @@ export class LineRouting {
         if (connector.targetPortID !== '' || !connector.targetWrapper) {
             targetPoint = this.findEndPoint(connector, false, true);
         }
+
         for (let i: number = 0; i < intermediatePoints.length; i++) {
             node = gridCollection[intermediatePoints[parseInt(i.toString(), 10)].x][intermediatePoints[parseInt(i.toString(), 10)].y];
-            pointX = node.x + node.width / 2; pointY = node.y + node.height / 2;
-            points.push({ x: pointX, y: pointY });
-            if (i >= 1) {
-                if (points[points.length - 2].x !== points[points.length - 1].x) {
-                    currentdirection = (points[points.length - 2].x > points[points.length - 1].x) ? 'Left' : 'Right';
+            if (node) {
+                pointX = node.x + node.width / 2; pointY = node.y + node.height / 2;
+                points.push({ x: pointX, y: pointY });
+                if (i >= 1 && points.length > 1) {
+                    if (points[points.length - 2].x !== points[points.length - 1].x) {
+                        currentdirection = (points[points.length - 2].x > points[points.length - 1].x) ? 'Left' : 'Right';
+                    } else {
+                        currentdirection = (points[points.length - 2].y > points[points.length - 1].y) ? 'Top' : 'Bottom';
+                    }
+                }
+                if (i >= 2 && prevDirection === currentdirection && points.length > 1) {
+                    points.splice(points.length - 2, 1);
+                }
+                prevDirection = currentdirection;
+            }
+        }
+
+        if (points && points.length > 1) {
+            for (let j: number = 0; j < points.length - 1; j++) {
+                const currentPoint: PointModel = points[parseInt(j.toString(), 10)];
+                const nextPoint: PointModel = points[j + 1];
+
+                if (currentPoint.x !== nextPoint.x) {
+                    if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
+                        sourcePoint = (currentPoint.x > nextPoint.x)
+                            ? sourceWrapper.bounds.middleLeft : sourceWrapper.bounds.middleRight;
+                    }
+                    if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {
+                        targetPoint = (currentPoint.x > nextPoint.x)
+                            ? targetWrapper.bounds.middleRight : targetWrapper.bounds.middleLeft;
+                    }
+                    if (j === 0 && sourcePoint) {
+                        currentPoint.x = sourcePoint.x;
+                        currentPoint.y = nextPoint.y = sourcePoint.y;
+                    }
+                    if (j === points.length - 2 && targetPoint) {
+                        if (j > 0 && connector.targetDecorator &&
+                            ((targetPoint.x - nextPoint.x) < 0) &&
+                            (Math.abs(targetPoint.x - currentPoint.x) < connector.targetDecorator.width + 1)) {
+                            currentPoint.x = points[j - 1].x -= this.size / 2;
+                        }
+                        if (j > 0 && connector.targetDecorator &&
+                            ((targetPoint.x - nextPoint.x) > 0) &&
+                            (Math.abs(targetPoint.x - currentPoint.x) < connector.targetDecorator.width + 1)) {
+                            currentPoint.x = points[j - 1].x += this.size / 2;
+                        }
+                        nextPoint.x = targetPoint.x;
+                        currentPoint.y = nextPoint.y = targetPoint.y;
+                    }
                 } else {
-                    currentdirection = (points[points.length - 2].y > points[points.length - 1].y) ? 'Top' : 'Bottom';
+                    //EJ2-855805 - Connector target decorator is not proper in complexhierarchical layout when we call doLayout with line-routing
+                    if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
+                        sourcePoint = (currentPoint.y > nextPoint.y)
+                            ? sourceWrapper.bounds.topCenter : sourceWrapper.bounds.bottomCenter;
+                    }
+                    if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {
+                        targetPoint = (currentPoint.y > nextPoint.y)
+                            ? targetWrapper.bounds.bottomCenter : targetWrapper.bounds.topCenter;
+                    }
+                    if (j === 0 && sourcePoint) {
+                        currentPoint.y = sourcePoint.y;
+                        currentPoint.x = nextPoint.x = sourcePoint.x;
+                    }
+                    if (j === points.length - 2 && targetPoint) {
+                        if (j > 0 && connector.targetDecorator &&
+                            ((targetPoint.y - nextPoint.y) < 0) &&
+                            (Math.abs(targetPoint.y - currentPoint.y) < connector.targetDecorator.height + 1)) {
+                            currentPoint.y = points[j - 1].y -= this.size / 2;
+                        }
+                        if (j > 0 && connector.targetDecorator &&
+                            ((targetPoint.y - nextPoint.y) > 0) &&
+                            (Math.abs(targetPoint.y - currentPoint.y) < connector.targetDecorator.height + 1)) {
+                            currentPoint.y = points[j - 1].y += this.size / 2;
+                        }
+                        nextPoint.y = targetPoint.y;
+                        currentPoint.x = nextPoint.x = targetPoint.x;
+                    }
                 }
             }
-            if (i >= 2 && prevDirection === currentdirection) { points.splice(points.length - 2, 1); }
-            prevDirection = currentdirection;
-        }
-        for (let j: number = 0; j < points.length - 1; j++) {
-            if (points[parseInt(j.toString(), 10)].x !== points[j + 1].x) {
-                if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
-                    sourcePoint = (points[parseInt(j.toString(), 10)].x > points[j + 1].x)
-                        ? sourceWrapper.bounds.middleLeft : sourceWrapper.bounds.middleRight;
-                }
-                if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {
-                    targetPoint = (points[parseInt(j.toString(), 10)].x > points[j + 1].x)
-                        ? targetWrapper.bounds.middleRight : targetWrapper.bounds.middleLeft;
-                }
-                if (j === 0 && sourcePoint) {
-                    points[parseInt(j.toString(), 10)].x = sourcePoint.x;
-                    points[parseInt(j.toString(), 10)].y = points[j + 1].y = sourcePoint.y;
-                }
-                if (j === points.length - 2 && targetPoint) {
-                    if (((targetPoint.x - points[j + 1].x) < 0) &&
-                        (Math.abs(targetPoint.x - points[parseInt(j.toString(), 10)].x) < connector.targetDecorator.width + 1)) {
-                        points[parseInt(j.toString(), 10)].x = points[j - 1].x -= this.size / 2;
+
+            for (let j: number = 0; j < points.length - 1; j++) {
+                const currentPoint: PointModel = points[parseInt(j.toString(), 10)];
+                const nextPoint: PointModel = points[j + 1];
+
+                if (currentPoint.x !== nextPoint.x) {
+                    if (currentPoint.x > nextPoint.x) {
+                        direction = 'Left'; length = currentPoint.x - nextPoint.x;
+                    } else {
+                        direction = 'Right'; length = nextPoint.x - currentPoint.x;
                     }
-                    if (((targetPoint.x - points[j + 1].x) > 0) &&
-                        (Math.abs(targetPoint.x - points[parseInt(j.toString(), 10)].x) < connector.targetDecorator.width + 1)) {
-                        points[parseInt(j.toString(), 10)].x = points[j - 1].x += this.size / 2;
-                    }
-                    points[j + 1].x = targetPoint.x;
-                    points[parseInt(j.toString(), 10)].y = points[j + 1].y = targetPoint.y;
-                }
-            } else {
-                //EJ2-855805 - Connector target decorator is not proper in complexhierarchical layout when we call doLayout with line-routing
-                if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
-                    sourcePoint = (points[parseInt(j.toString(), 10)].y > points[j + 1].y)
-                        ? sourceWrapper.bounds.topCenter : sourceWrapper.bounds.bottomCenter;
-                }
-                if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {
-                    targetPoint = (points[parseInt(j.toString(), 10)].y > points[j + 1].y)
-                        ? targetWrapper.bounds.bottomCenter : targetWrapper.bounds.topCenter;
-                }
-                if (j === 0 && sourcePoint) {
-                    points[parseInt(j.toString(), 10)].y = sourcePoint.y;
-                    points[parseInt(j.toString(), 10)].x = points[j + 1].x = sourcePoint.x;
-                }
-                if (j === points.length - 2 && targetPoint) {
-                    if (((targetPoint.y - points[j + 1].y) < 0) &&
-                        (Math.abs(targetPoint.y - points[parseInt(j.toString(), 10)].y) < connector.targetDecorator.height + 1)) {
-                        points[parseInt(j.toString(), 10)].y = points[j - 1].y -= this.size / 2;
-                    }
-                    if (((targetPoint.y - points[j + 1].y) > 0) &&
-                        (Math.abs(targetPoint.y - points[parseInt(j.toString(), 10)].y) < connector.targetDecorator.width + 1)) {
-                        points[parseInt(j.toString(), 10)].y = points[j - 1].y += this.size / 2;
-                    }
-                    points[j + 1].y = targetPoint.y;
-                    points[parseInt(j.toString(), 10)].x = points[j + 1].x = targetPoint.x;
-                }
-            }
-        }
-        for (let j: number = 0; j < points.length - 1; j++) {
-            if (points[parseInt(j.toString(), 10)].x !== points[j + 1].x) {
-                if (points[parseInt(j.toString(), 10)].x > points[j + 1].x) {
-                    direction = 'Left'; length = points[parseInt(j.toString(), 10)].x - points[j + 1].x;
                 } else {
-                    direction = 'Right'; length = points[j + 1].x - points[parseInt(j.toString(), 10)].x;
+                    if (currentPoint.y > nextPoint.y) {
+                        direction = 'Top'; length = currentPoint.y - nextPoint.y;
+                    } else {
+                        direction = 'Bottom'; length = nextPoint.y - currentPoint.y;
+                    }
                 }
-            } else {
-                if (points[parseInt(j.toString(), 10)].y > points[j + 1].y) {
-                    direction = 'Top'; length = points[parseInt(j.toString(), 10)].y - points[j + 1].y;
-                } else {
-                    direction = 'Bottom'; length = points[j + 1].y - points[parseInt(j.toString(), 10)].y;
+                seg = { type: 'Orthogonal', length: length, direction: direction };
+                segments.push(seg);
+            }
+        }
+
+        if (segments && segments.length > 0) {
+            let lastSeg: OrthogonalSegmentModel = segments[segments.length - 1];
+            if (segments.length === 1) { lastSeg.length -= 20; }
+            if (lastSeg.length < 10 && segments.length === 2) {
+                segments.pop();
+                if (segments.length > 0) {
+                    segments[0].length -= 20;
+                    lastSeg = segments[0];
                 }
             }
-            seg = { type: 'Orthogonal', length: length, direction: direction };
-            segments.push(seg);
-        }
-        let lastSeg: OrthogonalSegmentModel = segments[segments.length - 1];
-        if (segments.length === 1) { lastSeg.length -= 20; }
-        if (lastSeg.length < 10 && segments.length === 2) {
-            segments.pop(); segments[0].length -= 20; lastSeg = segments[0];
-        }
-        if (((lastSeg.direction === 'Top' || lastSeg.direction === 'Bottom') && lastSeg.length > connector.targetDecorator.height + 1) ||
-            ((lastSeg.direction === 'Right' || lastSeg.direction === 'Left') && lastSeg.length > connector.targetDecorator.width + 1)) {
-            connector.segments = segments;
-            if (isUpdate) {
-                diagram.connectorPropertyChange(
-                    connector as Connector, {} as Connector, { type: 'Orthogonal', segments: segments } as Connector);
+            if (connector.targetDecorator &&
+                ((lastSeg.direction === 'Top' || lastSeg.direction === 'Bottom') && lastSeg.length > connector.targetDecorator.height + 1) ||
+                ((lastSeg.direction === 'Right' || lastSeg.direction === 'Left') && lastSeg.length > connector.targetDecorator.width + 1)) {
+                connector.segments = segments;
+                if (isUpdate) {
+                    diagram.connectorPropertyChange(
+                        connector as Connector, {} as Connector, { type: 'Orthogonal', segments: segments } as Connector);
+                }
+                return true;
             }
-            return true;
         }
+
         return false;
     }
     /* tslint:enable */

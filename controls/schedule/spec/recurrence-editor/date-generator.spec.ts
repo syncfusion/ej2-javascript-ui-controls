@@ -410,6 +410,118 @@ describe('Recurrence Date Generator Specs', () => {
                     new Date('Mon Feb 16 2026').getTime(), new Date('Mon Mar 02 2026').getTime()
                 ]));
         });
+        it('915095 - Weekly recurrence testing with repeat interval of 2 and firstDayOfWeek of 1', () => {
+            //FREQ=WEEKLY;INTERVAL=2;BYDAY=MO
+            expect(JSON.stringify(generate(new Date('Sat Jul 13 2024'), 'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO', null, 1)))
+                .toBe(JSON.stringify([
+                    new Date('Mon Jul 22 2024').getTime(), new Date('Mon Aug 05 2024').getTime(),
+                    new Date('Mon Aug 19 2024').getTime(), new Date('Mon Sep 02 2024').getTime(),
+                    new Date('Mon Sep 16 2024').getTime(),
+                    new Date('Mon Sep 30 2024').getTime(), new Date('Mon Oct 14 2024').getTime(),
+                    new Date('Mon Oct 28 2024').getTime(), new Date('Mon Nov 11 2024').getTime(),
+                    new Date('Mon Nov 25 2024').getTime(), new Date('Mon Dec 09 2024').getTime(),
+                    new Date('Mon Dec 23 2024').getTime(), new Date('Mon Jan 06 2025').getTime(),
+                    new Date('Mon Jan 20 2025').getTime(), new Date('Mon Feb 03 2025').getTime(),
+                    new Date('Mon Feb 17 2025').getTime(), new Date('Mon Mar 03 2025').getTime(),
+                    new Date('Mon Mar 17 2025').getTime(), new Date('Mon Mar 31 2025').getTime(),
+                    new Date('Mon Apr 14 2025').getTime(), new Date('Mon Apr 28 2025').getTime(),
+                    new Date('Mon May 12 2025').getTime(), new Date('Mon May 26 2025').getTime(),
+                    new Date('Mon Jun 09 2025').getTime(), new Date('Mon Jun 23 2025').getTime(),
+                    new Date('Mon Jul 07 2025').getTime(), new Date('Mon Jul 21 2025').getTime(),
+                    new Date('Mon Aug 04 2025').getTime(), new Date('Mon Aug 18 2025').getTime(),
+                    new Date('Mon Sep 01 2025').getTime(), new Date('Mon Sep 15 2025').getTime(),
+                    new Date('Mon Sep 29 2025').getTime(), new Date('Mon Oct 13 2025').getTime(),
+                    new Date('Mon Oct 27 2025').getTime(), new Date('Mon Nov 10 2025').getTime(),
+                    new Date('Mon Nov 24 2025').getTime(), new Date('Mon Dec 08 2025').getTime(),
+                    new Date('Mon Dec 22 2025').getTime(), new Date('Mon Jan 05 2026').getTime(),
+                    new Date('Mon Jan 19 2026').getTime(), new Date('Mon Feb 02 2026').getTime(),
+                    new Date('Mon Feb 16 2026').getTime(), new Date('Mon Mar 02 2026').getTime()
+                ]));
+        });
+        it('915095 - Weekly recurrence testing with repeat interval of 2 with rule has same day as start date', () => {
+            //FREQ=WEEKLY;INTERVAL=2;BYDAY=MO
+            expect(JSON.stringify(generate(new Date('Sat Jul 13 2024'), 'FREQ=WEEKLY;INTERVAL=2;BYDAY=SA', null, 0)))
+                .toBe(JSON.stringify([
+                    new Date('Sat Jul 13 2024').getTime(), new Date('Sat Jul 27 2024').getTime(),
+                    new Date('Sat Aug 10 2024').getTime(), new Date('Sat Aug 24 2024').getTime(),
+                    new Date('Sat Sep 07 2024').getTime(), new Date('Sat Sep 21 2024').getTime(),
+                    new Date('Sat Oct 05 2024').getTime(), new Date('Sat Oct 19 2024').getTime(),
+                    new Date('Sat Nov 02 2024').getTime(), new Date('Sat Nov 16 2024').getTime(),
+                    new Date('Sat Nov 30 2024').getTime(), new Date('Sat Dec 14 2024').getTime(),
+                    new Date('Sat Dec 28 2024').getTime(), new Date('Sat Jan 11 2025').getTime(),
+                    new Date('Sat Jan 25 2025').getTime(), new Date('Sat Feb 08 2025').getTime(),
+                    new Date('Sat Feb 22 2025').getTime(), new Date('Sat Mar 08 2025').getTime(),
+                    new Date('Sat Mar 22 2025').getTime(), new Date('Sat Apr 05 2025').getTime(),
+                    new Date('Sat Apr 19 2025').getTime(), new Date('Sat May 03 2025').getTime(),
+                    new Date('Sat May 17 2025').getTime(), new Date('Sat May 31 2025').getTime(),
+                    new Date('Sat Jun 14 2025').getTime(), new Date('Sat Jun 28 2025').getTime(),
+                    new Date('Sat Jul 12 2025').getTime(), new Date('Sat Jul 26 2025').getTime(),
+                    new Date('Sat Aug 09 2025').getTime(), new Date('Sat Aug 23 2025').getTime(),
+                    new Date('Sat Sep 06 2025').getTime(), new Date('Sat Sep 20 2025').getTime(),
+                    new Date('Sat Oct 04 2025').getTime(), new Date('Sat Oct 18 2025').getTime(),
+                    new Date('Sat Nov 01 2025').getTime(), new Date('Sat Nov 15 2025').getTime(),
+                    new Date('Sat Nov 29 2025').getTime(), new Date('Sat Dec 13 2025').getTime(),
+                    new Date('Sat Dec 27 2025').getTime(), new Date('Sat Jan 10 2026').getTime(),
+                    new Date('Sat Jan 24 2026').getTime(), new Date('Sat Feb 07 2026').getTime(),
+                    new Date('Sat Feb 21 2026').getTime()
+                ]));
+        });
+        it('915095 - Weekly recurrence testing with repeat interval of 2 with rule has same day as start date with firstDayOfWeek as 1', () => {
+            //FREQ=WEEKLY;INTERVAL=2;BYDAY=MO
+            expect(JSON.stringify(generate(new Date('Sat Jul 13 2024'), 'FREQ=WEEKLY;INTERVAL=2;BYDAY=SA', null, 1)))
+                .toBe(JSON.stringify([
+                    new Date('Sat Jul 13 2024').getTime(), new Date('Sat Jul 27 2024').getTime(),
+                    new Date('Sat Aug 10 2024').getTime(), new Date('Sat Aug 24 2024').getTime(),
+                    new Date('Sat Sep 07 2024').getTime(), new Date('Sat Sep 21 2024').getTime(),
+                    new Date('Sat Oct 05 2024').getTime(), new Date('Sat Oct 19 2024').getTime(),
+                    new Date('Sat Nov 02 2024').getTime(), new Date('Sat Nov 16 2024').getTime(),
+                    new Date('Sat Nov 30 2024').getTime(), new Date('Sat Dec 14 2024').getTime(),
+                    new Date('Sat Dec 28 2024').getTime(), new Date('Sat Jan 11 2025').getTime(),
+                    new Date('Sat Jan 25 2025').getTime(), new Date('Sat Feb 08 2025').getTime(),
+                    new Date('Sat Feb 22 2025').getTime(), new Date('Sat Mar 08 2025').getTime(),
+                    new Date('Sat Mar 22 2025').getTime(), new Date('Sat Apr 05 2025').getTime(),
+                    new Date('Sat Apr 19 2025').getTime(), new Date('Sat May 03 2025').getTime(),
+                    new Date('Sat May 17 2025').getTime(), new Date('Sat May 31 2025').getTime(),
+                    new Date('Sat Jun 14 2025').getTime(), new Date('Sat Jun 28 2025').getTime(),
+                    new Date('Sat Jul 12 2025').getTime(), new Date('Sat Jul 26 2025').getTime(),
+                    new Date('Sat Aug 09 2025').getTime(), new Date('Sat Aug 23 2025').getTime(),
+                    new Date('Sat Sep 06 2025').getTime(), new Date('Sat Sep 20 2025').getTime(),
+                    new Date('Sat Oct 04 2025').getTime(), new Date('Sat Oct 18 2025').getTime(),
+                    new Date('Sat Nov 01 2025').getTime(), new Date('Sat Nov 15 2025').getTime(),
+                    new Date('Sat Nov 29 2025').getTime(), new Date('Sat Dec 13 2025').getTime(),
+                    new Date('Sat Dec 27 2025').getTime(), new Date('Sat Jan 10 2026').getTime(),
+                    new Date('Sat Jan 24 2026').getTime(), new Date('Sat Feb 07 2026').getTime(),
+                    new Date('Sat Feb 21 2026').getTime()
+                ]));
+        });
+        it('915095 - Weekly recurrence testing with repeat interval of 2 with rule has same day and previous day as start date', () => {
+            //FREQ=WEEKLY;INTERVAL=2;BYDAY=MO
+            expect(JSON.stringify(generate(new Date('Sat Jul 13 2024'), 'FREQ=WEEKLY;INTERVAL=2;BYDAY=FR,SA', null, 1)))
+                .toBe(JSON.stringify([
+                    new Date('Sat Jul 13 2024').getTime(), new Date('Fri Jul 26 2024').getTime(),
+                    new Date('Sat Jul 27 2024').getTime(), new Date('Fri Aug 09 2024').getTime(),
+                    new Date('Sat Aug 10 2024').getTime(), new Date('Fri Aug 23 2024').getTime(),
+                    new Date('Sat Aug 24 2024').getTime(), new Date('Fri Sep 06 2024').getTime(),
+                    new Date('Sat Sep 07 2024').getTime(), new Date('Fri Sep 20 2024').getTime(),
+                    new Date('Sat Sep 21 2024').getTime(), new Date('Fri Oct 04 2024').getTime(),
+                    new Date('Sat Oct 05 2024').getTime(), new Date('Fri Oct 18 2024').getTime(),
+                    new Date('Sat Oct 19 2024').getTime(), new Date('Fri Nov 01 2024').getTime(),
+                    new Date('Sat Nov 02 2024').getTime(), new Date('Fri Nov 15 2024').getTime(),
+                    new Date('Sat Nov 16 2024').getTime(), new Date('Fri Nov 29 2024').getTime(),
+                    new Date('Sat Nov 30 2024').getTime(), new Date('Fri Dec 13 2024').getTime(),
+                    new Date('Sat Dec 14 2024').getTime(), new Date('Fri Dec 27 2024').getTime(),
+                    new Date('Sat Dec 28 2024').getTime(), new Date('Fri Jan 10 2025').getTime(),
+                    new Date('Sat Jan 11 2025').getTime(), new Date('Fri Jan 24 2025').getTime(),
+                    new Date('Sat Jan 25 2025').getTime(), new Date('Fri Feb 07 2025').getTime(),
+                    new Date('Sat Feb 08 2025').getTime(), new Date('Fri Feb 21 2025').getTime(),
+                    new Date('Sat Feb 22 2025').getTime(), new Date('Fri Mar 07 2025').getTime(),
+                    new Date('Sat Mar 08 2025').getTime(), new Date('Fri Mar 21 2025').getTime(),
+                    new Date('Sat Mar 22 2025').getTime(), new Date('Fri Apr 04 2025').getTime(),
+                    new Date('Sat Apr 05 2025').getTime(), new Date('Fri Apr 18 2025').getTime(),
+                    new Date('Sat Apr 19 2025').getTime(), new Date('Fri May 02 2025').getTime(),
+                    new Date('Sat May 03 2025').getTime()
+                ]));
+        });
         it('Default - BYMONTH', () => {
             const rule: string = 'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=7;INTERVAL=1;UNTIL=20140801T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))

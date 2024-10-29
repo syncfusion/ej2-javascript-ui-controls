@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-## 27.1.56 (2024-10-23)
+## 27.1.57 (2024-10-29)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I640035` - The tooltips now render properly for decimal data points.
+- `#I645981` - The stripline now works correctly on the logarithmic axis.
+
+### Stock Chart
+
+#### Bug Fixes
+
+- `#F194807` - The series now renders properly after a data source update and legend toggle.
+
+## 27.1.55 (2024-10-22)
 
 ### Chart
 

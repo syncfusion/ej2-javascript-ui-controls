@@ -1485,7 +1485,8 @@ export class Table {
             } else {
                 const tableReBox: HTMLElement = this.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
                 const tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
-                const tableHeight: number = parseInt(getComputedStyle(this.curTable).height as string, 10);
+                const tableHeight: number = !isNaN(parseInt(this.curTable.style.height, 10)) ?
+                    parseInt(this.curTable.style.height, 10) : parseInt(getComputedStyle(this.curTable).height, 10);
                 const paddingSize: number = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
                 const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
                     ((this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
@@ -1627,7 +1628,7 @@ export class Table {
                     this.curTable.style.height = tableHeight + mouseY + 'px';
                     if (!isNOU(tableReBox)) {
                         tableReBox.classList.add('e-rbox-select');
-                        tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
+                        tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + parseInt(getComputedStyle(this.curTable).height, 10) - 4) +
                             'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
                     }
                     if (this.curTable.closest('li')) {

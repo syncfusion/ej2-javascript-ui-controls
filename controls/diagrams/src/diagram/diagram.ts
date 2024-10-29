@@ -41,7 +41,7 @@ import { ITextEditEventArgs, IHistoryChangeArgs, IScrollChangeEventArgs } from '
 import { IMouseEventArgs, IBlazorHistoryChangeArgs } from './objects/interface/IElement';
 import { IBlazorCustomHistoryChangeArgs, IImageLoadEventArgs } from './objects/interface/IElement';
 import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interface/IElement';
-import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, IEditSegmentOptions, HierarchyData, NodeData, SpaceLevel, IGraph, ConnectorStyle, MermaidStyle } from './objects/interface/interfaces';
+import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, IEditSegmentOptions, HierarchyData, NodeData, SpaceLevel, IGraph, ConnectorStyle, MermaidStyle, TouchArgs } from './objects/interface/interfaces';
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute, Lane, Shape } from './objects/node';
@@ -10152,9 +10152,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.clearHighlighter();
             const childNodes: NodeList = getSelectorElement(this.element.id).childNodes;
             let child: SVGElement;
+            //Bug 914365: Node is not resizable using touch interaction
+            //Added below code to get the target which we are dragging using touch interaction
+            let handleId: string = this.eventHandler.touchArgs ? this.eventHandler.touchArgs.target.id : undefined;
+            if (handleId && handleId.includes('bezierLine')) {
+                handleId = undefined;
+            }
             for (let i: number = childNodes.length; i > 0; i--) {
-                child = childNodes[i - 1] as SVGElement;
-                child.parentNode.removeChild(child);
+                //Added below code to prevent the removal of target element from DOM while doing touch move interaction
+                if (this.eventHandler && this.eventHandler.touchArgs && this.eventHandler.touchArgs.type === 'touchmove') {
+                    this.diagramRenderer.touchMove = true;
+                    if (!(handleId && handleId === (childNodes[i - 1] as HTMLElement).id)) {
+                        child = childNodes[i - 1] as SVGElement;
+                        child.parentNode.removeChild(child);
+                    }
+                } else {
+                    child = childNodes[i - 1] as SVGElement;
+                    child.parentNode.removeChild(child);
+                }
             }
             //Removed isBlazor code
             if (!isBlazor()) {

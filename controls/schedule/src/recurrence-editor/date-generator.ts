@@ -150,7 +150,7 @@ export function generate(startDate: Date, rule: string, excludeDate: string, sta
         dailyType(modifiedDate, ruleObject.until, data, ruleObject);
         break;
     case 'WEEKLY':
-        weeklyType(modifiedDate, ruleObject.until, data, ruleObject);
+        weeklyType(modifiedDate, ruleObject.until, data, ruleObject, startDayOfWeek);
         break;
     case 'MONTHLY':
         monthlyType(modifiedDate, ruleObject.until, data, ruleObject);
@@ -256,10 +256,11 @@ function dailyType(startDate: Date, endDate: Date, data: number[], ruleObject: R
  * @param {Date} endDate Accepts the end date
  * @param {number[]} data Accepts the collection of dates
  * @param {RecRule} ruleObject Accepts the recurrence rule object
+ * @param {number} startDayOfWeek Accepts the start day index of week
  * @returns {void}
  * @private
  */
-function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: RecRule): void {
+function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: RecRule, startDayOfWeek: number): void {
     let tempDate: Date = new Date(startDate.getTime());
     if (!ruleObject.day.length) {
         ruleObject.day.push(DAYINDEX[startDate.getDay()]);
@@ -307,7 +308,7 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
         }
     } else {
         tempDate = getStartDateForWeek(startDate, ruleObject.day);
-        if (interval > 1 && dayIndex.indexOf(ruleObject.day[0]) < startDate.getDay()) {
+        if (interval > 1 && dayIndex.indexOf(ruleObject.day[0]) < (startDate.getDay() - startDayOfWeek)) {
             tempDate.setDate(tempDate.getDate() + ((interval - 1) * 7));
         }
         while (compareDates(tempDate, endDate)) {

@@ -1773,8 +1773,10 @@
     }
   }
 
-  .e-spreadsheet .e-ribbon .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-overlay .e-icons {
-    color: $tbar-default-icon-color;
+  @if $skin-name != 'fluent2' {
+    .e-spreadsheet .e-ribbon .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-overlay .e-icons {
+      color: $tbar-default-icon-color;
+    }
   }
 
   .e-dropdown-popup {

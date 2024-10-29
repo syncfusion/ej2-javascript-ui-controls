@@ -725,7 +725,7 @@ export class Selection implements IAction {
         this.updatePersistCollection(selectedRow, true);
         this.updateCheckBoxes(selectedRow, true);
         this.addRemoveClassesForRow(selectedRow, true, null, 'e-selectionbackground', 'e-active');
-        if (!this.preventFocus) {
+        if (!this.preventFocus && !this.parent.isFocusFirstCell) {
             let target: Element = this.focus.getPrevIndexes().cellIndex ?
                 (<HTMLTableRowElement>selectedRow).cells[this.focus.getPrevIndexes().cellIndex] :
                 selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
@@ -734,6 +734,14 @@ export class Selection implements IAction {
             }
             if (!target || preventFocus) { return; }
             this.focus.onClick({ target }, true);
+        } else {
+            if (this.parent.isFocusFirstCell) {
+                this.parent.isFocusFirstCell = false;
+                const target: Element = selectedRow.querySelector('.e-selectionbackground.e-rowcell:not(.e-hide, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop, .e-gridchkbox)');
+                if (target) {
+                    this.focus.onClick({ target: target }, true, true);
+                }
+            }
         }
     }
 

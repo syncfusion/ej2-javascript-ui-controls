@@ -1581,7 +1581,9 @@ export class _CipherTransform {
         return new _PdfDecryptStream(stream, length, this._streamCipher);
     }
     decryptString(s: string): string {
-        return _bytesToString(this._stringCipher._decryptBlock((_stringToBytes(s, false, true) as Uint8Array), true));
+        const stringBytes: Uint8Array = _stringToBytes(s, false, true) as Uint8Array;
+        const decryptedBytes: Uint8Array = this._stringCipher._decryptBlock(stringBytes, true);
+        return _bytesToString(decryptedBytes);
     }
     encryptString(s: string): string {
         if (this._stringCipher instanceof _AdvancedEncryptionBaseCipher) {

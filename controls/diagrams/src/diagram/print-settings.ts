@@ -394,7 +394,8 @@ export class PrintAndExport {
         this.setTransform(g, options.bounds, margin);
         const gradient: HTMLElement = document.getElementById(this.diagram.element.id + 'gradient_pattern');
         if (gradient) {
-            svg.appendChild(gradient);
+            // 914031: Export function breaks gradient background of nodes in the diagram
+            svg.appendChild(gradient.cloneNode(true) as SVGElement);
         }
         attr = {
             'x': String(left),

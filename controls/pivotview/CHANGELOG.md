@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 27.1.56 (2024-10-23)
+## 27.1.57 (2024-10-29)
+
+### Pivot Table
+
+#### Bug fixes
+
+- The pivot table will now be rendered properly when creating a new report using the toolbar.
+
+## 27.1.55 (2024-10-22)
 
 ### Pivot Table
 

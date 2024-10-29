@@ -158,7 +158,7 @@ export class _PdfCrossReference {
             throw new BaseException(`Inconsistent generation in XRef: ${reference}`, 'XRefEntryException');
         }
         const stream: _PdfStream = this._stream.makeSubStream(xrefEntry.offset + this._stream.start, undefined);
-        const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), this, true);
+        const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), this, true, false, this._encrypt);
         const obj1: number = parser.getObject();
         const obj2: number = parser.getObject();
         const obj3: _PdfCommand = parser.getObject();
@@ -167,7 +167,7 @@ export class _PdfCrossReference {
         }
         let entry: any; // eslint-disable-line
         if (this._encrypt && !suppressEncryption) {
-            entry = parser.getObject(this._encrypt._createCipherTransform(reference.objectNumber, reference.generationNumber));
+            entry = parser.getObject(reference.objectNumber, reference.generationNumber, true);
         } else {
             entry = parser.getObject();
         }

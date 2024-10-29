@@ -136,9 +136,10 @@ export class TextHelper {
             formatText = characterFormat.fontFamily.toLocaleLowerCase();
         }
         const isBidi: boolean = characterFormat.bidi || characterFormat.complexScript;
-        formatText += ';' + characterFormat.fontSize;
+        const font: number = isBidi ? characterFormat.fontSizeBidi : characterFormat.fontSize;
         const bold: boolean = isBidi ? characterFormat.boldBidi : characterFormat.bold;
         const italic: boolean = isBidi ? characterFormat.italicBidi : characterFormat.italic;
+        formatText += ';' + font;
         if (bold) {
             formatText += ';' + 'bold';
         }
@@ -158,7 +159,7 @@ export class TextHelper {
         let italic: string = '';
         let fontFamily: string = '';
         const isBidi: boolean = characterFormat.bidi || characterFormat.complexScript;
-        let fontSize: number = characterFormat.fontSize;
+        let fontSize: number = isBidi ? characterFormat.fontSizeBidi : characterFormat.fontSize;
         bold = isBidi ? (characterFormat.boldBidi ? 'bold' : '') : (characterFormat.bold ? 'bold' : '');
         italic = isBidi ? (characterFormat.italicBidi ? 'italic' : '') : (characterFormat.italic ? 'italic' : '');
         fontFamily = this.getFontNameToRender(scriptType, characterFormat);

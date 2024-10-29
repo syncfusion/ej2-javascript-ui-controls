@@ -285,4 +285,10 @@ describe('Apply bidi for the RTL text', () => {
         expect(container.selectionModule.characterFormat.italic).toBe(true);
         expect(container.selectionModule.characterFormat.italicBidi).toBe(true);
     });
+    it('Apply font size for the RTL text', function () {
+        console.log('Apply font size for the RTL text');
+        container.selectionModule.characterFormat.fontSize = 20;
+        expect(container.selectionModule.characterFormat.fontSize).toBe(20);
+        expect(container.selectionModule.characterFormat.fontSizeBidi).toBe(20);
+    });
 });

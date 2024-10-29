@@ -319,3 +319,8 @@ export interface MermaidStyle {
     stroke: string,
     strokeWidth: number,
 }
+
+export interface TouchArgs {
+    target: HTMLElement;
+    type: string;
+}

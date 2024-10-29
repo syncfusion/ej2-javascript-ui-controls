@@ -2292,7 +2292,8 @@ export class SfdtReader {
                 characterFormat.bdo = this.getBiDirectionalOverride(sourceFormat[bdoProperty[keyIndex]]);
             }
             if (!isNullOrUndefined(sourceFormat[fontSizeBidiProperty[keyIndex]])) {
-                characterFormat.fontSizeBidi = sourceFormat[fontSizeBidiProperty[keyIndex]] < 0 ? 0 : sourceFormat[fontSizeBidiProperty[keyIndex]];
+                let fontSize: number = parseFloat(sourceFormat[fontSizeBidiProperty[keyIndex]]);
+                characterFormat.fontSizeBidi = fontSize < 0 ? 0 : fontSize;
             }
             if (!isNullOrUndefined(sourceFormat[fontFamilyBidiProperty[keyIndex]])) {
                 if (sourceFormat[fontFamilyBidiProperty[keyIndex]].indexOf('"') !== -1) {

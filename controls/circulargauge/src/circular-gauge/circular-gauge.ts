@@ -1377,39 +1377,41 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             value = value > axis.visibleRange.max ? axis.visibleRange.max : value;
             pointer['isPointerAnimation'] = true;
             document.getElementById(this.element.id + '_Axis_' + axisIndex + '_Pointer_' + pointerIndex).style.visibility = 'visible';
-            pointer.pathElement.map((element: Element) => {
-                if (pointer.type === 'RangeBar') {
-                    setStyles(element as HTMLElement, pointer.color, pointer.border);
-                    if (enableAnimation) {
-                        this.gaugeAxisLayoutPanel.pointerRenderer.performRangeBarAnimation(
-                            element as HTMLElement, pointer.currentValue, value, axis, pointer, axisIndex);
-                    } else {
-                        this.isAnimationProgress = false;
-                        this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
-                    }
-                } else {
-                    if (element.id.indexOf('_Pointer_NeedleCap_') >= 0) {
-                        setStyles(element as HTMLElement, pointer.cap.color, pointer.cap.border);
-                    } else if (element.id.indexOf('_Pointer_NeedleTail_') >= 0) {
-                        setStyles(element as HTMLElement, pointer.needleTail.color, pointer.needleTail.border);
-                    } else if (element.id.indexOf('_Pointer_NeedleRect_') >= 0) {
-                        setStyles(element as HTMLElement, 'transparent', { color: 'transparent', width: 0 });
-                    } else if (pointer.type === 'Marker' && pointer.markerShape !== 'Text') {
+            if (!isNullOrUndefined(pointer.pathElement)) {
+                pointer.pathElement.map((element: Element) => {
+                    if (pointer.type === 'RangeBar') {
                         setStyles(element as HTMLElement, pointer.color, pointer.border);
-                    }
-                    if (enableAnimation) {
-                        if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
-                            this.gaugeAxisLayoutPanel.pointerRenderer.performTextAnimation(element as HTMLElement, pointer.currentValue, value, axis, pointer, axisIndex);
-                        }
-                        else {
-                            this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(
+                        if (enableAnimation) {
+                            this.gaugeAxisLayoutPanel.pointerRenderer.performRangeBarAnimation(
                                 element as HTMLElement, pointer.currentValue, value, axis, pointer, axisIndex);
+                        } else {
+                            this.isAnimationProgress = false;
+                            this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
                         }
                     } else {
-                        this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
+                        if (element.id.indexOf('_Pointer_NeedleCap_') >= 0) {
+                            setStyles(element as HTMLElement, pointer.cap.color, pointer.cap.border);
+                        } else if (element.id.indexOf('_Pointer_NeedleTail_') >= 0) {
+                            setStyles(element as HTMLElement, pointer.needleTail.color, pointer.needleTail.border);
+                        } else if (element.id.indexOf('_Pointer_NeedleRect_') >= 0) {
+                            setStyles(element as HTMLElement, 'transparent', { color: 'transparent', width: 0 });
+                        } else if (pointer.type === 'Marker' && pointer.markerShape !== 'Text') {
+                            setStyles(element as HTMLElement, pointer.color, pointer.border);
+                        }
+                        if (enableAnimation) {
+                            if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
+                                this.gaugeAxisLayoutPanel.pointerRenderer.performTextAnimation(element as HTMLElement, pointer.currentValue, value, axis, pointer, axisIndex);
+                            }
+                            else {
+                                this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(
+                                    element as HTMLElement, pointer.currentValue, value, axis, pointer, axisIndex);
+                            }
+                        } else {
+                            this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
+                        }
                     }
-                }
-            });
+                });
+            }
             if (this.allowLoadingAnimation && !pointer.animation.enable) {
                 this.allowLoadingAnimation = false;
                 pointer.value = value;

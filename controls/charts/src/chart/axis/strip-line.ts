@@ -7,7 +7,7 @@ import { Axis } from '../axis/axis';
 import { StripLineSettingsModel } from '../model/chart-base-model';
 import {
     valueToCoefficient, textElement, RectOption,
-    appendChildElement, appendClipElement, withIn, getElement, ImageOption
+    appendChildElement, appendClipElement, withIn, getElement, ImageOption, logBase
 } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { ZIndex, Anchor, SizeType } from '../utils/enum';
@@ -46,9 +46,9 @@ export class StripLine {
                     axis.labels.indexOf(this.dateToMilliSeconds(end, chart).toString()) : end as number;
             } else {
                 actualStart = stripline.start === null ? null : isDateTimeAxis && this.isCoreDate(stripline.start) ?
-                    this.dateToMilliSeconds(stripline.start, chart) : +stripline.start;
+                    this.dateToMilliSeconds(stripline.start, chart) : +(axis.valueType === 'Logarithmic' ? logBase(stripline.start as number, axis.logBase) : stripline.start);
                 actualEnd = stripline.end === null ? null : isDateTimeAxis && this.isCoreDate(stripline.start) ?
-                    this.dateToMilliSeconds(stripline.end, chart) : +stripline.end;
+                    this.dateToMilliSeconds(stripline.end, chart) : +(axis.valueType === 'Logarithmic' ? logBase(stripline.end as number, axis.logBase) : stripline.end);
             }
         }
         const rect: { from: number, to: number } = this.getFromTovalue(

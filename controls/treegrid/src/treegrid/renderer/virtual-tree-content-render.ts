@@ -419,7 +419,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             content = this.parent.getContent().querySelector('.e-content');
         }
         const scrollHeight: number = outBuffer * rowHeight;
-        const upScroll: boolean = (scrollArgs.offset.top - this.translateY) <= 0;
+        const upScroll: boolean = (scrollArgs.offset.top - this.translateY) < 0;
         const downScroll: boolean = Math.ceil(scrollArgs.offset.top - this.translateY) + rowHeight >= scrollHeight;
         const selectedRowIndex: string = 'selectedRowIndex';
         const currentViewData: Object[] = this.parent.currentViewData; const indexValue: string = 'index';
@@ -459,8 +459,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 firsttdinx = +attr; // this.parent.getContent().querySelector('.e-content tr').getAttribute('data-rowindex');
             }
             if (firsttdinx === 0) {
-                this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
-                    scrollArgs.offset.top - (outBuffer * this.parent.getRowHeight()) + rowHeight : 0;
+                this.translateY = !isNullOrUndefined(this.endIndex) ?
+                    (this.endIndex - this.parent.pageSettings.pageSize) * (this.parent.rowHeight ?
+                        this.parent.rowHeight : this.parent.getRowHeight()) : 0;
             }
             else if (this.parent.getFrozenColumns() > 0) {
                 scrollArgs.offset.top = scrollArgs.offset.top + 80;

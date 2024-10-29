@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 27.1.56 (2024-10-23)
+## 27.1.57 (2024-10-29)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I910189` - The issue with "Browser window gets zoomed while zooming the image editor with mouse wheel support" has been resolved.
+
+## 27.1.53 (2024-10-15)
 
 ### Image Editor
 

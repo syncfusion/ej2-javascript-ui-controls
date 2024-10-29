@@ -2,13 +2,26 @@
 
 ## [Unreleased]
 
-## 27.1.56 (2024-10-23)
+## 27.1.57 (2024-10-29)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I637156` - Tooltip now displays properly on mobile devices with touch interactions.
+- `#I637207` - Nodes are now resizable via touch interactions.
+- `#I639121` - The gradient background of the node is now properly preserved when exporting the diagram as an SVG
+- `#F194691` - The Position Change Event Now Triggers on Keyboard Nudging.
+
+## 27.1.55 (2024-10-22)
 
 ### Diagram
 
 #### Bug Fixes
 
 - `#I635721` - The undo and redo actions work during swimlane deletion, even when the swimlane's delete constraint is disabled.
+- `#I638627` - The tooltip for the annotation is now visible when the text overflow is set to Ellipsis or Clip.
+- `#I595572`, `#I632276` - The undefined exception will no longer be thrown when moving a node with Line Routing enabled.
 
 ## 27.1.53 (2024-10-15)
 

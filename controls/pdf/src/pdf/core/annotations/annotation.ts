@@ -8322,7 +8322,7 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
             if (array && array[0] instanceof _PdfReference) {
                 holder = array[0];
             }
-            if ((typeof holder === 'undefined' || holder === null) && typeof array[0] === 'number') {
+            if ((typeof holder === 'undefined' || holder === null) && array && typeof array[0] === 'number') {
                 const pageNumber: number = array[0];
                 const page: PdfPage = this._crossReference._document.getPage(pageNumber);
                 if (page) {
@@ -13532,6 +13532,10 @@ export class PdfStateItem extends PdfWidgetAnnotation {
      */
     set checked(value: boolean) {
         if (this.checked !== value) {
+            if (this._field) {
+                this._setCheckedStatus(value);
+                this._field._setAppearance = true;
+            }
             this._dictionary.update('AS', _PdfName.get(value ? 'Yes' : 'Off'));
         }
     }
@@ -13594,6 +13598,74 @@ export class PdfStateItem extends PdfWidgetAnnotation {
             }
             dictionary.update('CA', _styleToString(value));
         }
+    }
+    _setCheckedStatus(value: boolean): void {
+        const check: boolean = value;
+        let fieldValue: string = this._getItemValue(this._dictionary);
+        this._uncheckOthers(this, fieldValue, value);
+        if (check) {
+            if (!fieldValue) {
+                fieldValue = 'Yes';
+            }
+            this._field._dictionary.update('V', fieldValue);
+            this._dictionary.update('AS', _PdfName.get(fieldValue));
+            this._dictionary.update('V', _PdfName.get(fieldValue));
+        } else if (this._field._dictionary) {
+            if (this._field._dictionary.has('V')) {
+                const v: _PdfName = this._field._dictionary.get('V');
+                if (v && v.name === fieldValue) {
+                    delete this._field._dictionary._map.V;
+                }
+            }
+            this._field._dictionary.update('AS', _PdfName.get('Off'));
+        }
+    }
+    _uncheckOthers(child: PdfStateItem, value: string, isChecked: boolean): void {
+        if (!this._field._isUpdating) {
+            this._field._isUpdating = true;
+            const count: number = this._field.itemsCount;
+            for (let i: number = 0; i < count; ++i) {
+                const item: PdfStateItem = this._field.itemAt(i) as PdfStateItem;
+                if (item) {
+                    if (item !== child) {
+                        item.checked = ((this._getItemValue(item._dictionary) === value) && isChecked);
+                    } else if (!item.checked) {
+                        item.checked = true;
+                    }
+                }
+            }
+        }
+    }
+    _getItemValue(dictionary: _PdfDictionary): string {
+        let itemValue: string = '';
+        if (dictionary && dictionary.has('AS')) {
+            const asValue: _PdfName = dictionary.get('AS');
+            if (asValue && asValue.name !== 'Off') {
+                itemValue = 'Off';
+            }
+        }
+        if (itemValue === '') {
+            if (dictionary && dictionary.has('AP')) {
+                const apDictionary: _PdfDictionary = dictionary.get('AP');
+                if (apDictionary && apDictionary.has('N')) {
+                    const normalAppearance: _PdfDictionary = apDictionary.get('N');
+                    const keyList: string[] = [];
+                    normalAppearance.forEach((key: string, value: any) => { // eslint-disable-line
+                        keyList.push(key);
+                    });
+                    if (keyList.length > 0) {
+                        for (let i: number = 0; i < keyList.length; i++) {
+                            const key: string = keyList[Number.parseInt(i.toString(), 10)];
+                            if (key && key !== 'Off') {
+                                itemValue = key;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return itemValue;
     }
     _doPostProcess(): void {
         const style: _PdfCheckFieldState = this.checked ? _PdfCheckFieldState.checked : _PdfCheckFieldState.unchecked;

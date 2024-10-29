@@ -1,7 +1,7 @@
 import { RangeNavigator } from '../../../src/range-navigator/index';
 import { Logarithmic, DateTime, LineSeries, AreaSeries, DateTimeCategory } from '../../../src/chart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { IChangedEventArgs } from '../../../src/range-navigator/model/range-navigator-interface';
+import { IChangedEventArgs, IRangeLoadedEventArgs } from '../../../src/range-navigator/model/range-navigator-interface';
 import { MouseEvents } from '../../../spec/chart/base/events.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { PeriodSelector } from '../../../src/common/period-selector/period-selector';
@@ -594,7 +594,14 @@ describe('Range navigator', () => {
             range.theme = 'Fluent2HighContrast'
             range.refresh();
         });
-       
+        it('checking the Range-Navigator slider values', (done: Function) => {
+            range.loaded = (args: IRangeLoadedEventArgs): void => {
+                args.rangeNavigator.rangeSlider.setSlider(NaN, NaN, false, false, false);
+                expect(args !== null).toBe(true);
+                done();
+            };
+            range.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

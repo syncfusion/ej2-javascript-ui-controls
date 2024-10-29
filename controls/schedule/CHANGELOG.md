@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.1.57 (2024-10-29)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I641069` - An issue when dragging an event, the first cell of the hour will be selected and highlighted has been resolved.
+- `#I643159` - An issue when weekly recurrence rule is rendered in the wrong position when setting the `firstDayOfWeek` has been resolved.
+- `#FB62128` - An issue causing events to display incorrectly when a weekly recurrence rule with `BDAY` and a specified timezone is applied has been resolved.
+
 ## 27.1.56 (2024-10-23)
 
 ### Schedule

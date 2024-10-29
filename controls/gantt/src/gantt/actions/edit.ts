@@ -862,7 +862,8 @@ export class Edit {
         const prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
         // eslint-disable-next-line
         if (prevData && prevData.ganttProperties && prevData.ganttProperties.hasOwnProperty('predecessor')) {
-            if (data.ganttProperties.predecessorsName !== prevData.ganttProperties.predecessorsName) {
+            if (data.ganttProperties.predecessorsName !== prevData.ganttProperties.predecessorsName &&
+                !(data.ganttProperties.predecessorsName === '' && isNullOrUndefined(prevData.ganttProperties.predecessorsName))) {
                 isPredecessorUpdated = true;
             } else {
                 this.parent.setRecordValue('predecessor', prevData.ganttProperties.predecessor, data.ganttProperties, true);
@@ -1055,8 +1056,8 @@ export class Edit {
             }
             this.parent.predecessorModule.isValidatedParentTaskID = '';
             if (this.parent.allowParentDependency && this.parent.predecessorModule.isValidatedParentTaskID !==
-                ganttRecord.ganttProperties.taskId && ganttRecord.hasChildRecords &&
-                this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate) {
+                ganttRecord.ganttProperties.taskId && ganttRecord.hasChildRecords && (
+                this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate) && (args.action !== 'TaskbarEditing')) {
                 this.parent.predecessorModule['updateChildItems'](ganttRecord);
                 this.validateChildPredecessors();
             }
@@ -1091,7 +1092,7 @@ export class Edit {
             this.parent.connectorLineEditModule['calculateOffset'](args.data);
         }
         this.parent.predecessorModule['validatedParentIds'] = [];
-        if (!this.dialogModule['isFromDialogPredecessor']) {
+        if (isNullOrUndefined(this.dialogModule) || (this.dialogModule && !this.dialogModule['isFromDialogPredecessor'])) {
             this.initiateSaveAction(args);
         }
     }
@@ -1602,6 +1603,7 @@ export class Edit {
             eventArgs.data = args.data;
             eventArgs.modifiedRecords = this.parent.editedRecords;
             eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, null, null, this.parent);
+            this.updateRowIndex();
             if (!isNullOrUndefined(args.action)) {
                 setValue('action', args.action, eventArgs);
             }
@@ -2804,13 +2806,30 @@ export class Edit {
      * @param {number} level .
      * @param {RowPosition} rowPosition .
      * @param {IGanttData} parentItem .
+     * @param {number} rowIndex .
      * @returns {IGanttData} .
      * @private
      */
     private updateNewlyAddedDataBeforeAjax(
-        obj: Object, level: number, rowPosition: RowPosition, parentItem?: IGanttData): IGanttData {
+        obj: Object, level: number, rowPosition: RowPosition, parentItem?: IGanttData, rowIndex?: number): IGanttData {
         const cAddedRecord: IGanttData = this.parent.dataOperation.createRecord(obj, level);
-        cAddedRecord.index = parseInt(cAddedRecord.ganttProperties.rowUniqueID.toString(), 10) - 1;
+        switch (rowPosition) {
+        case 'Above':
+            cAddedRecord.index = rowIndex;
+            break;
+        case 'Below':
+        case 'Child':
+            cAddedRecord.index = rowIndex + 1;
+            break;
+        case 'Bottom':
+            cAddedRecord.index = this.parent.enableVirtualization ? this.parent.flatData.length : this.parent.currentViewData.length;
+            break;
+        case 'Top':
+            cAddedRecord.index = 0;
+            break;
+        default:
+            break;
+        }
         if (!isNullOrUndefined(parentItem)) {
             this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), cAddedRecord);
             const pIndex: number = cAddedRecord.parentItem ? cAddedRecord.parentItem.index : null;
@@ -3801,10 +3820,21 @@ export class Edit {
         if (!this.parent.undoRedoModule || !this.parent.undoRedoModule['isUndoRedoPerformed']) {
             this.prepareNewlyAddedData(data, rowPosition);
         }
-        const AddRecord: IGanttData = (this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem));
+        const AddRecord: IGanttData = (this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem, rowIndex));
         cAddedRecord.push(AddRecord);
     }
-
+    private updateRowIndex(): void {
+        const treeGrid: any = this.parent.treeGrid;
+        const currentViewData: IGanttData[] = this.parent.currentViewData;
+        const rowCount: number = currentViewData.length;
+        for (let index: number = 0; index < rowCount; index++) {
+            const row: any = treeGrid.getRowByIndex(index);
+            if (row) {
+                const rowIndex: number = Number(row.getAttribute('data-rowindex'));
+                currentViewData[index as number].index = rowIndex;
+            }
+        }
+    }
     private updateNewRecord(cAddedRecord: IGanttData[], args: ITaskAddedEventArgs): void {
         cAddedRecord.forEach((record: IGanttData) => {
             if (record.level === 0) {
@@ -3871,6 +3901,7 @@ export class Edit {
         if (this.dialogModule.isAddNewResource && !this.parent.isEdit && this.parent.taskFields.work){
             this.parent.dataOperation.updateWorkWithDuration(cAddedRecord[0]);
         }
+        this.updateRowIndex();
         this.parent.trigger('actionComplete', args);
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
             this.parent.hideMaskRow();

@@ -70,7 +70,7 @@ export class Search implements IAction {
             this.headerFocus = false;
             // Check searchString is number and parseFloat to remove trailing zeros
             if (searchString !== '' && !this.hasNonNumericCharacters(searchString)) {
-                if (searchString === '.') {
+                if (searchString === '.' || (searchString.indexOf('.') === -1)) {
                     gObj.searchSettings.key = searchString.toString();
                 } else {
                     gObj.searchSettings.key = parseFloat(searchString).toString();

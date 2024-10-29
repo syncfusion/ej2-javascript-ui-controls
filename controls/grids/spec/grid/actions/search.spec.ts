@@ -690,3 +690,56 @@ describe('EJ2-902455 - Searching dot character leads to NaN => ', () => {
         gridObj = actionComplete = null;
     });
 });
+
+describe('EJ2-917149 - Search Keyword changing automatically when entered more than 16 digits => ', () => {
+    let gridObj: Grid;
+    let actionComplete: (args?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 3),
+                toolbar: ['Search'],
+                columns: [
+                    {
+                        field: 'OrderID',
+                        headerText: 'Order ID',
+                        width: 140,
+                    },
+                    {
+                        field: 'Freight',
+                        headerText: 'Freight',
+                        width: 140,
+                    },
+                    {
+                        field: 'CustomerID',
+                        headerText: 'Customer ID',
+                        width: 140,
+                    },
+                    {
+                        field: 'OrderDate',
+                        headerText: 'OrderDate',
+                        type: 'date',
+                        format: 'yMd',
+                        width: 140,
+                    },
+                ],
+                height: 350,
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('Search large number', (done: Function) => {
+        actionComplete = (args: any): void => {
+            expect(gridObj.searchSettings.key).toBe('12345678901234567');
+            done();
+        };
+        gridObj.actionComplete = actionComplete;            
+        gridObj.searchModule.search('12345678901234567');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+

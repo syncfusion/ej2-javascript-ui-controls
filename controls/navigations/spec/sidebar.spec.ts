@@ -72,6 +72,52 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar.show();
         expect(document.getElementById('sidebar').style.width).toBe("50%");
     });
+    it("Left sidebar width as a percentage in initial rendering for Auto type test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        const sidebar: Sidebar = new Sidebar({ width: '60%', target: '.maincontent' }, ele);
+        const eleWidth = parseFloat(((sidebar as any).element.getBoundingClientRect().width).toFixed(1)) + 'px';
+        const marginLeft = (<HTMLElement>(sidebar as any).element.nextElementSibling).style.marginLeft;
+        expect(marginLeft).toBe(eleWidth);
+    });
+    it("Right sidebar width as a percentage in initial rendering for Auto type test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        const sidebar: Sidebar = new Sidebar({ width: '60%', target: '.maincontent', position: 'Right' }, ele);
+        const eleWidth = parseFloat(((sidebar as any).element.getBoundingClientRect().width).toFixed(1)) + 'px';
+        const marginRight = (<HTMLElement>(sidebar as any).element.nextElementSibling).style.marginRight;
+        expect(marginRight).toBe(eleWidth);
+    });
+    it("Left sidebar width as a percentage in initial rendering for Push type test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        const sidebar: Sidebar = new Sidebar({ width: '60%', type: 'Push', target: '.maincontent' }, ele);
+        sidebar.show();
+        const eleWidth = parseFloat(((sidebar as any).element.getBoundingClientRect().width).toFixed(1))  + 'px';
+        const marginLeft = (<HTMLElement>(sidebar as any).element.nextElementSibling).style.marginLeft;
+        expect(marginLeft).toBe(eleWidth);
+    });
+    it("Right sidebar width as a percentage in initial rendering for Push type test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        const sidebar: Sidebar = new Sidebar({ width: '60%', type: 'Push', target: '.maincontent', position: 'Right' }, ele);
+        sidebar.show();
+        const eleWidth = parseFloat(((sidebar as any).element.getBoundingClientRect().width).toFixed(1))  + 'px';
+        const marginRight = (<HTMLElement>(sidebar as any).element.nextElementSibling).style.marginRight;
+        expect(marginRight).toBe(eleWidth);
+    });
+    it("Left sidebar width as a percentage in initial rendering for Slide type test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        const sidebar: Sidebar = new Sidebar({ width: '60%', type: 'Slide', target: '.maincontent' }, ele);
+        sidebar.show();
+        const eleWidth = parseFloat(((sidebar as any).element.getBoundingClientRect().width).toFixed(1)) + 'px';
+        const transformLeft = (<HTMLElement>(sidebar as any).element.nextElementSibling).style.transform;
+        expect(transformLeft).toBe('translateX(' + eleWidth + ')');
+    });
+    it("Right sidebar width as a percentage in initial rendering for Slide type test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        const sidebar: Sidebar = new Sidebar({ width: '60%', type: 'Slide', target: '.maincontent',position: 'Right' }, ele);
+        sidebar.show();
+        const eleWidth = parseFloat(((sidebar as any).element.getBoundingClientRect().width).toFixed(1)) + 'px';
+        const transformRight = (<HTMLElement>(sidebar as any).element.nextElementSibling).style.transform;
+        expect(transformRight).toBe('translateX(' + '-' + eleWidth + ')');
+    });
     it("Sidebar width test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
@@ -2365,5 +2411,4 @@ describe("Sidebar enableGestures testing with SwipeEventArgs in the close event 
         sidebar.enableGestureHandler(touch);
         expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
     });
-
 });

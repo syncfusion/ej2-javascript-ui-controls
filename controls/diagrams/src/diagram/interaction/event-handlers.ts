@@ -50,7 +50,7 @@ import { InputArgs } from '@syncfusion/ej2-inputs';
 import { Rect } from '../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from './../primitives/matrix';
 import { LayerModel } from '../diagram/layer-model';
-import { ITouches, ActiveLabel, View } from '../objects/interface/interfaces';
+import { ITouches, ActiveLabel, View, TouchArgs } from '../objects/interface/interfaces';
 import { removeRulerMarkers, drawRulerMarkers, getRulerSize, updateRuler } from '../ruler/ruler';
 import { canContinuousDraw, canDrawOnce } from '../utility/constraints-util';
 import { SelectorModel } from '../objects/node-model';
@@ -81,6 +81,8 @@ export class DiagramEventHandler {
     private previousAction: Actions = 'None';
     private previousTarget : DiagramElement = null;
     private targetItem : NodeModel | ConnectorModel;
+    /** @private */
+    public touchArgs: TouchArgs = undefined;
 
     /**   @private  */
     public focus: boolean = false;
@@ -491,8 +493,16 @@ export class DiagramEventHandler {
             }
         }
     }
-
+    private timeOutTapHold: any;
     public mouseDown(evt: PointerEvent): void {
+        //Bug 913785: Tooltip for node is not showing when touch and hold on node in mobile device.
+        if (evt.type === 'touchstart') {
+            this.timeOutTapHold = setTimeout((): void => {
+                if (this.action === 'Select' || this.action === 'Drag') {
+                    this.mouseMove(evt, undefined);
+                }
+            }, 500);
+        }
         // EJ2-57541 - Added the below code to check whether diagram tool is instance of node drawing tool or connector drawing tool.
         // If node or connector drawing tool means then we have returned without perform any operation.
         if (this.inAction === true && ( (this.tool) instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool )) {
@@ -679,10 +689,24 @@ export class DiagramEventHandler {
             return true;
         }
     }
+    //To decide whether to show tooltip on touch long press
+    private canShowTouchTooltip(evt: PointerEvent | TouchEvent): boolean {
+        if (evt.type === 'touchstart'){
+            if ((this.diagram.tool & DiagramTools.SingleSelect) && (this.diagram.tool & DiagramTools.ZoomPan)) {
+                this.isMouseDown = false;
+                return true;
+            }
+        }
+        return false;
+    }
     /* tslint:disable */
     /** @private */
     public mouseMove(e: PointerEvent | TouchEvent, touches: TouchList): void {
         this.focus = true;
+        //Bug 914365: Node is not resizable using touch interaction
+        if(e.type === 'touchmove') {
+            this.touchArgs = {target:e.target as HTMLElement,type:'touchmove'};
+        }
         if (this.isScrolling) { e.preventDefault(); return; }
         if (canUserInteract(this.diagram) || (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
             this.currentPosition = this.getMousePosition(e);
@@ -700,7 +724,7 @@ export class DiagramEventHandler {
                     }
                 }
             }
-            if (Point.equals(this.currentPosition, this.prevPosition) === false || this.inAction) {
+            if (Point.equals(this.currentPosition, this.prevPosition) === false || this.inAction || this.canShowTouchTooltip(e)) {
                 if (this.isMouseDown === false || force) {
                     this.eventArgs = {};
                     let sourceElement: DiagramElement = null;
@@ -910,6 +934,10 @@ export class DiagramEventHandler {
     /* tslint:disable */
     /** @private */
     public mouseUp(evt: PointerEvent): void {
+        clearTimeout(this.timeOutTapHold);
+        //Bug 914365: Node is not resizable using touch interaction
+        this.touchArgs = undefined;
+        this.diagram.diagramRenderer.touchMove = undefined;
         //EJ2-849817-Dropping nodes in swimlane does not consider as child in angular
         if (this.eventArgs && this.eventArgs.target && this.eventArgs.target !== this.hoverNode
             && this.eventArgs.target !== this.lastObjectUnderMouse) {
@@ -1634,11 +1662,17 @@ export class DiagramEventHandler {
                                         if (this.isNudgeKey){
                                             if (!this.isKeyUp)
                                             {
+                                                this.keyArgs.oldValue = {offsetX: this.diagram.selectedItems.offsetX,
+                                                    offsetY: this.diagram.selectedItems.offsetY};
                                                 this.keyCount++;
                                                 if (this.keyCount > 4)
                                                 {
+                                                    // 914747: Position change event not triggered for Keyboard nudge commands
                                                     execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter, type: 'KEYDOWN' });
                                                     this.keyCount = 0;
+                                                    this.keyArgs.newValue = {offsetX: this.diagram.selectedItems.offsetX,
+                                                        offsetY: this.diagram.selectedItems.offsetY};
+                                                    this.diagram.triggerEvent(DiagramEvent.positionChange, this.keyArgs);
                                                 }
                                             }
                                             this.isKeyUp = false;
@@ -1660,8 +1694,9 @@ export class DiagramEventHandler {
         // eslint-disable-next-line
         let selectedObject: (NodeModel | ConnectorModel)[] = (this.diagram.selectedItems.nodes.length) ?
             this.diagram.selectedItems.nodes : this.diagram.selectedItems.connectors;
+        const element: any = cloneBlazorObject(this.diagram.selectedItems);
         this.keyArgs = {
-            element: cloneBlazorObject(this.diagram.selectedItems),
+            element: element,
             key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which
         };
         this.getKeyModifier(this.keyArgs, evt);
@@ -1704,8 +1739,11 @@ export class DiagramEventHandler {
     }
 
     public keyUp(evt: KeyboardEvent): void {
+        const element: any = cloneBlazorObject(this.diagram.selectedItems);
         this.keyArgs = {
-            element: cloneBlazorObject(this.diagram.selectedItems), key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which
+            element: element, key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which,
+            oldValue: {offsetX: element.offsetX, offsetY: element.offsetY},
+            newValue: {offsetX: element.offsetX, offsetY: element.offsetY}
         };
         const selectedObject: (NodeModel | ConnectorModel)[] = (this.diagram.selectedItems.nodes.length) ?
             this.diagram.selectedItems.nodes : this.diagram.selectedItems.connectors;
@@ -1721,6 +1759,9 @@ export class DiagramEventHandler {
             //To execute the command manager execute method below as we restricted keydown for arrow keys.
             const execute: Function = getFunction((this.commandObj as any).execute);
             execute({ 'keyDownEventArgs': KeyboardEvent, parameter: (this.commandObj as any).parameter, type: 'KEYUP' });
+            // 914747: Position change event not triggered for Keyboard nudge commands
+            this.keyArgs.newValue = {offsetX: this.diagram.selectedItems.offsetX, offsetY: this.diagram.selectedItems.offsetY};
+            this.diagram.triggerEvent(DiagramEvent.positionChange, this.keyArgs);
             this.isNudgeKey = false;
             this.keyCount = 0;
         }
@@ -2348,23 +2389,26 @@ export class DiagramEventHandler {
 
     private updateContainerBounds(isAfterMouseUp?: boolean): boolean {
         let isGroupAction: boolean = false;
-        if (this.diagram.selectedObject.helperObject && this.diagram.selectedObject.actualObject instanceof Node) {
+        if (this.diagram.selectedObject.helperObject && this.diagram.selectedObject.actualObject) {
+            const obj: any = this.diagram.selectedObject.actualObject;
+            const nodes: NodeModel[] = this.diagram.selectedObject.actualObject instanceof Selector ? obj.nodes : [obj];
+            for (let i: number = 0; i < nodes.length; i++) {
+                const node: Node = nodes[parseInt(i.toString(), 10)] as Node;
+                const boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
+                const parentNode: Node = this.diagram.nameTable[node.parentId];
 
-            const boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
-            const obj: NodeModel = this.diagram.selectedObject.actualObject;
-            const parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
-
-            if (isAfterMouseUp) {
-                removeChildInContainer(this.diagram, obj, this.currentPosition, boundsUpdate);
-            } else {
-                if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                    this.diagram.updateDiagramObject(obj);
-                }
-                isGroupAction = updateCanvasBounds(this.diagram, obj, this.currentPosition, boundsUpdate);
-                this.diagram.updateSelector();
-                if ((obj as Node).isLane || (obj as Node).isPhase) {
-                    this.diagram.clearSelection();
-                    this.commandHandler.selectObjects([obj]);
+                if (isAfterMouseUp) {
+                    removeChildInContainer(this.diagram, node, this.currentPosition, boundsUpdate);
+                } else {
+                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                        this.diagram.updateDiagramObject(node);
+                    }
+                    isGroupAction = updateCanvasBounds(this.diagram, node, this.currentPosition, boundsUpdate);
+                    this.diagram.updateSelector();
+                    if (node.isLane || node.isPhase) {
+                        this.diagram.clearSelection();
+                        this.commandHandler.selectObjects([node]);
+                    }
                 }
             }
         }
@@ -2433,8 +2477,7 @@ export class DiagramEventHandler {
                                     (obj as Node).height = helperObject.height;
                                 }
                                 (obj as Node).rotateAngle = helperObject.rotateAngle;
-                            } else if (this.diagram.selectedItems.nodes.length > 1
-                                && !(this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))) {
+                            } else if (this.diagram.selectedItems.nodes.length > 1) {
                                 // Multi selected node move with helper
                                 const offsetX: number = (helperObject.offsetX - this.diagram.selectedItems.offsetX);
                                 const offsetY: number = (helperObject.offsetY - this.diagram.selectedItems.offsetY);
@@ -2527,6 +2570,41 @@ export class DiagramEventHandler {
                 }
                 updateConnectorsProperties(connectors, this.diagram);
                 history.hasStack = hasGroup;
+            }
+            else if (obj instanceof Selector) {
+                const offsetX: number = (helperObject.offsetX - (obj as Selector).offsetX);
+                const offsetY: number = (helperObject.offsetY - (obj as Selector).offsetY);
+                const rotateAngle: number = (helperObject.rotateAngle - (obj as Selector).rotateAngle);
+                const width: number = (helperObject.width - (obj as Selector).width);
+                const height: number = (helperObject.height - (obj as Selector).height);
+                for (let i: number = 0; i < (obj as Selector).nodes.length; i++) {
+                    const node: Node = (obj as Selector).nodes[parseInt(i.toString(), 10)] as Node;
+                    let parentNode: NodeModel = this.diagram.nameTable[node.parentId];
+                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                        node.offsetX += offsetX;
+                        node.offsetY += offsetY;
+                        if (node && node.shape && node.shape.type !== 'UmlClassifier') {
+                            node.width += width;
+                            node.height += height;
+                        }
+                        node.rotateAngle += rotateAngle;
+                    }
+                    parentNode = checkParentAsContainer(this.diagram, node) ? this.diagram.nameTable[node.parentId] :
+                        (this.diagram.nameTable[node.parentId] || node);
+                    if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
+                        parentNode.wrapper.maxWidth = parentNode.maxWidth = parentNode.wrapper.actualSize.width;
+                        parentNode.wrapper.maxHeight = parentNode.maxHeight = parentNode.wrapper.actualSize.height;
+                        isChangeProperties = true;
+                    }
+                    if (checkParentAsContainer(this.diagram, node, true) && parentNode && parentNode.container.type === 'Canvas') {
+                        checkChildNodeInContainer(this.diagram, node);
+                    }
+                    if (isChangeProperties) {
+                        parentNode.maxWidth = parentNode.wrapper.maxWidth = undefined;
+                        parentNode.maxHeight = parentNode.wrapper.maxHeight = undefined;
+                    }
+                    updateConnectorsProperties(connectors, this.diagram);
+                }
             }
         }
         if (obj && ((obj as SwimLane).isPhase || (obj as SwimLane).isLane ||
@@ -3082,7 +3160,11 @@ class ObjectFinder {
                     }
                     //EJ2-69047 - Node selection is improper while adding annotation for multiple nodes
                     //Checked textOverflow property to avoid the selection of text element with clip and ellipsis;
-                    if (element.bounds.containsPoint(position, padding || 0) && (element.style as TextStyleModel).textOverflow !== 'Clip' && (element.style as TextStyleModel).textOverflow !== 'Ellipsis') {
+                    const textOverflow: boolean = ((element.style as TextStyleModel).textOverflow === 'Clip' || (element.style as TextStyleModel).textOverflow === 'Ellipsis');
+                    if (element.bounds.containsPoint(position, padding || 0) && !textOverflow) {
+                        return element;
+                    } else if (container.bounds.containsPoint(position, padding || 0) && textOverflow) {
+                        // 913240 - Tooltip for annotation not visible while text overflow sets to Clip or Ellipsis
                         return element;
                     }
                 }

@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 27.1.56 (2024-10-23)
+## 27.1.57 (2024-10-29)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I640976` - Now, the width and height attributes of the image are set with correct values instead of `auto`, when inserting and replacing the image in the Rich Text Editor.
+
+- `#I637660` - Now, the OneNote list that has been copied and pasted will now have a correct element structure.
+
+- `#I644239` - Now, the link insertion is prevented when clicking the insert button in the link dialog when the cancel argument is set to true in the `beforeDialogClose` event.
+
+- `#I633901` - Now, the table height adjusts correctly when resized within the Rich Text Editor in Firefox.
+
+- Now, the issue with image resizing in the IFrame editor, particularly when the editor area is small, has been resolved.
+
+## 27.1.55 (2024-10-22)
 
 ### RichTextEditor
 

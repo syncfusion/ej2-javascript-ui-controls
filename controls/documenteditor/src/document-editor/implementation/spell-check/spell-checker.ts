@@ -907,7 +907,10 @@ export class SpellChecker {
     public handleSplitWordSpellCheck(jsonObject: any, currentText: string, elementBox: TextElementBox, isSamePage: boolean, underlineY: number, iteration: number, markIndex: number, isLastItem?: boolean): void {
         if (jsonObject.HasSpellingError && elementBox.text !== ' ' && isSamePage) {
             const matchResults: MatchResults = this.getMatchedResultsFromElement(elementBox, currentText);
-
+            if (elementBox.previousElement instanceof FieldElementBox && (elementBox.previousElement as FieldElementBox).fieldType === 1){
+                matchResults.elementInfo.values.pop();
+                matchResults.elementInfo.values.push(0);
+            }
             markIndex = (elementBox.istextCombined) ? elementBox.line.getOffset(this.getCombinedElement(elementBox), 0) : markIndex;
 
             this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);

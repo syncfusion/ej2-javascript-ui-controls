@@ -932,7 +932,8 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private autoSlideChange(): void {
-        const activeSlide: HTMLElement = this.element.querySelector(`.${CLS_ACTIVE}`) as HTMLElement;
+        const activeSlide: HTMLElement | null = this.element.querySelector(`.${CLS_ITEM}.${CLS_ACTIVE}`)
+            || this.element.querySelector(`.${CLS_INDICATORS} .${CLS_ACTIVE}`) as HTMLElement;
         if (isNullOrUndefined(activeSlide)) { return; }
         const activeIndex: number = parseInt(activeSlide.dataset.index, 10);
         if (!this.loop && activeIndex === this.slideItems.length - 1) {

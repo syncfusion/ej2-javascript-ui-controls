@@ -835,6 +835,55 @@ describe('Undo redo ->', () => {
                 done();
             });
         });
+        describe('EJ2-912111', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    {
+                        sheets: [{
+                            rows: [{
+                                index: 1, cells: [{
+                                    value: '100', style: {
+                                        fontSize: '11pt',
+                                        fontFamily: 'Arial',
+                                        verticalAlign: 'middle',
+                                        textAlign: 'right',
+                                    }
+                                }], height: 30
+                            }]
+                        }]
+                    }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Custom row height is not maintained when editing and performing undo actions', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('selectRange', ['A2']);
+                helper.edit('A2', 'Hello Spreadsheet');
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('Hello Spreadsheet');
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(30);
+                spreadsheet.undo();
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe(100);
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(30);
+                helper.edit('A2', 'www.syncfusion.com');
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('www.syncfusion.com');
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(30);
+                expect(spreadsheet.sheets[0].rows[1].cells[0].hyperlink).toBe('http://www.syncfusion.com');
+                spreadsheet.undo();
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe(100);
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(30);
+                expect(spreadsheet.sheets[0].rows[1].cells[0].hyperlink).toBeUndefined();
+                helper.triggerKeyNativeEvent(46);
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(30);
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[1].cells[0].style)).toBe('{"fontSize":"11pt","fontFamily":"Arial","verticalAlign":"middle","textAlign":"right"}');
+                spreadsheet.undo();
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe(100);
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(30);
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[1].cells[0].style)).toBe('{"fontSize":"11pt","fontFamily":"Arial","verticalAlign":"middle","textAlign":"right"}');
+                done();
+            });
+        });
     });
     describe('SF-362962', () => {
         let sheet: SheetModel;

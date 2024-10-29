@@ -2821,14 +2821,17 @@ describe('Checking predecessor update while updating duration', () => {
             }, done);
     });
     
-    it('updating duration', () => {
+    it('updating duration', (done: Function) => {
         let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
         triggerMouseEvent(duration, 'dblclick');
         let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
         input.value = '6 days';
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
-        triggerMouseEvent(element, 'click');
-        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[7].ganttProperties.startDate, 'M/d/yyyy')).toBe(ganttObj.getFormatedDate(ganttObj.currentViewData[8].ganttProperties.startDate, 'M/d/yyyy'));
+        setTimeout(() => {
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[7].ganttProperties.startDate, 'M/d/yyyy')).toBe(ganttObj.getFormatedDate(ganttObj.currentViewData[8].ganttProperties.startDate, 'M/d/yyyy'));
+            done();
+        }, 1000);
     });
     afterAll(() => {
         if (ganttObj) {

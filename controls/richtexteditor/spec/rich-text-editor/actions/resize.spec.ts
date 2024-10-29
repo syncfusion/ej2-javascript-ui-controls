@@ -232,6 +232,58 @@ describe("Resize - Actions Module", () => {
         });
     });
 
+    describe("915419 - Resize is not working properly in code view when there are more contents.", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let clickEvent: any;
+        let resizeStartSpy: jasmine.Spy = jasmine.createSpy('onresizeStart');
+        let resizingSpy: jasmine.Spy = jasmine.createSpy('onresizing');
+        let resizeStopSpy: jasmine.Spy = jasmine.createSpy('onresizeStop');
+
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode', 'CreateTable']
+                },
+                enableResize: true,
+                enableRtl: true,
+                resizeStart: resizeStartSpy,
+                resizing: resizingSpy,
+                resizeStop: resizeStopSpy
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('Resize is not working properly in code view when there are more contents.', (done) => {
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
+            rteObj.contentModule.getEditPanel().innerHTML = '<p>data</p>';
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea').value === '<p>data</p>').toBe(true);
+            let trg = (rteObj.element.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
+            clickEvent = new MouseEvent('mousemove', {
+                clientX: rteObj.inputElement.getBoundingClientRect().left + 10,
+                clientY: rteObj.inputElement.getBoundingClientRect().top + 10,
+                bubbles: true,
+                cancelable: true,
+                detail: 1
+            });
+            trg.dispatchEvent(clickEvent);
+            (rteObj.resizeModule as any).performResize(clickEvent);
+            const rteHeight = document.getElementById(rteObj.getID()).style.height;
+            const sourceViewHeight = document.getElementById(rteObj.getID() + "_source-view").style.height;
+            expect(rteHeight === sourceViewHeight).toBe(true);
+            done();
+        });
+    });
+
     describe('915389 - Iframe editor resize event not unbound after mouse up in the editor content.', () => {
         let editor: RichTextEditor;
         beforeAll((done: Function) => {

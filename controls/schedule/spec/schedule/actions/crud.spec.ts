@@ -4,7 +4,7 @@ import { Query, DataManager, UrlAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, EJ2Instance, ActionEventArgs, ScheduleModel,
-    Timezone, EventSettingsModel, DataBindingEventArgs
+    Timezone, EventSettingsModel, DataBindingEventArgs, ResizeEventArgs
 } from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { defaultData, stringData, cloneDataSource, resourceData } from '../base/datasource.spec';
@@ -2277,6 +2277,78 @@ describe('Schedule CRUD', () => {
             (dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLButtonElement).click();
             quickDialog = document.querySelector('.e-dialog.e-quick-dialog');
             (quickDialog.querySelector('.e-quick-alertcancel') as HTMLButtonElement).click();
+        });
+    });
+
+    describe('ES-914471 - testing selected cell after crud action', () => {
+        let schObj: Schedule;
+        const deleteSeriesData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Scrum meeting',
+            StartTime: new Date(2024, 7, 26, 10, 0),
+            EndTime: new Date(2024, 7, 26, 11, 0)
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { height: '500px', selectedDate: new Date(2024, 7, 28) };
+            schObj = util.createSchedule(schOptions, deleteSeriesData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('selected cell check after drag', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
+                const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells.e-selected-cell');
+                expect(workCell.getAttribute('data-date')).toBe('1724846400000');
+                done();
+            };
+            const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown', 130, 224);
+            util.triggerMouseEvent(dragElement, 'mousemove', 130, 234);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(171) as HTMLElement;
+            util.triggerMouseEvent(workCell, 'mousemove', 130, 200);
+            util.triggerMouseEvent(workCell, 'mousemove', 380, 370);
+            util.triggerMouseEvent(workCell, 'mousemove', 380, 370);
+            util.triggerMouseEvent(dragElement, 'mouseup');
+        });
+
+        it('selected cell check after resizing', (done: DoneFn) => {
+            schObj.resizeStop = (args: ResizeEventArgs) => args.cancel = false;
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
+                const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells.e-selected-cell');
+                expect(workCell.getAttribute('data-date')).toBe('1724846400000');
+                done();
+            };
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+            util.triggerMouseEvent(resizeHandler, 'mousedown');
+            util.triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            expect(schObj.element.querySelectorAll('.e-clone-time-indicator').length).toEqual(0);
+            util.triggerMouseEvent(resizeHandler, 'mousemove', 0, 25);
+            util.triggerMouseEvent(resizeHandler, 'mousemove', 0, 50);
+            util.triggerMouseEvent(resizeHandler, 'mousemove', 0, 50);
+            util.triggerMouseEvent(resizeHandler, 'mouseup');
+        });
+
+        it('selected cell check after deleting event', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells.e-selected-cell');
+                expect(workCell.getAttribute('data-date')).toBe('1724846400000');
+                done();
+            };
+            const deleteElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            util.triggerMouseEvent(deleteElement, 'click');
+            util.triggerMouseEvent(deleteElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog');
+            (dialogElement.querySelector('.e-event-delete') as HTMLElement).click();
+            const quickDialog: HTMLElement = document.querySelector('.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-delete') as HTMLElement).click();
         });
     });
 

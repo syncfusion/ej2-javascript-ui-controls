@@ -1186,6 +1186,20 @@ function checkLastSegmentasTerminal(ele: Connector): void {
             }
         }
     } else {
+        if (ele.segments.length > 0) {
+            let isInvalid: boolean = false;
+            let i: number = 0;
+            while (i < ele.segments.length) {
+                const seg: any = ele.segments[parseInt(i.toString(), 10)];
+                if (isInvalid ||
+                    (seg && !(seg instanceof OrthogonalSegment || seg instanceof StraightSegment || seg instanceof BezierSegment))) {
+                    ele.segments.splice(i, 1);
+                    isInvalid = true;
+                } else {
+                    i++;
+                }
+            }
+        }
         if (ele.segments.length === 0 || (ele.segments[ele.segments.length - 1] as OrthogonalSegmentModel).direction) {
             const segment: OrthogonalSegment = new OrthogonalSegment(ele, 'segments', { type: 'Orthogonal' }, true);
             ele.segments.push(segment);
@@ -1372,7 +1386,9 @@ function findIntermeditatePoints(
                 source.point = updateSegmentPoints(source, (ele.segments[parseInt(i.toString(), 10)] as OrthogonalSegment));
             } else {
                 const segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
-                source.point = segment.points[segment.points.length - 1];
+                if (segment && segment.points) {
+                    source.point = segment.points[segment.points.length - 1];
+                }
             }
         }
         if (i === ele.segments.length - 1) {

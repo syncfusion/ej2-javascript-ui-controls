@@ -1976,18 +1976,20 @@ export class TaskProcessor extends DateProcessor {
                 }
             }
             const data: IGanttData[] = [];
-            if (typeof(preTaskResources) !== 'string') {
-                for (let k: number = 0; k < preTaskResources.length; k++) {
-                    resourceData.filter((resourceInfo: Object) => {
-                        if (resourceInfo[resourceSettings.id] === preTaskResources[k as number][resourceSettings.id]
-                            && data.indexOf(preTaskResources[k as number]) === -1) {
-                            data.push(preTaskResources[k as number]);
-                        }
-                    });
+            if (!isNullOrUndefined(preTaskResources)) {
+                if (typeof(preTaskResources) !== 'string') {
+                    for (let k: number = 0; k < preTaskResources.length; k++) {
+                        resourceData.filter((resourceInfo: Object) => {
+                            if (resourceInfo[resourceSettings.id] === preTaskResources[k as number][resourceSettings.id]
+                                && data.indexOf(preTaskResources[k as number]) === -1) {
+                                data.push(preTaskResources[k as number]);
+                            }
+                        });
+                    }
+                    this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, data, ganttData);
+                } else {
+                    this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, preTaskResources, ganttData);
                 }
-                this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, data, ganttData);
-            } else {
-                this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, preTaskResources, ganttData);
             }
         } else {
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, [], ganttData);

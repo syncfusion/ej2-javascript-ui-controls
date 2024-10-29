@@ -1117,7 +1117,19 @@ export interface IKeyEventArgs {
     keyCode?: number;
     /** Returns any, modifier keys were pressed when the flick gesture occurred. */
     keyModifiers?: KeyModifiers;
+    /** Returns a value which represents an elements old position before nudge. */
+    oldValue?: ElementOffset;
+    /** Returns a value which represents an elements new position after nudge. */
+    newValue?: ElementOffset;
 }
+
+export interface ElementOffset {
+    /** returns a object's offset x  */
+    offsetX?: number;
+    /** returns a object's offset y  */
+    offsetY?: number;
+}
+
 /**
  * ILoadEventArgs - ILoadEventArgs defines the event arguments when diagram rendering is initialized.
  */

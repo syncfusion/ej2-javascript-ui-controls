@@ -55,6 +55,10 @@ export class SelectionCharacterFormat {
     /**
      * @private
      */
+    public complexScript: boolean = undefined;
+    /**
+     * @private
+     */
     public fontSizeBidi: number = 0;
     /**
      * @private
@@ -338,6 +342,7 @@ export class SelectionCharacterFormat {
         this.fontFamilyBidi = format.fontFamilyBidi;
         this.fontSizeBidi = format.fontSizeBidi;
         this.allCaps = format.allCaps;
+        this.complexScript = format.complexScript;
     }
     /**
      * Combines the format.
@@ -397,6 +402,9 @@ export class SelectionCharacterFormat {
         if (!isNullOrUndefined(this.allCaps) && this.allCaps !== format.allCaps) {
             this.allCaps = undefined;
         }
+        if (!isNullOrUndefined(this.complexScript) && this.complexScript !== format.complexScript) {
+            this.complexScript = undefined;
+        }
     }
     /**
      * @private
@@ -434,6 +442,7 @@ export class SelectionCharacterFormat {
         this.fontSizeBidi = selectionCharacterFormat.fontSizeBidi;
         this.fontFamilyBidi = selectionCharacterFormat.fontFamilyBidi;
         this.allCaps = selectionCharacterFormat.allCaps;
+        this.complexScript = selectionCharacterFormat.complexScript;
     }
     /**
      * Checks whether current format is equal to the source format or not.
@@ -479,6 +488,7 @@ export class SelectionCharacterFormat {
         this.fontFamilyBidi = undefined;
         this.fontSizeBidi = undefined;
         this.allCapsIn = undefined;
+        this.complexScript = undefined;
     }
     /**
      * Destroys the maintained resources.
@@ -505,6 +515,7 @@ export class SelectionCharacterFormat {
         this.fontFamilyBidi = undefined;
         this.fontSizeBidi = undefined;
         this.allCapsIn = undefined;
+        this.complexScript = undefined;
     }
 }
 /**

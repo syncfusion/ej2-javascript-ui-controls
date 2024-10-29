@@ -1962,3 +1962,33 @@ describe('EJ2-909118: Virtualization not working properly with specific pageSize
         gObj = null;
     });
 });
+
+describe('EJ2-914328: DataBound event is triggered multiple times during page refresh when virtualization with persistence is enabled.', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableVirtualization: true,
+                columns: [    
+                    { field: 'OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+                    { field: 'CustomerID', headerText:'CustomerID', width:120},      
+                    { field: 'Freight', textAlign: 'Right', width:110 , format:'C2', headerText:"Freight"},
+                    { field: 'ShipCity', headerText:'ShipCity', width:130}    
+                ], 
+            }, done);
+    });
+
+    it('scroll listener coverage', () => {
+        let e: object = { direction: 'down', sentinel: { axis: 'Z' }, offset: { left: 0, top: 1450} };
+        gObj.enablePersistence = true;
+        gObj.isInitialLoad = false;
+        (gObj as any).contentModule.scrollListener(e);
+    });
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
+    });
+});

@@ -719,7 +719,8 @@ export class RowDD {
             drag: this.drag,
             dragStop: this.dragStop,
             isReplaceDragEle: this.isReplaceDragEle,
-            isPreventSelect: false
+            isPreventSelect: false,
+            isPreventScroll: true
         });
     }
 

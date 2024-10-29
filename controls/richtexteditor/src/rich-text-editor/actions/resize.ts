@@ -91,6 +91,10 @@ export class Resize {
             this.parent.element.style.height = eventType.clientY - boundRect.top + 'px';
             this.parent.element.style.width = (!this.parent.enableRtl) ? eventType.clientX - boundRect.left + 'px' : boundRect.right - eventType.clientX + 'px';
         }
+        const rteContent: HTMLElement = this.parent.element.querySelector('#' + this.parent.getID() + '_source-view') as HTMLElement;
+        if (!isNullOrUndefined(rteContent)) {
+            rteContent.style.height = this.parent.element.style.height;
+        }
         this.parent.refreshUI();
     }
 

@@ -5388,4 +5388,72 @@ describe('RTE CR issues ', () => {
                 destroy(rteObj);
             });
         });
+
+        describe('916204 - Link Dialog Not Closed but Link Inserted in Editor When args.cancel is Set to True in beforeDialogClose Event', () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            let controlId: string;
+            beforeEach((done: Function) => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Image', 'CreateLink', 'Audio', 'Video']
+                    },
+                    value: `<p id="rte">RichTextEditor</p>`,
+                    beforeDialogClose: function (args) {
+                        args.cancel = true;
+                    }
+                });
+                rteEle = rteObj.element;
+                controlId = rteEle.id;
+                done();
+            });
+            it(' inserting image', (done) => {
+                rteObj.focusIn();
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+                item.click();
+                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                expect(rteObj.inputElement.innerHTML === '<p id="rte">RichTextEditor</p>').toBe(true);
+                done();
+            });
+            it(' inserting video', (done) => {
+                rteObj.focusIn();
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Video');
+                item.click();
+                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+                (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+                (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+                expect(rteObj.inputElement.innerHTML === '<p id="rte">RichTextEditor</p>').toBe(true);
+                done();
+            });
+            it(' inserting audio', (done) => {
+                rteObj.focusIn();
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Audio');
+                item.click();
+                let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = window.origin + '/base/spec/content/audio/RTE-Audio.mp3';
+                (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                (document.querySelector('.e-insertAudio.e-primary') as HTMLElement).click();
+                expect(rteObj.inputElement.innerHTML === '<p id="rte">RichTextEditor</p>').toBe(true);
+                done();
+            });
+            it(' inserting link', (done) => {
+                rteObj.focusIn();
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateLink');
+                item.click();
+                (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusiocom';
+                let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+                (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+                expect(rteObj.inputElement.innerHTML === '<p id="rte">RichTextEditor</p>').toBe(true);
+                done();
+            });
+            afterEach((done: DoneFn) => {
+                destroy(rteObj);
+                done();
+            });
+        });
 });

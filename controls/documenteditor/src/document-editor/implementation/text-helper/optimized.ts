@@ -92,15 +92,16 @@ export class Optimized {
     public getHeightInternal(characterFormat: WCharacterFormat): TextSizeInfo {
         const key: string = this.getkeyFromCharFormat(characterFormat);
         //With optimized technique, height and baseline factor will be same for each font-family, hence we maintaining cache for the factors and updating height based on font size.
+        const isBidi: boolean = characterFormat.bidi || characterFormat.complexScript;
         if (isNullOrUndefined(this.optimizedHeightCollection[`${key}`])) {
             const fontInfo: FontSizeInfo = this.getFontInfo(characterFormat);
             this.optimizedHeightCollection[`${key}`] = fontInfo;
-            const fontHeight: number = fontInfo.HeightFactor * characterFormat.fontSize;
-            return {Height: fontHeight, BaselineOffset: fontInfo.BaselineFactor * fontHeight};
+            const fontHeight: number = fontInfo.HeightFactor * (isBidi ? characterFormat.fontSizeBidi : characterFormat.fontSize);
+            return { Height: fontHeight, BaselineOffset: fontInfo.BaselineFactor * fontHeight };
         } else {
             const fontSizeInfo: FontSizeInfo = this.optimizedHeightCollection[`${key}`];
-            const fontHeight: number = fontSizeInfo.HeightFactor * characterFormat.fontSize;
-            return {Height: fontHeight, BaselineOffset: fontSizeInfo.BaselineFactor * fontHeight};
+            const fontHeight: number = fontSizeInfo.HeightFactor * (isBidi ? characterFormat.fontSizeBidi : characterFormat.fontSize);
+            return { Height: fontHeight, BaselineOffset: fontSizeInfo.BaselineFactor * fontHeight };
         }
     }
 

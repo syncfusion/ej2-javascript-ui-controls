@@ -2339,9 +2339,9 @@ export interface TextSearchColorSettingsModel {
 }
 
 /**
- * Interface for a class PageData
+ * Interface for a class PageInfo
  */
-export interface PageDataModel {
+export interface PageInfoModel {
 
     /**
      * The 0-based index of the page.
@@ -2362,11 +2362,6 @@ export interface PageDataModel {
      * The rotation angle of the page in degrees.
      */
     rotation?: number;
-
-    /**
-     * The current zoom factor.
-     */
-    zoomFactor?: number;
 
 }
 

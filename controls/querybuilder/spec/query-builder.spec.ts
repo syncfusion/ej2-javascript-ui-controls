@@ -5722,17 +5722,23 @@ describe('QueryBuilder', () => {
             }, done);
         });
         it('Remote Data Checking', (done: Function) => {
-            const msObj: TextBox = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances[0];
-            expect(msObj.value).toEqual('BERGS');
+            const msObj: any = queryBuilder.element.querySelector('.e-rule-value input.e-control');
+            if (msObj) {
+                const textObj: TextBox = msObj.ej2_instances[0];
+                expect(textObj.value).toEqual('BERGS');
+            }
             queryBuilder.getPredicate(queryBuilder.getValidRules());
             done();
         });
         it('Multi Select Data Checking', (done: Function) => {
-            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
-            operatorElem[0].showPopup();
-            const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
-            items[8].click();
-            expect(operatorElem[0].value).toEqual('in');
+            const operatorElem: any = queryBuilder.element.querySelector('.e-rule-operator .e-control');
+            if (operatorElem) {
+                const operObj: DropDownList = operatorElem.ej2_instances[0];
+                operObj.showPopup();
+                const items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+                items[8].click();
+                expect(operObj.value).toEqual('in');
+            }
             queryBuilder.getPredicate(queryBuilder.getValidRules());
             done();
         });

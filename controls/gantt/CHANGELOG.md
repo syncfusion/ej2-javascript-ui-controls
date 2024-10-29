@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 27.1.57 (2024-10-29)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I642434` - `recordIndex` property is updating last index for every above or below add action via `contextMenu` issue has been fixed.
+- `#I646826` - An invalid resource collection is being passed resulting in a script error issue has been fixed.
+- `#I637870` - White space when expand and collapse action issue has been fixed.
+
+## 27.1.56 (2024-10-23)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I645245` - Console error occurs while taskbar editing without `allowEditing` property issue has been fixed.
+
 ## 27.1.55 (2024-10-22)
 
 ### GanttChart

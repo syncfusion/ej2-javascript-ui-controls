@@ -6966,4 +6966,59 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 400);
         });
     });
+
+    describe('911853: Table resizing in RTE causes wrong height calculation in FireFox  ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                resizeStart: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                },
+                resizeStop: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                },
+                resizing: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        
+        it('check height when resizing', () => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            let height: any = (table as HTMLTableElement).offsetHeight;
+            let tableBox: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
+            clickEvent.initEvent("mousedown", false, true);
+            tableBox.dispatchEvent(clickEvent);
+            (rteObj.tableModule as any).resizeStart(clickEvent);
+            (<any>rteObj.tableModule).resizeBtnStat.tableBox = true;
+            (rteObj.tableModule as any).resizing({ target: tableBox, pageX: 100, pageY: 100, preventDefault: function () { } });
+            height = (table as HTMLTableElement).offsetHeight;
+            (<any>rteObj.tableModule).resizeBtnStat.tableBox = true;
+            (rteObj.tableModule as any).resizing({ target: tableBox, pageX: 100, pageY: 200, preventDefault: function () { } });
+            (<any>rteObj.tableModule).resizeBtnStat.tableBox = true;
+            (rteObj.tableModule as any).resizing({ target: tableBox, pageX: 100, pageY: 400, preventDefault: function () { } });
+            (<any>rteObj.tableModule).resizeBtnStat.tableBox = true;
+            (rteObj.tableModule as any).resizing({ target: tableBox, pageX: 100, pageY: 600, preventDefault: function () { } });
+            height += 500;
+            expect(height).toEqual((table as HTMLTableElement).offsetHeight);
+        });
+    });
 });

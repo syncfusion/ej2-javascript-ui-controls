@@ -24,6 +24,10 @@
     height: $qrybldr-height;
     width: $qrybldr-width;
 
+    & .e-rule-field {
+      user-select: none;
+    }
+
     & .e-multiselect .e-qb-spinner .e-spinner-inner {
       left: $qrybldr-spinner-left;
       right: $qrybldr-spinner-right;

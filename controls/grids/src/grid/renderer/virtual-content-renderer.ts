@@ -218,10 +218,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.editSettings.showAddNewRow) {
             this.parent.closeEdit();
         }
-        this.parent.notify(viewInfo.event, {
-            requestType: 'virtualscroll', virtualInfo: viewInfo,
-            focusElement: scrollArgs.focusElement
-        });
+        if (!(!this.parent.isInitialLoad && this.parent.enablePersistence)) {
+            this.parent.notify(viewInfo.event, {
+                requestType: 'virtualscroll', virtualInfo: viewInfo,
+                focusElement: scrollArgs.focusElement
+            });
+        }
         if (this.parent.enableColumnVirtualization && !this.parent.getContentTable().querySelector('tr.e-row')) {
             this.parent.removeMaskRow();
             this.appendContent(undefined, undefined, {
@@ -612,7 +614,13 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
-    private getPageFromTop(sTop: number, info: VirtualInfo): number {
+    /**
+     * @param {number} sTop - specifies the sTop
+     * @param {VirtualInfo} info - specifies the info
+     * @returns {number} - return the page
+     * @hidden
+     */
+    public getPageFromTop(sTop: number, info: VirtualInfo): number {
         const total: number = (isGroupAdaptive(this.parent)) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         let page: number = 0;
         this.offsetKeys.some((offset: string) => {
@@ -891,10 +899,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.observer.observe((scrollArgs: ScrollArg) => this.scrollListener(scrollArgs), this.onEntered());
             const gObj: IGrid = this.parent;
             if (gObj.enablePersistence && gObj.scrollPosition) {
-                this.content.scrollTop = gObj.scrollPosition.top;
-                const scrollValues: ScrollArg = { direction: 'down', sentinel: this.observer.sentinelInfo.down,
-                    offset: gObj.scrollPosition, focusElement: gObj.element };
-                this.scrollListener(scrollValues);
+                if (gObj.scrollPosition.top > 0) {
+                    this.content.scrollTop = gObj.scrollPosition.top;
+                    const scrollValues: ScrollArg = { direction: 'down', sentinel: this.observer.sentinelInfo.down,
+                        offset: gObj.scrollPosition, focusElement: gObj.element };
+                    this.scrollListener(scrollValues);
+                }
                 if (gObj.enableColumnVirtualization) {
                     this.content.scrollLeft = gObj.scrollPosition.left;
                 }

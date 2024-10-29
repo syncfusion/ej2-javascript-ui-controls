@@ -631,11 +631,12 @@ export class CellRenderer implements ICellRenderer {
      * @param {boolean} skipFormatCheck - Specifies whether to skip the format checking while applying the number format.
      * @param {boolean} checkFormulaAdded - Specifies whether to check the formula added or not.
      * @param {boolean} isFromAutoFillOption - Specifies whether the value is from auto fill option or not.
+     * @param {boolean} isHeightCheckNeeded - Specifies whether the refreshing is from undo-redo with format action.
      * @returns {void}
      */
     public refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
-        skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean): void {
+        skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean, isHeightCheckNeeded: boolean = true): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice(); let args: CellRenderArgs; let cell: HTMLTableCellElement;
         if (inView(this.parent, cRange, true)) {
@@ -646,7 +647,7 @@ export class CellRenderer implements ICellRenderer {
                     cell = this.parent.getCell(i, j) as HTMLTableCellElement;
                     if (cell) {
                         args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
-                            cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '', onActionUpdate:
+                            cRange[3], isRefresh: true, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: true, first: '', onActionUpdate:
                             checkHeight, skipFormatCheck: skipFormatCheck, isFromAutoFillOption: isFromAutoFillOption };
                         if (checkFormulaAdded) {
                             args.address = getCellAddress(i, j);

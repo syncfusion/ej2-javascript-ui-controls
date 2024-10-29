@@ -4158,10 +4158,6 @@ export class Selection {
 
     private handleScroll(e: KeyboardEvent): void {
         this.mouseWheel++;
-        if (this.mouseWheel === 2) {
-            this.mouseWheel = 0;
-            return;
-        }
         const parent: ImageEditor = this.parent;
         let x: number; let y: number; let isInsideCanvas: boolean = false;
         if (e.type === 'mousewheel') {
@@ -4173,6 +4169,13 @@ export class Selection {
         if (x > parent.img.destLeft && x < parent.img.destLeft + parent.img.destWidth && y > parent.img.destTop &&
             y < parent.img.destTop + parent.img.destHeight) {
             isInsideCanvas = true;
+        }
+        if (this.mouseWheel === 2) {
+            this.mouseWheel = 0;
+            if (e.ctrlKey === true && isInsideCanvas) {
+                e.preventDefault();
+            }
+            return;
         }
         e.stopPropagation();
         if (e.ctrlKey === true && isInsideCanvas) {

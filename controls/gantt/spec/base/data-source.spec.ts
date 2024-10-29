@@ -18010,3 +18010,83 @@ export let CR912356font: Object = [{
     ],
 },
 ];
+export let breakIssue: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project Initiation',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2019'), resources: [1], Progress: 50, info: 'Measure the total property area alloted for construction', amount: 50000 },
+            {
+                TaskID: 3, TaskName: 'Perform Soil test', BaselineStartDate: new Date('04/04/2019'), BaselineEndDate: new Date('04/09/2019'), StartDate: new Date('04/03/2019'), Predecessor: "2FS", resources: [2, 5], Duration: 4, Progress: 50, info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                    'From an engineer or company specializing in soil testing', amount: 60000
+            },
+            { TaskID: 4, TaskName: 'Soil test approval', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/02/2019'), Duration: 5, Progress: 50, info: 'Develop floor plans and obtain a materials list for estimations', amount: 70000 },
+        ],
+        Indicators: [
+            {
+                'date': '04/11/2019',
+                'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                'name': 'Custom String',
+                'tooltip': 'Follow up'
+            },
+            {
+                'date': '04/16/2019',
+                'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                'name': '<span style="color:red">String Template</span>',
+                'tooltip': 'Review results'
+            }
+        ]
+    },        
+    {
+        TaskID: 5,
+        TaskName: 'Project Estimation',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 6, TaskName: 'Develop floor plan for estimation', BaselineStartDate: new Date('04/04/2019'), BaselineEndDate: new Date('04/08/2019'), EndDate: new Date('04/08/2019'), Progress: 50, info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)', amount: 40000 },
+            { TaskID: 7, TaskName: 'List materials', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/04/2019'), resources: [4], StartDate: new Date('04/08/2019'), EndDate: new Date('04/08/2019'), Predecessor: "6SS", Duration: 3, Progress: 50, info: 'Clear the building site (demolition of existing home if necessary)', amount: 60000 },
+            { TaskID: 8, TaskName: 'Estimation Calculation', StartDate: new Date('04/04/2019'), Duration: 0, Progress: 50, info: 'Excavate the foundation and dig footers (Scope of work is dependent of foundation designed by engineer)', amount: 80000 },
+            { TaskID: 9, TaskName: 'Estimation approval', Progress: 50, info: 'Add floor and ceiling joists and install subfloor panels', amount: 30000 }
+        ]
+    },
+];
+export let editingData3: Object[] = [
+    {
+      TaskID: 1,
+      TaskName: 'Project initiation',
+      StartDate: new Date('04/02/2024'),
+      EndDate: new Date('04/21/2024'),
+      subtasks: [
+        {
+          TaskID: 2,
+          TaskName: 'Identify site location',
+          StartDate: new Date('04/02/2024'),
+          Duration: 0,
+          Progress: 30,
+          resources: [1],
+          info: 'Measure the total property area alloted for construction',
+        },
+        {
+          TaskID: 3,
+          TaskName: 'Perform Soil test',
+          StartDate: new Date('04/02/2024'),
+          Duration: 4,
+          Predecessor: '2',
+          resources: [2, 3, 5],
+          info:
+            'Obtain an engineered soil test of lot where construction is planned.' +
+            'From an engineer or company specializing in soil testing',
+        },
+        {
+          TaskID: 7,
+          TaskName: 'Soil test approval',
+          StartDate: new Date('04/02/2024'),
+          Duration: 0,
+          Predecessor: '3',
+          Progress: 30,
+        },
+      ],
+    },
+  ];

@@ -142,7 +142,7 @@ export interface ICellRenderer {
     render(args: CellRenderArgs): Element;
     refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
-        skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean): void;
+        skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean, isHeightCheckNeeded?: boolean): void;
     refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
         skipFormatCheck?: boolean): void;
@@ -464,6 +464,7 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     cfClearActionArgs?: object;
     cfActionArgs?: { cfModel: ConditionalFormatModel[], sheetIdx: number };
     isColSelected?: boolean;
+    style?: CellStyleModel;
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];

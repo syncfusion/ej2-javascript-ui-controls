@@ -76,7 +76,8 @@ export class Regular {
             } else{
                 style += 'font-family:' + characterFormat.fontFamily + ';';
             }
-            let fontSize: number = characterFormat.fontSize;
+            const isBidi: boolean = characterFormat.bidi || characterFormat.complexScript;
+            let fontSize: number = isBidi ? characterFormat.fontSizeBidi : characterFormat.fontSize;
             if (fontSize <= 0.5) {
                 fontSize = 0.5;
             }

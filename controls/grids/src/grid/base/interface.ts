@@ -658,6 +658,7 @@ export interface IGrid extends Component<HTMLElement> {
     registeredTemplate?: Object;
     lockcolPositionCount?: number;
     commandDelIndex?: number;
+    isFocusFirstCell?: boolean;
     isPrinting?: boolean;
     id?: string;
     isSelectedRowIndexUpdating?: boolean;

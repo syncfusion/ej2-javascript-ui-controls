@@ -4984,15 +4984,25 @@ export abstract class ElementBox {
     /**
      * @private
      */
-    public linkFieldTraversingForward(line: LineWidget, fieldBegin: FieldElementBox, previousNode: ElementBox): boolean {
+    public linkFieldTraversingForward(line: LineWidget, fieldBegin: FieldElementBox, previousNode: ElementBox, fieldCount?: number): boolean {
         let i: number = 0;
+        if (isNullOrUndefined(fieldCount)) {
+            fieldCount = 0;
+        }
         if (line.children.indexOf(previousNode) > -1) {
             i = line.children.indexOf(previousNode) + 1;
         }
         for (let j: number = i; j < line.children.length; j++) {
             let node: ElementBox = line.children[j];
             if (node instanceof FieldElementBox) {
+                if (node.fieldType === 0) {
+                    fieldCount++;
+                }
                 if (node.fieldType === 1) {
+                    if (fieldCount !== 0) {
+                        fieldCount--;
+                        continue;
+                    }
                     if (isNullOrUndefined((node as FieldElementBox).fieldBegin)) {
                     fieldBegin.fieldEnd = node as FieldElementBox;
                     }
@@ -5018,15 +5028,15 @@ export abstract class ElementBox {
             }
         }
         if (line.nextLine) {
-            this.linkFieldTraversingForward(line.nextLine, fieldBegin, this);
+            this.linkFieldTraversingForward(line.nextLine, fieldBegin, this, fieldCount);
         } else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget
             && line.paragraph.nextRenderedWidget.childWidgets.length > 0) {
-            this.linkFieldTraversingForward(line.paragraph.nextRenderedWidget.childWidgets[0] as LineWidget, fieldBegin, this);
+            this.linkFieldTraversingForward(line.paragraph.nextRenderedWidget.childWidgets[0] as LineWidget, fieldBegin, this, fieldCount);
         } else if (line.paragraph.nextRenderedWidget instanceof TableWidget) {
             var tableWidget: TableWidget = line.paragraph.nextRenderedWidget as TableWidget;
             tableWidget = tableWidget.getSplitWidgets().pop() as TableWidget;
             if (!isNullOrUndefined(tableWidget.nextRenderedWidget) && tableWidget.nextRenderedWidget instanceof ParagraphWidget && tableWidget.nextRenderedWidget.childWidgets.length > 0) {
-                this.linkFieldTraversingForward(tableWidget.nextRenderedWidget.childWidgets[0] as LineWidget, fieldBegin, this);
+                this.linkFieldTraversingForward(tableWidget.nextRenderedWidget.childWidgets[0] as LineWidget, fieldBegin, this, fieldCount);
             }
         }
         return true;

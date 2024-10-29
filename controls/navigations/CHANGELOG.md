@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 27.1.57 (2024-10-29)
+
+### Carousel
+
+#### Bug Fixes
+
+- `#I644419` - The script error that occurred in the carousel when a grid was rendered as a carousel item has been fixed.
+
+### TreeView
+
+- `#I639573` - Resolved issues with selected items and the checked state of the parent node when filtering in the DropdownTree component.
+
+#### Bug Fixes
+
+- `#I642832` - An issue with TreeView component when adding child nodes using `addNodes` method without passing a target has been resolved.
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I643178` - An issue on browser resizing while setting width value in percentage in Sidebar component has been resolved.
+
 ## 27.1.56 (2024-10-23)
 
 ### Breadcrumb

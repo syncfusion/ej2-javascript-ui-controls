@@ -493,6 +493,7 @@ export class AutoComplete extends ComboBox {
             }
         } else {
             super.setSelection(li, e);
+            this.isFiltered = false;
         }
     }
 

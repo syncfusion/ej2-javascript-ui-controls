@@ -533,7 +533,11 @@ export class ContextMenu {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getCellIndexes(sheet.activeCell);
             const td: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
-            if (!td.getElementsByClassName('e-hyperlink')[0] &&
+            if (isNullOrUndefined(td)) {
+                items.push({
+                    text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'
+                });
+            } else if (!td.getElementsByClassName('e-hyperlink')[0] &&
                 !td.classList.contains('e-hyperlink')) {
                 items.push({
                     text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'

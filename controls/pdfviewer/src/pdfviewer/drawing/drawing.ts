@@ -745,10 +745,13 @@ export class Drawing {
         container.children.push(srcDecorator);
         container.children.push(targetDecorator);
         if (obj.shapeAnnotationType === 'LineWidthArrowHead') {
-            container.children[1].width = 12 * obj.thickness;
-            container.children[1].height = 12 * obj.thickness;
-            container.children[2].width = 12 * obj.thickness;
-            container.children[2].height = 12 * obj.thickness;
+            for (let i: number = 0; i < container.children.length; i++) {
+                const child: any = container.children[parseInt(i.toString(), 10)];
+                if (child.id.includes('srcDec') || child.id.includes('tarDec')) {
+                    child.width = 12 * obj.thickness;
+                    child.height = 12 * obj.thickness;
+                }
+            }
         }
         container.id = obj.id;
         container.offsetX = segment.offsetX;

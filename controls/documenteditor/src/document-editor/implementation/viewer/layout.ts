@@ -2421,7 +2421,7 @@ export class Layout {
             if (element.previousElement &&
                 ((element.previousElement instanceof ShapeElementBox && element.previousElement.textWrappingStyle === 'Inline') ||
                     !(element.previousElement instanceof ShapeElementBox))) {
-                this.cutClientWidth(element.previousElement);
+                this.cutClientWidth(element.previousElement, undefined, (element instanceof TextElementBox && element.text === '\f') ? true : false);
             }
         }
         if (element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') {
@@ -3294,7 +3294,7 @@ export class Layout {
                     tableHeight = size.Height;
                 }
                 if (!(clientLayoutArea.x > (wrappingBounds.right + minimumWidthRequired) || clientLayoutArea.right < wrappingBounds.x - minimumWidthRequired)) {
-                    if (this.isNeedToWrapForSquareTightAndThroughForTable(bodyWidget, table, -1, -1, textWrappingStyle, wrappingBounds, allowOverlap, 1, floatingElement, false, rect, tableWidth, tableHeight)) {
+                    if (this.isNeedToWrapForSquareTightAndThroughForTable(bodyWidget, table, -1, -1, textWrappingStyle, wrappingBounds, allowOverlap, 1, floatingElement, false, rect, tableWidth, tableHeight) && !(this.isRelayout && floatingElement instanceof TableWidget && floatingElement.positioning.verticalOrigin === 'Paragraph'&& table.index < floatingElement.index)) {
                         // Skip to update when the wrap type as left
                         if (rect.x >= wrappingBounds.x && rect.x < wrappingBounds.right && textWrappingType !== 'Left') // Skip to update when the wrap type as left
                         {
@@ -3617,7 +3617,7 @@ export class Layout {
             }
         }
     }
-    private cutClientWidth(currentElement: ElementBox, isNeedToLayoutShape?: boolean): boolean {
+    private cutClientWidth(currentElement: ElementBox, isNeedToLayoutShape?: boolean, skipXPositionUpdate?: boolean): boolean {
         if(this.is2013Justification) {
             return false;
         }
@@ -3640,7 +3640,9 @@ export class Layout {
         const bodyWidget: BlockContainer = paragarph.bodyWidget as BlockContainer;
         if (bodyWidget && bodyWidget.floatingElements.length > 0) {
             this.hasFloatingElement = true;
-            this.isXPositionUpdated = true;
+            if (!skipXPositionUpdate) {
+                this.isXPositionUpdated = true;
+            }
             return false;
         }
         if (!splitCurrentWidget) {
@@ -7307,6 +7309,14 @@ export class Layout {
         let maximumCellWidgetHeight: number = 0;
         for (let i: number = 0; i < tableRowWidget.childWidgets.length; i++) {
             let cellWidget: TableCellWidget = tableRowWidget.childWidgets[i] as TableCellWidget;
+            if (i === 0 && cellWidget.childWidgets.length > 0 && cellWidget.columnIndex === 0
+                && cellWidget.cellFormat.rowSpan === 1 && this.documentHelper.compatibilityMode === 'Word2013'
+                && !this.isVerticalMergedCellContinue(tableRowWidget) && this.documentHelper.splittedCellWidgets.length === 0) {
+                const firstBlock: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(cellWidget as TableCellWidget);
+                if (firstBlock.paragraphFormat.keepWithNext && !isNullOrUndefined(this.getPreviousBlock(tableRowWidget))) {
+                    return tableRowWidget;
+                }
+            }
             let splittedCell: TableCellWidget = this.getSplittedWidget(bottom, true, tableCollection, rowCollection, cellWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, count);
             if (isMultiColumnSplit && !isNullOrUndefined(splittedCell) && splittedCell.childWidgets.length !== 0 && cellHeight > cellWidget.height) {
                 cellHeight = cellWidget.height;
@@ -8481,13 +8491,6 @@ export class Layout {
             }
             else {
                 lineHeight = lineWidget.height;
-            }
-            if (!isNullOrUndefined(paragraphWidget.associatedCell) && paragraphWidget.associatedCell.index === 0 && paragraphWidget.index === 0
-               && isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousSplitWidget) && isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousWidget)
-                && paragraphWidget.paragraphFormat.keepWithNext) {
-                moveEntireBlock = true;
-                lineWidget = paragraphWidget.childWidgets[0] as LineWidget;
-                return paragraphWidget;
             }
             if ((isMultiColumnSplit && count >= lineIndexInCell) || bottom < lineBottom + height + lineHeight || isCellSplit) {
                 if (paragraphWidget.paragraphFormat.keepLinesTogether && (paragraphWidget.index !== 0 ||
@@ -10540,7 +10543,8 @@ export class Layout {
             }
             skipFootNoteHeight = false;
             //let isContainsFootnote: boolean = false;
-            if (this.isFitInClientArea(widget, viewer, footWidget) || (this.isMultiColumnSplit && widget.bodyWidget.sectionFormat.numberOfColumns - 1 !== widget.bodyWidget.columnIndex)) {
+            if (this.isFitInClientArea(widget, viewer, footWidget) || (viewer.clientActiveArea.height < (widget.firstChild as LineWidget).height && this.viewer.clientActiveArea.y === this.viewer.clientArea.y)
+                || (this.isMultiColumnSplit && widget.bodyWidget.sectionFormat.numberOfColumns - 1 !== widget.bodyWidget.columnIndex)) {
                 if (this.keepWithNext) {
                     this.updateClientPositionForBlock(widget.containerWidget.firstChild as BlockWidget, widget);
                     this.keepWithNext = false;
@@ -11181,7 +11185,11 @@ export class Layout {
                         this.viewer.updateClientAreaForBlock(paragraphWidget, false);
                     } else {
                         this.updateContainerWidget(paragraphWidget, nextBodyWidget, 0, true);
-                        this.addParagraphWidget(this.viewer.clientActiveArea, paragraphWidget);
+                        if (paragraphWidget instanceof TableWidget) {
+                            this.addTableWidget(this.viewer.clientActiveArea, [paragraphWidget]);
+                        } else {
+                            this.addParagraphWidget(this.viewer.clientActiveArea, paragraphWidget);
+                        }
                     }
                     this.moveFootNotesToPage(footWidget, previousBodyWidget, nextBodyWidget);
                 }
@@ -11786,7 +11794,7 @@ export class Layout {
             this.layoutfootNote(paragraph.containerWidget.containerWidget);
             this.documentHelper.owner.editorModule.isFootNoteInsert = false;
             return;
-        } else if (lineToLayout.paragraph.isEmpty()) {
+        } else if (lineToLayout.paragraph.isEmpty() && isNullOrUndefined(lineToLayout.paragraph.nextSplitWidget)) {
             this.viewer.cutFromTop(paragraph.y);
             this.layoutParagraph(paragraph, 0);
         } else {

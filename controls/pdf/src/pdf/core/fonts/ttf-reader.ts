@@ -423,8 +423,8 @@ export class _TrueTypeReader {
             } else if (record._nameID === 6) {
                 this._metrics._postScriptName = record._name;
             }
-            if (this._metrics._fontFamily !== null && this._metrics._fontFamily !== 'undefined' &&
-                this._metrics._postScriptName !== null && this._metrics._postScriptName !== 'undefined') {
+            if (this._metrics._fontFamily !== null && typeof this._metrics._fontFamily !== 'undefined' &&
+                this._metrics._postScriptName !== null && typeof this._metrics._postScriptName !== 'undefined') {
                 break;
             }
         }

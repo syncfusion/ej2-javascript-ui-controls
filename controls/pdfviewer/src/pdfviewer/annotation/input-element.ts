@@ -65,7 +65,7 @@ export class InputElement {
         this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
         this.inputBoxElement.style.textAlign = 'center';
         if (annotation && annotation.wrapper && annotation.wrapper.bounds) {
-            this.inputBoxElement.style.width = annotation.wrapper.bounds.width ? (annotation.wrapper.bounds.width / 2 * zoomFactor) + 1 + 'px' : (this.maxWidth * zoomFactor) + 'px';
+            this.inputBoxElement.style.width = annotation.wrapper.bounds.width ? (annotation.wrapper.bounds.width * zoomFactor) + 1 + 'px' : (this.maxWidth * zoomFactor) + 'px';
             let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
             inputEleWidth = inputEleWidth > (this.maxWidth * zoomFactor) ? (this.maxWidth * zoomFactor) : inputEleWidth;
             if (annotation.wrapper.bounds.left) {

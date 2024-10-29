@@ -9,6 +9,8 @@ import { resourceData } from '../base/datasource.spec';
 import { EJ2Instance } from '../../../src/schedule/base/interface';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
@@ -1232,6 +1234,65 @@ describe('Event Base Module', () => {
                 expect((eventElement3Left - eventElement4Left) + parseInt(eventElement3.style.width, 10))
                     .toEqual(parseInt(eventElement4.style.width, 10));
             });
+        });
+    });
+
+    describe('ES-915440 - Checking recurring event with BDAY in timezone', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2018, 2, 2),
+                height: '550px',
+                timezone: 'Asia/Kolkata',
+                currentView: 'Month'
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking recurring appointment with timezone is properly rendered', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(app.length).toEqual(10);
+                expect(schObj.eventsData[0].StartTime.toString()).toContain('Tue Feb 27 2018 08:30:00');
+                expect(schObj.eventsData[0].EndTime.toString()).toContain('Tue Feb 27 2018 09:00:00');
+                expect(schObj.eventsData[0].RecurrenceRule).toEqual('FREQ=WEEKLY;BYDAY=MO,FR;INTERVAL=1;COUNT=10;');
+                expect(app[0].getAttribute('data-id')).toEqual('Appointment_1');
+                expect(app[0].getAttribute('aria-label')).toContain('Begin From Tuesday, February 27, 2018 at 8:30:00 AM');
+                expect(app[0].getAttribute('aria-label')).toContain('Ends At Tuesday, February 27, 2018 at 9:00:00 AM');
+                expect(app[0].getAttribute('data-id')).toEqual('Appointment_1');
+                expect(app[1].getAttribute('aria-label')).toContain('Begin From Saturday, March 3, 2018 at 8:30:00 AM');
+                expect(app[1].getAttribute('aria-label')).toContain('Ends At Saturday, March 3, 2018 at 9:00:00 AM');
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const subjectElement: HTMLInputElement = dialogElement.querySelector('.' + cls.SUBJECT_CLASS) as HTMLInputElement;
+            subjectElement.value = 'Recurring Event';
+            const allDayElement: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_ALL_DAY_CLASS + ' input');
+            allDayElement.click();
+            const timezoneElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.TIME_ZONE_CLASS + ' input');
+            timezoneElement.click();
+            const startTZDropDown: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_TZ_CLASS);
+            ((startTZDropDown as EJ2Instance).ej2_instances[0] as DropDownList).value = 'America/Vancouver';
+            ((startTZDropDown as EJ2Instance).ej2_instances[0] as DropDownList).dataBind();
+            const startElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS);
+            ((startElement as EJ2Instance).ej2_instances[0] as DateTimePicker).value = new Date(2018, 1, 26, 19, 0);
+            ((startElement as EJ2Instance).ej2_instances[0] as DateTimePicker).dataBind();
+            const endElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS);
+            ((endElement as EJ2Instance).ej2_instances[0] as DateTimePicker).value = new Date(2018, 1, 26, 19, 30);
+            ((endElement as EJ2Instance).ej2_instances[0] as DateTimePicker).dataBind();
+            const repeatElement: HTMLElement = dialogElement.querySelector('.e-repeat-element');
+            ((repeatElement as EJ2Instance).ej2_instances[0] as DropDownList).value = 'weekly';
+            ((repeatElement as EJ2Instance).ej2_instances[0] as DropDownList).dataBind();
+            (dialogElement.querySelector('.e-end-on-element') as EJ2Instance).ej2_instances[0].value = 'count';
+            const fridayButton: HTMLElement = dialogElement.querySelector('.e-days .e-btn[data-index="5"]');
+            fridayButton.click();
+            const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
         });
     });
 

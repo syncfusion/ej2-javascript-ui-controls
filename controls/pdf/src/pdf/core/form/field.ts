@@ -2,7 +2,7 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfForm } from './form';
 import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
-import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined } from './../utils';
+import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString } from './../utils';
 import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfDocument } from './../pdf-document';
@@ -70,6 +70,7 @@ export abstract class PdfField {
     _hasData: boolean = false;
     _circleCaptionFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 8, PdfFontStyle.regular);
     _textAlignment: PdfTextAlignment;
+    _isUpdating: boolean = false;
     /**
      * Gets the count of the loaded field items (Read only).
      *
@@ -2182,13 +2183,13 @@ export class PdfTextBoxField extends PdfField {
             if (this._isLoaded) {
                 let text: string = _getInheritableProperty(this._dictionary, 'V', false, true, 'Parent');
                 if (text) {
-                    this._text = text;
+                    this._text = _stringToPdfString(text);
                 } else {
                     const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
                     if (widget) {
                         text = widget._dictionary.get('V');
                         if (text) {
-                            this._text = text;
+                            this._text = _stringToPdfString(text);
                         }
                     }
                 }

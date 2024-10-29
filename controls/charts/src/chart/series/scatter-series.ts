@@ -161,26 +161,11 @@ export class ScatterSeries {
                 x: +scatterElement.getAttribute(circlePath + 'x'), y: +scatterElement.getAttribute(circlePath + 'y')
             };
         }
-        let element: Element;
-        if (series.chart.enableCanvas) {
-            series.chart.canvasRender.ctx.save();
-            series.chart.canvasRender.ctx.beginPath();
-            series.chart.canvasRender.ctx.rect(series.xAxis.rect.x, series.yAxis.rect.y, series.xAxis.rect.width,
-                                               series.yAxis.rect.height);
-            series.chart.canvasRender.ctx.clip();
-            element = drawSymbol(
-                point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
-                imageURL, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
-                series.chart.renderer, series.clipRect
-            );
-            series.chart.canvasRender.ctx.restore();
-        } else {
-            element = drawSymbol(
-                point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
-                imageURL, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
-                series.chart.renderer, series.clipRect
-            );
-        }
+        const element: Element = drawSymbol(
+            point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
+            imageURL, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
+            series.chart.renderer, series.clipRect
+        );
         appendChildElement(
             series.chart.enableCanvas, series.seriesElement, element,
             chart.redraw, true, circlePath + 'x', circlePath + 'y',

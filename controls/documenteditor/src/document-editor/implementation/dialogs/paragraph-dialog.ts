@@ -973,7 +973,7 @@ export class ParagraphDialog {
         if (isApply) {
             this.onParagraphFormat(paraFormat);
         } else {
-            this.documentHelper.owner.styleDialogModule.updateParagraphFormat();
+            this.documentHelper.owner.styleDialogModule.updateParagraphFormat(paraFormat);
         }
         this.documentHelper.hideDialog();
     };

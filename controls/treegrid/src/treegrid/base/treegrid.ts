@@ -2320,9 +2320,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (this.pageSettings.pageSizeMode === 'Root') {
                 this.grid.selectionModule['totalRecordsCount'] = this.grid.currentViewData.length;
             }
-            if (this.enableVirtualization && args.rowIndex === this.selectedRowIndex && !this.enablePersistence) {
-                args.cancel = true;
-            }
             if (!isNullOrUndefined(this.selectionSettings) && !this.selectionSettings.persistSelection &&
                 this.enableVirtualization && args.rowIndex === this.selectedRowIndex && this.isGantt) {
                 args.cancel = false;

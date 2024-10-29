@@ -3,6 +3,7 @@ import * as EVENTS from '../../common/constant';
 import { NotifyArgs } from '../../rich-text-editor/base/interface';
 import { createElement, isNullOrUndefined as isNOU, detach, addClass, Browser } from '@syncfusion/ej2-base';
 import { PASTE_SOURCE } from '../base/constant';
+import { InsertMethods } from './insert-methods';
 /**
  * PasteCleanup for MsWord content
  *
@@ -105,6 +106,9 @@ export class MsWordPaste {
             }
             e.callBack(elm.innerHTML, this.cropImageDimensions, source);
         } else {
+            if (source === PASTE_SOURCE[2]) {
+                this.handleOneNoteContent(elm);
+            }
             e.callBack(elm.innerHTML, null, source);
         }
     }
@@ -1097,6 +1101,19 @@ export class MsWordPaste {
             }
         }
         return 'html';
+    }
+
+    private handleOneNoteContent(element: HTMLElement): void {
+        const allListElements: NodeListOf<HTMLElement> = element.querySelectorAll('ul, ol') as NodeListOf<HTMLElement>;
+        if (allListElements.length > 0) {
+            for (let i: number = 0; i < allListElements.length; i++) {
+                // Removing the ul and ol parent node for the p tag
+                const currentList: HTMLElement = allListElements[i as number];
+                if (currentList.querySelectorAll('li').length === 0 && currentList.childNodes.length > 0) {
+                    InsertMethods.unwrap(currentList);
+                }
+            }
+        }
     }
 
     public destroy(): void {

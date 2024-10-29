@@ -968,4 +968,41 @@ describe('Command Column ', () => {
             gridObj = null;
         });
     });
+    
+    describe('EJ2-914718 - Tab Navigation and Focus Issues After Row Deletion in Command Column => ', function () {
+        let gridObj: Grid;
+        beforeAll(function (done: Function) {
+            gridObj = createGrid({
+                dataSource: data.slice(0, 30),
+                height: 270,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    {
+                        headerText: 'Manage Records', width: 160,
+                        commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                        { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                        { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                    }
+                ],
+            }, done);
+        });
+
+        it('Delete the cell', (done : Function) => {
+            (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[1].click();  
+            done();         
+        });
+        
+        it('Check focus first cell', () => {
+            expect(gridObj.focusModule.currentInfo.element.getAttribute('data-colindex')).toBe('0');            
+        });
+
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

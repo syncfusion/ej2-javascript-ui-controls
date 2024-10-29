@@ -1543,7 +1543,7 @@ export class Render {
                 }
                 tCell = this.appendValueSortIcon(cell, tCell, cell.rowIndex, cell.colIndex, args.cell.column);
                 if (this.parent.cellTemplate) {
-                    this.appendTemplate(tCell, this.parent.pivotValues[cell.rowIndex][cell.colIndex] as IAxisSet);
+                    this.appendTemplate(tCell, cell as IAxisSet);
                 }
                 const len: number = this.parent.dataSourceSettings.values.length;
                 for (let vCnt: number = 0; vCnt < len; vCnt++) {

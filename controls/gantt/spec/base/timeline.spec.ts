@@ -144,35 +144,18 @@ describe('Gantt base module', () => {
         ganttObj.timelineSettings.timelineViewMode = "Day";
         ganttObj.timelineSettings.topTier.format = '';
         ganttObj.dataBound = () => {
-            expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Day");
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Hour");
-            expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("");
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("H");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/28/2018");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("3/24/2018");
-            expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
-            done();
-        }
-        ganttObj.refresh();
-    });
-    it('Timeline in Hour-Minutes Mode', (done: Function) => {
-        ganttObj.projectStartDate = "01/28/2018";
-        ganttObj.projectEndDate = "02/05/2018";
-        ganttObj.timelineSettings.timelineViewMode = "Hour";
-        ganttObj.timelineSettings.topTier.format = '';
-        ganttObj.dataBound = () => {
-            expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Hour");
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Minutes");
-            expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(1);
-            expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("H");
-            expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("m");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/28/2018");
-            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/5/2018");
-            expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
-            done();
+            setTimeout(() => {
+                expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Day");
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Hour");
+                expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(1);
+                expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("");
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("H");
+                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/28/2018");
+                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("3/24/2018");
+                expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
+                done();
+            }, 1000);
         }
         ganttObj.refresh();
     });
@@ -195,6 +178,58 @@ describe('Gantt base module', () => {
         ganttObj.refresh();
     });
 
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt base module', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: defaultGanttData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'Children',
+            },
+            splitterSettings: {
+                position: '100%'
+            },
+            enableTimelineVirtualization: true,
+            toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
+            projectStartDate: new Date('01/28/2018'),
+            projectEndDate: new Date('03/24/2018'),
+        }, done);
+    });
+    it('Timeline in Hour-Minutes Mode', (done: Function) => {
+        console.log('Test case Title: ==> Timeline in Hour-Minutes Mode');
+        ganttObj.projectStartDate = "01/28/2018";
+        ganttObj.projectEndDate = "02/05/2018";
+        ganttObj.timelineSettings.timelineViewMode = "Hour";
+        ganttObj.timelineSettings.topTier.format = '';
+        ganttObj.dataBound = () => {
+            setTimeout(() => {
+                expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Hour");
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Minutes");
+                expect(ganttObj.timelineModule.customTimelineSettings.topTier.count).toBe(1);
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.count).toBe(1);
+                expect(ganttObj.timelineModule.customTimelineSettings.topTier.format).toBe("H");
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.format).toBe("m");
+                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("1/28/2018");
+                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/5/2018");
+                expect(ganttObj.element.querySelector("." + cls.timelineHeaderContainer).childElementCount).toBe(2);
+                done();
+            }, 1000);
+        }
+        ganttObj.refresh();
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
@@ -1695,7 +1730,7 @@ describe('Gantt base module', () => {
             ganttObj.zoomIn();
             setTimeout(() => {
                 done();
-            }, 1000); // Added delay to ensure all operations complete
+            }, 1500); // Added delay to ensure all operations complete
         }
         ganttObj.refresh();
     });
@@ -1720,7 +1755,7 @@ describe('Gantt base module', () => {
                 child: 'Children',
             },
             splitterSettings: {
-                position: '100%'
+                position: '50%'
             },
             toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
             projectStartDate: new Date('01/28/2018'),
@@ -1730,14 +1765,16 @@ describe('Gantt base module', () => {
     // doesn't used to improve the coverage
     it('To check disable state of zoomin icon when mismatching the count value', (done: Function) => {
         ganttObj.dataSource = defaultGanttData;
-        ganttObj.splitterSettings.position = '50%';
+        // ganttObj.splitterSettings.position = '50%';
         ganttObj.dataBound = () => {
             ganttObj.zoomingLevels[1].bottomTier.count = 14;
             ganttObj.zoomIn();
             expect(ganttObj.currentZoomingLevel.level).toBe(12);
             expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("3/24/2018");
             ganttObj.fitToProject();
-            done();
+            setTimeout(() => {
+                done();
+            }, 1000);
         }
         ganttObj.refresh();
     });
@@ -1769,7 +1806,7 @@ describe('Gantt base module', () => {
             projectEndDate: new Date('03/24/2018'),
         }, done);
     });
-    // disconnect issue occurs in CI has been resolved - doesn't improve coverage
+    // disconnect issue occurs in CI has been resolved
     it('Aria-label testing', (done: Function) => {
         ganttObj.projectStartDate = "01/28/2018";
         ganttObj.projectEndDate = "03/24/2018";
@@ -2887,7 +2924,7 @@ describe('select row in different timeline segment', () => {
     Gantt.Inject(Selection, Sort, Filter, Edit, Toolbar, RowDD);
     let ganttObj: Gantt;
     let resource: Object[] = [{
-        TaskID: 10, TaskName: 'Sign contract', StartDate: new Date('04/01/2024'), Duration: 1,
+        TaskID: 1, TaskName: 'Sign contract', StartDate: new Date('04/01/2024'), Duration: 1,
         Progress: 30, resources: [12], work: 24
     }];
     beforeAll((done: Function) => {
@@ -2976,20 +3013,20 @@ describe('select row in different timeline segment', () => {
                 taskbarHeight: 20,
                 rowHeight: 40,
                 allowUnscheduledTasks: true,
-                projectStartDate: new Date('03/25/2019'),
+                projectStartDate: new Date('03/25/2024'),
                 projectEndDate: new Date('05/30/2024'),
             }, done);
     });
     beforeEach((done) => {
         setTimeout(done, 500);
     });
+    it('select row in different timeline segment', () => {
+        ganttObj.selectRow(0);
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
-    });
-    it('select row in different timeline segment', () => {
-        ganttObj.selectRow(0);
     });
 });
 describe('Timeline coverage for timezone issue height auto', () => {
@@ -3789,13 +3826,13 @@ describe('dependency rendering in RTL', () => {
     beforeEach((done) => {
         setTimeout(done, 500);
     });
+    it('dependency object', () => {
+        expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1155);
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
-    });
-    it('dependency object', () => {
-        expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1155);
     });
 });
 describe('Gantt base module', () => {
@@ -3902,6 +3939,7 @@ describe('Gantt base module', () => {
             splitterSettings: {
                 position: '30%'
             },
+            enableTimelineVirtualization: true,
             timelineSettings: {
                 topTier: {
                     unit: 'Year',
@@ -3945,6 +3983,7 @@ describe('Gantt base module', () => {
             splitterSettings: {
                 position: '30%'
             },
+            enableTimelineVirtualization: true,
             timelineSettings: {
                 topTier: {
                     unit: 'Year',

@@ -3750,7 +3750,6 @@ describe('854721- Inside the table, content such as heading used in uppercase, u
         });
     });
 
-});
 
 describe("869680 - Paste Format is not fully visible and not able to scroll to choose the below format.", () => {
   let rteObj: RichTextEditor;
@@ -4673,3 +4672,33 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
             done();
         });
     });
+
+    describe('914012: Lines retaining after pasting content to VS code from Rich Text Editor.', () => {
+        let editor: RichTextEditor;
+        beforeAll((done: DoneFn) => {
+            editor = renderRTE({
+                pasteCleanupSettings : {
+                    keepFormat : false
+                }
+            });
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it ('Should remnove the ul wrapping the paragraph nodes.', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = `<html xmlns:o="urn:schemas-microsoft-com:office:office"\r\nxmlns:dt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882"\r\nxmlns="http://www.w3.org/TR/REC-html40">\r\n\r\n<head>\r\n<meta http-equiv=Content-Type content="text/html; charset=utf-8">\r\n<meta name=ProgId content=OneNote.File>\r\n<meta name=Generator content="Microsoft OneNote 15">\r\n</head>\r\n\r\n<body lang=en-US style='font-family:Calibri;font-size:11.0pt'>\r\n\x3C!--StartFragment-->\r\n\r\n<div style='direction:ltr;border-width:100%'>\r\n\r\n<div style='direction:ltr;margin-top:0in;margin-left:0in;width:1.4458in'>\r\n\r\n<div style='direction:ltr;margin-top:0in;margin-left:0in;width:1.4458in'>\r\n\r\n<ul style='direction:ltr;unicode-bidi:embed;margin-top:0in;margin-bottom:0in'>\r\n <p style='margin:0in;font-family:Calibri;font-size:11.0pt'>Check List</p>\r\n <p style='color:#000000;margin:0in;text-indent:-.1666in;font-family:Calibri;\r\n font-size:11.0pt'><img\r\n src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAySURBVDhPYxQqm/WfgQIANuBFSwKUSxqQqFnAwARlkw1GDRg1AARGDYDmRiibDMDAAACSDAmB2sfKTAAAAABJRU5ErkJggg=="\r\n width=16 height=16 alt="To Do">&nbsp;To do 1</p>\r\n <p style='color:#000000;margin:0in;text-indent:-.1666in;font-family:Calibri;\r\n font-size:11.0pt'><img\r\n src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAySURBVDhPYxQqm/WfgQIANuBFSwKUSxqQqFnAwARlkw1GDRg1AARGDYDmRiibDMDAAACSDAmB2sfKTAAAAABJRU5ErkJggg=="\r\n width=16 height=16 alt="To Do">&nbsp;To do 2</p>\r\n <p style='color:#000000;margin:0in;text-indent:-.1666in;font-family:Calibri;\r\n font-size:11.0pt'><img\r\n src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAySURBVDhPYxQqm/WfgQIANuBFSwKUSxqQqFnAwARlkw1GDRg1AARGDYDmRiibDMDAAACSDAmB2sfKTAAAAABJRU5ErkJggg=="\r\n width=16 height=16 alt="To Do">&nbsp;To do 3</p>\r\n</ul>\r\n\r\n</div>\r\n\r\n</div>\r\n\r\n</div>\r\n\r\n\x3C!--EndFragment-->\r\n</body>\r\n\r\n</html>\r\n`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('ul')).toBeNull();
+                done();
+            }, 100);
+        });
+    });
+
+});// Add the spec above this.
