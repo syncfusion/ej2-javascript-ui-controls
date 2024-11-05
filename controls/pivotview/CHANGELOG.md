@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I645787` - Number formatting will now be applied correctly when using the number formatting popup in the pivot table.
+- `#I648479` - The context menu will now appear when clicking on a value cell in the pivot table.
+
 ## 27.1.57 (2024-10-29)
 
 ### Pivot Table

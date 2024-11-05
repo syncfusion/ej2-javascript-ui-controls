@@ -1290,9 +1290,7 @@ export class BaseLegend {
             textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         }
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
-        const legendTextStyle: FontModel = <FontModel>(extend({}, getValue('properties', legend.textStyle), null, true));
-        legendTextStyle.size = (chart.availableSize.width < 110 || chart.availableSize.height < 190 && !this.isBulletChartControl && this.chart.getModuleName() === 'accumulationchart') ? '8px' : legend.textStyle.size;
-        textElement(chart.renderer, textOptions, legendTextStyle, fontcolor, group, false, false, false, false,
+        textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false,
                     null, this.currentPageNumber && isCanvas ?
                         new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) :
                         null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
@@ -1346,6 +1344,8 @@ export class BaseLegend {
         const pageDown: string = this.legendID + (!this.isRtlEnable ? '_pagedown' : '_pageup');
         const symbolOption: PathOption = new PathOption(pageUp, 'transparent', 5, grayColor, 1, '', '');
         const iconSize: number = chart.availableSize.width < 110 || chart.availableSize.height < 190 ? 4 : this.pageButtonSize;
+        const legendFontSize: FontModel = <FontModel>(extend({}, getValue('properties', legend.textStyle), null, true));
+        legendFontSize.size = (chart.availableSize.width < 110 || chart.availableSize.height < 190 && !this.isBulletChartControl && this.chart.getModuleName() === 'accumulationchart') ? '8px' : legend.textStyle.size;
         // Page left arrow drawing calculation started here
         const rowCount: number = !legend.enablePages && this.isPaging && !this.isVertical && !this.isBulletChartControl ? 1 :
             (this.rowCount - 1);
@@ -1392,7 +1392,7 @@ export class BaseLegend {
             y = legend.title && this.isTop ? (bounds.y + padding + titleHeight + (iconSize / 1) + 0.5) :
                 (bounds.y + padding + iconSize + 0.5);
         }
-        const size: Size = measureText(this.totalPages + '/' + this.totalPages, legend.textStyle, this.chart.themeStyle.legendLabelFont);
+        const size: Size = measureText(this.totalPages + '/' + this.totalPages, legendFontSize, this.chart.themeStyle.legendLabelFont);
         const translateX: number = (this.isRtlEnable) ?  legend.border.width + (iconSize / 2) :
             bounds.width - (2 * (iconSize + padding) + padding + size.width);
         if (!isCanvas) {
@@ -1425,10 +1425,8 @@ export class BaseLegend {
             textOption.text = !this.isRtlEnable ? this.currentPageNumber  + '/' + this.totalNoOfPages : this.totalNoOfPages + '/' +  this.currentPageNumber;
         }
         if (legend.enablePages || this.isBulletChartControl) {
-            const legendTextStyle: FontModel = <FontModel>(extend({}, getValue('properties', legend.textStyle), null, true));
-            legendTextStyle.size = (chart.availableSize.width < 110 || chart.availableSize.height < 190 && !this.isBulletChartControl) ? '8px' : legend.textStyle.size;
             pageTextElement = textElement(
-                chart.renderer, textOption, legendTextStyle, color, paginggroup,
+                chart.renderer, textOption, legendFontSize, color, paginggroup,
                 false, false, false, false, null,
                 new Rect(translateX, 0, 0, 0), null, null, null, null, this.chart.themeStyle.legendLabelFont
             );

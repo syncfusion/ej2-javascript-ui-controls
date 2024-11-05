@@ -988,7 +988,9 @@ export class Image {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                     this.quickToolObj.imageQTBar.showPopup(args.pageX, pageY, target as Element);
-                    this.resizeStart(e.args as PointerEvent, target);
+                    if (this.parent.insertImageSettings.resize === true) {
+                        this.resizeStart(e.args as PointerEvent, target);
+                    }
                 }, 400);
             } else {
                 const coordinates: DOMRect = target.getBoundingClientRect() as DOMRect;
@@ -2461,7 +2463,10 @@ export class Image {
         };
         if (imageElement) {
             this.showImageQTbarTime = setTimeout(() => {
-                this.showImageQuickToolbar(args); this.resizeStart(e.args as PointerEvent, imageElement);
+                this.showImageQuickToolbar(args);
+                if (this.parent.insertImageSettings.resize) {
+                    this.resizeStart(e.args as PointerEvent, imageElement);
+                }
             }, 0);
         }
     }

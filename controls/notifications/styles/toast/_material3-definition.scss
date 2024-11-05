@@ -1,0 +1,113 @@
+//Layout Variables Start
+//Mouse Mode Start
+$toast-icon-nrml-height: 24px !default;
+$toast-icon-nrml-width: 24px !default;
+$toast-icon-nrml-size: $text-xl !default;
+$toast-icon-nrml-right-margin: 8px !default;
+$toast-close-icon-nrml-height: 32px !default;
+$toast-close-icon-nrml-width: 32px !default;
+$toast-close-icon-nrml-size: $text-xl !default;
+$toast-position-nrml-distance: 10px !default;
+$multitoast-nrml-gap-distance: 10px !default;
+$toast-nrml-min-height: 48px !default;
+$toast-nrml-padding: 14px !default;
+$toast-action-btn-nrml-padding: 14px 20px !default;
+$toast-action-btn-nrml-margin: 10px !default;
+$toast-progressbar-nrml-height: 4px !default;
+$toast-content-nrml-padding: 8px 0 18px 0 !default;
+$toast-nrml-border-radious: 4px !default;
+$toast-font-nrml-size: $text-sm !default;
+$toast-title-font-nrml-size: $text-base !default;
+
+//Mouse Mode End
+
+//Touch Mode Start
+$toast-icon-bgr-height: 24px !default;
+$toast-icon-bgr-width: 24px !default;
+$toast-icon-bgr-size: 20px !default;
+$toast-icon-bgr-right-margin: 14px !default;
+$toast-close-icon-bgr-height: 32px !default;
+$toast-close-icon-bgr-width: 32px !default;
+$toast-close-icon-bgr-size: $text-xl !default;
+$toast-position-bgr-distance: 10px !default;
+$multitoast-bgr-gap-distance: 10px !default;
+$toast-bgr-min-height: 48px !default;
+$toast-action-btn-bgr-padding: 18px 28px !default;
+$toast-action-btn-bgr-margin: 10px !default;
+$toast-progressbar-bgr-height: 4px !default;
+$toast-content-bgr-padding: 8px 0 6px 0 !default;
+$toast-bgr-border-radious: 4px !default;
+$toast-font-bgr-size: $text-sm !default;
+$toast-title-font-weight: $font-weight-medium !default;
+
+//Touch Mode End
+//Layout Variables End
+
+//Theme Variables Start
+$toast-border: 0 !default;
+$toast-box-shadow: $shadow-lg !default;
+$toast-hover-box-shadow: rgba($shadow) !default;
+$toast-progress-color: rgba($primary) !default;
+$toast-bg-color: rgba($tooltip-bg-color) !default;
+$toast-hover-bg-color: rgba($tooltip-bg-color) !default;
+$toast-active-bg-color: rgba($content-bg-color) !default;
+$toast-font-color: rgba($content-bg-color) !default;
+$toast-icon-color: rgba($tooltip-text-color) !default;
+$toast-close-icon-color: rgba($on-primary) !default;
+$toast-title-color: rgba($tooltip-text-color) !default;
+$toast-content-color: rgba($tooltip-text-color) !default;
+
+// Toast Type Definitions Start
+$toast-success-bg-color: rgba($success) !default;
+$toast-success-color: rgba($success-bg-color) !default;
+$toast-success-title-color: rgba($success-text) !default;
+$toast-success-title-border-color: rgba($success-border-color) !default;
+$toast-success-icon-color: rgba($success-text) !default;
+$toast-success-content-color: rgba($success-text) !default;
+$toast-success-hover-bg-color: rgba($success) !default;
+$toast-success-hover-color: rgba($success-bg-color) !default;
+$toast-success-hover-box-shadow: rgba($shadow) !default;
+
+$toast-info-bg-color: rgba($info-dark) !default;
+$toast-info-color: rgba($primary-text-color) !default;
+$toast-info-title-color: rgba($info-text) !default;
+$toast-info-title-border-color: rgba($info-dark) !default;
+$toast-info-icon-color: rgba($info-text) !default;
+$toast-info-content-color: rgba($info-text) !default;
+$toast-info-hover-bg-color: rgba($info-dark) !default;
+$toast-info-hover-color: rgba($primary-text-color) !default;
+$toast-info-hover-box-shadow: rgba($shadow) !default;
+
+$toast-warning-bg-color: rgba($warning-dark) !default;
+$toast-warning-color: rgba($warning-dark) !default;
+$toast-warning-title-color: rgba($warning-text) !default;
+$toast-warning-title-border-color: rgba($warning-dark) !default;
+$toast-warning-icon-color: rgba($warning-text) !default;
+$toast-warning-content-color: rgba($warning-text) !default;
+$toast-warning-hover-bg-color: rgba($warning-dark) !default;
+$toast-warning-hover-color: rgba($warning-dark) !default;
+$toast-warning-hover-box-shadow: rgba($shadow) !default;
+
+$toast-danger-bg-color: rgba($danger-dark) !default;
+$toast-danger-color: rgba($danger-bg-color) !default;
+$toast-danger-title-color: rgba($danger-text) !default;
+$toast-danger-title-border-color: rgba($border-error) !default;
+$toast-danger-icon-color: rgba($danger-text) !default;
+$toast-danger-content-color: rgba($danger-text) !default;
+$toast-danger-hover-bg-color: rgba($danger-dark) !default;
+$toast-danger-hover-color: rgba($danger-bg-color) !default;
+$toast-danger-hover-box-shadow: rgba($shadow) !default;
+
+$toast-close-icon-hover-bg-color: rgba($grey-white, .18) !default;
+$toast-close-icon-hover-color: rgba($on-primary) !default;
+$toast-icon-hover-border-radius: 50% !default;
+
+// Toast Type Definitions End
+//icon Variable
+$toast-close-icon: '\e7e7' !default;
+$toast-success-icon: '\e727' !default;
+$toast-error-icon: '\e878' !default;
+$toast-info-icon: '\e800' !default;
+$toast-warning-icon: '\e88b' !default;
+
+//Theme Variables End

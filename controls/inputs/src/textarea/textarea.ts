@@ -120,7 +120,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
      * * `Both` - The textarea element can be resized both vertically and horizontally.
      * * `None` - The textarea element cannot be resized.
      *
-     * @default None
+     * @default Both
      */
     @Property('Both')
     public resizeMode: Resize;

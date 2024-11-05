@@ -1,6 +1,6 @@
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { createElement, remove, extend, select, SanitizeHtmlHelper, getInstance } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, select, SanitizeHtmlHelper, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { IAction, NumberFormattingEventArgs, PivotActionInfo } from '../base/interface';
 import * as events from '../../common/base/constant';
@@ -408,11 +408,12 @@ export class NumberFormatting implements IAction {
     private updateFormatting(): void {
         const text: string = this.formattedText();
         const index: number = this.getIndexValue();
-        this.newFormat.splice(index, 1);
+        this.newFormat = this.newFormat.splice(index, 1);
         const format: FormatSettingsModel[] = extend([], this.newFormat, true) as FormatSettingsModel[];
         const formatSettings: FormatSettingsModel[] = this.parent.dataSourceSettings.formatSettings;
         for (let i: number = 0; i < formatSettings.length; i++) {
-            this.insertFormat(formatSettings[i as number].name, formatSettings[i as number].format, formatSettings[i as number].type);
+            this.insertFormat(formatSettings[i as number].name, formatSettings[i as number].format, formatSettings[i as number].type,
+                              formatSettings[i as number].currency, formatSettings[i as number].useGrouping);
         }
         const valuesDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_FormatValueDrop', this.parent.element), DropDownList) as DropDownList;
         if (valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
@@ -449,13 +450,15 @@ export class NumberFormatting implements IAction {
         });
     }
 
-    private insertFormat(fieldName: string, text: string, formatType?: string): void {
+    private insertFormat(fieldName: string, text: string, formatType?: string, currency?: string, useGrouping?: boolean): void {
         let isExist: boolean = false;
         const groupingDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_GroupingDrop', this.parent.element), DropDownList) as DropDownList;
         const newFormat: FormatSettingsModel = {
             name: fieldName, format: text,
-            useGrouping: groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false,
-            type: formatType
+            useGrouping: !isNullOrUndefined(useGrouping) ?
+                useGrouping : groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false,
+            type: formatType,
+            currency: currency
         };
         const format: FormatSettingsModel[] = this.newFormat;
         for (let i: number = 0; i < format.length; i++) {

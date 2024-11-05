@@ -961,7 +961,7 @@ export class SpellChecker {
         }
     }
     /**
-     * Calls the spell checker service
+     * Calls the spell checker service.
      * @private
      */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -975,11 +975,11 @@ export class SpellChecker {
                 service = (isByPage) ? service + this.documentHelper.owner.serverActionSettings.spellCheckByPage : service + this.documentHelper.owner.serverActionSettings.spellCheck;
                 httpRequest.open('POST', service, true);
                 httpRequest.setRequestHeader('Content-Type', 'application/json');
-                this.setCustomHeaders(httpRequest, this.documentHelper.owner.headers);
-
+                let headers = this.documentHelper.owner.headers;
                 /* eslint-disable @typescript-eslint/no-explicit-any */
                 const spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
-                const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SpellCheck', headers: this.documentHelper.owner.headers, timeout: 0, cancel: false, withCredentials: false };
+                const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SpellCheck', headers: headers, timeout: 0, cancel: false, withCredentials: false };
+                headers = httprequestEventArgs.headers;
                 this.documentHelper.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
                 this.setCustomHeaders(httpRequest, httprequestEventArgs.headers);
                 httpRequest.withCredentials = httprequestEventArgs.withCredentials;

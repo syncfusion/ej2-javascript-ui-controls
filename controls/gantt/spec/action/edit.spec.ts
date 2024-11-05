@@ -2,7 +2,7 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Selection,VirtualScroll, IGanttData, Filter, IActionBeginEventArgs, ContextMenuClickEventArgs, CriticalPath, Toolbar, ColumnMenu, ContextMenu, UndoRedo } from '../../src/index';
-import { cellEditData,bug885565Holiday, resourcesData, projectData,normalResourceData, resourceCollection, stringTaskId, StringMultiTaskbarData, StringMultiResources, StringResourceData, StringResourceCollection, StringResourceSelefReferenceData, StringCellEditData, StringResourcesData, StringprojectData1, StringProjectResources, resourceviewData,crData1, exportData,editingData,editingResources, resourceResources, mileStoneData, coverageParentData } from '../base/data-source.spec';
+import { cellEditData,bug885565Holiday, resourcesData, projectData,normalResourceData, resourceCollection, stringTaskId, StringMultiTaskbarData, StringMultiResources, StringResourceData, StringResourceCollection, StringResourceSelefReferenceData, StringCellEditData, StringResourcesData, StringprojectData1, StringProjectResources, resourceviewData,crData1, exportData,editingData,editingResources, resourceResources, mileStoneData, coverageParentData, initialDataCR916492, celleditCR916492 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 import { TextBox } from '@syncfusion/ej2-inputs';
@@ -4892,6 +4892,181 @@ describe('row indent', () => {
         ganttObj.editModule['updateEditedRecordFields'](ganttObj.flatData[1].ganttProperties, ganttObj.flatData[1]);
         expect(ganttObj.flatData[1]['TaskName']).toBe('Child Task 1');
      }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('CR:916492-When adding a record, the validation for taskType as FixedDuration is not working properly - Initial dataset render', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: initialDataCR916492,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                work: 'Work',
+                type: 'taskType'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            taskType: 'FixedDuration',
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'Work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' },
+            ],
+        }, done);
+    });
+    it('Checking the work value on load time with fixedDuration and duration is 0',()=>{
+       expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(0);
+       expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(0);
+       expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
+       expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('CR:916492-When adding a record, the validation for taskType as FixedDuration is not working properly - dialog edit action', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: celleditCR916492,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                work: 'Work',
+                child: 'subtasks',
+                type: 'taskType',
+                milestone: 'isMilestone',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            workUnit: 'Hour',
+            taskType: 'FixedDuration',
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'Work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' },
+            ],
+        }, done);
+    });
+    it('Checking the work value when without resource, fixedDuration and duration is 0-dialog edit action',()=>{
+        ganttObj.openEditDialog(1);
+        let durationField: any = document.querySelector('#' + ganttObj.element.id + 'Duration') as HTMLInputElement;
+       if (durationField) {
+           let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+           textObj.value = 0;
+           textObj.dataBind();
+           let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+           triggerMouseEvent(saveRecord, 'click');
+       };
+       expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(0);
+       expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(0);
+       expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
+       expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('CR:916492-When adding a record, the validation for taskType as FixedDuration is not working properly - cell edit action', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: celleditCR916492,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                work: 'Work',
+                child: 'subtasks',
+                type: 'taskType',
+                milestone: 'isMilestone',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            workUnit: 'Hour',
+            taskType: 'FixedDuration',
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'Work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' },
+            ],
+        }, done);
+    });
+    it('Checking the work value when without resource, fixedDuration and duration is 0- cell edit action',()=>{
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)')
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration')).ej2_instances[0];
+        input.value = '0 days';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(0);
+        expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(0);
+        expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
+        expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+    });
     afterAll(() => {
         destroyGantt(ganttObj);       
     });

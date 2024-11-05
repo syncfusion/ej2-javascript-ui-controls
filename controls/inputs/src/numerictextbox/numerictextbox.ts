@@ -1193,7 +1193,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             fractionRule = '{0,' + this.decimals + '}';
         }
         /* eslint-disable-next-line security/detect-non-literal-regexp */
-        return new RegExp('^(-)?(((\\d+(' + decimalSeparator + '\\d' + fractionRule +
+        return new RegExp('^\\s*(-)?(((\\d+(' + decimalSeparator + '\\d' + fractionRule +
             ')?)|(' + decimalSeparator + '\\d' + fractionRule + ')))?$');
     }
 

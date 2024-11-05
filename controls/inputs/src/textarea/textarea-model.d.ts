@@ -91,7 +91,7 @@ export interface TextAreaModel extends ComponentModel{
      * * `Both` - The textarea element can be resized both vertically and horizontally.
      * * `None` - The textarea element cannot be resized.
      *
-     * @default None
+     * @default Both
      */
     resizeMode?: Resize;
 

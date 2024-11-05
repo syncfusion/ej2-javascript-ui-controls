@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I638740` - Now, the comment delete event is properly triggered when the parent comment `div` is deleted.
+- `#I646822` - Now, the `formFieldMouseover` event includes both the form field ID and Name.
+- `#I637574` - Now, the signature position is accurately rendered in the provided document upon reloading the downloaded file.
+- `#I641496` - Now, the annotation signature buttons no longer overflow when the translation string is too long.
+
 ## 27.1.57 (2024-10-29)
 
 ### PDF Viewer

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I644007` - Now, after deleting an empty line in the Rich Text Editor, the line will no longer reappear when clicking outside the editor.
+
+- `#I641442` - Now, the link quick toolbar opens when clicking on an anchor element with a relative URL, without redirecting to the linked page.
+
+- `#I643173` - Now, when applying bold, italic, or other inline formatting to text adjacent to an anchor tag, the space between the text and the anchor tag will remain preserved.
+
+- `#I644738` - Now, the undo action now behaves correctly when selecting text with `Shift + Left Arrow` in the Rich Text Editor.
+
+- `#I637881` - Now, the lines retained after pasting content to VS Code from the Rich Text Editor have been resolved.
+
+- `#I645142` - Now, When resize is set to false in `insertImageSettings`, the resize handles do not appear, and the functionality operates as expected.
+
 ## 27.1.57 (2024-10-29)
 
 ### RichTextEditor

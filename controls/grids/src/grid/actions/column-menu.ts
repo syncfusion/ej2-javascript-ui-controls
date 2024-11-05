@@ -322,6 +322,10 @@ export class ColumnMenu implements IAction {
     }
 
     private columnMenuBeforeClose(args: ColumnMenuOpenEventArgs): void {
+        if (args.event && args.event.target instanceof Document && args.event.type === 'scroll') {
+            args.cancel = true;
+            return;
+        }
         const colChooser: Element = args.event ? closest(args.event.target as Node, '.e-menu-item') : null;
         if (!isNullOrUndefined(args.parentItem) &&
             this.getKeyFromId(args.parentItem.id) === 'ColumnChooser' &&

@@ -3055,4 +3055,66 @@ describe('Code Coverage => ', () => {
         });
     });
 
+    describe('EJ2-917361: Grid displays empty state when grouped column contains null values with aggregate and infinite scrolling enabled. => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                dataSource: filterData, 
+                allowSorting: true,
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 5 },
+                allowGrouping:true,
+                groupSettings: {columns: ['CustomerID1'],
+                showDropArea: false,
+                disablePageWiseAggregates: true,
+                allowReordering: false,showGroupedColumn:true,},
+                height:100,
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    {
+                        field: 'CustomerID1', headerText: 'Customer ID', type: 'string',
+                        validationRules: { required: true }, width: 140
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 140, format: 'C2', validationRules: { required: true }
+                    },
+                ],
+                aggregates: [{
+                    columns: [ {
+                        type: 'Sum',
+                        field: 'Freight',
+                        format: 'C2',
+                        footerTemplate: 'Sum : ${Sum}'
+                    },
+                    {
+                        type: 'Sum',
+                        field: 'Freight',
+                        format: 'C2',
+                        groupFooterTemplate: 'Sum : ${Sum}'
+                    },
+                    {
+                        type: 'Average',
+                        field: 'Freight',
+                        format: 'C2',
+                        groupCaptionTemplate: 'Average: ${Average}'
+                    }]
+                }],
+        }, done);
+        });
+
+        it('Check the record is rendered testing.', () => {
+            expect(gridObj.getContent().querySelectorAll('.e-row').length).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

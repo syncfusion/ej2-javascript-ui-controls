@@ -221,6 +221,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private clickHandler(event: Event): void {
         if ((event.target as HTMLElement).tagName === 'INPUT' && this.clickTriggered) {
+            this.changeState(this.checked ? 'check' : 'uncheck');
             this.clickTriggered = false;
             return;
         }

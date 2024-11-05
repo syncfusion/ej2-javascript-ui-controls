@@ -2722,11 +2722,14 @@ export class Drawing {
         if (node.thickness !== undefined) {
             actualObject.thickness = node.thickness;
             actualObject.wrapper.children[0].style.strokeWidth = node.thickness;
-            if (actualObject.shapeAnnotationType === 'LineWidthArrowHead') {
-                actualObject.wrapper.children[1].width = 12 * node.thickness;
-                actualObject.wrapper.children[1].height = 12 * node.thickness;
-                actualObject.wrapper.children[2].width = 12 * node.thickness;
-                actualObject.wrapper.children[2].height = 12 * node.thickness;
+            if (actualObject.shapeAnnotationType === 'Line' || actualObject.shapeAnnotationType === 'LineWidthArrowHead') {
+                for (let i: number = 0; i < actualObject.wrapper.children.length; i++) {
+                    const child: any = actualObject.wrapper.children[parseInt(i.toString(), 10)];
+                    if (child.id.includes('srcDec') || child.id.includes('tarDec')) {
+                        child.width = 12 * node.thickness;
+                        child.height = 12 * node.thickness;
+                    }
+                }
             }
             if (actualObject.shapeAnnotationType === 'Radius' && actualObject.wrapper.children[1]) {
                 actualObject.wrapper.children[1].style.strokeWidth = node.thickness;

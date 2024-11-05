@@ -63,14 +63,10 @@ export class AnnotationRenderer {
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
-                const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
-                lineAnnotation.innerColor = innerColor;
-                if (fillColor.a < 1 && fillColor.a > 0) {
-                    lineAnnotation._dictionary.update('FillOpacity', fillColor.a);
-                    fillColor.a = 1;
-                }
-                else {
-                    lineAnnotation._dictionary.update('FillOpacity', fillColor.a);
+                if (!isNullOrUndefined(fillColor.r) && !isNullOrUndefined(fillColor.g) && !isNullOrUndefined(fillColor.b) &&
+                    !isNullOrUndefined(fillColor.a) && fillColor.a > 0) {
+                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                    lineAnnotation.innerColor = innerColor;
                 }
             }
             if (!isNullOrUndefined(shapeAnnotation.opacity)) {

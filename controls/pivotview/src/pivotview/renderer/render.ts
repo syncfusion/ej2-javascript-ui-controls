@@ -448,8 +448,10 @@ export class Render {
         }
     }
     private getCellElement(target: Element): Element {
-        const axis: string = (target.parentElement.classList.contains(cls.ROWSHEADER) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
-        const currentElement: Element = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
+        let currentElement: Element = closest(target, 'td');
+        if (isNullOrUndefined(currentElement)) {
+            currentElement = closest(target, 'th');
+        }
         return currentElement;
     }
     private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {

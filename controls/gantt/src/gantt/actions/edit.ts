@@ -770,6 +770,8 @@ export class Edit {
                 break;
             case 'FixedDuration':
                 if (resources.length === 0) {
+                    // To validate the work column, if set duration as 0 via celledit action, where resource colection is 0
+                    this.parent.dataOperation.updateWorkWithDuration(currentData);
                     return;
                 }
                 if (resources.length && (column === 'work' || (isAutoSchedule &&
@@ -786,6 +788,10 @@ export class Edit {
                 }
                 break;
             }
+        }
+        // To validate the work colum if set duration as 0, while resource is null/undefined
+        else if (isNullOrUndefined(resources) && taskType === 'FixedDuration' && ganttProp.duration === 0 ) {
+            this.parent.dataOperation.updateWorkWithDuration(currentData);
         }
     }
 
@@ -1056,8 +1062,9 @@ export class Edit {
             }
             this.parent.predecessorModule.isValidatedParentTaskID = '';
             if (this.parent.allowParentDependency && this.parent.predecessorModule.isValidatedParentTaskID !==
-                ganttRecord.ganttProperties.taskId && ganttRecord.hasChildRecords && (
-                this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate) && (args.action !== 'TaskbarEditing')) {
+                ganttRecord.ganttProperties.taskId && ganttRecord.hasChildRecords &&
+                (this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate) && (args.action !== 'TaskbarEditing') &&
+                (!ganttRecord.hasChildRecords || (ganttRecord.hasChildRecords && ganttRecord.ganttProperties.isAutoSchedule))) {
                 this.parent.predecessorModule['updateChildItems'](ganttRecord);
                 this.validateChildPredecessors();
             }

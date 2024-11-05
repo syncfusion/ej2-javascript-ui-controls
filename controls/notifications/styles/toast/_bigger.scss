@@ -1,0 +1,177 @@
+@include export-module('toast-bigger') {
+
+  .e-bigger .e-toast-container,
+  .e-toast-container.e-bigger {
+    &.e-toast-top-left {
+      left: $toast-position-bgr-distance;
+      top: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-bottom-left {
+      bottom: $toast-position-bgr-distance;
+      left: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-top-right {
+      right: $toast-position-bgr-distance;
+      top: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-bottom-right {
+      bottom: $toast-position-bgr-distance;
+      right: $toast-position-bgr-distance;
+    }
+
+    &.e-toast-bottom-center {
+      bottom: $toast-position-bgr-distance;
+
+      .e-toast {
+        margin: 0 auto $multitoast-bgr-gap-distance;
+      }
+    }
+
+    &.e-toast-top-center {
+      top: $toast-position-bgr-distance;
+
+      .e-toast {
+        margin: 0 auto $multitoast-bgr-gap-distance;
+      }
+    }
+
+    &.e-toast-full-width {
+      left: 0;
+      right: 0;
+
+      .e-toast {
+        margin: 0 auto $multitoast-bgr-gap-distance;
+      }
+    }
+
+    &.e-rtl {
+      .e-toast {
+        .e-toast-message .e-toast-actions {
+          text-align: left;
+
+          > * {
+            margin-left: initial;
+            margin-right: $toast-action-btn-bgr-margin;
+          }
+        }
+
+        .e-toast-close-icon {
+          margin-left: initial;
+          margin-right: auto;
+        }
+
+        .e-toast-icon {
+          margin-left: $toast-icon-bgr-right-margin;
+          margin-right: initial;
+        }
+
+        .e-toast-progress {
+          left: auto;
+          right: 0;
+        }
+      }
+    }
+
+    .e-toast {
+      border-radius: $toast-bgr-border-radious;
+      font-size: $toast-font-bgr-size;
+      margin: 0 0 $multitoast-bgr-gap-distance;
+      min-height: $toast-bgr-min-height;
+
+      .e-toast-message {
+        .e-toast-content {
+          padding: $toast-content-bgr-padding;
+
+          &:first-child {
+            padding: 0;
+            @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+              padding-bottom: 8px;
+              padding-left: 48px;
+              padding-right: 12px;
+              padding-top: 8px;
+            }
+          }
+
+          &:last-child {
+            padding-bottom: 0;
+            @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+              padding-bottom: 16px;
+            }
+          }
+
+          + .e-toast-actions {
+            padding: 0;
+            @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+              padding: $toast-action-btn-bgr-padding;
+            }
+          }
+          @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            + .e-toast-actions {
+              padding: $toast-action-btn-bgr-padding;
+            }
+          }
+        }
+
+        .e-toast-actions {
+          padding: $toast-action-btn-bgr-padding;
+          text-align: right;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            border-top: 1px solid $border;
+            margin-left: 16px;
+            margin-right: 16px;
+          }
+
+          > * {
+            margin-left: $toast-action-btn-bgr-margin;
+          }
+        }
+      }
+
+      .e-toast-close-icon {
+        font-size: $toast-close-icon-bgr-size;
+        height: $toast-close-icon-bgr-height;
+        width: $toast-close-icon-bgr-width;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          margin-top: 13px;
+          position: absolute;
+          right: 12px;
+        }
+      }
+
+      .e-toast-icon {
+        font-size: $toast-icon-bgr-size;
+        height: $toast-icon-bgr-height;
+        margin-right: $toast-icon-bgr-right-margin;
+        width: $toast-icon-bgr-width;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          left: 18px;
+          margin-top: 13px;
+          position: absolute;
+        }
+      }
+
+      .e-toast-progress {
+        height: $toast-progressbar-bgr-height;
+      }
+    }
+  }
+
+  .e-bigger .e-content-placeholder.e-toast.e-placeholder-toast,
+  .e-bigger.e-content-placeholder.e-toast.e-placeholder-toast {
+    background-size: 400px 100px;
+    min-height: 100px;
+  }
+
+  @if $skin-name == 'tailwind' {
+    .e-bigger .e-toast .e-toast {
+      padding: 24px;
+    }
+
+    .e-bigger .e-toast-container .e-toast .e-toast-message .e-toast-title {
+      font-size: 16px;
+    }
+  }
+}

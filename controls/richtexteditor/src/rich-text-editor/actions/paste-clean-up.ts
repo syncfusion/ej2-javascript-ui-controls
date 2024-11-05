@@ -219,37 +219,59 @@ export class PasteCleanup {
             }
         }
     }
+
     private splitBreakLine(value: string): string {
-        const enterSplitText: string[] = value.split('\n');
-        let contentInnerElem: string = '';
+        const enterSplitText: string[] = value.split('\r\n\r\n');
+        let finalText: string = '';
         const startNode: string = this.parent.enterKey === 'P' ? '<p>' : (this.parent.enterKey === 'DIV' ? '<div>' : '');
         const endNode: string = this.parent.enterKey === 'P' ? '</p>' : (this.parent.enterKey === 'DIV' ? '</div>' : '<br>');
         for (let i: number = 0; i < enterSplitText.length; i++) {
-            if (enterSplitText[i as number].trim() === '') {
-                contentInnerElem += getDefaultValue(this.parent);
+            const content: string = enterSplitText[i as number];
+            const contentWithSpace: string = this.makeSpace(content);
+            const contentWithLineBreak: string = contentWithSpace.replace(/\r\n|\n/g, '<br>');
+            if (i === 0) {
+                if (this.parent.enterKey === 'BR') {
+                    finalText += (contentWithLineBreak + endNode);
+                } else {
+                    finalText += contentWithLineBreak; // In order to merge the content in current line. No P/Div tag is added.
+                }
             } else {
-                const contentWithSpace: string = this.makeSpace(enterSplitText[i as number]);
-                contentInnerElem += (i === 0 && this.parent.enterKey !== 'BR' ? '<span>' : startNode) +
-                    (contentWithSpace.trim() === '' ? '<br>' : contentWithSpace.trim()) +
-                    (enterSplitText.length - 1 === i  && this.parent.enterKey === 'BR' ? '' : (i === 0 && this.parent.enterKey !== 'BR' ? '</span>' : endNode));
+                if (this.parent.enterKey === 'BR') {
+                    if (i === enterSplitText.length - 1) {
+                        finalText += (contentWithLineBreak + endNode);
+                    } else {
+                        finalText += (contentWithLineBreak + endNode + endNode);
+                    }
+                } else {
+                    finalText += startNode + contentWithLineBreak + endNode;
+                }
             }
         }
-        return contentInnerElem;
+        return finalText;
     }
-    private makeSpace(enterSplitText: string): string {
-        let contentWithSpace: string = '';
-        let spaceBetweenContent: boolean = true;
-        enterSplitText = enterSplitText.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
-        const spaceSplit: string[] = enterSplitText.split(' ');
-        for (let j: number = 0; j < spaceSplit.length; j++) {
-            if (spaceSplit[j as number].trim() === '') {
-                contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+
+    private makeSpace(text: string): string {
+        let spacedContent: string = '';
+        if (text === '') {
+            return text;
+        }
+        const lineBreakSplitText: string[] = text.split(' ');
+        for (let i: number = 0; i < lineBreakSplitText.length; i++) {
+            const currentText: string = lineBreakSplitText[i as number];
+            if (currentText === '') {
+                spacedContent += '&nbsp;';
+            } else if (currentText === '\t') {
+                spacedContent += '&nbsp;&nbsp;&nbsp;&nbsp;';
             } else {
-                spaceBetweenContent = false;
-                contentWithSpace += spaceSplit[j as number] + ' ';
+                if (i > 0 && i < lineBreakSplitText.length) {
+                    spacedContent += ' ';
+                }
+                spacedContent += currentText;
             }
         }
-        return contentWithSpace;
+        spacedContent = spacedContent.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+        spacedContent = spacedContent.replace(/&nbsp;&nbsp;/g, '&nbsp; ');
+        return spacedContent;
     }
 
     private imgUploading(elm: HTMLElement): void {

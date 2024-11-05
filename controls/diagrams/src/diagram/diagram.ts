@@ -1914,7 +1914,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         break;
                     case 'tool':
                         // 912436: Mouse cursor flickers when entering the diagram canvas after the tool is changed at runtime
-                        this.eventHandler.updateTool();
+                        if (((newProp.tool === DiagramTools.ZoomPan) && (oldProp.tool === DiagramTools.Default)) ||
+                            ((oldProp.tool === DiagramTools.ZoomPan) && (newProp.tool === DiagramTools.Default))) {
+                            this.eventHandler.updateTool();
+                        }
                         break;
                     }
                 }

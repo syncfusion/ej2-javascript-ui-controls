@@ -4,7 +4,7 @@ import { IMG_BASE64, INSRT_IMG_EVENT_INIT } from "../constant.spec";
 import { renderRTE, destroy, hostURL } from "./render.spec";
 
 
-function getImageFIle(): File {
+export function getImageFIle(): File {
     const base64Data = IMG_BASE64;
     const bytecharacters = atob(base64Data);
     const byteNumbers = new Array(bytecharacters.length);

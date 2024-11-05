@@ -1045,17 +1045,27 @@ describe('Column chooser module', () => {
                     allowPaging: true,
                         toolbar: ['ColumnChooser'],
                         columns: [
-                            { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+                            { field: 'OrderID', headerText: 'Order ID', width: 130, showInColumnChooser: false, textAlign: 'Right' },
                             { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
                             { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
-                            { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
                             { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
                         ],
                 }, done);
         });
 
+        it('check All columns', (done: Function) => {
+            (gridObj.columnChooserModule as any).openColumnChooser();
+            (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
+            done();
+        });
+
+        it('check the visible columns length', function () {
+            expect(gridObj.getVisibleColumns().length).toBe(4);
+        });
+
         it('check only the searched value is visible', (done: Function) => {
             (gridObj.columnChooserModule as any).openColumnChooser();
+            (gridObj.columnChooserModule as any).searchValue = 'Order';
             (gridObj.columnChooserModule as any).columnChooserSearch('Order');
             (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
             done();

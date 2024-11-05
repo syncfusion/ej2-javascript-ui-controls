@@ -2186,17 +2186,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.closeArgs = eventArgs;
             this.trigger('beforeClose', eventArgs, (beforeCloseArgs: BeforeCloseEventArgs) => {
                 if (!beforeCloseArgs.cancel) {
-                    if (this.isModal) {
-                        if (!isNullOrUndefined(this.targetEle)) {
-                            removeClass([this.targetEle],  [DLG_TARGET , SCROLL_DISABLED]);
-                        }
-                    }
                     if (this.enableResize) {
                         this.unWireWindowResizeEvent();
-                    }
-                    if (document.body.classList.contains(DLG_TARGET) &&
-                        document.body.classList.contains(SCROLL_DISABLED)) {
-                        removeClass([document.body],  [DLG_TARGET , SCROLL_DISABLED]);
                     }
                     const closeAnimation: Object = {
                         name: (this.animationSettings.effect === 'None' && animationMode === 'Enable') ? 'Zoom' + 'Out' : this.animationSettings.effect + 'Out',
@@ -2210,6 +2201,18 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     } else {
                         this.popupObj.hide(closeAnimation);
                     }
+                    setTimeout(() => {
+                        if (this.isModal) {
+                            if (!isNullOrUndefined(this.targetEle) && this.targetEle.classList.contains(DLG_TARGET) &&
+                                this.targetEle.classList.contains(SCROLL_DISABLED)) {
+                                removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
+                            }
+                        }
+                        if (document.body.classList.contains(DLG_TARGET) &&
+                            document.body.classList.contains(SCROLL_DISABLED)) {
+                            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
+                        }
+                    }, (this.animationSettings.duration + this.animationSettings.delay));
                     this.dialogOpen = false;
                     const prevOnChange: boolean = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;

@@ -3060,6 +3060,10 @@ export class PdfTextBoxField extends PdfField {
                 g._initializeCoordinates();
             }
             let rectangle: number[] = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
+            const rotate: number = this.rotate;
+            if (rotate !== null && typeof rotate !== 'undefined' && rotate === 90) {
+                rectangle[1] = rectangle[2] / 2;
+            }
             if (parameter.borderStyle === PdfBorderStyle.beveled || parameter.borderStyle === PdfBorderStyle.inset) {
                 rectangle[0] = rectangle[0] + 4 * parameter.borderWidth;
                 rectangle[2] = rectangle[2] - 8 * parameter.borderWidth;
@@ -3120,11 +3124,13 @@ export class PdfTextBoxField extends PdfField {
                             const x: number = g._size[1] - (rectangle[1] + rectangle[3]);
                             const y: number = rectangle[0];
                             rectangle = [x, y, rectangle[3], rectangle[2]];
+                            parameter.stringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
                         } else {
                             if (rectangle[2] > rectangle[3]) {
                                 g.translateTransform(0, g._size[1]);
                                 g.rotateTransform(-90);
                                 rectangle = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
+                                rectangle[1] = (rectangle[2] / 2) - (8 * parameter.borderWidth);
                             } else {
                                 const z: number = rectangle[0];
                                 rectangle[0] = -(rectangle[1] + rectangle[3]);
@@ -3138,9 +3144,8 @@ export class PdfTextBoxField extends PdfField {
                     } else if (parameter.rotationAngle === 270) {
                         g.translateTransform(g._size[0], 0);
                         g.rotateTransform(-270);
-                        const x: number = rectangle[1];
-                        const y: number = g._size[0] - (rectangle[0] + rectangle[2]);
-                        rectangle = [x, y, rectangle[3], rectangle[2]];
+                        rectangle = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
+                        rectangle[1] = (rectangle[2] / 2) - (8 * parameter.borderWidth);
                     } else if (parameter.rotationAngle === 180) {
                         g.translateTransform(g._size[0], g._size[1]);
                         g.rotateTransform(-180);
@@ -6353,6 +6358,9 @@ export class PdfComboBoxField extends PdfListField {
                 parameter.shadowBrush = new PdfBrush(color);
             }
             parameter.rotationAngle = this.rotationAngle;
+            if (this.rotate !== null && typeof this.rotate !== 'undefined') {
+                parameter.rotationAngle = this.rotate;
+            }
             const alignment: PdfTextAlignment = typeof this.textAlignment !== 'undefined' ? this.textAlignment : PdfTextAlignment.left;
             const verticalAlignment: PdfVerticalAlignment = this.multiSelect ? PdfVerticalAlignment.top : PdfVerticalAlignment.middle;
             parameter.stringFormat = new PdfStringFormat(alignment, verticalAlignment);
@@ -6379,7 +6387,7 @@ export class PdfComboBoxField extends PdfListField {
             this._drawComboBox(graphics, parameter, font, parameter.stringFormat);
         } else {
             if (!this._font) {
-                this._font = this._defaultFont;
+                this._font = new PdfStandardFont(PdfFontFamily.timesRoman, this._getFontHeight(PdfFontFamily.helvetica));
             }
             this._drawComboBox(graphics, parameter, this._font, parameter.stringFormat);
         }
@@ -6522,7 +6530,9 @@ export class PdfComboBoxField extends PdfListField {
                 itemFont = new PdfStandardFont(fontFamily, 12);
                 format = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
                 options = this._dictionary.getArray('Opt');
-                const width: number = itemFont.measureString(options[values[0]][1], [0, 0], format, 0, 0)[0];
+                const selectedValue: any = this.selectedValue; // eslint-disable-line
+                const width: number = itemFont.measureString((selectedValue !== null && typeof selectedValue === 'string') ? selectedValue :
+                    options[values[0]][1], [0, 0], format, 0, 0)[0];
                 bounds = this.bounds;
                 if (width) {
                     s = (12 * (bounds.width - 4 * borderWidth)) / width;
@@ -6537,20 +6547,22 @@ export class PdfComboBoxField extends PdfListField {
         if (values && values.length > 0) {
             if (s !== 12) {
                 itemFont = new PdfStandardFont(fontFamily, s);
-                const text: string = options[values[0]][1];
-                const textSize: number[] = itemFont.measureString(text, [0, 0], format, 0, 0);
+                const selectedValue: any = this.selectedValue; // eslint-disable-line
+                const text: string = (selectedValue !== null && typeof selectedValue === 'string') ? selectedValue :
+                    options[values[0]][1];
+                const textSize: number[] = itemFont.measureString(text);
                 if (textSize[0] > bounds.width || textSize[1] > bounds.height) {
                     const width: number = bounds.width - 4 * borderWidth;
                     const h: number = bounds.height - 4 * borderWidth;
                     const min: number = 0.248;
                     for (let i: number = 1; i <= bounds.height; i++) {
-                        itemFont._size = i;
-                        let size: number[] = itemFont.measureString(text, [0, 0], format, 0, 0);
+                        itemFont = new PdfStandardFont(fontFamily, i);
+                        let size: number[] = itemFont.measureString(text);
                         if (size[0] > bounds.width || size[1] > h) {
                             fontSize = i;
                             do {
                                 fontSize = fontSize - 0.001;
-                                itemFont._size = fontSize;
+                                itemFont = new PdfStandardFont(fontFamily, fontSize);
                                 const textWidth: number = itemFont.getLineWidth(text, format);
                                 if (fontSize < min) {
                                     itemFont._size = min;
@@ -6776,6 +6788,9 @@ export class PdfListBoxField extends PdfListField {
                 parameter.shadowBrush = new PdfBrush(color);
             }
             parameter.rotationAngle = this.rotationAngle;
+            if (this.rotate !== null && typeof this.rotate !== 'undefined') {
+                parameter.rotationAngle = this.rotate;
+            }
             const alignment: PdfTextAlignment = typeof this.textAlignment !== 'undefined' ? this.textAlignment : PdfTextAlignment.left;
             const verticalAlignment: PdfVerticalAlignment = this.multiSelect ? PdfVerticalAlignment.top : PdfVerticalAlignment.middle;
             parameter.stringFormat = new PdfStringFormat(alignment, verticalAlignment);

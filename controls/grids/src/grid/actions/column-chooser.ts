@@ -477,14 +477,14 @@ export class ColumnChooser implements IAction {
     private confirmDlgBtnClick(args: Object): void {
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
-        if (this.filterColumns.length && this.ulElement.querySelector('.e-selectall.e-check')) {
+        if (this.searchValue && this.filterColumns.length && this.ulElement.querySelector('.e-selectall.e-check')) {
             this.changedColumns = this.filterColumns.map((column: Column) => { return column.uid; });
             this.showColumn = [];
             this.hideColumn = [];
             this.parent.getColumns().map((column: Column) => {
                 if (this.changedColumns.indexOf(column.uid) !== -1) {
                     this.showColumn.push(column.uid);
-                } else {
+                } else if (column.showInColumnChooser) {
                     this.hideColumn.push(column.uid);
                 }
             });

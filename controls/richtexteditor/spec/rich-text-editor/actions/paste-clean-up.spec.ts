@@ -800,12 +800,8 @@ third line`;
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
-      let expected: boolean = false;
-      let expectedElem: string = `<p><span>using System;</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Collections.Generic;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Linq;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Threading.Tasks;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Web.Mvc;</p><p><br></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;namespace EJ2MVCSampleBrowser.Controllers</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public partial class RichTextEditorController : Controller</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// GET: /&lt;controller&gt;/</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public ActionResult API()</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ViewBag.value = @"&lt;p&gt;RichTextEditor is a WYSIWYG editing control which will reduce the effort for users while trying to express their formatting word content as HTML or Markdown format.&lt;/p&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;&lt;b&gt;API’s:&lt;/b&gt;&lt;/p&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ul&gt;&lt;li&gt;&lt;p&gt;maxLength - allows to restrict the maximum length to be entered.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;readOnly - allows to change it as non-editable state.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;enabled - enable or disable the RTE component.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;enableHtmlEncode - Get the encoded string value through value property and source code panel&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;getValue - get the value of RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;getSelection - get the selected text of RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;selectAll - select all content in RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/ul&gt;";</p><p><br></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return View();</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>17</p>`;
-      if (pastedElm === expectedElem) {
-        expected = true;
-      }
-      expect(expected).toBe(true);
+      let expectedElem: string = '<p>using System;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; using System.Collections.Generic;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; using System.Linq;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; using System.Threading.Tasks;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; using System.Web.Mvc;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; namespace EJ2MVCSampleBrowser.Controllers<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; public partial class RichTextEditorController : Controller<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // GET: /&lt;controller&gt;/<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; public ActionResult API()<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ViewBag.value = @"&lt;p&gt;RichTextEditor is a WYSIWYG editing control which will reduce the effort for users while trying to express their formatting word content as HTML or Markdown format.&lt;/p&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;p&gt;&lt;b&gt;API’s:&lt;/b&gt;&lt;/p&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;ul&gt;&lt;li&gt;&lt;p&gt;maxLength - allows to restrict the maximum length to be entered.&lt;/p&gt;&lt;/li&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li&gt;&lt;p&gt;readOnly - allows to change it as non-editable state.&lt;/p&gt;&lt;/li&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li&gt;&lt;p&gt;enabled - enable or disable the RTE component.&lt;/p&gt;&lt;/li&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li&gt;&lt;p&gt;enableHtmlEncode - Get the encoded string value through value property and source code panel&lt;/p&gt;&lt;/li&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li&gt;&lt;p&gt;getValue - get the value of RTE.&lt;/p&gt;&lt;/li&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li&gt;&lt;p&gt;getSelection - get the selected text of RTE.&lt;/p&gt;&lt;/li&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;li&gt;&lt;p&gt;selectAll - select all content in RTE.&lt;/p&gt;&lt;/li&gt;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/ul&gt;";<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return View();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }17</p>';
+      expect(expectedElem === pastedElm).toBe(true);
       done();
     }, 100);
   });
@@ -834,12 +830,8 @@ third line`;
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
-      let expected: boolean = false;
-      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space</p><p><br></p><p><br></p><p>third line</p><p>18</p>`;
-      if (pastedElm === expectedElem) {
-        expected = true;
-      }
-      expect(expected).toBe(true);
+      let expectedElem: string = '<p>first line<br>&nbsp; &nbsp; &nbsp; &nbsp; Second line with space<br>&nbsp;  <br>&nbsp;  <br>third line18</p>';
+      expect(expectedElem === pastedElm).toBe(true);
       let elem: HTMLElement = editorObj.editableElement as HTMLElement;
       let start: HTMLElement = elem.querySelector('p');
       let end: HTMLElement = start;
@@ -2542,7 +2534,9 @@ describe("EJ2-58433 - Pasting content from note pad, outlook, visual studio, VS 
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `<ol><li class="focusNode"><span>RTE Content</span>﻿﻿<br></li></ol>`).toBe(true)
+        const expetedElem: string = '<ol><li class="focusNode">RTE Content﻿﻿<br></li></ol>';
+        const pastedElem: string = rteObj.inputElement.innerHTML;
+        expect(expetedElem === pastedElem).toBe(true)
         done();
       }, 100);
     });
@@ -2619,7 +2613,9 @@ describe("EJ2-60128 - pasting content which exceeds the max char count", () => {
       setCursorPoint((rteObj as any).inputElement.firstElementChild.childNodes[0], 23);
       rteObj.onPaste(keyBoardEvent);
       setTimeout(() => {
-        expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;<span>content</span></p>`).toBe(true)
+        const expetedElem: string = '<p>.NEt core application.&nbsp;content</p>';
+        const pastedElem: string = rteObj.inputElement.innerHTML;
+        expect(expetedElem === pastedElem).toBe(true)
         expect((rteObj as any).element.querySelector('.e-rte-character-count').innerHTML === `30 / 30`).toBe(true)
         done();
       }, 100);
@@ -2794,7 +2790,9 @@ describe("852026 - pasting plain text when BR is configured in enterkey", () => 
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br>`).toBe(true);
+        const expectedElem: string = 'dsvsdv<br>sdvsdv<br>sdvdsv<br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br><br>';
+        const pastedElem: string = (rteObj as any).inputElement.innerHTML;
+        expect(expectedElem === pastedElem).toBe(true);
         done();
       }, 100);
     });
@@ -2852,7 +2850,9 @@ describe("852026 - pasting plain text when DIV is configured in enterkey", () =>
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `<div><div><span>dsvsdv</span></div><div>sdvsdv</div><div>sdvdsv</div><div><br></div><div>sdvsdv</div><div>sdvdsv</div><div><br></div><div><br></div><div><br></div><div>sdvsdvdsv</div><div>sdvdsvdsvdsv</div><div>sdvsdvsdvsvv</div></div>`).toBe(true);
+        const expectedElem: string = '<div><div>dsvsdv<br>sdvsdv<br>sdvdsv</div><div>sdvsdv<br>sdvdsv</div><div>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</div></div>';
+        const pastedElem: string = rteObj.inputElement.innerHTML;
+        expect(expectedElem === pastedElem).toBe(true);
         done();
       }, 100);
     });
@@ -2910,7 +2910,9 @@ describe("852026 - pasting plain text when P is configured in enterkey", () => {
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `<p><span>dsvsdv</span></p><p>sdvsdv</p><p>sdvdsv</p><p><br></p><p>sdvsdv</p><p>sdvdsv</p><p><br></p><p><br></p><p><br></p><p>sdvsdvdsv</p><p>sdvdsvdsvdsv</p><p>sdvsdvsdvsvv</p>`).toBe(true);
+        const expectedElem: string = '<p>dsvsdv<br>sdvsdv<br>sdvdsv</p><p>sdvsdv<br>sdvdsv</p><p>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</p>';
+        const pastedElem: string = rteObj.inputElement.innerHTML;
+        expect(expectedElem === pastedElem).toBe(true);
         done();
       }, 100);
     });
@@ -3400,7 +3402,9 @@ describe("843341- Indentation is not maintained when the content is copied and p
                 let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
                 pasteOK[0].click();
             }
-            expect((rteObj as any).inputElement.innerHTML === `<p><span>1. Development</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;1. Requirement Document &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hello</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. Specification Document</p><p>RTE</p>`).toBe(true)
+            const expectedElem: string = '<p>1. Development <br>&nbsp; &nbsp; 1. Requirement Document &nbsp; &nbsp; &nbsp; &nbsp; Hello<br>&nbsp; &nbsp; &nbsp; &nbsp; 2. Specification DocumentRTE</p>';
+            const pastedElem: string  = rteObj.inputElement.innerHTML;
+            expect(expectedElem === pastedElem).toBe(true)
             done();
         }, 50);
     });
@@ -4673,7 +4677,7 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
     });
 
-    describe('914012: Lines retaining after pasting content to VS code from Rich Text Editor.', () => {
+        describe('916197: OneNote checklist items pasted with improper element structure.', () => {
         let editor: RichTextEditor;
         beforeAll((done: DoneFn) => {
             editor = renderRTE({

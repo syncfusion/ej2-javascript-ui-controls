@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### Circular Gauge
+
+#### Bug fixes
+
+`#I644577` - The target element is now correctly identified in the `gaugeMouseDown` event.
+
 ## 27.1.57 (2024-10-29)
 
 ### Circular Gauge

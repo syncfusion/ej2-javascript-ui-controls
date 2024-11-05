@@ -308,7 +308,7 @@ export class Toolkit {
         }
         const chart: Chart = this.chart;
         this.enableZoomButton = false;
-        chart.redraw = chart.zoomSettings.enableAnimation;
+        chart.redraw = chart.enableCanvas ? chart.redraw : chart.zoomSettings.enableAnimation;
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
         } else if (event.type === 'touchstart') {

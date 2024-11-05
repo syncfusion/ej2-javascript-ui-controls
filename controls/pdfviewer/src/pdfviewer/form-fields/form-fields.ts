@@ -2192,11 +2192,13 @@ export class FormFields {
             for (let m: number = 0; m < formFieldsData.length; m++) {
                 const currentData: any = formFieldsData[parseInt(m.toString(), 10)];
                 if (currentData.ActualFieldName === null && count && (currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && (this.pdfViewer.formDesigner ? ((currentData.FieldName.split('_')[0] ) === (signData.ActualFieldName) || (currentData.FieldName.split('_')[0]) === (signData.FieldName)) : ((currentData.FieldName.split('_')[0] === (signData.FieldName )) && !isNullOrUndefined(signData.ActualFieldName)) && currentData.Value && currentData.Value !== '')) {
-                    signData.Value = currentData.Value;
-                    signData.FontFamily = currentData.FontFamily;
-                    signData.FontSize = currentData.FontSize;
-                    this.isSignatureField = true;
-                    signData.Bounds = currentData.LineBounds;
+                    if (signData.PageIndex === currentData.PageIndex) {
+                        signData.Value = currentData.Value;
+                        signData.FontFamily = currentData.FontFamily;
+                        signData.FontSize = currentData.FontSize;
+                        this.isSignatureField = true;
+                        signData.Bounds = currentData.LineBounds;
+                    }
                 }
                 if (currentData.ActualFieldName === null && count && (currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && this.pdfViewer.formDesigner ? currentData.FieldName === signData.ActualFieldName + '_' + count || currentData.FieldName === signData.FieldName + '_' + count : ((currentData.FieldName === signData.FieldName + '_' + count || currentData.FieldName === signData.ActualFieldName + '_' + count) && !isNullOrUndefined(signData.ActualFieldName)) && currentData.Value && currentData.Value !== '') {
                     signData.Value = currentData.Value;

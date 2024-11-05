@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I641865` - Now, the node can be moved inside the lane when the `AllowMovingOutsideLane` constraint is applied to the nodes.
+
 ## 27.1.57 (2024-10-29)
 
 ### Diagram
@@ -10,8 +18,10 @@
 
 - `#I637156` - Tooltip now displays properly on mobile devices with touch interactions.
 - `#I637207` - Nodes are now resizable via touch interactions.
-- `#I639121` - The gradient background of the node is now properly preserved when exporting the diagram as an SVG
+- `#I639121` - The gradient background of the node is now properly preserved when exporting the diagram as an SVG.
 - `#F194691` - The Position Change Event Now Triggers on Keyboard Nudging.
+- `#I642023`, `#I642126` - Multiple selected child nodes of a Swimlane can be moved to a different lane smoothly.
+- `#I642048` - Multiple selected child nodes of a Swimlane can now be properly repositioned within the same lane.
 
 ## 27.1.55 (2024-10-22)
 

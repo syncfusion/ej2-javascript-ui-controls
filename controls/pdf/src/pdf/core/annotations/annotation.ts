@@ -3365,7 +3365,7 @@ export class PdfLineAnnotation extends PdfComment {
         }
         nativeRectangle = this._obtainLineBounds();
         const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
-        _setMatrix(template, this._getRotationAngle());
+        _setMatrix(template, 0);
         const parameter: _PaintParameter = new _PaintParameter();
         template._writeTransformation = false;
         const graphics: PdfGraphics = template.graphics;
@@ -3703,7 +3703,7 @@ export class PdfLineAnnotation extends PdfComment {
     _createAppearance(): PdfTemplate {
         const template: PdfTemplate = new PdfTemplate(this._obtainLineBounds(), this._crossReference);
         const parameter: _PaintParameter = new _PaintParameter();
-        _setMatrix(template, this._getRotationAngle());
+        _setMatrix(template, 0);
         template._writeTransformation = false;
         const graphics: PdfGraphics = template.graphics;
         const pen: PdfPen = new PdfPen(typeof this.color !== 'undefined' ? this._color : [0, 0, 0], this.border.width);
@@ -3716,7 +3716,10 @@ export class PdfLineAnnotation extends PdfComment {
         }
         parameter.borderPen = pen;
         parameter.foreBrush = new PdfBrush(this.color);
-        const brush: PdfBrush = new PdfBrush(typeof this.innerColor !== 'undefined' ? this._innerColor : [0, 0, 0]);
+        let brush: PdfBrush;
+        if (this.innerColor) {
+            brush = new PdfBrush(this._innerColor);
+        }
         let font: PdfFont = this._obtainFont();
         if ((typeof font === 'undefined' || font === null) || (!this._isLoaded && font.size === 1)) {
             font = this._lineCaptionFont;
@@ -9752,7 +9755,9 @@ export class PdfTextMarkupAnnotation extends PdfComment {
                     graphics.drawPath(this._drawSquiggly(Math.round(width), Math.round(height)), pdfPen);
                 }
                 if (this._isLoaded) {
-                    this._dictionary.update('Rect', [rectangle.x, rectangle.y, rectangle.x + rectangle.width, rectangle.y + rectangle.height]);
+                    const defaultRect: number[] = [rectangle.x, rectangle.y, rectangle.x + rectangle.width, rectangle.y + rectangle.height];
+                    const rect: number[] = this._setAppearance ? _updateBounds(this) : defaultRect;
+                    this._dictionary.update('Rect', rect);
                 }
             }
         }

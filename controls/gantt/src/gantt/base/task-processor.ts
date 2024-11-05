@@ -1069,8 +1069,9 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('work', work, ganttProperties, true);
                 switch (tType) {
                 case 'FixedDuration':
-                    if (!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
-                        ganttData.ganttProperties.resourceInfo.length !== 0) {
+                    // To validate the work column as well,when initial dataset have 0 duration
+                    if ((!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
+                        ganttData.ganttProperties.resourceInfo.length !== 0) || ganttProperties.duration === 0) {
                         this.updateWorkWithDuration(ganttData);
                     }
                     break;

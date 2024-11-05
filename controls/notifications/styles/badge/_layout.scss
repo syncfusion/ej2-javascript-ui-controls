@@ -1,0 +1,130 @@
+@mixin badge-size($border-radius, $height, $line-height, $min-width, $padding, $width) {
+  border-radius: $border-radius;
+  height: $height;
+  line-height: $line-height;
+  min-width: $min-width;
+  padding: $padding;
+  width: $width;
+}
+
+@mixin position($pos, $top, $left, $bottom) {
+  position: $pos;
+  top: $top;
+  left: $left;
+  bottom: $bottom;
+}
+
+@include export-module('badge-layout') {
+  .e-badge {
+    background: $badge-base-background-color;
+    border-color: transparent;
+    border-radius: $badge-base-border-radius;
+    box-shadow: 0 0 0 2px transparent;
+    box-sizing: border-box;
+    color: $badge-base-text-color;
+    display: inline-block;
+    font-family: $font-family;
+    font-size: $badge-base-font-size;
+    font-weight: $badge-base-font-weight;
+    @if ($badge-theme == 'bootstrap5.3') {
+      line-height: 18px;
+      padding: 1px 4px;
+    }
+    @else {
+      line-height: $badge-base-line-height;
+      padding: $badge-padding;
+    }
+    @if ($badge-theme == 'tailwind' or $badge-theme == 'FluentUI' or $badge-theme == 'tailwind-dark' or $badge-theme == 'bootstrap5' or $badge-theme == 'bootstrap5.3') {
+      height: $badge-base-height;
+    }
+    overflow: hidden;
+    text-align: center;
+    text-decoration: none;
+    text-indent: $badge-base-text-indent;
+    vertical-align: middle;
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    &.e-badge-pill {
+      border-radius: $badge-pill-border-radius;
+      @if ($badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark' or $badge-theme == 'bootstrap5' or $badge-theme == 'FluentUI') {
+        padding: $badge-pill-padding;
+      }
+    }
+
+    &.e-badge-ghost {
+      @if ($badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark' or $badge-theme == 'bootstrap5' or $badge-theme == 'FluentUI') {
+        line-height: $badge-ghost-line-height;
+        padding: $badge-ghost-padding;
+      }
+    }
+
+    &.e-badge-notification {
+      @include badge-size($badge-notification-border-radius, $badge-notification-height, $badge-notification-line-height, $badge-notification-min-width, $badge-notification-padding, auto);
+      font-size: $badge-notification-font-size;
+      @include position(absolute, $badge-notification-top, $badge-notification-left, null);
+
+      &.e-badge-ghost {
+        line-height: $badge-notification-ghost-line-height;
+      }
+    }
+
+    &.e-badge-circle {
+      @include badge-size($badge-circle-border-radius, $badge-circle-height, $badge-circle-line-height, $badge-circle-min-width, $badge-circle-padding, $badge-circle-width);
+
+      &.e-badge-ghost {
+        line-height: $badge-circle-ghost-line-height;
+        @if ($badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark' or $badge-theme == 'bootstrap5' or $badge-theme == 'FluentUI' or $badge-theme == 'Material3') {
+          padding: $badge-circle-ghost-padding;
+        }
+      }
+    }
+
+    &.e-badge-overlap {
+      @include position(absolute, $badge-overlap-top, null, null);
+      transform: $badge-overlap-transform-left;
+    }
+
+    &.e-badge-dot {
+      @include badge-size($badge-dot-border-radius, $badge-dot-height, $badge-dot-line-height, $badge-dot-min-width, $badge-dot-padding, $badge-dot-width);
+      box-shadow: $badge-dot-box-shadow;
+      margin: 0;
+      overflow: visible;
+      @include position(absolute, $badge-dot-top, $badge-dot-left, null);
+    }
+
+    &.e-badge-bottom {
+      &.e-badge-dot {
+        @include position(absolute, auto, null, 3px);
+      }
+
+      &.e-badge-notification {
+        @include position(absolute, auto, null, -3px);
+      }
+    }
+
+    @at-root {
+      button#{''} .e-badge {
+        @if ($badge-theme == 'tailwind' or $badge-theme == 'tailwind-dark' or $badge-theme == 'bootstrap5' or $badge-theme == 'FluentUI') {
+          line-height: $leading-none;
+        }
+        @else {
+          line-height: .9;
+        }
+        @include position(relative, $badge-button-top, null, null);
+
+        &.e-badge-circle {
+          height: $badge-button-circle-height;
+          line-height: $badge-button-circle-line-height;
+          width: $badge-button-circle-width;
+
+          &.e-badge-ghost {
+            line-height: $badge-ghost-circle-line-height;
+          }
+        }
+      }
+    }
+  }
+}

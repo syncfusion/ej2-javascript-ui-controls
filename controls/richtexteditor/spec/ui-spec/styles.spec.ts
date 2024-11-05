@@ -3,6 +3,7 @@
  */
 import { RichTextEditor, ToolbarConfigItems } from '../../src/rich-text-editor/index';
 import { ENTERKEY_EVENT_INIT } from '../constant.spec';
+import { getImageFIle } from '../rich-text-editor/online-service.spec';
 import { renderRTE, destroy, clickImage, clickGripper, moveGripper, leaveGripper, ImageResizeGripper } from '../rich-text-editor/render.spec';
 
 const content: string = `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank" rel="noopener" aria-label="Open in new window">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank" rel="noopener" aria-label="Open in new window">markdown</a> of the content</p>
@@ -763,6 +764,47 @@ describe('UI Spec ', () => {
                 expect(image.width < width);
                 done();
             }, 150);
+        });
+    });
+
+    describe('916652 - When resize is set to false in insertImageSettings, it doesnot prevent the resize element from appearing.', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: Function) => {
+            editor = renderRTE({
+                insertImageSettings: {
+                    resize: false
+                },
+                value: `<p>Image with Width and Height</p>
+                <p><img alt="image 1" src="/base/spec/content/image/RTE-Portrait.png" style="width: 450px;" /></p>`
+            });
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(editor);
+            done();
+        });
+        it('Should not add the resize gripper elements in DOM.', (done: DoneFn) => {
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            setTimeout(() => {
+                expect(gripperElement).toBeNull();
+                done();
+            }, 100);
+        });
+        it('Should not add the resize gripper elements in DOM. When drag and dropped.', (done: DoneFn) => {
+            const dataTransfer: DataTransfer = new DataTransfer();
+            const file: File = getImageFIle();
+            dataTransfer.items.add(file);
+            const dropEvent: DragEvent = new DragEvent('drop', { dataTransfer: dataTransfer } as DragEventInit);
+            editor.inputElement.dispatchEvent(dropEvent);
+            setTimeout(() => {
+                const gripper: ImageResizeGripper = 'e-rte-topRight';
+                const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+                expect(gripperElement).toBeNull();
+                done();
+            }, 100);
         });
     });
 });

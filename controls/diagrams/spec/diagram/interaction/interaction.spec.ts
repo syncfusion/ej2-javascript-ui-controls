@@ -5475,6 +5475,47 @@ describe('Connector Allow Drop', () => {
         done();
     });
 });
+describe('912436-Diagram Tool Change At RunTime', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramPanTool' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel | ConnectorModel)[] = [];
+        let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300 };
+
+        diagram = new Diagram({
+            width: '500px', height: '600px', nodes: [node],
+            snapSettings: { constraints: SnapConstraints.ShowLines }
+        });
+
+        diagram.appendTo('#diagramPanTool');
+        selArray.push(diagram.nodes[0]);
+        diagram.select(selArray);
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Pan Tool At Runtime', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
+        diagram.tool = DiagramTools.ZoomPan;
+        diagram.dataBind();
+        console.log(diagram.tool === DiagramTools.ZoomPan);
+        expect(diagram.tool == DiagramTools.ZoomPan).toBe(true); done();
+    });
+});
 
 
 

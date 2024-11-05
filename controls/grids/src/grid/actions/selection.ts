@@ -3296,8 +3296,10 @@ export class Selection implements IAction {
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
                 setChecked(input, false);
                 input.indeterminate = false;
-                const getRecord: object[] = this.parent.getDataModule().isRemote() ? [] :
-                    (this.parent.groupSettings.columns.length) ? this.getData()['records'] : this.getData();
+                let getRecord: object[] = this.parent.getDataModule().isRemote() ? [] : this.getData();
+                if (this.parent.groupSettings.columns.length && getRecord['records']) {
+                    getRecord = getRecord['records'];
+                }
                 if ((checkToSelectAll && isFiltered && (this.parent.getDataModule().isRemote() ||
                     (!isNullOrUndefined(this.parent.dataSource) && (<{ result: object[] }>this.parent.dataSource).result) ||
                     getRecord.length)) || (!isFiltered && ((checkedLen === this.totalRecordsCount && this.totalRecordsCount

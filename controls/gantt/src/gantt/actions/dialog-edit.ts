@@ -1533,6 +1533,10 @@ export class DialogEdit {
         }
         if (columnName === taskSettings.type) {
             this.parent.setRecordValue('taskType', value, ganttProp, true);
+            // To validate the work column as well, if duartion column value is 0, when FixedDuration type
+            if (value && value === 'FixedDuration' && ganttProp.duration === 0) {
+                this.parent.editModule.updateResourceRelatedFields(currentData, 'work');
+            }
         }
         if (taskSettings.manual === columnName) {
             this.parent.editModule.updateTaskScheduleModes(currentData);
@@ -3369,7 +3373,7 @@ export class DialogEdit {
         const ganttObj: Gantt = this.parent;
         const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
         if (this.isEdit) {
-            if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
+            if (!ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
                 if (this.rowData.ganttProperties.notes !== rte.getHtml() && (this.rowData.ganttProperties.notes !== null || rte.getHtml() !== '<p><br></p>') && !this.disableUndo) {
                     this.disableUndo = true;
                 }

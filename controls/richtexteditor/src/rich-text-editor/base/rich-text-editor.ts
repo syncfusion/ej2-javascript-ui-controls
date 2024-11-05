@@ -2037,7 +2037,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         const notFormatPainterCopy: boolean = isNOU((e as KeyboardEventArgs).action) ? true : ((e as KeyboardEventArgs).action !== 'format-copy' ? true : false);
         if (this.formatter.getUndoRedoStack().length === 0 && notFormatPainterCopy &&
-            !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which === 67))) {
+            !(e.altKey || (e.shiftKey && e.which === 16) || (e.altKey && e.shiftKey && e.which === 67))) {
             this.formatter.saveData();
         }
         let preventingMention: boolean = false;
@@ -3076,7 +3076,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         const item: Element = compiledTemplate[i as number] as Element;
                         append([item], appendElem);
                     }
-                    this.setProperties({ value: appendElem.innerHTML.trim() });
+                    const content: string = appendElem.innerHTML.trim();
+                    if (content.length > 0) {
+                        this.setProperties({ value: content });
+                    }
                     this.renderReactTemplates();
                 }
             }

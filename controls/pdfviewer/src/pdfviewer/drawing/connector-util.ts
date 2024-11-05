@@ -110,7 +110,7 @@ export function updateDecoratorElement(
     const getPath: string = getDecoratorShape(isSource ? obj.sourceDecoraterShapes : obj.taregetDecoraterShapes);
     let thickness: number = 0;
     let size: Size;
-    if (obj.shapeAnnotationType === 'LineWidthArrowHead') {
+    if (obj.shapeAnnotationType === 'LineWidthArrowHead' || obj.shapeAnnotationType === 'Line') {
         thickness = obj.thickness;
         size = new Size(thickness * 12, thickness * 12);
     } else {

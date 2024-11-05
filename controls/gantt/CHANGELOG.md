@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#645586` - Last 3 rows of the taskbar are not exported when performing PDF export with the `pageOrientation` set Portrait issue has been fixed.
+- `#644812` - When adding a record, the validation for taskType as `fixedDuration` is not working properly issue has been fixed.
+
 ## 27.1.57 (2024-10-29)
 
 ### GanttChart

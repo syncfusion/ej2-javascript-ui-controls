@@ -4896,7 +4896,7 @@ export class Layout {
             this.viewer.clientActiveArea = clientActiveArea;
         }
     }
-    private moveEndnoteToNextPage(endnote: FootNoteWidget, bodyWidget: BodyWidget, isMoveEntireEndnote?: boolean): void {
+    private moveEndnoteToNextPage(endnote: FootNoteWidget, bodyWidget: BodyWidget, isMoveEntireEndnote?: boolean, currentBodyIndex?: number): void {
         if (isMoveEntireEndnote) {
             let newBodyWidget: BodyWidget = this.createSplitBody(bodyWidget);
             const nextPage: Page = this.viewer.createNewPage(newBodyWidget);
@@ -4911,7 +4911,6 @@ export class Layout {
             endnote.page = nextPage;
         } else {
             let page: Page = bodyWidget.page;
-            let currentIndex: number = bodyWidget.index;
             // if the page doesn't have a endNoteWidget, we create endNote, move the endnote to next page.
             if (isNullOrUndefined(page.endnoteWidget)) {
                 let newEndnote: FootNoteWidget = new FootNoteWidget();
@@ -4919,7 +4918,7 @@ export class Layout {
                 newEndnote.page = page;
                 newEndnote.bodyWidgets.push(bodyWidget);
                 bodyWidget.containerWidget = newEndnote;
-                for (let i: number = currentIndex + 1; i < endnote.bodyWidgets.length; i++) {
+                for (let i: number = currentBodyIndex + 1; i < endnote.bodyWidgets.length; i++) {
                     let currentBodyWidget: BodyWidget = endnote.bodyWidgets[i];
                     endnote.bodyWidgets.splice(i, 1);
                     newEndnote.bodyWidgets.push(currentBodyWidget);
@@ -4935,7 +4934,7 @@ export class Layout {
                     page.endnoteWidget.bodyWidgets.splice(0, 0, bodyWidget);
                     bodyWidget.containerWidget = page.endnoteWidget;
                 }
-                for (let i: number = endnote.bodyWidgets.length - 1; i > currentIndex; i--) {
+                for (let i: number = endnote.bodyWidgets.length - 1; i > currentBodyIndex; i--) {
                     let currentBodyWidget: BodyWidget = endnote.bodyWidgets[i];
                     page.endnoteWidget.bodyWidgets.unshift(currentBodyWidget);
                     currentBodyWidget.containerWidget = page.endnoteWidget;
@@ -5025,8 +5024,9 @@ export class Layout {
             let nextBody: BodyWidget = this.moveBlocksToNextPage(paragraphWidget, index === 0, index, false, isEndnote);
             if (isEndnote) {
                 let endnote: FootNoteWidget = paragraphWidget.containerWidget.containerWidget as FootNoteWidget;
+                let currentBodyIndex: number = endnote.bodyWidgets.indexOf(paragraphWidget.bodyWidget);
                 nextBody.footNoteReference = paragraphWidget.bodyWidget.footNoteReference;
-                this.moveEndnoteToNextPage(endnote, nextBody);
+                this.moveEndnoteToNextPage(endnote, nextBody, false, currentBodyIndex);
             }
             if (prevPage !== nextBody.page) {
                 this.viewer.updateClientArea(nextBody, nextBody.page);
@@ -7313,7 +7313,7 @@ export class Layout {
                 && cellWidget.cellFormat.rowSpan === 1 && this.documentHelper.compatibilityMode === 'Word2013'
                 && !this.isVerticalMergedCellContinue(tableRowWidget) && this.documentHelper.splittedCellWidgets.length === 0) {
                 const firstBlock: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(cellWidget as TableCellWidget);
-                if (firstBlock.paragraphFormat.keepWithNext && !isNullOrUndefined(this.getPreviousBlock(tableRowWidget))) {
+                if (!isNullOrUndefined(firstBlock) && firstBlock.paragraphFormat.keepWithNext && !isNullOrUndefined(this.getPreviousBlock(tableRowWidget))) {
                     return tableRowWidget;
                 }
             }

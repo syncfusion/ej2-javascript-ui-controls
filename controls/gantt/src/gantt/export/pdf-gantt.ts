@@ -155,7 +155,10 @@ export class PdfGantt extends PdfTreeGrid {
                 detail.startDate.setDate(detail.startDate.getDate() + startDays * count);
                 const endDays: number = Math.round(((detail.endPoint - detail.startPoint)
                       / pixelToPoint(this.chartHeader.bottomTierCellWidth))) - 1;
-                detail.endDate = new Date(detail.startDate.getTime());
+                const startdate: Date = detail.startDate;
+                startdate.setHours(0);
+                const secondsToAdd: number = this.parent.workingTimeRanges[0].to * 1000;
+                detail.endDate = new Date(startdate.getTime() + secondsToAdd);
                 detail.endDate.setDate(detail.startDate.getDate() + endDays * count);
                 break;
             }
@@ -239,8 +242,7 @@ export class PdfGantt extends PdfTreeGrid {
                 let lineWidth: number;
                 if (page['contentWidth'] && (this.parent.gridLines === 'Both' || this.parent.gridLines === 'Horizontal')) {
                     lineWidth = this.chartHeader.timelineWidth;
-                    graphics.drawRectangle(pen, pageStartX, taskbarPoint.y, (this.parent.pdfExportModule.gantt.taskbar.isAutoFit() &&
-                    this.parent.timelineModule.bottomTier !== 'Day') ? page['contentWidth'] + 0.5 : lineWidth, rowHeight);
+                    graphics.drawRectangle(pen, pageStartX, taskbarPoint.y, page['contentWidth'] + 0.5 , rowHeight);
                 }
                 const isNextPage: boolean = task.drawTaskbar(
                     pdfPage, taskbarPoint, detail, cumulativeWidth, rowHeight,

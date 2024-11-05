@@ -1111,11 +1111,11 @@
   .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'Material3' {
-      height: 54px;
+      height: 40px;
       margin-top: -55px;
-      right: 16px;
+      right: 6px;
       top: 100%;
-      width: 20px;
+      width: 40px;
     }
   }
   
@@ -1529,7 +1529,7 @@
 
   .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' {
       height: 54px;
       margin-top: -55px;
       right: 16px;

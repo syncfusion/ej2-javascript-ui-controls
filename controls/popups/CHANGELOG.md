@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#F194699` - Fixed an issue where the scrollbar appears as soon as the modal dialog is closed.
+
 ## 27.1.57 (2024-10-29)
 
 ### Dialog

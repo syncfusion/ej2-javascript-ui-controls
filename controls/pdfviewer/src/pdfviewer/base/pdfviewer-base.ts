@@ -10088,6 +10088,7 @@ export class PdfViewerBase {
                         if (currentObject.formFieldAnnotationType) {
                             this.isFormFieldMousedOver = true;
                             const field: IFormField = {
+                                id: (currentObject as any).id, name: (currentObject as any).name,
                                 value: (currentObject as any).value, fontFamily: currentObject.fontFamily,
                                 fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
                                 color: (currentObject as PdfFormFieldBaseModel).color,
@@ -10153,6 +10154,7 @@ export class PdfViewerBase {
                     if (currentObject.formFieldAnnotationType) {
                         this.isFormFieldMousedOver = true;
                         const field: IFormField = {
+                            id: (currentObject as any).id, name: (currentObject as any).name,
                             value: (currentObject as any).value, fontFamily: currentObject.fontFamily,
                             fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
                             color: (currentObject as PdfFormFieldBaseModel).color,
@@ -10187,7 +10189,7 @@ export class PdfViewerBase {
                     let field: any;
                     for (let i: number = 0; i < data.length; i++) {
                         if (data[parseInt(i.toString(), 10)].FieldName === event.target.name) {
-                            field = { name: data[parseInt(i.toString(), 10)].FieldName };
+                            field = { name: data[parseInt(i.toString(), 10)].FieldName, id : data[parseInt(i.toString(), 10)].uniqueID };
                         }
                     }
                     this.isMousedOver = true;

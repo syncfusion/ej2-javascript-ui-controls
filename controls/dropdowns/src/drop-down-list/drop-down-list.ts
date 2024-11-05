@@ -2661,6 +2661,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     const currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ?
                         getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
                     this.itemData = this.getDataByValue(currentValue);
+                    this.selectedLI = this.getElementByValue(currentValue) as HTMLElement;
                     this.isDynamicData = false;
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

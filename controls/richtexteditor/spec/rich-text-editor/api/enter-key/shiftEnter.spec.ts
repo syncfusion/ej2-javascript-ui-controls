@@ -181,6 +181,7 @@ describe('Shift Enter key support - When image is rendered', () => {
         key: ""
     };
     it("Image is pasted in the editor and press shift enter when image is focused initially", (done) => {
+        rteObj.focusIn();
         keyBoardEvent.clipboardData = {
             getData: () => { return ``; },
             types: ['text/html', 'Files'],

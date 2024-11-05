@@ -11925,14 +11925,12 @@ describe('Tab Control', () => {
             tab = undefined;
             ele = createElement('div', { id: 'ej2Tab' });
             document.body.appendChild(ele);
-            jasmine.clock().install();
         });
         afterEach((): void => {
             if (tab) {
                 tab.destroy();
             }
             document.body.innerHTML = '';
-            jasmine.clock().uninstall();
         });
         it('Checking selecting and selected event args after removing Tab item at index 1', (done: Function) => {
             tab = new Tab({
@@ -11943,11 +11941,13 @@ describe('Tab Control', () => {
             tab.appendTo('#ej2Tab');
             tab.addTab([{ header: { 'text': 'Tab 2' }, content: 'Content 2' }], 1);
             tab.selectedItem = 1;
-            jasmine.clock().tick(100);
+            tab.dataBind();
             tab.addTab([{ header: { 'text': 'Tab 3' }, content: 'Content 3' }], 2);
             tab.selectedItem = 2;
+            tab.dataBind();
             tab.addTab([{ header: { 'text': 'Tab 4' }, content: 'Content 4' }], 3);
             tab.selectedItem = 3;
+            tab.dataBind();
             tab.hideTab(3);
             tab.hideTab(2);
             tab.selecting = (args: SelectingEventArgs) => {
@@ -11969,7 +11969,74 @@ describe('Tab Control', () => {
             tab.removeTab(1);
         });
     });
-      
+
+    describe('ES-914300 - First item is selected when an item is removed even there is an item next to the removed item', () => {
+        let tab: any;
+        let ele: HTMLElement
+        beforeEach((): void => {
+            tab = undefined;
+            ele = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Checking item next to the removed item is selected', (done: Function) => {
+            tab = new Tab({
+                items: [
+                    { header: { 'text': 'Tab 1' }, content: 'Content 1' }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.addTab([{ header: { 'text': 'Tab 2' }, content: 'Content 2' }], 1);
+            expect(tab.items[1].visible).toBe(true);
+            expect(tab.items[1].disabled).toBe(false);
+            tab.selectedItem = 1;
+            tab.dataBind();
+            tab.addTab([{ header: { 'text': 'Tab 3' }, content: 'Content 3' }], 2);
+            expect(tab.items[2].visible).toBe(true);
+            expect(tab.items[2].disabled).toBe(false);
+            tab.selectedItem = 2;
+            tab.dataBind();
+            tab.addTab([{ header: { 'text': 'Tab 4' }, content: 'Content 4' }], 3);
+            expect(tab.items[3].visible).toBe(true);
+            expect(tab.items[3].disabled).toBe(false);
+            tab.selectedItem = 3;
+            tab.dataBind();
+            tab.addTab([{ header: { 'text': 'Tab 5' }, content: 'Content 5' }], 4);
+            expect(tab.items[4].visible).toBe(true);
+            expect(tab.items[4].disabled).toBe(false);
+            tab.selectedItem = 4;
+            tab.dataBind();
+            tab.hideTab(2);
+            expect(tab.items[2].visible).toBe(false);
+            tab.hideTab(3);
+            expect(tab.items[3].visible).toBe(false);
+            tab.selectedItem = 1;
+            tab.dataBind();
+            tab.selecting = (args: SelectingEventArgs) => {
+                expect(args.selectingIndex).toEqual(3);
+                expect(args.selectedIndex).toEqual(args.selectingIndex);
+                expect(args.selectedItem.innerText.toUpperCase()).toEqual('TAB 5');
+                expect(args.selectedItem.innerText).toEqual(args.selectingItem.innerText);
+                expect(args.selectedContent.innerText).toEqual('Content 5');
+                expect(args.selectedContent.innerText).toEqual(args.selectingContent.innerText);
+            }
+            tab.selected = (args: SelectEventArgs) => {
+                expect(args.previousIndex).toEqual(3);
+                expect(args.previousIndex).toEqual(args.selectedIndex);
+                expect(args.previousItem.innerText.toUpperCase()).toEqual('TAB 5');
+                expect(args.previousItem.innerText).toEqual(args.selectedItem.innerText);
+                expect(args.selectedContent.innerText).toEqual('Content 5');
+                done();
+            }
+            tab.removeTab(1);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

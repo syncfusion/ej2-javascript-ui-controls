@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I647902` - An issue where a script error occurred while click the close icon in print window has been resolved.
+
 ## 27.1.57 (2024-10-29)
 
 ### Schedule

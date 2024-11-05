@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createCheckBox } from './../src/common/common';
+import { ChangeEventArgs, createCheckBox } from './../src/common/common';
 import { CheckBox } from './../src/check-box/check-box';
 import { createElement, EventHandler, attributes, enableRipple } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
@@ -428,6 +428,7 @@ describe('CheckBox', () => {
         let formElement: HTMLFormElement;
         let cbox: CheckBox;
         let cbox1: CheckBox;
+        let cbox3: CheckBox;
 
         beforeEach(() => {
 
@@ -454,6 +455,14 @@ describe('CheckBox', () => {
             buttonElement.addEventListener('click', () => {
                 checkbox.checked = true; // Set the checkbox to checked
                 checkbox.dataBind();
+            });
+
+            let button = document.createElement('button');
+            button.setAttribute('id', 'cbox3');
+            document.body.appendChild(button);
+            button.addEventListener('click', () => {
+                cbox3.checked = !cbox3.checked;
+                cbox3.dataBind();
             });
         })
 
@@ -520,6 +529,25 @@ describe('CheckBox', () => {
             checkbox.dataBind();
             expect(checkbox.element.checked).toBe(false);
             checkbox.isVue = false;
+        });
+
+        it('95768-Checkbox not getting checked while using usestate', () => {
+            let isChecked = false;
+            cbox3 = new CheckBox({
+                checked: isChecked,
+                change: (e: ChangeEventArgs) => {
+                    isChecked = e.checked;
+                    checkbox.dataBind();
+                }
+            }, '#checkbox3');
+            let button = document.querySelector('#cbox3') as HTMLButtonElement;
+            button.click();
+            expect(cbox3.checked).toBeTruthy();
+            expect(cbox3.element.checked).toBe(true);
+            button = document.querySelector('#cbox3') as HTMLButtonElement;
+            button.click();
+            expect(cbox3.checked).toBeFalsy();
+            expect(cbox3.element.checked).toBe(false);
         });
     });
 

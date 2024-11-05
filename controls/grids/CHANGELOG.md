@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.1.57 (2024-10-29)
+
+### Grid
+
+#### Bug fixes
+
+- `#I645144` - Resolved an issue where the search keyword would automatically change when entering more than 16 digits.
+- `#I641786` - Fixed an issue with focus misplacement after deleting a row using the command column.
+- `#I641368` - Resolved a type issue in the `ICustomOptr` interface by updating the `filterSettings.operators` property from `dateTimeOperator` to `datetimeOperator`.
+- `#I640492` - The issue where the `dataBound` event was triggered multiple times during a page refresh when `virtualization` with persistence was enabled has been resolved.
+
 ## 27.1.55 (2024-10-22)
 
 ### Grid

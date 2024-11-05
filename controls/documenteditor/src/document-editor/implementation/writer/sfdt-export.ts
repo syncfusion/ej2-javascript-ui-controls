@@ -12,7 +12,8 @@ import {
     ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis,
     CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox,
-    ContentControlProperties, FootnoteElementBox, ShapeBase, BreakElementBox, FootnoteEndnoteMarkerElementBox
+    ContentControlProperties, FootnoteElementBox, ShapeBase, BreakElementBox, FootnoteEndnoteMarkerElementBox,
+    FootNoteWidget
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -1500,8 +1501,19 @@ export class SfdtExport {
         inline[characterFormatProperty[this.keywordIndex]] = {};
         inline[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(element.characterFormat, this.keywordIndex);
         inline[blocksProperty[this.keywordIndex]] = [];
-        for (let i: number = 0; i < element.bodyWidget.childWidgets.length; i++) {
-            this.writeBlock(element.bodyWidget.childWidgets[i], 0, inline[blocksProperty[this.keywordIndex]]);
+        let bodyWidget: BlockWidget = element.bodyWidget;
+        while (bodyWidget) {
+            for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
+                if (!(bodyWidget.childWidgets[i] as BlockWidget).previousSplitWidget) {
+                    this.writeBlock(bodyWidget.childWidgets[i] as BlockWidget, 0, inline[blocksProperty[this.keywordIndex]]);
+                }
+            }
+            // Proceed only if the bodyWidget container is an Endnote
+            if (!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget && bodyWidget.containerWidget.footNoteType === 'Endnote') {
+                bodyWidget = bodyWidget.nextSplitWidget as BlockWidget;
+            } else {
+                break;
+            }
         }
         inline[symbolCodeProperty[this.keywordIndex]] = element.symbolCode;
         inline[symbolFontNameProperty[this.keywordIndex]] = element.symbolFontName;
@@ -2061,8 +2073,10 @@ export class SfdtExport {
     public writeComments(documentHelper: DocumentHelper): void {
         this.document[commentsProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < documentHelper.comments.length; i++) {
-            if (this.documentHelper.comments[i].isPosted && (this.isExport ||
-                (!this.isExport && this.selectedCommentsId.indexOf(this.documentHelper.comments[i].commentId) !== -1))) {
+            // if (this.documentHelper.comments[i].isPosted && (this.isExport ||
+            //     (!this.isExport && this.selectedCommentsId.indexOf(this.documentHelper.comments[i].commentId) !== -1))) {
+            if (this.isExport ||
+                (!this.isExport && this.selectedCommentsId.indexOf(this.documentHelper.comments[i].commentId) !== -1)) {
                 this.document[commentsProperty[this.keywordIndex]].push(this.writeComment(this.documentHelper.comments[i]));
             }
         }

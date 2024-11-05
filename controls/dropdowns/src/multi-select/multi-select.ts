@@ -2647,9 +2647,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                 } else {
                     this.updateDelimeter(this.delimiterChar, e);
                 }
+                const isFilterData: boolean = this.targetElement().trim() !== '' ? true : false;
                 this.makeTextBoxEmpty();
                 if (this.mode !== 'CheckBox') {
-                    this.refreshListItems(li.textContent);
+                    this.refreshListItems(li.textContent, isFilterData);
                 }
                 if (!this.changeOnBlur) {
                     this.updateValueState(e, this.value, this.tempValues);
@@ -2697,7 +2698,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.refreshPlaceHolder();
     }
-    private refreshListItems(data: string): void {
+    private refreshListItems(data: string, isFilterData?: boolean): void {
         if ((this.allowFiltering || (this.mode === 'CheckBox' && this.enableSelectionOrder === true)
             || this.allowCustomValue) && this.mainList && this.listData) {
             const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
@@ -2709,7 +2710,25 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.renderItems(this.mainData as any[], this.fields);
                 }
                 else {
-                    this.onActionComplete(this.list, this.listData);
+                    if (this.allowFiltering && isFilterData) {
+                        this.updateInitialData();
+                        this.onActionComplete(list, this.mainData);
+                        this.isVirtualTrackHeight = false;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        if (this.list.getElementsByClassName('e-virtual-ddl')[0] as any) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
+                        }
+                        else if (!this.list.querySelector('.e-virtual-ddl') && this.skeletonCount > 0) {
+                            const virualElement: any = this.createElement('div', {
+                                id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                            });
+                            this.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
+                        }
+                    }
+                    else{
+                        this.onActionComplete(this.list, this.listData);
+                    }
                 }
             }
             else{
@@ -3749,7 +3768,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             endIndex: this.itemCount
         };
         this.previousStartIndex = 0;
-        this.previousEndIndex = 0;
+        this.previousEndIndex = this.itemCount;
         if (this.dataSource instanceof DataManager) {
             if (this.remoteDataCount >= 0) {
                 this.totalItemCount = this.dataCount = this.remoteDataCount;
@@ -4692,10 +4711,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 } else {
                     e.preventDefault();
                 }
+                const isFilterData: boolean = this.targetElement().trim() !== '' ? true : false;
                 this.makeTextBoxEmpty();
                 this.findGroupStart(target as HTMLElement);
                 if (this.mode !== 'CheckBox') {
-                    this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
+                    this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent, isFilterData);
                 }
             } else {
                 e.preventDefault();

@@ -352,6 +352,7 @@ export class ComboBox extends DropDownList {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected setOldValue(value: string | number | object): void {
         if (this.allowCustom) {
+            this.selectedLI = this.getElementByValue(this.value) as HTMLElement;
             this.valueMuteChange(this.value);
         } else {
             this.valueMuteChange(null);

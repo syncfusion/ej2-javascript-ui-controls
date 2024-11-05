@@ -51,10 +51,17 @@ export class StackingBarSeries extends ColumnBase {
             this.rect = this.getRectangle(pointStack.xValue + sideBySideInfo.start, (!series.visible && series.isLegendClicked) ?
                 startvalue : stackedValue.endValues[pointStack.index], pointStack.xValue + sideBySideInfo.end, (!series.visible
                     && series.isLegendClicked) ? startvalue : stackedValue.startValues[pointStack.index], series);
-            this.rect.height = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.height;
-            this.rect.y = series.columnWidthInPixel ? this.rect.y - (series.columnWidthInPixel / 2) : this.rect.y;
-            const argsData: IPointRenderEventArgs = this.triggerEvent(series, pointStack, series.interior, { width: series.visible ?
-                series.border.width : 0, color: series.visible ? series.border.color : '' });
+            if (series.chart.isTransposed && series.columnWidthInPixel) {
+                this.rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.height;
+                this.rect.x -= series.columnWidthInPixel / 2;
+            }
+            else {
+                this.rect.height = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.height;
+            }
+            this.rect.y = series.columnWidthInPixel ? series.chart.isTransposed ? this.rect.y : this.rect.y -
+                (series.columnWidthInPixel / 2) : this.rect.y;
+            const argsData: IPointRenderEventArgs = this.triggerEvent(series, pointStack, series.interior,
+                                                                      { width: series.visible ? series.border.width : 0, color: series.visible ? series.border.color : '' });
             if (!argsData.cancel) {
                 this.drawRectangle(series, pointStack, this.rect, argsData);
                 this.updateSymbolLocation(pointStack, this.rect, series);

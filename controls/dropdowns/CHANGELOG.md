@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I640083` - The issue causing a console error after selecting a value and subsequently emptying the datasource upon button click has been resolved.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I646545` - The issue with the customTemplate property, when used as a function type in the Dropdown Tree component, has been resolved.
+
 ## 27.1.57 (2024-10-29)
 
 ### ComboBox
@@ -9,6 +23,10 @@
 #### Bug Fixes
 
 - `#I640083` - The issue causing a console error after selecting a value and subsequently emptying the datasource upon button click has been resolved.
+
+### DropDownTree
+
+- `I639573` - Resolved issues with selected items and the checked state of the parent node when filtering in the Dropdown Tree component.
 
 ### DropdownList
 

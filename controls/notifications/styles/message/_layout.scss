@@ -1,0 +1,74 @@
+@include export-module('message-layout') {
+
+  .e-message {
+    border: 1px solid;
+    border-radius: $msg-border-radius;
+    box-sizing: border-box;
+    font-family: $msg-font-family;
+    font-weight: $msg-font-weight;
+    font-style: $msg-font-style;
+    padding: $msg-padding;
+    display: flex;
+
+    &.e-hidden {
+      display: none;
+    }
+
+    .e-msg-icon,
+    .e-msg-close-icon {
+      box-sizing: border-box;
+      display: flex;
+      line-height: $msg-icon-size;
+    }
+
+    .e-msg-icon {
+      font-size: $msg-icon-size;
+      height: $msg-icon-size;
+      margin: $msg-icon-margin;
+      @if $skin-name == 'fluent2' {
+        padding: 0 4px 0 2px;
+      }
+    }
+
+    .e-msg-close-icon {
+      border-width: 0;
+      cursor: pointer;
+      font-size: $msg-close-icon-size;
+      margin: $msg-close-icon-margin;
+      padding: $msg-close-icon-padding;
+      height: $msg-close-icon-height;
+      @if $skin-name == 'fluent2' {
+        line-height: 12px;
+      }
+    }
+
+    .e-msg-content {
+      box-sizing: border-box;
+      font-size: $msg-content-font-size;
+      line-height: $msg-content-line-height;
+      padding: $msg-content-padding;
+      vertical-align: top;
+    }
+
+    &.e-content-right {
+      justify-content: flex-end;
+    }
+
+    &.e-content-center .e-msg-content-wrap {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+    }
+
+    &.e-content-right .e-msg-close-icon,
+    &.e-content-center .e-msg-close-icon {
+      margin: $msg-icon-margin;
+    }
+
+    &.e-rtl {
+      .e-msg-close-icon {
+        margin: $msg-rtl-close-icon-margin;
+      }
+    }
+  }
+}

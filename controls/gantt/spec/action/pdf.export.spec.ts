@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs, PdfTreeGridLayoutFormat } from '../../src/index';
-import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,editingResourcess, editingDatas, pdfquerycelldata,editingResources,CR911356manualTask, CR912356font } from '../base/data-source.spec';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,editingResourcess, editingDatas, pdfquerycelldata,editingResources,CR911356manualTask, CR912356font, GanttData, adventProFonts1 } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfPen, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
@@ -12482,3 +12482,141 @@ describe('Gantt PDF Export for baseline task', () => {
         }
     });
 });
+describe('Gantt PDF Export  not visible last three records', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: GanttData,
+    toolbar: ['PdfExport','ZoomToFit'],
+    toolbarClick: (args :any) =>{
+
+        if (args.item.id === 'ganttContainer_pdfexport') {
+          var exportProperties : PdfExportProperties = {
+           // connectorLineColor: new PdfColor(0, 168, 173),
+            fitToWidthSettings: {
+              gridWidth: "20%",
+              chartWidth: "80%",
+              isFitToWidth: true,
+            },
+            header: {
+              fromTop: 0,
+              height: 130,
+              contents: [{
+                type: "Text",
+                value: 'title',
+                position: {
+                  x: 3480 / 2 - ('title'.length / 2) * 14,
+                  y: 30
+                },
+                style: {
+                  fontSize: 30
+                },
+              }, ],
+            },
+            footer: {
+              fromBottom: 160,
+              height: 100,
+              contents: [{
+                type: "PageNumber",
+                pageNumberType: "Arabic",
+                format: "Page {$current} of {$total}",
+                position: {
+                  x: 1528 / 2 - 10,
+                  y: 25
+                },
+                size: {
+                  height: 50,
+                  width: 100
+                },
+                style: {
+                  fontSize: 30,
+                  hAlign: "Center",
+                  vAlign: "Bottom",
+                },
+              }, ],
+            },
+            enableFooter: false,
+            ganttStyle: {
+              fontFamily: 1,
+              taskbar: {
+                taskColor: new PdfColor(223, 234, 235),
+                taskBorderColor: new PdfColor(159, 191, 194),
+                progressColor: new PdfColor(0, 119, 139),
+                milestoneColor: new PdfColor(61, 57, 53), // "#B8394C";
+                baselineColor: new PdfColor(194, 194, 194),
+                baselineBorderColor: new PdfColor(194, 194, 194),
+              },
+              connectorLineColor: new PdfColor(0, 168, 173),
+              criticalConnectorLineColor: new PdfColor(0, 168, 173),
+              timeline: {
+                fontStyle: 1,
+              },
+              font: new PdfTrueTypeFont(adventProFonts1, 12),
+            },
+           pageOrientation: "Portrait",
+          pageSize: "A0",
+          };
+          ganttObj.pdfExport(exportProperties);
+        }
+      },
+
+    dateFormat: "dd/MM/yyyy HH:mm",
+    timezone: "Asia/Shanghai",
+    includeWeekend: true,
+    dayWorkingTime: [{
+      from: 0.01,
+      to: 24
+    }], 
+    renderBaseline: true,
+    taskFields: {
+      id: "taskID",
+      name: "taskName",
+      // milestone: "milestone", 
+      startDate: "startDate",
+      endDate: "endDate",
+      duration: "duration",
+      progress: "progress",
+      dependency: "dependency",
+      notes: "notes",
+      child: "subtasks",
+      expandState: "expandState",
+      cssClass: "cssClass",
+      baselineStartDate: "baselineStartDate",
+      baselineEndDate: "baselineEndDate",
+    },
+    //height: "calc(100vh - 325px)", // height: "768px",
+    labelSettings: {
+      // rightLabel: "taskName",
+      // leftLabel: "taskID",
+    },
+    eventMarkers: [{
+      day: new Date(),
+      label: "Today"
+    }],
+    enableCriticalPath: true,
+    highlightWeekends: true,
+   // queryTaskbarInfo: queryTaskbarInfo,
+    columns: [{
+        field: "taskID",
+        width: '100px'
+      },
+      {
+        field: "taskName",
+        width: '300px'
+      },
+    ],
+    allowPdfExport: true,
+    gridLines: "Both",
+   // pdfQueryTaskbarInfo: pdfQueryTaskbarInfo,
+            }, done);
+    });
+    it('Export data not visible last three records', () => {
+        ganttObj.pdfExport();
+       });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+}); 

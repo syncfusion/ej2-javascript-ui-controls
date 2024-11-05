@@ -3425,7 +3425,7 @@ export class Editor {
         }
     }
     private updateCustomXml(itemId: string, xPath: string, text: string): void {
-        if (this.documentHelper.customXmlData.containsKey(itemId)) {
+        if (this.documentHelper.customXmlData.containsKey(itemId) && !isNullOrUndefined(xPath)) {
             let xml: string = this.documentHelper.customXmlData.get(itemId);
             let parser: DOMParser = new DOMParser();
             let xmlDoc: Document = parser.parseFromString(xml, 'text/xml');
@@ -17579,6 +17579,7 @@ export class Editor {
             } else {
                 listLevel.listLevelPattern = listLevelPattern;
                 listLevel.characterFormat.fontFamily = fontFamily;
+                listLevel.startAt = 1;
                 let currentFormat: string = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
                 if (listLevel.numberFormat.length !== format.length && levelNumber > 0) {
                     listLevel.numberFormat = format;

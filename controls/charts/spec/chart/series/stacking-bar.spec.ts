@@ -1171,6 +1171,18 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('Stacking bar - with transposed true and column width in pixel', (done: Function) => {
+            loaded = (args: Object): void => {
+                let legendElement = document.getElementById('Stackingbarcontainer_chart_legend_text_0');
+                trigger.clickEvent(legendElement);
+                expect(legendElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].columnWidthInPixel = 15;
+            chartObj.isTransposed = true;
+            chartObj.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

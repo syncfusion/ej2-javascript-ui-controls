@@ -1236,7 +1236,8 @@ export class AnnotationToolbar {
                     addInitialSpan.classList.add('e-control', 'e-btn', 'e-lib', 'e-outline', 'e-primary');
                     addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('HandwrittenSignatureDialogHeaderText');
                     if (this.pdfViewer.locale === 'en-US') {
-                        addInitialSpan.style.width = '130px';
+                        addInitialSpan.style.minWidth = '130px';
+                        addInitialSpan.style.width = 'auto';
                     } else {
                         addInitialSpan.style.width = 'auto';
                     }
@@ -1244,7 +1245,8 @@ export class AnnotationToolbar {
                     addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
                     args.element.appendChild(addInitialSpan);
                     args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
-                    args.element.style.width = '206px';
+                    args.element.style.minWidth = '206px';
+                    args.element.style.width = 'auto';
                     args.element.style.display = 'flex';
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
@@ -1323,7 +1325,8 @@ export class AnnotationToolbar {
                     addInitialSpan.classList.add('e-control', 'e-btn', 'e-lib', 'e-outline', 'e-primary');
                     addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('HandwrittenInitialDialogHeaderText');
                     if (this.pdfViewer.locale === 'en-US') {
-                        addInitialSpan.style.width = '130px';
+                        addInitialSpan.style.minWidth = '130px';
+                        addInitialSpan.style.width = 'auto';
                     } else {
                         addInitialSpan.style.width = 'auto';
                     }
@@ -1331,7 +1334,8 @@ export class AnnotationToolbar {
                     addInitialSpan.addEventListener('click', this.clickInitial.bind(this));
                     args.element.appendChild(addInitialSpan);
                     args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
-                    args.element.style.width = '206px';
+                    args.element.style.minWidth = '206px';
+                    args.element.style.width = 'auto';
                     args.element.style.display = 'flex';
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';

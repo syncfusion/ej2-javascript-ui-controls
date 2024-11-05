@@ -605,6 +605,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.delegateMouseDownHandler = this.mouseDownHandler.bind(this);
             EventHandler.add(this.isMenu ? document : wrapper, 'mouseover', this.delegateMoverHandler, this);
             EventHandler.add(document, 'mousedown', this.delegateMouseDownHandler, this);
+            if (!this.isMenu && !this.target) {
+                EventHandler.add(document, 'scroll', this.scrollHandler, this);
+            }
         }
         this.delegateClickHandler = this.clickHandler.bind(this);
         EventHandler.add(document, 'click', this.delegateClickHandler, this);
@@ -944,7 +947,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
                     } else if (isOpen && !this.hamburgerMode && closedLi && !trgtLi && this.keyType !== 'left' && (this.navIdx.length || !this.isMenu && this.navIdx.length === 0) ) {
-                        let ele: HTMLElement = (e && ((e.target as Element).classList.contains('e-vscroll') || (e.target as Element).classList.contains('e-scroll-nav')))
+                        let ele: HTMLElement = (e && (e.target as Element).classList && ((e.target as Element).classList.contains('e-vscroll') || (e.target as Element).classList.contains('e-scroll-nav')))
                             ? closest(e.target as Element, '.e-menu-wrapper') as HTMLElement : null;
                         if (ele) {
                             ele = ele.querySelector('.e-menu-item');
@@ -952,7 +955,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                                 this.closeMenu(this.navIdx[this.navIdx.length - 1], e, true);
                             }
                         } else {
-                            if (!(e && (e.target as Element).classList.contains('e-nav-arrow'))) {
+                            if (!(e && (e.target as Element).classList && (e.target as Element).classList.contains('e-nav-arrow'))) {
                                 this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
                             }
                         }
@@ -2083,6 +2086,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (!Browser.isDevice) {
             EventHandler.remove(this.isMenu ? document : wrapper, 'mouseover', this.delegateMoverHandler);
             EventHandler.remove(document, 'mousedown', this.delegateMouseDownHandler);
+            if (!this.isMenu && !this.target) {
+                EventHandler.remove(document, 'scroll', this.scrollHandler);
+            }
         }
         EventHandler.remove(document, 'click', this.delegateClickHandler);
         this.unWireKeyboardEvent(wrapper);

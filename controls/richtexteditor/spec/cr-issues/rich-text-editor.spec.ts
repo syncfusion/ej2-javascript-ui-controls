@@ -4837,9 +4837,44 @@ describe('RTE CR issues ', () => {
             rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document,rteObj.inputElement.firstChild.nextSibling as HTMLElement,0);
             rteObj.dataBind();
             (rteObj as any).keyDown(keyboardEventArgs);
-            expect(rteObj.inputElement.innerHTML==='<p>Hello</p><p></p><ul><li>line 1</li><li>line 2</li><li>line 3</li></ul>').toBe(true);
+            expect(rteObj.inputElement.innerHTML==='<p>Hello</p><ul><li>line 1</li><li>line 2</li><li>line 3</li></ul>').toBe(true);
         });
         afterEach((done: DoneFn)=> {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('Bug 916750: Empty Line Reappears in Rich Text Editor After Deletion When Clicking Outside', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = { code: 'Delete', preventDefault: function () { }, ctrlKey: false, keyCode: 46, key: 'delete', stopPropagation: function () { }, shiftKey: false, which: 46 };
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: '<p>Hello</p><p><br></p><ul><li>line 1</li><li>line 2</li><li>line 3</li></ul>'
+
+            });
+            rteEle = rteObj.element;
+        });
+        it('Delete with Empty br node when enterkey is configured as P', () => {
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.firstChild.nextSibling as HTMLElement, 0);
+            rteObj.dataBind();
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.innerHTML === '<p>Hello</p><ul><li>line 1</li><li>line 2</li><li>line 3</li></ul>').toBe(true);
+        });
+        it('Delete with Empty br node when enterkey is configured as DIV', () => {
+            rteObj.enterKey = 'DIV';
+            rteObj.value = `<div>Hello</div><div><br></div><ul><li><div>Line 1</div></li><li><div>Line 2</div></li><li><div>Line 3</div></li></ul>`;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.firstChild.nextSibling as HTMLElement, 0);
+            rteObj.dataBind();
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.innerHTML === '<div>Hello</div><ul><li><div>Line 1</div></li><li><div>Line 2</div></li><li><div>Line 3</div></li></ul>').toBe(true);
+        });
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
             done();
         });

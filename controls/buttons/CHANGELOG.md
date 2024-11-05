@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#F95768`- The issue with "Checkbox not getting checked while using `usestate` in react" has been resolved.
+
 ## 27.1.53 (2024-10-15)
 
 ### Checkbox

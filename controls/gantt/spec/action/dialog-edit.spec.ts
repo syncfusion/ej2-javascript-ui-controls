@@ -10298,7 +10298,7 @@ describe('Update Notes tab', function () {
         ganttObj.openEditDialog(2);
         ganttObj.actionBegin = function (args: any): void {
             if (args.requestType === "beforeSave") {
-                expect(args.data.ganttProperties.notes).toBe('ValueUpdated')
+                expect(args.data.ganttProperties.notes).toBe('<p>ValueUpdated</p>')
                 done();
             }
         };

@@ -2874,7 +2874,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     public clearSeries(): void {
         this.series = [];
+        const scrollTop: number = window.pageYOffset || document.documentElement.scrollTop;
         this.refresh();
+        window.scrollTo(0, scrollTop);
     }
 
     /**

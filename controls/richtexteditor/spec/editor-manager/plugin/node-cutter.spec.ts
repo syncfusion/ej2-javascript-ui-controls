@@ -4,6 +4,7 @@
 import { detach } from '@syncfusion/ej2-base';
 import { NodeCutter } from '../../../src/editor-manager/plugin/nodecutter';
 import { NodeSelection } from '../../../src/selection/index';
+import { EditorManager } from '../../../src/editor-manager/index';
 
 describe('Node Cutter', () => {
     //HTML value
@@ -127,5 +128,54 @@ describe('Node Cutter', () => {
     it('Null element', () => {
         let node2: Node = nodeCutter.GetSpliceNode(domSelection.getRange(document), null);
         expect(node2).toEqual(null);
+    });
+});
+describe('Bug 915914: When applying bold empty space is being removed', () => {
+    let innervalue: string = `<p id="text">The testing div</p>`;
+    let editorObj: EditorManager;
+    let domSelection: NodeSelection = new NodeSelection();
+    let nodeCutter: NodeCutter = new NodeCutter();
+
+    //DIV Element
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Applying bold to the middle word and first two letters of last word', () => {
+        let node: HTMLElement = document.getElementById('text');
+        editorObj.nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 4, 11);
+        editorObj.execCommand("Font", 'Bold', null, (): boolean => { return true; });
+        expect(node.childNodes[1].nodeName.toLowerCase()).toBe('strong');
+        editorObj.nodeSelection.setSelectionText(document, node.childNodes[2], node.childNodes[2], 1, 3);
+        editorObj.execCommand("Font", 'Bold', null, (): boolean => { return true; });
+        expect(node.textContent).toBe('The testing div');
+    });
+
+    it('Applying bold to the middle word and last two letters of first word', () => {
+        let node: HTMLElement = document.getElementById('text');
+        editorObj.nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 3);
+        editorObj.execCommand("Font", 'Bold', null, (): boolean => { return true; });
+        expect(node.textContent).toBe('The testing div');
+    });
+    it('Applying bold to the first word before the anchor tag', () => {
+        divElement.innerHTML = `<p id="text">Link <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a>&nbsp;link</p>`
+        let node: HTMLElement = document.getElementById('text');
+        editorObj.nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 0, 4);
+        editorObj.execCommand("Font", 'Bold', null, (): boolean => { return true; });
+        expect(node.textContent).toBe('Link www.google.com link');
+    });
+    it('Applying bold to the last word after the anchor tag', () => {
+        let node: HTMLElement = document.getElementById('text');
+        editorObj.nodeSelection.setSelectionText(document, node.childNodes[3], node.childNodes[3], 1, 5);
+        editorObj.execCommand("Font", 'Bold', null, (): boolean => { return true; });
+        expect(node.textContent).toBe('Link www.google.com link');
     });
 });

@@ -2132,6 +2132,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public addTab(items: TabItemModel[], index?: number): void {
         const addArgs: AddEventArgs = { addedItems: items, cancel: false };
         if (!this.isReplace) {
+            for (const item of items) {
+                item.disabled = item.disabled || false;
+                item.visible = item.visible || true;
+            }
             this.trigger('adding', addArgs, (tabAddingArgs: AddEventArgs) => {
                 if (!tabAddingArgs.cancel) {
                     this.addingTabContent(items, index);
@@ -2329,6 +2333,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         }
         this.setActiveBorder();
+        if (!isNOU(this.items[index])) {
+            this.items[index].visible = !value;
+            this.dataBind();
+        }
         if (!isNullOrUndefined(item.firstElementChild)) {
             item.firstElementChild.setAttribute('aria-hidden', '' + value);
         }

@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I640676` - An issue with the Tab item selection when Tab is rendered with hidden Tab items has been fixed.
+
 ## 27.1.57 (2024-10-29)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I911927` - The issue with "The context menu popup does not close while scrolling when the open using `open` method" has been resolved.
 
 ### Carousel
 

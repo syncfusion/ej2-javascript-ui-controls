@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.1.58 (2024-11-05)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I914903` - Resolved the endNote layouting issue.
+
 ## 27.1.57 (2024-10-29)
 
 ### DocumentEditor

@@ -78,6 +78,7 @@ export class AxisRenderer {
         let startAngle: number = axis.startAngle;
         let endAngle: number = axis.endAngle;
         const color: string = axis.lineStyle.color || this.gauge.themeStyle.lineColor;
+        const pointerEvent: string = gauge.enableRangeDrag ? 'none' : 'auto';
         if (axis.lineStyle.width > 0 && this.gauge.allowComponentRender) {
             startAngle = !isCompleteAngle(startAngle, endAngle) ? startAngle : [0, endAngle = 360][0];
             appendPath(
@@ -85,8 +86,7 @@ export class AxisRenderer {
                     gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width, color,
                     null, axis.lineStyle.dashArray,
                     getPathArc(gauge.midPoint, startAngle - 90, endAngle - 90, axis.currentRadius),
-                    '', gauge.allowLoadingAnimation ? 'visibility: hidden; pointer-events:none;' : 'pointer-events:none;'),
-                element, gauge
+                    '', gauge.allowLoadingAnimation ? `visibility: hidden; pointer-events:${pointerEvent};` : `pointer-events:${pointerEvent};`),                element, gauge
             );
         }
     }
@@ -103,7 +103,7 @@ export class AxisRenderer {
      */
     public drawAxisLabels(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
         const labelElement: Element = gauge.renderer.createGroup({
-            id: gauge.element.id + '_Axis_Labels_' + index, style: gauge.allowLoadingAnimation ? 'visibility: hidden;' : 'pointer-events:none;'
+            id: gauge.element.id + '_Axis_Labels_' + index, style: gauge.allowLoadingAnimation ? 'visibility: hidden;' : 'pointer-events:auto;'
         });
         const min: number = axis.visibleRange.min;
         const max: number = axis.visibleRange.max;
@@ -203,7 +203,7 @@ export class AxisRenderer {
                         style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'
                     ),
                     textFont, style.useRangeColor ? getRangeColor(label.value, <Range[]>axis.ranges, color) : color,
-                    labelElement, 'pointer-events:none;'
+                    labelElement, 'pointer-events:auto;'
                 );
                 labelTextElement.setAttribute('aria-label', label.text);
                 labelTextElement.setAttribute('role', 'region');
@@ -326,7 +326,7 @@ export class AxisRenderer {
                             gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + j++, 'transparent', minorLineStyle.width,
                             isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, color) : color,
                             null, minorLineStyle.dashArray, this.calculateTicks(i, <Tick>minorLineStyle, axis), '',
-                            gauge.allowLoadingAnimation ? 'visibility: hidden;pointer-events: none;' : 'pointer-events:none;'
+                            gauge.allowLoadingAnimation ? 'visibility: hidden;pointer-events: auto;' : 'pointer-events:auto;'
                         ),
                         minorTickElements, gauge
                     ) as HTMLElement;
@@ -365,7 +365,7 @@ export class AxisRenderer {
                         gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + j, 'transparent', majorLineStyle.width,
                         isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, color) : color,
                         null, majorLineStyle.dashArray, this.calculateTicks(i, <Tick>majorLineStyle, axis), '',
-                        gauge.allowLoadingAnimation ? 'visibility: hidden;pointer-events:none;' : 'pointer-events:none;'
+                        gauge.allowLoadingAnimation ? 'visibility: hidden;pointer-events:auto;' : 'pointer-events:auto;'
                     ),
                     majorTickElements, gauge
                 ) as HTMLElement;

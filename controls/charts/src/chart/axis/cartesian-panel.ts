@@ -542,6 +542,9 @@ export class CartesianAxisLayoutPanel {
      */
     private renderScrollbar(chart: Chart, axis: Axis): void {
         const isZoomed: boolean = isNullOrUndefined(chart.zoomModule) ? false : chart.zoomModule.isZoomed;
+        if (!axis.zoomingScrollBar) {
+            chart.scrollBarModule.injectTo(axis, chart);
+        }
         if (((isZoomed && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) || (axis.scrollbarSettings.enable &&
             (axis.zoomFactor <= 1 || axis.zoomPosition >= 0))) &&
             (!axis.zoomingScrollBar.isScrollUI)) {
@@ -551,7 +554,8 @@ export class CartesianAxisLayoutPanel {
                 );
             }
             appendChildElement(false, chart.scrollElement, axis.zoomingScrollBar.render(true), true);
-        } else if (axis.zoomFactor === 1 && axis.zoomPosition === 0 && axis.zoomingScrollBar.svgObject && !axis.scrollbarSettings.enable) {
+        } else if (axis.zoomFactor === 1 && axis.zoomPosition === 0 && axis.zoomingScrollBar.svgObject &&
+            !axis.scrollbarSettings.enable) {
             axis.zoomingScrollBar.destroy();
         } else if (axis.zoomingScrollBar.svgObject) {
             (axis.zoomingScrollBar.svgObject as SVGElement).style.top = (axis.isAxisOpposedPosition && axis.orientation === 'Horizontal' ? -16 : 0)

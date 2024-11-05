@@ -175,10 +175,12 @@ export class Print {
     private contentReady(): void {
         this.printWindow = basePrint(this.printInstance.element, this.printWindow);
         this.printWindow.onbeforeunload = () => {
-            this.printInstance.off(events.print, this.contentReady);
-            this.printInstance.element.remove();
-            this.printInstance.destroy();
-            this.printInstance = null;
+            if (this.printInstance) {
+                this.printInstance.off(events.print, this.contentReady);
+                this.printInstance.element.remove();
+                this.printInstance.destroy();
+                this.printInstance = null;
+            }
             this.printWindow = null;
         };
     }

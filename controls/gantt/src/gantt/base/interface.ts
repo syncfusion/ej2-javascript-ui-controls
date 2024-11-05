@@ -1000,7 +1000,6 @@ export interface ITaskbarStyle {
     manualParentBorder?: PdfColor;
     /** Defines the manualChild Background color */
     manualChildBorder?: PdfColor;
-
 }
 
 export interface FitToWidthSettings{

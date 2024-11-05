@@ -2407,7 +2407,9 @@ export class Signature {
      * @returns {void}
      */
     public storeSignatureData(pageNumber: number, annotations: any): void {
-        this.pdfViewer.annotation.addAction(annotations.pageIndex ? annotations.pageIndex : annotations.PageIndex, null, annotations as PdfAnnotationBase, 'Addition', '', annotations as PdfAnnotationBase, annotations);
+        this.pdfViewer.annotation.addAction(!isNullOrUndefined(annotations.pageIndex) ? annotations.pageIndex : annotations.PageIndex,
+                                            null, annotations as PdfAnnotationBase, 'Addition', '',
+                                            annotations as PdfAnnotationBase, annotations);
         let annotation: ISignAnnotation = null;
         let left: number;
         let top: number;

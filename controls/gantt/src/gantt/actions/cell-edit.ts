@@ -673,6 +673,10 @@ export class CellEdit {
         const ganttProb: ITaskData = args.data.ganttProperties;
         const taskType: string = editedObj[`${key}`];
         this.parent.setRecordValue('taskType', taskType, ganttProb, true);
+        // To validate the work column as well, if duartion column value is 0, when FixedDuration type
+        if (ganttProb.taskType === 'FixedDuration' && ganttProb.duration === 0) {
+            this.parent.editModule.updateResourceRelatedFields(args.data, 'work');
+        }
         //this.parent.dataOperation.updateMappingData(args.data, 'taskType');
         this.updateEditedRecord(args);
     }

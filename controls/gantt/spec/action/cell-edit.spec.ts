@@ -6193,3 +6193,120 @@ describe('Console error occurs when connecting predecessor with decimal task Id'
         }
     });
 });
+describe('Change start date for manual parent', () => {
+    let ganttObj: Gantt;
+    let modeData: object[] = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual' : true,
+            'Children': [
+                 { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                 'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                 { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                 'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                 { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                 'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: modeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode : 'Custom',
+        sortSettings: {
+            columns: [{ field: 'TaskID', direction: 'Ascending' }, 
+            { field: 'TaskName', direction: 'Ascending' }]
+        },
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+           // columnIndex: 4
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        allowFiltering: true,
+        columns: [
+            { field: 'TaskID', visible: true},
+            {field: 'TaskName'},
+            { field: 'isManual'},
+            {field: 'StartDate'},
+            {field: 'Duration'},
+            {field: 'Progress'}
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        allowReordering: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        gridLines: "Both",
+        showColumnMenu: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('check date for child record', () => {
+        let startDateColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(5)') as HTMLElement;
+        triggerMouseEvent(startDateColumn, 'dblclick');
+        let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')).ej2_instances[0];
+        input.value = new Date('02/28/2017');
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/d/yyyy')).toBe('3/3/2017');
+
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

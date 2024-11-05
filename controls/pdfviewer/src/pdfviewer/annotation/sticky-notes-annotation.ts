@@ -1064,7 +1064,7 @@ export class StickyNotesAnnotation {
             if (this.pdfViewer.enableHtmlSanitizer && args.value){
                 args.value = SanitizeHtmlHelper.sanitize(args.value);
             }
-            if (args.value !== null && args.value !== '' && args.value !== ' '){
+            if ((args.value !== null && args.value !== '' && args.value !== ' ') || (args.value === '' && args.prevValue !== '')) {
                 if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
                     this.modifyTextProperty(args.value, args.prevValue, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
                 } else {
@@ -1671,7 +1671,13 @@ export class StickyNotesAnnotation {
                 }
                 case this.pdfViewer.localeObj.getConstant('Delete Context'):
                     if (contextActiveDiv.parentElement.parentElement.firstChild === contextActiveDiv.parentElement) {
-                        this.pdfViewer.annotationModule.deleteAnnotation();
+                        const annotationData : any = this.getAnnotationById(contextActiveDiv.parentElement.parentElement);
+                        if (annotationData) {
+                            const { annotation, pageIndex } = annotationData;
+                            if (annotation) {
+                                this.handleCommentDeletion(annotation);
+                            }
+                        }
                     } else {
                         this.modifyCommentDeleteProperty(contextActiveDiv.parentElement.parentElement, contextActiveDiv.parentElement);
                     }
@@ -1745,6 +1751,25 @@ export class StickyNotesAnnotation {
                 }
             }
         }
+    }
+
+    private handleCommentDeletion(annotation: any): void {
+        if (!isNullOrUndefined(annotation.note) && annotation.note !== '') {
+            this.pdfViewer.fireCommentDelete(annotation.annotName, annotation.note, annotation);
+        }
+        this.pdfViewer.annotationModule.deleteAnnotation();
+    }
+
+    private getAnnotationById(element: any): { annotation: any; pageIndex: number } | null {
+        const pageNumber: number = parseInt(element.accessKey.split('_')[0], 10);
+        const pageIndex: number = pageNumber - 1;
+        const annotType: string = element.getAttribute('name');
+        const pageAnnotations: any = this.getAnnotations(pageIndex, null, annotType);
+        if (pageAnnotations) {
+            const annotation: any = pageAnnotations.find((annotation: any) => annotation.annotName === element.id) || null;
+            return { annotation, pageIndex };
+        }
+        return null;
     }
 
     private moreOptionsClick(event: any, isMoreOptionClick?: boolean): void {
@@ -2403,7 +2428,8 @@ export class StickyNotesAnnotation {
                     for (let i: number = 0; i < pageAnnotations.length; i++) {
                         if (pageAnnotations[parseInt(i.toString(), 10)].annotName === currentAnnotation.annotName) {
                             const clonedObject: Object = cloneObject(pageAnnotations[parseInt(i.toString(), 10)]);
-                            if (!isNullOrUndefined(text) && text !== '') {
+                            if (!isNullOrUndefined(text) && text !== '' || (!isNullOrUndefined(text) && text === '' &&
+                                previousValue !== '')) {
                                 if (pageAnnotations[parseInt(i.toString(), 10)].note !== text) {
                                     this.pdfViewer.annotation.addAction(pageIndex, i, pageAnnotations[parseInt(i.toString(), 10)], 'Text Property Added', '', clonedObject, pageAnnotations[parseInt(i.toString(), 10)]);
                                     currentAnnotation = pageAnnotations[parseInt(i.toString(), 10)];
@@ -2585,36 +2611,33 @@ export class StickyNotesAnnotation {
      * @returns {void}
      */
     public modifyCommentDeleteProperty(commentsElement: any, replyElement: any): void {
-        let clonedObject: any;
-        let clonedAnnotation: any;
-        let currentAnnotation: any;
         const commentsParentElement: any = document.getElementById(commentsElement.id);
-        if (commentsParentElement) {
-            const pageNumber: number = parseInt(commentsParentElement.accessKey.split('_')[0], 10);
-            const pageIndex: number = pageNumber - 1;
-            const annotType: string = commentsElement.getAttribute('name');
-            const pageAnnotations: any = this.getAnnotations(pageIndex, null, annotType);
-            if (pageAnnotations !== null) {
-                for (let i: number = 0; i < pageAnnotations.length; i++) {
-                    if (pageAnnotations[parseInt(i.toString(), 10)].annotName === commentsElement.id) {
-                        currentAnnotation = pageAnnotations[parseInt(i.toString(), 10)];
-                    }
-                }
-            }
+        const annotationData: any = this.getAnnotationById(commentsElement);
+        if (commentsParentElement && annotationData) {
+            const { annotation: currentAnnotation, pageIndex } = annotationData;
+            let clonedAnnotation : any;
+            let clonedObject : any;
             for (let i: number = 1; i < commentsParentElement.childElementCount; i++) {
                 if (commentsParentElement.childNodes[parseInt(i.toString(), 10)].id === replyElement.id) {
+                    const positionValue: number = i - 1;
+                    const comment: any = currentAnnotation.comments[positionValue as number];
                     clonedAnnotation = cloneObject(currentAnnotation);
-                    const positionValue: number = (i - 1);
-                    currentAnnotation.comments[parseInt(positionValue.toString(), 10)].position = i;
-                    clonedObject = cloneObject(currentAnnotation.comments[parseInt(positionValue.toString(), 10)]);
-                    this.pdfViewer.fireCommentDelete(currentAnnotation.comments[parseInt(positionValue.toString(), 10)].annotName,
-                                                     currentAnnotation.comments[parseInt(positionValue.toString(), 10)].note,
-                                                     currentAnnotation);
-                    currentAnnotation.comments.splice(positionValue, 1);
+                    clonedObject = cloneObject(comment);
+                    comment.position = i;
+                    this.pdfViewer.fireCommentDelete(comment.annotName, comment.note, currentAnnotation);
+                    currentAnnotation.comments.splice(parseInt(positionValue.toString(), 10), 1);
                     replyElement.remove();
                 }
             }
-            this.pdfViewer.annotation.addAction(pageIndex, null, clonedAnnotation, 'Comments Reply Deleted', '', clonedObject, currentAnnotation);
+            this.pdfViewer.annotation.addAction(
+                pageIndex,
+                null,
+                clonedAnnotation,
+                'Comments Reply Deleted',
+                '',
+                clonedObject,
+                currentAnnotation
+            );
             this.updateUndoRedoCollections(currentAnnotation, pageIndex);
         }
     }

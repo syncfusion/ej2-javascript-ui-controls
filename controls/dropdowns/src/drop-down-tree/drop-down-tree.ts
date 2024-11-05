@@ -3055,7 +3055,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.treeObj.dataBind();
             }
         } else {
-            const selectedValues: string[] = isNOU(this.value) ? [] : this.value;
+            let selectedValues: string[] = isNOU(this.value) ? [] : this.value;
+            selectedValues = selectedValues.filter((selectedValue: string) => {
+                const nodeData: any[] = this.treeObj.getTreeData(selectedValue);
+                if (Array.isArray(nodeData)) {
+                    return nodeData.every((nodeSelectedData: any) => nodeSelectedData.selected);
+                }
+                return true;
+            });
             for (let i: number = 0; i < newValues.length; i++) {
                 if (isNOU(this.value) || this.value.indexOf(newValues[i as number]) === -1) {
                     selectedValues.push(newValues[i as number]);
@@ -3970,7 +3977,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.isPopupOpen = false;
         if ((this as any).isReact) {
             this.clearTemplate(['headerTemplate', 'footerTemplate', 'itemTemplate', 'actionFailureTemplate',
-                'noRecordsTemplate', 'customTemplate']);
+                'noRecordsTemplate']);
         }
         if (this.popupObj)
         {

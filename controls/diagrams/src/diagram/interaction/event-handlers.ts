@@ -2259,8 +2259,11 @@ export class DiagramEventHandler {
 
     /** @private */
     public updateTool(): void {
-        if (this.eventArgs && !this.eventArgs.position) {
+        // 912436: Update Tool at runtime
+        if (!this.currentPosition || this.action === 'Pan') {
             this.action = 'Select';
+        } else {
+            this.action = 'Pan';
         }
     }
 
@@ -2446,17 +2449,17 @@ export class DiagramEventHandler {
                     let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
                     if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
                         if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
+                            // 915151: Node Becomes Unmovable After Deleting the First Phase
                             const swimlane: Node = this.diagram.getObject(parentNode.parentId) as Node;
-                            const laneId: string = swimlane.id + (swimlane.shape as SwimLaneModel).lanes[0].id + '0';
-                            const firstlane: NodeModel = this.diagram.getObject(laneId) as Node;
-                            // 910593: Node is not draggable inside swimlane after adding new phase
                             let x: number; let y: number;
-                            if ((swimlane.shape as SwimLaneModel).orientation === 'Vertical'){
-                                x = firstlane.wrapper.bounds.x;
+                            if ((swimlane.shape as SwimLaneModel).orientation === 'Vertical') {
+                                x = swimlane.wrapper.bounds.x + (swimlane.shape as SwimLaneModel).phaseSize;
                                 y = swimlane.wrapper.bounds.y + (swimlane.shape as SwimLaneModel).header.height;
-                            }
-                            else{
-                                x = swimlane.wrapper.bounds.x; y = firstlane.wrapper.bounds.y;
+                            } else {
+                                const header: number = (swimlane.shape as SwimLaneModel).header.height +
+                                    (swimlane.shape as SwimLaneModel).phaseSize;
+                                x = swimlane.wrapper.bounds.x;
+                                y = swimlane.wrapper.bounds.y + header;
                             }
                             const width: number = swimlane.wrapper.bounds.bottomRight.x - x;
                             const height: number = swimlane.wrapper.bounds.bottomRight.y - y;

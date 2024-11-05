@@ -2456,6 +2456,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                         }
                     }
                     if (seriesRefresh) {
+                        this.calculateVisibleSeries();
                         this.processData(false); update.refreshBounds = true;
                     }
                 }

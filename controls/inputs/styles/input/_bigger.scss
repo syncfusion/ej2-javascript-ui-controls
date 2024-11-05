@@ -6151,4 +6151,60 @@
       color: $input-warning-color;
     }
   }
+
+  .e-outline.e-float-input.e-bigger input:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger input:valid ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger input ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-bigger input[readonly] ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-bigger input[disabled] ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-bigger input label.e-float-text.e-label-top,
+  .e-bigger .e-outline.e-float-input input:focus ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input input:valid ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input input ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input input[disabled] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input input label.e-float-text.e-label-top,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper input:focus ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper input:valid ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper input label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger input:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger input:valid ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger input ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger input[readonly] ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger input[disabled] ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-control-wrappe.e-bigger input label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-bigger textarea:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger textarea:valid ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger textarea ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-bigger textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-bigger textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-bigger textarea label.e-float-text.e-label-top,
+  .e-bigger .e-outline.e-float-input textarea:focus ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input textarea:valid ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input textarea ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input textarea label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger textarea:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger textarea:valid ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger textarea ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger textarea label.e-float-text.e-label-top,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper textarea:focus ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper textarea:valid ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper textarea ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper textarea label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-input-focus.e-bigger input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-input-focus input ~ label.e-float-text {
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+      top: $outline-float-label-top;
+      transform: translate3d($zero-value, $zero-value, $zero-value) scale(1);
+    }
+  }
 }

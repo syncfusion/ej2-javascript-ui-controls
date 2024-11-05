@@ -369,11 +369,12 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private preventClose(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.options && this.options.isResponsiveFilter && args.event) {
             const target: Element = (<Element>args.event.target);
-            const isFilterBack: boolean = target.classList.contains('e-resfilterback')
-                || target.classList.contains('e-res-back-btn') || target.classList.contains('e-menu-item');
+            const isFilterBack: boolean = target.classList && (target.classList.contains('e-resfilterback')
+                || target.classList.contains('e-res-back-btn') || target.classList.contains('e-menu-item'));
             args.cancel = !isFilterBack;
         } else {
-            if (args.event instanceof MouseEvent && (<Element>args.event.target).classList.contains('e-submenu')) {
+            if (args.event instanceof MouseEvent && (<Element>args.event.target) && (<Element>args.event.target).classList &&
+                (<Element>args.event.target).classList.contains('e-submenu')) {
                 args.cancel = true;
             }
         }

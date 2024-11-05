@@ -888,7 +888,9 @@ export class Edit implements IAction {
                     && (!document.getElementsByClassName('e-popup-open').length || (document.querySelectorAll('.e-popup-open .e-editcell').length &&
                     !document.querySelectorAll('.e-popup-open:not(.e-dialog)').length))) {
                 e.preventDefault();
-                this.parent.isFocusFirstCell = true;
+                if (this.parent.isEdit) {
+                    this.parent.isFocusFirstCell = true;
+                }
                 this.endEdit();
             }
             break;
