@@ -119,3 +119,8 @@ export const SELF_CLOSING_TAGS: string[] = ['area', 'base', 'br', 'embed', 'hr',
  * @hidden
  */
 export const PASTE_SOURCE: string[] = ['word', 'excel', 'onenote'];
+
+/**
+ * @hidden
+ */
+export const ALLOWED_TABLE_BLOCK_TAGS: string[] = ['article', 'aside', 'blockquote', 'body', 'canvas', 'details', 'div', 'fieldset', 'figure', 'footer', 'form', 'header', 'li', 'main', 'nav', 'noscript', 'section'];

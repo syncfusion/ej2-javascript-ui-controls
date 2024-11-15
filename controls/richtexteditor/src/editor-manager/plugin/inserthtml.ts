@@ -122,7 +122,11 @@ export class InsertHtml {
                 }
             }
             if (!isNOU(sibNode) && !isNOU(sibNode.parentNode)) {
-                InsertMethods.AppendBefore(node as HTMLElement, sibNode as HTMLElement, true);
+                if (docElement.contains(sibNode)) {
+                    InsertMethods.AppendBefore(node as HTMLElement, sibNode as HTMLElement, true);
+                } else {
+                    range.insertNode(node);
+                }
             } else {
                 let previousNode: Node = null;
                 while (parentNode !== editNode && parentNode.firstChild &&
@@ -376,27 +380,102 @@ export class InsertHtml {
             this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode, enterAction);
         }
         this.alignCheck(editNode as HTMLElement);
-        const currentRange: Range = nodeSelection.getRange(docElement);
-        this.listCleanUp(currentRange);
+        this.listCleanUp(nodeSelection, docElement);
     }
-    private static listCleanUp (range: Range): void {
+
+    private static listCleanUp(nodeSelection: NodeSelection, docElement: Document): void {
+        const range: Range = nodeSelection.getRange(docElement);
+        const startContainer: Node = range.startContainer;
+        const startOffset: number = range.startOffset;
         if (range.startContainer.parentElement.closest('ol,ul') !== null && range.endContainer.parentElement.closest('ol,ul') !== null) {
-            const liElems: NodeListOf<HTMLLIElement> = range.startContainer.parentElement.closest('ol,ul').querySelectorAll('li');
-            if (liElems.length > 0) {
-                liElems.forEach((item: HTMLLIElement) => {
-                    if (!isNOU(item.firstChild) && (item.firstChild.nodeName === 'OL' || item.firstChild.nodeName === 'UL')){
-                        item.style.listStyleType = 'none';
-                    }
-                    const nestedLi: HTMLLIElement = Array.from(item.children).find((child: HTMLElement) =>
-                        child.tagName === 'LI' && (child.parentElement && child.parentElement.tagName !== 'OL' && child.parentElement.tagName !== 'UL')
-                    ) as HTMLLIElement;
-                    if (nestedLi) {
-                        item.parentNode.replaceChild(nestedLi, item);
-                    }
-                });
+            const haslistCleanUp: boolean = this.cleanUpListItems(range.startContainer.parentElement.closest('ol,ul') as HTMLElement);
+            const haslistContainerCleanUp: boolean = this.cleanUpListContainer(range.startContainer.parentElement.closest('ol,ul') as HTMLElement);
+            if (haslistCleanUp || haslistContainerCleanUp) {
+                range.setStart(startContainer, startOffset);
+                range.setEnd(startContainer, startOffset);
             }
         }
     }
+
+    private static cleanUpListItems(parentContainer: HTMLElement): boolean {
+        let hasListCleanUp: boolean = false;
+        const listItems: NodeListOf<HTMLLIElement> = parentContainer.closest('ol, ul').querySelectorAll('li');
+        if (listItems.length === 0) {
+            return false;
+        }
+        let nearestListItem: HTMLElement | null = null;
+        listItems.forEach((listItem: HTMLLIElement) => {
+            if (!isNOU(listItem.firstChild) && (listItem.firstChild.nodeName === 'OL' || listItem.firstChild.nodeName === 'UL')) {
+                listItem.style.listStyleType = 'none';
+            }
+            const parentElement: HTMLElement = listItem.parentElement as HTMLElement;
+            if (!isNOU(parentElement) && parentElement.nodeName !== 'OL' && parentElement.nodeName !== 'UL') {
+                if (isNOU(nearestListItem)) {
+                    nearestListItem = parentElement.closest('li');
+                }
+                if (!isNOU(nearestListItem)) {
+                    const nextSibling: HTMLElement = listItem.nextSibling as HTMLElement;
+                    if (!isNOU(nextSibling) && nextSibling.nodeName !== 'LI') {
+                        const startIndex: number = Array.prototype.indexOf.call(parentElement.childNodes, nextSibling);
+                        const clonedParent: HTMLElement = parentElement.cloneNode(false) as HTMLElement;
+                        const totalChildren: number = parentElement.childNodes.length;
+                        for (let i: number = startIndex; i < totalChildren; i++) {
+                            clonedParent.appendChild(parentElement.childNodes[startIndex as number]);
+                        }
+                        if (clonedParent.childNodes.length > 0) {
+                            const newListItem: HTMLElement = document.createElement('li');
+                            newListItem.appendChild(clonedParent);
+                            nearestListItem.insertAdjacentElement('afterend', newListItem);
+                        } else {
+                            (clonedParent as HTMLElement).remove();
+                        }
+                    }
+                    const closestList: Element | null = parentElement.closest('ol, ul');
+                    nearestListItem.insertAdjacentElement('afterend', listItem);
+                    nearestListItem = nearestListItem.nextSibling as HTMLElement;
+                    this.removeEmptyElements(closestList as HTMLElement);
+                    hasListCleanUp = true;
+                }
+            }
+            const nestedLi: HTMLLIElement = Array.from(listItem.children).find((child: HTMLElement) =>
+                child.tagName === 'LI' && (child.parentElement && child.parentElement.tagName !== 'OL' && child.parentElement.tagName !== 'UL')
+            ) as HTMLLIElement;
+
+            if (nestedLi && listItem.parentNode) {
+                listItem.parentNode.replaceChild(nestedLi, listItem);
+                hasListCleanUp = true;
+            }
+        });
+        return hasListCleanUp;
+    }
+
+    private static cleanUpListContainer(parentList: HTMLElement): boolean {
+        let hasListContainerCleanUp: boolean = false;
+        let nonLiElementCollection: ChildNode[] = [];
+        const replacements: { elements: ChildNode[] }[] = [];
+        if (!isNOU(parentList)) {
+            parentList.childNodes.forEach((childNode: ChildNode) => {
+                if ((childNode as HTMLElement).nodeName.toLocaleUpperCase() !== 'LI') {
+                    nonLiElementCollection.push(childNode);
+                }
+                if (((childNode as HTMLElement).nodeName.toLocaleUpperCase() === 'LI' || parentList.lastChild === childNode) && nonLiElementCollection.length > 0) {
+                    replacements.push({ elements: [...nonLiElementCollection] });
+                    nonLiElementCollection = [];
+                }
+            });
+            replacements.forEach(({ elements }: { elements: ChildNode[] }) => {
+                const newListItem: HTMLElement = document.createElement('li');
+                elements[0].parentNode.replaceChild(newListItem, elements[0]);
+                elements.forEach((child: HTMLElement) => newListItem.appendChild(child));
+                if (newListItem.textContent && newListItem.textContent.trim() === '') {
+                    parentList.removeChild(newListItem);
+                }
+                hasListContainerCleanUp = true;
+            });
+        }
+        return hasListContainerCleanUp;
+    }
+
     private static placeCursorEnd(
         lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
         lastSelectionNode = lastSelectionNode.nodeName === 'BR' ? (isNOU(lastSelectionNode.previousSibling) ? lastSelectionNode.parentNode
@@ -608,7 +687,8 @@ export class InsertHtml {
         while (el && el.nodeType === 1) {
             if (el.parentNode === editNode ||
                 (!isNOU((el.parentNode as Element).tagName) &&
-                CONSTANT.IGNORE_BLOCK_TAGS.indexOf((el.parentNode as Element).tagName.toLocaleLowerCase()) !== -1)) {
+                        (CONSTANT.IGNORE_BLOCK_TAGS.indexOf((el.parentNode as Element).tagName.toLocaleLowerCase()) !== -1
+                        || CONSTANT.ALLOWED_TABLE_BLOCK_TAGS.indexOf((el.parentNode as Element).tagName.toLocaleLowerCase()) !== -1))) {
                 return el;
             }
             el = <Element>el.parentNode;

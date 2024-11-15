@@ -2320,10 +2320,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (this.pageSettings.pageSizeMode === 'Root') {
                 this.grid.selectionModule['totalRecordsCount'] = this.grid.currentViewData.length;
             }
-            if (!isNullOrUndefined(this.selectionSettings) && !this.selectionSettings.persistSelection &&
-                this.enableVirtualization && args.rowIndex === this.selectedRowIndex && this.isGantt) {
-                args.cancel = false;
-            }
             this.trigger(events.rowSelecting, args);
         };
         this.grid.rowDeselecting = (args: RowDeselectingEventArgs): void => {
@@ -3464,7 +3460,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public closeEdit(): void {
         if (this.grid.editModule) {
-            this.grid.editModule.closeEdit();
+            this.editModule['closeEdit']();
         }
     }
     /**
@@ -5225,7 +5221,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public clearSelection(): void {
-        this.grid.selectionModule['actualTarget'] = null;
+        if (!isNullOrUndefined(this.grid.selectionModule)) {
+            this.grid.selectionModule['actualTarget'] = null;
+        }
         this.grid.clearSelection();
     }
 

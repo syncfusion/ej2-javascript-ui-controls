@@ -149,19 +149,6 @@ export const imageResizeFactor: IImageResizeFactor = {
 };
 
 /**
- * Resize factor for image in iframe editor.
- *
- *@hidden
- *
- */
-export const iframeResizeFactor: IImageResizeFactor = {
-    topLeft     : [-1.2, -1.2 ],
-    topRight    : [ 1.2, -1.2 ],
-    botRight    : [ 1.2,  1.2 ],
-    botLeft     : [-1.2,  1.2 ]
-};
-
-/**
  * Mention restrict key configuration.
  *
  * @hidden

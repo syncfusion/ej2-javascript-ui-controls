@@ -245,10 +245,12 @@ export class NormalEdit {
     protected updateRow(index: number, data: Object): void {
         const gObj: IGrid = this.parent;
         this.editRowIndex = index;
+        const row: Element = gObj.getRowByIndex(index);
+        if (!row) { return; }
         const args: SaveEventArgs = {
             requestType: 'save', action: 'edit', type: events.actionBegin, data: data, cancel: false,
             previousData: gObj.getCurrentViewRecords()[parseInt(index.toString(), 10)],
-            row: gObj.getRowByIndex(index)
+            row: row
         };
         gObj.showSpinner();
         if (gObj.enableInfiniteScrolling) {

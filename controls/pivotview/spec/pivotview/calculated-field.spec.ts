@@ -645,7 +645,12 @@ describe(' - Opening the calculated dialog dialog', () => {
             done();
         }, 1000);
     });
-
+    it('- Using destroy method', (done: Function) => {
+        setTimeout(() => {
+            pivotGridObj.pivotCommon.errorDialog.removeErrorDialog();
+            done();
+        }, 1000);
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

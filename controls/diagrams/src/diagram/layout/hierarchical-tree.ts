@@ -216,7 +216,8 @@ export class HierarchicalTree {
             if (!(info.y && info.y > dimensions.y)) {
                 info.y = dimensions.y;
             }
-            if (info.mid) {
+            // 919520: Leaf node position does not align correctly for subTreeAlignment 'Center'
+            if (info.mid !== undefined) {
                 x = info.mid;
             }
             if (info.tree.assistants.length) {

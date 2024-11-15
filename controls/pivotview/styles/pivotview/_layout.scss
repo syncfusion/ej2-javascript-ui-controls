@@ -706,6 +706,10 @@
             border-radius: $pivotgrid-default-border-radius;
           }
 
+          @if ($skin-name =='bootstrap5.3') {
+            background-color: $pivotgrid-button-border-color;
+          }
+
           .e-menu-icon,
           .e-icons {
             @if ($pivotgrid-skin =='bootstrap4') {

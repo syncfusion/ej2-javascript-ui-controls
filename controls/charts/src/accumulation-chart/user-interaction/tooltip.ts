@@ -119,7 +119,7 @@ export class AccumulationTooltip extends BaseTooltip {
                 this.createTooltip(this.chart, isFirst, { x: (tooltip.location.x !== null) ? tooltip.location.x :
                     point.point.symbolLocation.x, y: (tooltip.location.y !== null) ? tooltip.location.y : point.point.symbolLocation.y },
                                    point.series.clipRect, point.point, !tooltip.enableMarker ? [] : ['Circle'], 0, this.chart.initialClipRect, false,
-                                   null, point.point, this.template ? argsData.template : '');
+                                   null, point.point, this.template ? this.accumulation.enableHtmlSanitizer ? this.accumulation.sanitize(this.template as string) : argsData.template : '');
             } else {
                 this.removeHighlight();
                 remove(this.getElement(this.element.id + '_tooltip'));

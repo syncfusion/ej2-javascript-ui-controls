@@ -162,7 +162,7 @@
       border-color: transparent;
       box-shadow: 0 0 0 transparent;
 
-      @if ($skin-name =='fluent2'){
+      @if ($skin-name =='fluent2' or $skin-name == 'bootstrap5.3'){
         color: $field-list-button-back-color;
       }
 

@@ -1,6 +1,10 @@
 export const IFRAME_EDITOR_STYLES: string = `
 @charset "UTF-8";
 
+* {
+    box-sizing: border-box;
+}
+
 html {
     height: auto;
 }
@@ -16,7 +20,6 @@ body {
 
 .e-content {
     background: unset;
-    box-sizing: border-box;
     min-height: 100px;
     outline: 0 solid transparent;
     padding: 16px;
@@ -145,18 +148,6 @@ body {
     list-style-type: square;
 }
 
-.e-rte-image,
-.e-rte-video {
-    border: 0;
-    cursor: pointer;
-    display: block;
-    float: none;
-    height: auto;
-    margin: 5px auto;
-    max-width: 100%;
-    position: relative;
-}
-
 .e-content p:last-child,
 .e-content pre:last-child,
 .e-content blockquote:last-child {
@@ -208,7 +199,6 @@ table .e-cell-select {
     height: 20px;
     min-width: 20px;
     padding: 2px 5px;
-    box-sizing: border-box;
 }
 
 .e-rte-table td.e-cell-select.e-multi-cells-select,
@@ -249,12 +239,14 @@ th.e-multi-cells-select {
     background-color: #F5F5F5;
 }
 
-.e-rte-audio {
+.e-rte-image,
+.e-rte-audio,
+.e-rte-video  {
     border: 0;
     cursor: pointer;
     display: block;
     float: none;
-    margin: 5px auto;
+    margin: auto;
     max-width: 100%;
     position: relative;
 }
@@ -262,11 +254,11 @@ th.e-multi-cells-select {
 .e-rte-image.e-imginline,
 .e-rte-audio.e-audio-inline,
 .e-rte-video.e-video-inline {
-    display: inline-block;
-    float: none;
     margin-left: 5px;
     margin-right: 5px;
-    max-width: calc(100% - (2 * 5px));
+    display: inline-block;
+    float: none;
+    max-width: 100%;
     padding: 1px;
     vertical-align: bottom;
 }
@@ -297,17 +289,15 @@ th.e-multi-cells-select {
     text-align: left;
 }
 
-.e-img-caption {
+.e-rte-img-caption {
     display: inline-block;
-    float: none;
     margin: 5px auto;
     max-width: 100%;
     position: relative;
 }
 
-.e-img-caption.e-caption-inline {
+.e-rte-img-caption.e-caption-inline {
     display: inline-block;
-    float: none;
     margin: 5px auto;
     margin-left: 5px;
     margin-right: 5px;
@@ -339,13 +329,13 @@ th.e-multi-cells-select {
     display: contents;
 }
 
-.e-img-inner {
-    box-sizing: border-box;
+.e-rte-img-caption .e-img-inner {
     display: block;
     font-size: 16px;
     font-weight: initial;
     margin: auto;
     opacity: .9;
+    position: relative;
     text-align: center;
     width: 100%;
 }
@@ -395,7 +385,6 @@ th.e-multi-cells-select {
     float: none;
     margin-left: 5px;
     margin-right: 5px;
-    max-width: calc(100% - (2 * 5px));
     vertical-align: bottom;
 }
 

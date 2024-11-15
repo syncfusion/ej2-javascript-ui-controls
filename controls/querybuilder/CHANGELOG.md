@@ -8,6 +8,14 @@
 
 #### Bug Fixes
 
+- Issue with "Validation message appears for valid field in query builder" has been fixed.
+
+## 27.1.57 (2024-10-29)
+
+### QueryBuilder
+
+#### Bug Fixes
+
 - Issue with "Input element value get selected while double clicking on query builder rules." has been fixed.
 
 ## 27.1.55 (2024-10-22)

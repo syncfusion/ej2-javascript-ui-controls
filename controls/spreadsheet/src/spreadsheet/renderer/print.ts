@@ -1,8 +1,9 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { RangeModel, SheetModel, RowModel } from '../../workbook/index';
+import { RangeModel, SheetModel, RowModel, getSheetIndex, ChartModel } from '../../workbook/index';
 import { CellModel, checkIsFormula, ColumnModel, NumberFormatArgs, PrintOptions, workbookFormulaOperation } from '../../workbook/index';
 import { getColumnHeaderText, getIndexesFromAddress, updateSheetFromDataSource, getCellAddress } from '../../workbook/index';
+import { getColIdxFromClientX, getRowIdxFromClientY } from '../common/index';
 
 /**
  * This class supports the printing functionality in Spreadsheet.
@@ -16,6 +17,8 @@ export class Print {
     private pageCounts: number[] = [];
     private initialRowCount: number = 0;
     private chartHeight: number = 0;
+    private columnIndex: number = 0;
+    private rowIndex: number = 0;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private multipleCanvasDataURL: any = [];
     private chartElements: string[] = [];
@@ -83,13 +86,37 @@ export class Print {
             }
         }
     }
+    private updateChartRowAndColumnIndices(spreadsheet: Spreadsheet, sheetIndex: number): void {
+        const sheet: SheetModel = spreadsheet.sheets[sheetIndex as number];
+        this.rowIndex = sheet.usedRange.rowIndex;
+        this.columnIndex = sheet.usedRange.colIndex;
+        if (spreadsheet.chartColl.length > 0) {
+            for (let i: number = 0; i < spreadsheet.chartColl.length; i++) {
+                const chart: ChartModel = spreadsheet.chartColl[i as number];
+                const sheetIdx: number = getSheetIndex(spreadsheet, chart.range.split('!')[0]);
+                if (sheetIndex === sheetIdx) {
+                    const chartleft: { clientX: number, isImage?: boolean } = { clientX: chart.left, isImage: true };
+                    const chartTop: { clientY: number, isImage?: boolean } = { clientY: chart.top, isImage: true };
+                    spreadsheet.notify(getRowIdxFromClientY, chartTop);
+                    spreadsheet.notify(getColIdxFromClientX, chartleft);
+                    if (chartTop.clientY > sheet.usedRange.rowIndex) {
+                        this.rowIndex = Math.max(this.rowIndex, chartTop.clientY);
+                    }
+                    if (chartleft.clientX > sheet.usedRange.colIndex) {
+                        this.columnIndex = Math.max(this.columnIndex, chartleft.clientX);
+                    }
+                }
+            }
+        }
+    }
     private activeSheetPrint(spreadsheet: Spreadsheet, sheet: SheetModel, printOptions: PrintOptions, sheetIndex: number): void {
+        this.updateChartRowAndColumnIndices(spreadsheet, sheetIndex);
         this.pageCounts = this.calculatePageCount(sheet, 1000, printOptions.allowRowColumnHeader);
         let canvas: HTMLCanvasElement;
         let context: CanvasRenderingContext2D;
         this.initialRowCount = 0;
         this.parent.currentPrintSheetIndex = sheetIndex;
-        this.endRow = sheet.rows.length;
+        this.endRow = this.rowIndex + 1;
         this.processCell(0, 0, this.endRow, 2, [], context, canvas, sheet, this, 0, 0,
                          true, sheetIndex, printOptions);
     }
@@ -278,7 +305,7 @@ export class Print {
                                         sheet.rows[j as number].cells[k as number].colSpan > 1) {
                                     if (!isNullOrUndefined(sheet.rows[j + 1]) && !isNullOrUndefined(sheet.rows[j + 1].cells) &&
                                         sheet.rows[j + 1].cells.length > 0 && (!isNullOrUndefined(sheet.rows[j + 1].cells[k as number]) &&
-                                        isNaN(sheet.rows[j + 1].cells[k as number].colSpan))) {
+                                            isNaN(sheet.rows[j + 1].cells[k as number].colSpan))) {
                                         this.parent.merge('' + getColumnHeaderText(k + 1) + (j + 1) + ':' +
                                         getColumnHeaderText(k + 1 + sheet.rows[j  as number].cells[k as number].colSpan - 1) + (j + 1));
                                     } else if (isNullOrUndefined(sheet.rows[j as number].cells[k + 1].colSpan)) {
@@ -1053,33 +1080,12 @@ export class Print {
     }
     private calculatePageCount(sheet: SheetModel, columnHeaderWidth: number, allowColumnAndRow: boolean): number[] {
         let allowHeader: boolean = allowColumnAndRow;
-        const usedRangeColumn: number = sheet.usedRange.colIndex;
+        const colIndex: number = this.columnIndex;
         if (sheet.columns.length === 0) {
             const columnCount: number = Math.floor(columnHeaderWidth / this.defaultCellWidth) - (allowHeader ? 1 : 0);
-            return Array(Math.max(1, Math.ceil(usedRangeColumn / columnCount))).fill(columnCount);
+            return Array(Math.max(1, Math.ceil(colIndex / columnCount))).fill(columnCount);
         }
         let pageWidthCount: number = 0;
-        let isColumnLength: boolean = false;
-        const columnLength: number = sheet.columns.length - 1;
-        let usedColumnLength: number = sheet.usedRange.colIndex;
-        const lastRowIndex: number = Math.max(sheet.usedRange.rowIndex, sheet.rows.length - 1);
-        if (usedRangeColumn <= columnLength) {
-            for (let j: number = lastRowIndex; j >= 0; j--) {
-                const row: RowModel = sheet.rows[j as number];
-                if (row && row.cells) {
-                    for (let i: number = columnLength; i > sheet.usedRange.colIndex; i--) {
-                        const cell: CellModel = row.cells[i as number];
-                        if (cell) {
-                            isColumnLength = true;
-                            usedColumnLength = Math.max(usedColumnLength, i);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        const colIndex: number = (usedRangeColumn === 0 ? columnLength :
-            !isColumnLength ? usedRangeColumn : usedColumnLength);
         const pageCount: number[] = [];
         for (let i: number = 0; i <= colIndex; i++) {
             const column: ColumnModel = sheet.columns && sheet.columns[i as number];

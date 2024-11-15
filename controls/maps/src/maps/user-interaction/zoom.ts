@@ -2,7 +2,7 @@
 import { Maps, Orientation, ITouches, ZoomSettings } from '../../index';
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint, measureTextElement } from '../utils/helper';
 import { RectOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches, Coordinate } from '../utils/helper';
-import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker } from '../utils/helper';
+import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker, getProcessedMarginValue } from '../utils/helper';
 import { markerTemplate, removeElement, getElement, clusterSeparate, markerColorChoose, calculatePolygonPath } from '../utils/helper';
 import { markerShapeChoose   } from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement, animationMode } from '@syncfusion/ej2-base';
@@ -1151,6 +1151,7 @@ export class Zoom {
         const layerY: number = event.type.indexOf('mouse') > -1 || event.type.indexOf('key') > -1 ? event['layerY'] : (event as TouchEvent).touches[0].pageY;
         this.maps.mergeCluster();
         if (!map.isTileMap) {
+            const marginTop: number = getProcessedMarginValue(map.margin.top);
             const legendElement: HTMLElement = document.getElementById(map.element.id + '_Legend_Group');
             const legendHeight: number = !isNullOrUndefined(legendElement) ? legendElement.getClientRects()[0].height : 0;
             x = translatePoint.x - xDifference / scale;
@@ -1160,7 +1161,7 @@ export class Zoom {
             const panningXDirection: boolean = ((xDifference < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
                 ((layerRect.left + layerRect.width + map.mapAreaRect.x) >= (elementRect.width))));
             const panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
-                ((layerRect.top + layerRect.height + legendHeight + map.margin.top) >= (elementRect.top + elementRect.height))));
+                ((layerRect.top + layerRect.height + legendHeight + marginTop) >= (elementRect.top + elementRect.height))));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const location: any = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, layerX, layerY);
             const minMaxLatitudeLongitude: IMinMaxLatitudeLongitude = this.maps.getMinMaxLatitudeLongitude();
@@ -1758,7 +1759,7 @@ export class Zoom {
      * @private
      */
     public removeToolbarOpacity(factor: number, id: string): void {
-        if (this.maps.zoomModule && this.maps.zoomSettings.enable) {
+        if (!isNullOrUndefined(this.maps) && this.maps.zoomModule && this.maps.zoomSettings.enable) {
             if (getElementByID(this.maps.element.id + '_Zooming_KitCollection') && id.indexOf(this.maps.element.id + '_Zooming_') > -1) {
                 if (this.maps.isDevice) {
                     getElementByID(this.maps.element.id + '_Zooming_KitCollection').setAttribute('opacity', '1');
@@ -2132,7 +2133,8 @@ export class Zoom {
         this.lastScale = 1;
         this.maps.element.style.cursor = 'auto';
         if (this.isPanModeEnabled && this.maps.zoomSettings.enablePanning && !isNullOrUndefined(this.maps.previousPoint) &&
-            (this.maps.translatePoint.x !== this.maps.previousPoint.x && this.maps.translatePoint.y !== this.maps.previousPoint.y)) {
+            (!this.maps.isTileMap  ? (this.maps.translatePoint.x !== this.maps.previousPoint.x && this.maps.translatePoint.y !== this.maps.previousPoint.y)
+                : this.isPanningInProgress)) {
             let pageX: number;
             let pageY: number;
             let layerX: number = 0;
@@ -2182,6 +2184,7 @@ export class Zoom {
             this.maps.trigger('panComplete', panCompleteEventArgs);
         }
         this.isPanModeEnabled = false;
+        this.isPanningInProgress = false;
         const zoomRectElement: HTMLElement = <HTMLElement>getElementByID(this.maps.element.id + '_Selection_Rect_Zooming');
         if (zoomRectElement && this.maps.zoomSettings.enable && this.maps.zoomSettings.enableSelectionZooming) {
             remove(zoomRectElement);

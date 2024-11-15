@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I650912` - Resolved the comment pane is not shown issue while inserting the empty comment.
+
 ## 27.1.58 (2024-11-05)
 
 ### DocumentEditor

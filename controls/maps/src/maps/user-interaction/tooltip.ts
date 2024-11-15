@@ -100,7 +100,7 @@ export class MapsTooltip {
                     layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
                 if (!isNullOrUndefined(properties)) {
                     for (let k: number = 0; k < properties.length; k++) {
-                        if (!isNullOrUndefined(layer.dataSource)) {
+                        if (!isNullOrUndefined(layer.dataSource) && !isNullOrUndefined(layer.shapeDataPath)) {
                             for (let i: number = 0; i < layer['dataSource']['length']; i++) {
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 const data: any[] = layer.dataSource[i as number];
@@ -144,7 +144,7 @@ export class MapsTooltip {
                                 (getValueFromObject(layer.dataSource[index as number], option.valuePath)) :
                                 layer.dataSource[index as number][option.valuePath]),
                                         this.maps) : value[shapePath as string];
-                        if (isNullOrUndefined(currentData)) {
+                        if (isNullOrUndefined(currentData) && !isNullOrUndefined(option.valuePath)) {
                             currentData = (option.valuePath.indexOf('.') > -1) ?
                                 (getValueFromObject(value, option.valuePath)) : value[option.valuePath];
                         }
@@ -165,12 +165,14 @@ export class MapsTooltip {
                         if (typeof marker.template !== 'function' && marker.template && !marker.tooltipSettings.valuePath) {
                             currentData =  marker.template.split('>')[1].split('<')[0];
                         } else {
-                            currentData =
-                            formatValue(((marker.tooltipSettings.valuePath. indexOf('.') > -1) ?
-                                (getValueFromObject(marker.dataSource[dataIndex as number], marker.tooltipSettings.valuePath)) :
-                                marker.dataSource[dataIndex as number][marker.tooltipSettings.valuePath]),
-                                        this.maps
-                            ) as string;
+                            if (!isNullOrUndefined(marker.tooltipSettings.valuePath)) {
+                                currentData =
+                                formatValue(((marker.tooltipSettings.valuePath. indexOf('.') > -1) ?
+                                    (getValueFromObject(marker.dataSource[dataIndex as number], marker.tooltipSettings.valuePath)) :
+                                    marker.dataSource[dataIndex as number][marker.tooltipSettings.valuePath]),
+                                            this.maps
+                                ) as string;
+                            }
                         }
                     }
                 }
@@ -185,12 +187,14 @@ export class MapsTooltip {
                     if (bubble.tooltipSettings.format) {
                         currentData = this.formatter(bubble.tooltipSettings.format, bubble.dataSource[dataIndex as number]);
                     } else {
-                        currentData =
-                        formatValue(((bubble.tooltipSettings.valuePath.indexOf('.') > -1) ?
-                            (getValueFromObject(bubble.dataSource[dataIndex as number], bubble.tooltipSettings.valuePath)) :
-                            bubble.dataSource[dataIndex as number][bubble.tooltipSettings.valuePath]),
-                                    this.maps
-                        ) as string;
+                        if (!isNullOrUndefined(bubble.tooltipSettings.valuePath)) {
+                            currentData =
+                            formatValue(((bubble.tooltipSettings.valuePath.indexOf('.') > -1) ?
+                                (getValueFromObject(bubble.dataSource[dataIndex as number], bubble.tooltipSettings.valuePath)) :
+                                bubble.dataSource[dataIndex as number][bubble.tooltipSettings.valuePath]),
+                                        this.maps
+                            ) as string;
+                        }
                     }
                 }
                 //location.y = this.template(option, location);
@@ -237,7 +241,8 @@ export class MapsTooltip {
                     options: tooltipOption,
                     fill: isPolygon ? polygonFill : option.fill,
                     maps: this.maps, latitude: latitude, longitude: longitude,
-                    element: target, eventArgs: e, content: isPolygon ? polygon.tooltipText : !isNullOrUndefined(currentData) ? currentData.toString() : ''
+                    element: target, eventArgs: e, content: isPolygon ? (!isNullOrUndefined(polygon.tooltipText) ? polygon.tooltipText : '') :
+                        !isNullOrUndefined(currentData) ? currentData.toString() : ''
                 };
                 if (tooltipArgs.content !== '' || tooltipArgs.options['template'] !== '') {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars

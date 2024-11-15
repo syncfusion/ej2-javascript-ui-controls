@@ -340,7 +340,7 @@ export class Render {
                             const cellRenderer: CellRenderer = new CellRenderer(this.parent.grid as IGrid, this.parent.grid.serviceLocator);
                             const td: Element = rows.length >= rowsObj.length
                                 ? this.parent.getCellFromIndex(rowsObj[parseInt(j.toString(), 10)].index, cellIndex - indent)
-                                : this.parent.getRows()[rowsObj[parseInt(j.toString(), 10)].index].querySelector('.e-templatecell');
+                                : rows[rowsObj[parseInt(j.toString(), 10)].index].querySelector('.e-templatecell');
                             cellRenderer.refreshTD(td, cell, rowsObj[parseInt(j.toString(), 10)].data, { index: rowsObj[parseInt(j.toString(), 10)][`${rowIdx}`] });
                             const treecell: Element =
                                 this.parent.getRows()[parseInt(j.toString(), 10)]

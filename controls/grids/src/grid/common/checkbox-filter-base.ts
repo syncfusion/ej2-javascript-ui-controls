@@ -1,5 +1,5 @@
 /* tslint:disable-next-line:max-line-length */
-import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, createElement, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked, clearReactVueTemplates, padZero, Global } from '../base/util';
 import { remove, debounce, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -15,7 +15,7 @@ import { Column, ColumnModel } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { createSpinner, hideSpinner,     showSpinner } from '@syncfusion/ej2-popups';
-import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, getColumnByForeignKeyValue } from '../base/util';
+import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, getColumnByForeignKeyValue, getListHeight, infiniteRemoveElements, infiniteAppendElements } from '../base/util';
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { SearchSettingsModel } from '../base/grid-model';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
@@ -367,7 +367,8 @@ export class CheckBoxFilterBase {
         this.dialogObj.element.style.maxHeight = options.isResponsiveFilter ? 'none' : this.options.height + 'px';
         this.dialogObj.show();
         if ((this.parent as IGrid) && (this.parent as IGrid).filterSettings && (this.parent as IGrid).filterSettings.type === 'CheckBox' &&
-            ((this.parent as IGrid).getContent().firstElementChild as HTMLElement).offsetHeight < this.dialogObj.element.offsetHeight) {
+            ((this.parent as IGrid).getContent().firstElementChild as HTMLElement).offsetHeight < this.dialogObj.element.offsetHeight &&
+            !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
             resetDialogAppend((this.parent as IGrid), this.dialogObj);
         }
         const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
@@ -387,7 +388,7 @@ export class CheckBoxFilterBase {
                 return;
             }
             if (this.infiniteRenderMod) {
-                this.cBox.style.marginTop = this.getListHeight(this.cBox) + 'px';
+                this.cBox.style.marginTop = getListHeight(this.cBox) + 'px';
             }
             createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null },
                           this.parent.createElement);
@@ -964,6 +965,19 @@ export class CheckBoxFilterBase {
         if (filteredColumn.indexOf(this.options.column.field) <= -1) {
             filteredColumn = filteredColumn.concat(this.options.column.field);
         }
+        const moduleName: Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
+        if (moduleName && moduleName() === 'ODataV4Adaptor') {
+            for (let i: number = 0; i < query.queries.length; i++) {
+                if (query.queries[parseInt(i.toString(), 10)].fn === 'onWhere') {
+                    const queryFilteredColumn: Object[] =  DataUtil.distinct([query.queries[parseInt(i.toString(), 10)].e], 'field');
+                    queryFilteredColumn.map((field: string) => {
+                        if (filteredColumn.indexOf(field) === -1) {
+                            filteredColumn.push(field);
+                        }
+                    });
+                }
+            }
+        }
         if (!this.infiniteRenderMod) {
             query.distinct(filteredColumn as string[]);
         }
@@ -994,10 +1008,27 @@ export class CheckBoxFilterBase {
     private filterEvent(args: Object, query: Query): void {
         const defObj: FilterStateObj = eventPromise(args, query);
         this.parent.trigger(events.dataStateChange, defObj.state);
+        this.addInfiniteScrollEvent(query);
         const def: Deferred = defObj.deffered;
         def.promise.then((e: ReturnType[]) => {
-            this.dataSuccess(e);
+            this.infiniteDataCount = this.infiniteRenderMod && !this.infiniteDataCount ? e['count'] : this.infiniteDataCount;
+            const dataResult: Object[] = this.infiniteRenderMod ? e['result'] : e;
+            this.dataSuccess(dataResult);
         });
+    }
+
+    private addInfiniteScrollEvent(query: Query): void {
+        if (this.infiniteRenderMod) {
+            this.infiniteQuery = query.clone();
+            if (this.infiniteInitialLoad) {
+                this.cBox.classList.add('e-checkbox-infinitescroll');
+                EventHandler.add(this.cBox, 'scroll', this.infiniteScrollHandler, this);
+                EventHandler.add(this.cBox, 'mouseup', this.infiniteScrollMouseKeyUpHandler, this);
+                EventHandler.add(this.cBox, 'mousedown', this.infiniteScrollMouseKeyDownHandler, this);
+            } else if (this.infiniteSearchValChange) {
+                this.cBox.innerHTML = '';
+            }
+        }
     }
 
     private infiniteScrollMouseKeyDownHandler(): void {
@@ -1011,16 +1042,6 @@ export class CheckBoxFilterBase {
             this.infiniteScrollHandler();
         }
         Global.timer = (setTimeout(() => { this.clickHandler(e); Global.timer = null; }, 0) as Object);
-    }
-
-    private getListHeight(element?: HTMLElement): number {
-        const listDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-ftrchk', styles: 'visibility: hidden' });
-        listDiv.innerHTML = '<div class="e-checkbox-wrapper"><span class="e-frame e-icons e-check"></span><span class="e-label e-checkboxfiltertext">A</div></span>';
-        element.appendChild(listDiv);
-        const rect: ClientRect = listDiv.getBoundingClientRect();
-        element.removeChild(listDiv);
-        const listHeight: number = Math.round(rect.height);
-        return listHeight;
     }
 
     private getShimmerTemplate(): string {
@@ -1040,7 +1061,7 @@ export class CheckBoxFilterBase {
         this.removeMask();
         if (wrapperElem) {
             const computedStyle: CSSStyleDeclaration = getComputedStyle(wrapperElem);
-            const liHeight: number = this.getListHeight(wrapperElem);
+            const liHeight: number = getListHeight(wrapperElem);
             const height: number = wrapperElem.children.length ? parseInt(computedStyle.height, 10) :
                 Math.floor(parseInt(computedStyle.height.split('px')[0], 10)) - 5;
             if ((this.parent as IGrid).enableAdaptiveUI && this.infiniteRenderMod) {
@@ -1105,7 +1126,7 @@ export class CheckBoxFilterBase {
         } else if (target.scrollTop >= target.scrollHeight - target.offsetHeight && !this.infiniteQueryExecutionPending
             && this.infiniteLoadedElem.length > (this.infiniteSkipCnt + this.parent.filterSettings.itemsCount)
             && this.cBox.children.length === this.parent.filterSettings.itemsCount * 3) {
-            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice(0, this.parent.filterSettings.itemsCount));
+            infiniteRemoveElements(([].slice.call(this.cBox.children)).splice(0, this.parent.filterSettings.itemsCount));
             this.infiniteSkipCnt += this.prevInfiniteScrollDirection === 'down' ? this.parent.filterSettings.itemsCount :
                 (this.parent.filterSettings.itemsCount * 3);
             appendChildren(this.cBox, this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.parent.filterSettings.itemsCount +
@@ -1115,37 +1136,25 @@ export class CheckBoxFilterBase {
         else if (target.scrollTop === 0 && !this.infiniteInitialLoad && !this.infiniteSearchValChange && this.infiniteSkipCnt
             && this.infiniteLoadedElem.length && this.infiniteLoadedElem.length > this.parent.filterSettings.itemsCount * 3
             && this.cBox.children.length === this.parent.filterSettings.itemsCount * 3) {
-            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings
+            infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings
                 .itemsCount * 2), this.parent.filterSettings.itemsCount));
             this.infiniteSkipCnt -= this.prevInfiniteScrollDirection === 'up' ? this.parent.filterSettings.itemsCount :
                 (this.parent.filterSettings.itemsCount * 3);
-            this.infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.infiniteSkipCnt +
-                this.parent.filterSettings.itemsCount)));
+            infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.infiniteSkipCnt +
+                this.parent.filterSettings.itemsCount)), this.cBox);
             this.cBox.scrollTop = this.infiniteScrollAppendDiff;
             this.prevInfiniteScrollDirection = 'up';
         }
         else if (target.scrollTop === 0 && !this.infiniteInitialLoad && !this.infiniteSearchValChange && this.infiniteSkipCnt
             && this.infiniteLoadedElem.length && this.cBox.children.length < this.parent.filterSettings.itemsCount * 3) {
-            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings
+            infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings
                 .itemsCount * 2), this.infiniteDataCount % this.parent.filterSettings.itemsCount));
             this.infiniteSkipCnt = (Math.floor(this.infiniteDataCount / this.parent.filterSettings.itemsCount) - 3) *
                 this.parent.filterSettings.itemsCount;
-            this.infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.infiniteSkipCnt +
-                this.parent.filterSettings.itemsCount)));
+            infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.infiniteSkipCnt +
+                this.parent.filterSettings.itemsCount)), this.cBox);
             this.cBox.scrollTop = this.infiniteScrollAppendDiff;
             this.prevInfiniteScrollDirection = 'up';
-        }
-    }
-
-    private infiniteRemoveElements(removeElem: HTMLElement[]): void {
-        for (let i: number = 0; i < removeElem.length; i++) {
-            remove(removeElem[i as number]);
-        }
-    }
-
-    private infiniteAppendElements(appendElem: HTMLElement[]): void {
-        for (let i: number = 0; i < appendElem.length; i++) {
-            this.cBox.insertBefore(appendElem[i as number], this.cBox.children[i as number]);
         }
     }
 
@@ -1186,8 +1195,18 @@ export class CheckBoxFilterBase {
             query.take(this.parent.filterSettings.itemsCount);
         }
         if (!existQuery) {
-            this.processDataOperation(query);
-            this.infiniteQueryExecutionPending = true;
+            if (this.parent.dataSource && 'result' in this.parent.dataSource) {
+                const args: FilterSearchBeginEventArgs = {
+                    requestType: events.filterChoiceRequest, query: query, filterChoiceCount: null, filterModel: this
+                };
+                if (this.infiniteRenderMod && this.parent.filterSettings.itemsCount) {
+                    args.filterChoiceCount = this.parent.filterSettings.itemsCount;
+                }
+                this.filterEvent(args, query);
+            } else {
+                this.processDataOperation(query);
+                this.infiniteQueryExecutionPending = true;
+            }
         }
     }
 
@@ -1205,17 +1224,7 @@ export class CheckBoxFilterBase {
             allPromise.push(colData.executeQuery(this.foreignKeyQuery));
             runArray.push((data: Object[]) => this.foreignKeyData = data);
         }
-        if (this.infiniteRenderMod) {
-            this.infiniteQuery = query.clone();
-            if (this.infiniteInitialLoad) {
-                this.cBox.classList.add('e-checkbox-infinitescroll');
-                EventHandler.add(this.cBox, 'scroll', this.infiniteScrollHandler, this);
-                EventHandler.add(this.cBox, 'mouseup', this.infiniteScrollMouseKeyUpHandler, this);
-                EventHandler.add(this.cBox, 'mousedown', this.infiniteScrollMouseKeyDownHandler, this);
-            } else if (this.infiniteSearchValChange) {
-                this.cBox.innerHTML = '';
-            }
-        }
+        this.addInfiniteScrollEvent(query);
         if (this.infiniteRenderMod && this.infiniteInitialLoad && !this.options.isRemote) {
             const field: string = this.isForeignColumn(this.options.column as Column) ? this.options.foreignKeyValue :
                 this.options.column.field;
@@ -1651,7 +1660,7 @@ export class CheckBoxFilterBase {
                 if (this.infiniteRenderMod) {
                     selectAll.classList.add('e-infinitescroll');
                     if ((this.parent as IGrid).enableAdaptiveUI) {
-                        this.spinner.style.height  = (this.spinner.offsetHeight - this.getListHeight(this.cBox)) + 'px';
+                        this.spinner.style.height  = (this.spinner.offsetHeight - getListHeight(this.cBox)) + 'px';
                     }
                     this.sBox.insertBefore(selectAll, this.spinner);
                 }
@@ -1731,14 +1740,14 @@ export class CheckBoxFilterBase {
                                         this.getCheckedState(isColFiltered, this.values[`${uid}`]), getValue('dataObj', data[i as number]));
                 cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
                 if (this.infiniteRenderMod) {
-                    (cBoxes.lastChild as HTMLElement).style.height = this.getListHeight(this.cBox) + 'px';
+                    (cBoxes.lastChild as HTMLElement).style.height = getListHeight(this.cBox) + 'px';
                 }
             }
             const scrollTop: number = this.cBox.scrollTop;
             if (!this.infiniteRenderMod || this.infiniteSearchValChange) {
                 this.cBox.innerHTML = '';
             } else if (this.infiniteRenderMod && this.cBox.children.length) {
-                this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice(0, this.parent.filterSettings.itemsCount));
+                infiniteRemoveElements(([].slice.call(this.cBox.children)).splice(0, this.parent.filterSettings.itemsCount));
             }
             if (this.infiniteRenderMod) {
                 this.infiniteLoadedElem.push(...[].slice.call(cBoxes.children));

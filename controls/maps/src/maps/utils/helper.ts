@@ -42,7 +42,10 @@ export class Size {
  * @private
  */
 export function stringToNumber(value: string, containerSize: number): number {
-    if (value !== null && value !== undefined) {
+    if (typeof value !== 'string') {
+        return value;
+    }
+    if (!isNullOrUndefined(value)) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
     }
     return null;
@@ -60,8 +63,10 @@ export function calculateSize(maps: Maps): Size {
     maps.element.style.setProperty('display', 'block');
     const containerWidth: number = maps.element.clientWidth;
     const containerHeight: number = maps.element.clientHeight;
-    const containerElementWidth: number = stringToNumber(maps.element.style.width, containerWidth);
-    const containerElementHeight: number = stringToNumber(maps.element.style.height, containerHeight);
+    const containerElementWidth: number = (typeof maps.element.style.width === 'string') ?
+        stringToNumber(maps.element.style.width, containerWidth) : maps.element.style.width;
+    const containerElementHeight: number = (typeof maps.element.style.height === 'string') ?
+        stringToNumber(maps.element.style.height, containerHeight) : maps.element.style.height;
     let availableSize: Size = new Size(0, 0);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
         availableSize = new Size(0, 0);
@@ -1502,8 +1507,8 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
     };
     removeElement(markerID);
     const ele: Element = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps);
-    const x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + (!isNullOrUndefined(offset.x) ? offset.x : 0);
-    const y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + (!isNullOrUndefined(offset.y) ? offset.y : 0);
+    const x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + ((!isNullOrUndefined(offset) && !isNullOrUndefined(offset.x)) ? offset.x : 0);
+    const y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + ((!isNullOrUndefined(offset) && !isNullOrUndefined(offset.y)) ? offset.y : 0);
     ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
     maintainSelection(maps.selectedMarkerElementId, maps.markerSelectionClass, ele, 'MarkerselectionMapStyle');
     if (maps.legendSettings.toggleLegendSettings.enable && maps.legendSettings.type === 'Markers') {
@@ -1981,7 +1986,7 @@ export function getFieldData(dataSource: any[], fields: string[]): any[] {
 export function checkShapeDataFields(dataSource: any[], properties: any, dataPath: string, propertyPath: string | string[],
                                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                      layer: LayerSettingsModel): number {
-    if (!(isNullOrUndefined(properties)) && !isNullOrUndefined(dataSource)) {
+    if (!(isNullOrUndefined(properties)) && !isNullOrUndefined(dataSource) && !isNullOrUndefined(dataPath)) {
         for (let i: number = 0; i < dataSource.length; i++) {
             const shapeDataPath: string = ((dataPath.indexOf('.') > -1) ? getValueFromObject(dataSource[i as number], dataPath) :
                 dataSource[i as number][dataPath as string]);
@@ -2316,7 +2321,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const max: any = !isNullOrUndefined(mapObject.baseMapRectBounds) ? mapObject.baseMapRectBounds['max'] as any : null;
     const zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
-    if (isNullOrUndefined(mapObject.currentShapeDataLength)) {
+    if (isNullOrUndefined(mapObject.currentShapeDataLength) && !isNullOrUndefined(layer.shapeData)) {
         mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData['features'])
             ? layer.shapeData['features'].length : !isNullOrUndefined(layer.shapeData['geometries']) ? layer.shapeData['geometries'].length : 0;
     }
@@ -2621,6 +2626,18 @@ export function getClientElement(id: string): ClientRect {
         return null;
     }
 }
+
+/**
+ * Function to return the number value for the string value.
+ *
+ * @param {string | number} marginValue - Specifies the margin value.
+ * @returns {number} - Returns the number value.
+ * @private
+ */
+export function getProcessedMarginValue(marginValue: string | number): number {
+    return typeof marginValue === 'string' ? parseFloat(marginValue) : marginValue;
+}
+
 /**
  * To apply internalization.
  *
@@ -2812,8 +2829,8 @@ export function createStyle(id: string, className: string, eventArgs: IShapeSele
         id: id
     });
     styleEle.innerText = '.' + className + '{fill:'
-            + eventArgs['fill'] + ';' + 'fill-opacity:' + (eventArgs['opacity']).toString() + ';' +
-            'stroke-opacity:' + (eventArgs['border']['opacity']).toString() + ';' +
+            + eventArgs['fill'] + ';' + 'fill-opacity:' + (!isNullOrUndefined(eventArgs['opacity']) ? (eventArgs['opacity']).toString() : '1') + ';' +
+            'stroke-opacity:' + (!isNullOrUndefined(eventArgs['border']['opacity']) ? (eventArgs['border']['opacity']).toString() : '1') + ';' +
             'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
             'stroke:' + eventArgs['border']['color'] + ';' + '}';
     return styleEle;
@@ -2832,9 +2849,9 @@ export function customizeStyle(id: string, className: string, eventArgs: IShapeS
     const styleEle: Element = getElement(id);
     if (!isNullOrUndefined(styleEle)) {
         (styleEle as HTMLElement).innerText = '.' + className + '{fill:'
-            + eventArgs['fill'] + ';' + 'fill-opacity:' + (eventArgs['opacity']).toString() + ';' +
+            + eventArgs['fill'] + ';' + 'fill-opacity:' + (!isNullOrUndefined(eventArgs['opacity']) ? (eventArgs['opacity']).toString() : '1') + ';' +
             'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
-            'stroke-opacity:' + (eventArgs['border']['opacity']).toString() + ';' +
+            'stroke-opacity:' + (!isNullOrUndefined(eventArgs['border']['opacity']) ? (eventArgs['border']['opacity']).toString() : '1') + ';' +
             'stroke:' + eventArgs['border']['color'] + '}';
     }
 }

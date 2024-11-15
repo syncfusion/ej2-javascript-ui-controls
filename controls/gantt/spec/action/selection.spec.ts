@@ -1,6 +1,6 @@
 
 import { Gantt, Selection, Toolbar } from '../../src/index';
-import { projectData1, resourceResources, resourcesDatas, MT897135 } from '../base/data-source.spec';
+import { projectData1, resourceResources, resourcesDatas, MT897135, splitTasksData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { RowSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { getValue } from  '@syncfusion/ej2-base';
@@ -977,6 +977,82 @@ describe('Gantt Selection support', () => {
             triggerMouseEvent(row, 'mouseup', 10, 10);
             triggerMouseEvent(row1, 'mouseup', 30, 30);
             expect(ganttObj.selectionModule.getSelectedRowIndexes()[0]).toBe(4);
+        });
+    });
+    describe('MT:918141-After sorting and deleting a task, selection is moved to last row', () => {
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+                allowSorting: true,
+                sortSettings: { columns: [{ field: 'TaskID', direction: 'Descending' }] },
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 100 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                splitterSettings: {
+                    position: "50%",
+                },
+                allowFiltering: true,
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('deleting Row after descending sort action', () => {
+            // CurrentViewData length before row delete action
+            expect(ganttObj.currentViewData.length).toBe(11);
+            ganttObj.selectionModule.selectRow(3);
+            let args: any = { action: 'delete', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.selectedRowIndex).toBe(3);
+            // CurrentViewData length after row delete action
+            expect(ganttObj.currentViewData.length).toBe(10);
         });
     });
 });

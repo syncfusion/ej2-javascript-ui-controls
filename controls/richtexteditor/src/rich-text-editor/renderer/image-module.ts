@@ -18,7 +18,7 @@ import { RenderType, ImageInputSource } from '../base/enum';
 import { dispatchEvent, parseHtml, hasClass, convertToBlob } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
-import { iframeResizeFactor, imageResizeFactor } from '../../common/config';
+import { imageResizeFactor } from '../../common/config';
 import { IImageResizeFactor, ImageDimension } from '../../common/interface';
 /**
  * `Image` module is used to handle image actions.
@@ -572,9 +572,6 @@ export class Image {
     }
 
     private getResizeFactor(value: string): number[] {
-        if (this.parent.iframeSettings.enable) {
-            return iframeResizeFactor[value as keyof IImageResizeFactor];
-        }
         return imageResizeFactor[value as keyof IImageResizeFactor];
     }
 

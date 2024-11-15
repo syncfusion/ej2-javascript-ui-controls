@@ -250,6 +250,7 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
             let width: number = bBoxText(txtValue, txt);
             if ((Math.ceil(width) + 2 >= txt.width && txtValue.length > 0) || (txtValue.indexOf('\n') > -1)) {
                 txtValue = txtValue.slice(0, -1);
+                width = bBoxText(txtValue, txt);
                 childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
                 txtValue = content[k + 1] || '';
             }

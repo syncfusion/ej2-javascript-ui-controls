@@ -410,7 +410,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.dlg.classList.add('e-excelfilter');
         if ((this.parent as IGrid) && !isNullOrUndefined((this.parent as IGrid).getContent) && (this.parent as IGrid).getContent()
             && ((this.parent as IGrid).getContent().firstElementChild as HTMLElement)
-                .offsetHeight < (this.dlg as HTMLElement).offsetHeight) {
+                .offsetHeight < (this.dlg as HTMLElement).offsetHeight && !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
             resetDialogAppend((this.parent as IGrid), this.dialogObj);
         }
         if (this.parent.enableRtl) {

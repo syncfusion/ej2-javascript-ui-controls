@@ -128,7 +128,7 @@ export class Virtualization {
         this.rowItemCount *
         (Math.round(parseFloat(formatUnit(this.largeIconInstance.element.clientHeight)) / this.itemList[0].offsetHeight));
         // If the calculated item count is greater than the data source length, set the item count to the data source length
-        if (itemCount > dataSourceLength) {
+        if (itemCount > dataSourceLength || itemCount === 0) {
             itemCount = dataSourceLength;
         }
         return itemCount;

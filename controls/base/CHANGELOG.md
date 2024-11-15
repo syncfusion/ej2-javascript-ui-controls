@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 27.1.58 (2024-11-05)
+## 27.1.55 (2024-10-22)
 
 ### Common
 
@@ -14,12 +14,6 @@
 
 ### Common
 
-#### Bug Fixes
-
-- `#I642700` - The issue with "the `webpack external` files missing from CDN and NPM packages" has been resolved.
-
-### Common
-
 #### New Features
 
 - Provided support for handling license key validation in CI services.
@@ -27,6 +21,7 @@
 #### Bug Fixes
 
 - `#I617320` - Resolved an issue with touch swipe functionality in iOS `Capacitor` applications.
+- `#I642700` - The issue with "the `webpack external` files missing from CDN and NPM packages" has been resolved.
 
 ## 27.1.52 (2024-10-08)
 

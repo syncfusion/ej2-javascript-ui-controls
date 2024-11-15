@@ -447,3 +447,35 @@ describe('Coverage Improvemnet - Infinite Scroll  => ', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-920590- Paste action does not working template column => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                selectionSettings: { cellSelectionMode: 'Box', type: 'Multiple', mode: 'Cell' },
+                enableAutoFill: true,
+                editSettings: {allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Batch'},
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150, template: '<div>${CustomerID}</div>' },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                ]
+            }, done);
+    });
+
+    it('Paste the data', (done: Function) => {
+        (gridObj as any).clipboardModule.paste('CustomTemplate', 2, 1);
+        expect((gridObj as any).element.querySelectorAll('.e-row')[2].cells[1].innerText).toBe('CustomTemplate');
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

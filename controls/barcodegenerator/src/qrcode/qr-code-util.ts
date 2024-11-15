@@ -199,12 +199,15 @@ export class QRCode {
             let x: number = (actualWidth >= size) ? (actualWidth - size) / 2 : 0;
             let y: number = (actualHeight >= size) ? (actualHeight - size) / 2 : 0;
             y += margin.top; x += margin.left;
-
-
-            const textBounds: BaseAttributes = this.drawDisplayText(
-                canvas as HTMLCanvasElement, x, y, size,
-                actualHeight, displayText, char, margin, foreColor);
-            actualHeight -= (textBounds.height);
+            let textBounds: BaseAttributes;
+            //Bug 917781: QR code text size is occupying space even if we set text visibility to false.
+            //Added condition to check the visibility of the text.
+            if (char && displayText.visibility) {
+                textBounds = this.drawDisplayText(
+                    canvas as HTMLCanvasElement, x, y, size,
+                    actualHeight, displayText, char, margin, foreColor);
+                actualHeight -= (textBounds.height);
+            }
             if (displayText.margin.bottom > 0) {
                 if (displayText.position === 'Top') {
                     y += (displayText.margin.bottom);

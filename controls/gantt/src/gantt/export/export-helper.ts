@@ -804,8 +804,8 @@ export class ExportHelper {
         } else {
             padding = this.parent.rowHeight / 2;
         }
-        cell.style.padding.top = padding - style.fontSize;
-        cell.style.padding.bottom = padding - style.fontSize;
+        cell.style.padding.top = (padding - style.fontSize > 0) ? padding - style.fontSize : padding;
+        cell.style.padding.bottom = (padding - style.fontSize > 0) ? padding - style.fontSize : 0;
         cell.style.padding.left = 10;
         cell.style.padding.right = 10;
         if (style.padding) {

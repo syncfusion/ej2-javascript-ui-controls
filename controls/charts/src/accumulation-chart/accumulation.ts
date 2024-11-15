@@ -1,7 +1,7 @@
 /**
  * AccumulationChart file
  */
-import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged, animationMode } from '@syncfusion/ej2-base';
+import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged, animationMode, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';
 import { remove, extend, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { AccumulationChartModel } from './accumulation-model';
@@ -335,6 +335,15 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     @Property('None')
     public highlightPattern: SelectionPattern;
+
+    /**
+     * Specifies whether to display or remove the untrusted HTML values in the Accumulation Chart component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * If set to true, enables the border in pie and accumulation charts when the mouse moves over a data point.
@@ -2377,6 +2386,20 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     public getPersistData(): string {
         return '';
+    }
+
+    /**
+     * Method to sanitize any potentially untrusted strings and scripts before rendering them.
+     *
+     * @param {string} value - Specifies the html value to sanitize
+     * @returns {string} Returns the sanitized html string
+     * @private
+     */
+    public sanitize(value: string): string {
+        if (this.enableHtmlSanitizer) {
+            return SanitizeHtmlHelper.sanitize(value);
+        }
+        return value;
     }
     /**
      * Called internally if any of the property value changed.

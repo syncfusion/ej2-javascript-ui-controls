@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I647287` - An issue where an Appointments are rendered in the incorrect time slots when the time zone is set to MET has been resolved.
+
 ## 27.1.58 (2024-11-05)
 
 ### Schedule

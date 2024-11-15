@@ -20,6 +20,7 @@ export class Selection {
     private isInteracted: boolean;
     private prevRowIndex: number;
     private selectedClass: HTMLElement;
+    private isFromChart: boolean = false;
     private multipleIndexes: number[] = [];
     public selectedRowIndexes: number[] = [];
     public enableSelectMultiTouch: boolean = false;
@@ -246,7 +247,10 @@ export class Selection {
         if (index === -1 || (isNullOrUndefined(selectedRow) && !this.parent.enableVirtualization) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
-        if (this.parent.showActiveElement && !isPreventFocus) {
+        if (this.parent.showActiveElement && !isNullOrUndefined(isPreventFocus) && !isPreventFocus || this.isFromChart) {
+            if (this.isFromChart) {
+                this.isFromChart = false;
+            }
             this.parent.treeGrid.grid.selectionModule.preventFocus = true;
         } else {
             this.parent.treeGrid.grid.selectionModule.preventFocus = false;
@@ -371,6 +375,7 @@ export class Selection {
                 }
                 if (!this.parent.allowTaskbarDragAndDrop || (this.parent.allowTaskbarDragAndDrop && (this.parent.rowDragAndDropModule &&
                     !this.parent.rowDragAndDropModule['draggedRecord']))) {
+                    this.isFromChart = true;
                     this.selectRow(rIndex, isToggle);
                 }
             } else {

@@ -855,6 +855,9 @@ export class PasteCleanup {
         const tableElement : NodeListOf<HTMLElement> = element.querySelectorAll('table');
         for (let i: number = 0; i < tableElement.length; i++) {
             const isMSTeamsTable: boolean = tableElement[i as number].parentElement.nodeName === 'FIGURE';
+            if (tableElement[i as number].classList.length > 0 && tableElement[i as number].classList.contains('e-rte-custom-table')) {
+                continue; // Skip the custom table class
+            }
             if (this.parent.pasteCleanupSettings.keepFormat && source && !isMSTeamsTable) {
                 tableElement[i as number].classList.add('e-rte-paste-' + source + '-table');
             } else if (!tableElement[i as number].classList.contains('e-rte-table')) {

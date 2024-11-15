@@ -129,7 +129,7 @@ export class Clipboard implements IAction {
                 }
                 col = grid.getColumnByIndex(cIdx);
                 value = col.getParser() ? col.getParser()(cols[parseInt(c.toString(), 10)]) : cols[parseInt(c.toString(), 10)];
-                if (col.allowEditing && !col.isPrimaryKey && !col.template) {
+                if (col.allowEditing && !col.isPrimaryKey) {
                     const args: BeforePasteEventArgs = {
                         column: col,
                         data: value,

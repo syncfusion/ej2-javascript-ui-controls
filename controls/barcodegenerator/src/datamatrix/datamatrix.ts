@@ -197,6 +197,8 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
 
 
     private initialize(): void {
+        //Task 913519: Barcode visibility issue and Dependabot issues
+        this.element.style.display = 'block';
         //Initialize the width of the datamatrix generator
         this.element.style.width = this.getElementSize(this.width);
         //Initialize the hieght of the datamatrix generator

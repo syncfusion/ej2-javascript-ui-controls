@@ -301,7 +301,8 @@ export class Marker {
                     && this.maps.mapScaleValue <= 1) {
                     this.maps.tileZoomLevel = this.maps.mapScaleValue === 0 ? (this.maps.isZoomByPosition ? this.maps.tileZoomLevel : 1)
                         : this.maps.mapScaleValue;
-                    if (this.maps.mapScaleValue === 1 && this.maps.markerZoomFactor === 1) {
+                    if (this.maps.mapScaleValue === 1 && this.maps.markerZoomFactor === 1 &&
+                        !isNullOrUndefined(this.maps.tileTranslatePoint)) {
                         this.maps.tileTranslatePoint.x = 0;
                         this.maps.tileTranslatePoint.y = 0;
                     }

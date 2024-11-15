@@ -3437,6 +3437,9 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'filterSettings':
+                if (isNullOrUndefined(newProp.filterSettings)) {
+                    this.filterSettings.columns = [];
+                }
                 this.treeGrid.filterSettings = getActualProperties(this.filterSettings) as TreeGridFilterSettingModel;
                 this.treeGrid.dataBind();
                 break;

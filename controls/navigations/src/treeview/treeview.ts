@@ -1773,7 +1773,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.showCheckBox) {
             const checkboxEle: Element = createCheckBox(this.createElement, true, { cssClass: this.touchClass });
             checkboxEle.classList.add(CHECKBOXWRAP);
-            const icon: Element = select('div.' + ICON, e.item);
+            const icon: Element = select('div.' + EXPANDABLE + ', div.' + COLLAPSIBLE, e.item);
             const id: string = e.item.getAttribute('data-uid');
             e.item.childNodes[0].insertBefore(checkboxEle, e.item.childNodes[0].childNodes[isNOU(icon) ? 0 : 1]);
             const checkValue: Object = getValue(e.fields.isChecked, e.curData);
@@ -2010,7 +2010,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 count = childItems.length;
             }
-            if (this.autoCheck && this.showCheckBox) {
+            if (this.autoCheck && this.showCheckBox && !(this.fields.dataSource instanceof DataManager)) {
                 const selectedChildNodeDetails: { [key: string]: object }[][] = this.getSelectedChildNodeDetails(dataUid);
                 matchedChildNodes = selectedChildNodeDetails;
                 oldChildCount = <{ [key: string]: Object }[]> new DataManager(this.checkActionNodes)
@@ -4736,7 +4736,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (isNOU(dropIcon)) {
                 ListBase.generateIcon(this.createElement, dropLi as HTMLElement, EXPANDABLE, this.listBaseOption);
             }
-            const icon: Element = select('div.' + ICON, dropLi);
+            const icon: Element = select('div.' + EXPANDABLE + ', div.' + COLLAPSIBLE, dropLi);
             if (icon) {
                 icon.classList.add('e-icon-expandable');
             }
@@ -4758,7 +4758,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (isNOU(dropIcon)) {
                 ListBase.generateIcon(this.createElement, dropLi as HTMLElement, COLLAPSIBLE, this.listBaseOption);
             }
-            let icon: Element = select('div.' + ICON, dropLi);
+            let icon: Element = select('div.' + EXPANDABLE + ', div.' + COLLAPSIBLE, dropLi);
             if (icon) {
                 removeClass([icon], EXPANDABLE);
             } else {

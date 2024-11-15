@@ -952,7 +952,7 @@ export class Drawing {
             (uniqueObject.shapeAnnotationType === 'SignatureImage' &&
                 uniqueObject.propName !== 'formFields') ||
             (uniqueObject.shapeAnnotationType === 'SignatureText' &&
-                uniqueObject.propName !== 'formFields')
+                uniqueObject.propName !== 'formFields') || (isNullOrUndefined(parentObject) && uniqueObject.id === 'diagram_helper')
         );
     }
 

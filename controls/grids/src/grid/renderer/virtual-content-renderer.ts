@@ -218,6 +218,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.editSettings.showAddNewRow) {
             this.parent.closeEdit();
         }
+        this.parent.notify(events.renderResponsiveColumnChooserDiv, { action: 'clear'});
         if (!(!this.parent.isInitialLoad && this.parent.enablePersistence)) {
             this.parent.notify(viewInfo.event, {
                 requestType: 'virtualscroll', virtualInfo: viewInfo,
@@ -578,7 +579,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setVirtualHeight(height?: number): void {
         const width: string = this.parent.enableColumnVirtualization ?
-            this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
+            this.getColumnOffset(this.parent.getVisibleColumns().length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
         let virtualHeight: number = (this.offsets[isGroupAdaptive(this.parent) && this.count !== 0 ? this.getGroupedTotalBlocks() :
             this.getTotalBlocks()]);
         if (!this.parent.enableVirtualization && this.parent.enableColumnVirtualization) {
@@ -1565,7 +1566,9 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
             idx = gObj.getNormalizedColumnIndex(column.uid);
             displayVal = column.visible ? '' : 'none';
             const colGrp: HTMLCollection = this.getColGroup().children;
-            setStyleAttribute(<HTMLElement>colGrp[parseInt(idx.toString(), 10)], { 'display': displayVal });
+            if (gObj.getColumnByField(column.field)) {
+                setStyleAttribute(<HTMLElement>colGrp[parseInt(idx.toString(), 10)], { 'display': displayVal });
+            }
             if (gObj.enableColumnVirtualization && !gObj.groupSettings.columns.length) {
                 let tablewidth: number;
                 if (column.visible) {

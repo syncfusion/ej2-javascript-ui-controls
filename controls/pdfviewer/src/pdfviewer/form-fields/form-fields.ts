@@ -708,11 +708,19 @@ export class FormFields {
             }
         }
         const formFieldCollection: FormFieldModel = {
-            name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly, isRequired: formField.IsRequired, isSelected: type === 'CheckBox' ? false : formField.Selected,
-            isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ? formField.SelectedValue : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : '', pageIndex: formField.PageIndex, pageNumber: formField.PageIndex + 1, isMultiline: formField.isMultiline ? formField.isMultiline : formField.Multiline, insertSpaces: formField.insertSpaces ? formField.insertSpaces : formField.InsertSpaces, isTransparent: formField.isTransparent ? formField.isTransparent : formField.IsTransparent, rotateAngle: formField.rotateAngle ? formField.rotateAngle : formField.RotationAngle,
+            name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly,
+            isRequired: formField.IsRequired, isSelected: formField.Selected,
+            isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ?
+                formField.SelectedValue : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : '',
+            pageIndex: formField.PageIndex, pageNumber: formField.PageIndex + 1, isMultiline: formField.isMultiline ?
+                formField.isMultiline : formField.Multiline, insertSpaces: formField.insertSpaces ?
+                formField.insertSpaces : formField.InsertSpaces, isTransparent: formField.isTransparent ? formField.isTransparent :
+                formField.IsTransparent, rotateAngle: formField.rotateAngle ? formField.rotateAngle : formField.RotationAngle,
             selectedIndex: formField.selectedIndex ? formField.selectedIndex : formField.SelectedList,
             options: formField.options ? formField.options : formField.TextList ? formField.TextList : [], bounds: bounds,
-            signatureType: formField.signatureType ? formField.signatureType : '', zIndex: formField.zIndex, tooltip: formField.tooltip ? formField.tooltip : formField.ToolTip ? formField.ToolTip : '', signatureIndicatorSettings: formField.signatureIndicatorSettings ? formField.signatureIndicatorSettings : ''
+            signatureType: formField.signatureType ? formField.signatureType : '', zIndex: formField.zIndex, tooltip: formField.tooltip ?
+                formField.tooltip : formField.ToolTip ? formField.ToolTip : '', signatureIndicatorSettings: formField.signatureIndicatorSettings ?
+                formField.signatureIndicatorSettings : ''
         };
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.
             findIndex((el: FormFieldModel) => el.id === formFieldCollection.id)] = formFieldCollection;
@@ -849,8 +857,10 @@ export class FormFields {
                     } else {
                         delete (this.pdfViewerBase.nonFillableFields[currentData.GroupName]);
                     }
-                    if (currentData.CheckboxIndex && currentData.Selected) {
-                        fieldDatas = {isSelected: currentData.CheckboxIndex, isReadOnly: currentData.IsReadonly,
+                    const currentCheckBoxIndex: string = currentData.CheckBoxIndex ? currentData.CheckBoxIndex :
+                        currentData.CheckboxIndex ? currentData.CheckboxIndex : null;
+                    if (currentCheckBoxIndex && currentData.Selected) {
+                        fieldDatas = {isSelected: currentCheckBoxIndex, isReadOnly: currentData.IsReadonly,
                             fieldValue: !isNullOrUndefined(currentData.Value) ? currentData.Value : ''};
                         datas[currentData.GroupName] = fieldDatas;
                     } else if (datas[currentData.GroupName] === undefined || datas[currentData.GroupName] === null) {
@@ -1531,29 +1541,32 @@ export class FormFields {
                             currentData.Multiline = target.multiline;
                         }
                     } else if (target.type === 'radio') {
-                        const targetRadioButton : any = target.id;
-                        const filterRadioButtonSameName : any = FormFieldsData.filter((sameNameRadioButtonField: any) => (sameNameRadioButtonField.GroupName === target.name) && sameNameRadioButtonField.Name === 'RadioButton');
-                        for (let l: number = 0; l < filterRadioButtonSameName.length; l++) {
-                            const currentType: any = filterRadioButtonSameName[parseInt(l.toString(), 10)];
-                            if (currentType.uniqueID !== targetRadioButton) {
-                                currentType.Selected = false;
-                            }
-                            const currentTarget: any = document.getElementById(currentType.uniqueID);
-                            if (currentTarget) {
-                                if (targetRadioButton !== currentTarget.id) {
-                                    currentTarget.Selected = false;
+                        if (currentData.uniqueID === target.id) {
+                            const targetRadioButton: any = target.id;
+                            const filterRadioButtonSameName: any = FormFieldsData.filter(
+                                (sameNameRadioButtonField: any) => (sameNameRadioButtonField.GroupName === target.name) && sameNameRadioButtonField.Name === 'RadioButton');
+                            for (let l: number = 0; l < filterRadioButtonSameName.length; l++) {
+                                const currentType: any = filterRadioButtonSameName[parseInt(l.toString(), 10)];
+                                if (currentType.uniqueID !== targetRadioButton) {
+                                    currentType.Selected = false;
+                                }
+                                const currentTarget: any = document.getElementById(currentType.uniqueID);
+                                if (currentTarget) {
+                                    if (targetRadioButton !== currentTarget.id) {
+                                        currentTarget.Selected = false;
+                                    }
                                 }
                             }
-                        }
-                        if (currentData.Value === '' || currentData.Value !== target.value) {
-                            currentData.Value = target.value;
-                        }
-                        if (target.value === currentData.Value || target.id === currentData.uniqueID) {
-                            currentData.Selected = true;
-                            break;
-                        }
-                        else {
-                            currentData.Selected = false;
+                            if (currentData.Value === '' || currentData.Value !== target.value) {
+                                currentData.Value = target.value;
+                            }
+                            if (target.value === currentData.Value || target.id === currentData.uniqueID) {
+                                currentData.Selected = true;
+                                break;
+                            }
+                            else {
+                                currentData.Selected = false;
+                            }
                         }
                     } else if (target.type === 'checkbox') {
                         const targetCheckBox : any = target.id;

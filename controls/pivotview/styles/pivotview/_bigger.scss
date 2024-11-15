@@ -247,6 +247,7 @@
 
     /* stylelint-disable */
     .e-grid .e-rowsheader {
+      line-height: initial !important;
       padding-left: 8px !important;
       @if ($skin-name == 'tailwind') {
         padding-left: 16px !important;

@@ -2392,26 +2392,24 @@ export class DiagramEventHandler {
 
     private updateContainerBounds(isAfterMouseUp?: boolean): boolean {
         let isGroupAction: boolean = false;
-        if (this.diagram.selectedObject.helperObject && this.diagram.selectedObject.actualObject) {
-            const obj: any = this.diagram.selectedObject.actualObject;
-            const nodes: NodeModel[] = this.diagram.selectedObject.actualObject instanceof Selector ? obj.nodes : [obj];
-            for (let i: number = 0; i < nodes.length; i++) {
-                const node: Node = nodes[parseInt(i.toString(), 10)] as Node;
-                const boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
-                const parentNode: Node = this.diagram.nameTable[node.parentId];
+        // Reverting Pull Request 1465
+        if (this.diagram.selectedObject.helperObject && this.diagram.selectedObject.actualObject instanceof Node) {
 
-                if (isAfterMouseUp) {
-                    removeChildInContainer(this.diagram, node, this.currentPosition, boundsUpdate);
-                } else {
-                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                        this.diagram.updateDiagramObject(node);
-                    }
-                    isGroupAction = updateCanvasBounds(this.diagram, node, this.currentPosition, boundsUpdate);
-                    this.diagram.updateSelector();
-                    if (node.isLane || node.isPhase) {
-                        this.diagram.clearSelection();
-                        this.commandHandler.selectObjects([node]);
-                    }
+            const boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
+            const obj: NodeModel = this.diagram.selectedObject.actualObject;
+            const parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
+
+            if (isAfterMouseUp) {
+                removeChildInContainer(this.diagram, obj, this.currentPosition, boundsUpdate);
+            } else {
+                if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                    this.diagram.updateDiagramObject(obj);
+                }
+                isGroupAction = updateCanvasBounds(this.diagram, obj, this.currentPosition, boundsUpdate);
+                this.diagram.updateSelector();
+                if ((obj as Node).isLane || (obj as Node).isPhase) {
+                    this.diagram.clearSelection();
+                    this.commandHandler.selectObjects([obj]);
                 }
             }
         }
@@ -2480,7 +2478,8 @@ export class DiagramEventHandler {
                                     (obj as Node).height = helperObject.height;
                                 }
                                 (obj as Node).rotateAngle = helperObject.rotateAngle;
-                            } else if (this.diagram.selectedItems.nodes.length > 1) {
+                            } else if (this.diagram.selectedItems.nodes.length > 1
+                                && !(this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))) {
                                 // Multi selected node move with helper
                                 const offsetX: number = (helperObject.offsetX - this.diagram.selectedItems.offsetX);
                                 const offsetY: number = (helperObject.offsetY - this.diagram.selectedItems.offsetY);
@@ -2573,41 +2572,6 @@ export class DiagramEventHandler {
                 }
                 updateConnectorsProperties(connectors, this.diagram);
                 history.hasStack = hasGroup;
-            }
-            else if (obj instanceof Selector) {
-                const offsetX: number = (helperObject.offsetX - (obj as Selector).offsetX);
-                const offsetY: number = (helperObject.offsetY - (obj as Selector).offsetY);
-                const rotateAngle: number = (helperObject.rotateAngle - (obj as Selector).rotateAngle);
-                const width: number = (helperObject.width - (obj as Selector).width);
-                const height: number = (helperObject.height - (obj as Selector).height);
-                for (let i: number = 0; i < (obj as Selector).nodes.length; i++) {
-                    const node: Node = (obj as Selector).nodes[parseInt(i.toString(), 10)] as Node;
-                    let parentNode: NodeModel = this.diagram.nameTable[node.parentId];
-                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                        node.offsetX += offsetX;
-                        node.offsetY += offsetY;
-                        if (node && node.shape && node.shape.type !== 'UmlClassifier') {
-                            node.width += width;
-                            node.height += height;
-                        }
-                        node.rotateAngle += rotateAngle;
-                    }
-                    parentNode = checkParentAsContainer(this.diagram, node) ? this.diagram.nameTable[node.parentId] :
-                        (this.diagram.nameTable[node.parentId] || node);
-                    if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
-                        parentNode.wrapper.maxWidth = parentNode.maxWidth = parentNode.wrapper.actualSize.width;
-                        parentNode.wrapper.maxHeight = parentNode.maxHeight = parentNode.wrapper.actualSize.height;
-                        isChangeProperties = true;
-                    }
-                    if (checkParentAsContainer(this.diagram, node, true) && parentNode && parentNode.container.type === 'Canvas') {
-                        checkChildNodeInContainer(this.diagram, node);
-                    }
-                    if (isChangeProperties) {
-                        parentNode.maxWidth = parentNode.wrapper.maxWidth = undefined;
-                        parentNode.maxHeight = parentNode.wrapper.maxHeight = undefined;
-                    }
-                    updateConnectorsProperties(connectors, this.diagram);
-                }
             }
         }
         if (obj && ((obj as SwimLane).isPhase || (obj as SwimLane).isLane ||

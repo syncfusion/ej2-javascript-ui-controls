@@ -12990,3 +12990,96 @@ describe('Automation break date change', () => {
         }
     });
 });
+describe('Expand collapse not working properly after adding', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: breakIssue,
+            height: '450px',
+            allowSelection: true,
+            highlightWeekends: true,
+            allowUnscheduledTasks: true,
+            enableContextMenu: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+                allowNextRowEdit: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomToFit', 'Indent', 'Outdent'],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                resourceInfo: 'resources',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate',
+                notes: 'info',
+                indicators: 'Indicators'
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'ID', textAlign: 'Left' },
+                { field: 'TaskName', headerText: 'Name' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Predecessor', headerText: 'Dependency' },
+                { field: 'Progress', headerText: 'Progress' },
+                { field: 'BaselineStartDate', headerText: 'Baseline Start Date' },
+                { field: 'BaselineEndDate', headerText: 'Baseline End Date' },
+                { field: 'resources', headerText: 'Resources' },
+                { field: 'info', headerText: 'Notes' },
+                { field: 'amount', headerText: 'Amount' }
+            ],
+            renderBaseline: true,
+            labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            splitterSettings: {
+                position: "53%"
+            },
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('07/06/2019'),
+            resourceNameMapping: 'resourceName',
+            resourceIDMapping: 'resourceId',
+            resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer' },
+                { resourceId: 2, resourceName: 'Rose Fuller' },
+                { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                { resourceId: 4, resourceName: 'Fuller King' },
+                { resourceId: 5, resourceName: 'Davolio Fuller' },
+                { resourceId: 6, resourceName: 'Van Jack' },
+                { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                { resourceId: 8, resourceName: 'Jack Davolio' },
+                { resourceId: 9, resourceName: 'Tamer Vinet' },
+                { resourceId: 10, resourceName: 'Vinet Fuller' },
+                { resourceId: 11, resourceName: 'Bergs Anton' },
+                { resourceId: 12, resourceName: 'Construction Supervisor' }
+            ]
+        }, done);
+    });
+    beforeEach((done: Function) => {
+        ganttObj.openAddDialog();
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        setTimeout(done, 500);
+    });
+    it('Collapsing record', () => {
+        ganttObj.collapseAll()
+        expect(ganttObj.element.querySelectorAll('.e-childrow-hidden').length > 0).toBe(true)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

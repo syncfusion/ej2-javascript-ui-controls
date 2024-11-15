@@ -276,11 +276,9 @@
     }
 
     .e-rowsheader .e-sortfilterdiv {
-      margin: $pivotgrid-vsort-row-margin !important;
-    }
-
-    .e-rowsheader .e-sortfilterdiv.e-value-sort-align {
-      margin: $pivotgrid-vsort-row-parent-margin !important;
+      line-height: initial !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
     .e-pivotchart > svg, .e-pivotchart-inner > svg {
@@ -318,6 +316,7 @@
     }
 
     .e-grid .e-rowsheader {
+      line-height: initial !important;
       padding-left: 8px;
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -1112,6 +1111,9 @@
             }
 
             .e-numeric {
+              @if ($skin-name != 'fluent2') {
+                vertical-align: top;
+              }
               margin: $pivotpager-numeric-box-margin;
 
               .e-pivot-pager-row-dropdown,
@@ -1125,8 +1127,9 @@
 
           .e-pivot-both-pager-settings {
             .e-numeric {
-              margin: $pivotpager-numeric-box-margin;
-              vertical-align: top;
+              @if ($skin-name == 'fluent2') {
+                vertical-align: top;
+              }
             }
           }
         }

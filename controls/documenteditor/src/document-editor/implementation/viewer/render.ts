@@ -3137,7 +3137,7 @@ private calculatePathBounds(data: string): Rect {
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
-            this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
+            this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), Math.ceil(this.getScaledValue(width) + 0.5), Math.ceil(this.getScaledValue(height) + 0.5));
             this.pageContext.closePath();
         }
     }

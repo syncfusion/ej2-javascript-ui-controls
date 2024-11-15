@@ -516,7 +516,7 @@ export class YearEvent extends TimelineEvent {
                 if (eventObj[this.fields.isAllDay] && end === eventObj[this.fields.endTime].getTime() || isSpanned.isRight) {
                     end = util.addDays(new Date(end), -1).getTime();
                 }
-                isSpanned.count = Math.ceil((end - start) / util.MS_PER_DAY) + 1;
+                isSpanned.count = Math.round((end - start) / util.MS_PER_DAY) + 1;
             }
         }
         eventData.isSpanned = isSpanned;

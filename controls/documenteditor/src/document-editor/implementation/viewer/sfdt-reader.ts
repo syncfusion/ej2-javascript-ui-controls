@@ -1417,13 +1417,8 @@ export class SfdtReader {
                         image.element.crossOrigin = 'Anonymous';
                         this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
                             this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
+                            image.element.src = imageUrlString;
                         });
-                        const url = new URL(imgStr);
-                        if (url.search.length > 0) {
-                            imgStr += `&t=${new Date().getTime()}`;
-                        } else {
-                            imgStr += `?t=${new Date().getTime()}`;
-                        }
                     }
                     image.element.src = imgStr;
                 }       

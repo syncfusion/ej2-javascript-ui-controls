@@ -727,6 +727,10 @@
     & .e-row-header .e-table .e-header-cell {
       padding-bottom: 2px;
       vertical-align: bottom;
+
+      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        padding-top: 0;
+      }
     }
 
     & .e-column-header .e-table .e-header-cell {

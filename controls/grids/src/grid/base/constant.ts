@@ -578,3 +578,5 @@ export const renderResponsiveColumnChooserDiv: string = 'render-Responsive-Colum
 export const showAddNewRowFocus: string = 'show-Add-New-Row-Focus';
 /** @hidden */
 export const infiniteScrollComplete: string = 'infinitescroll-complete';
+/** @hidden */
+export const lastRowCellBorderUpdated: string = 'last-rowcell-border-updated';

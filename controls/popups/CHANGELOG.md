@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I646678` - Fixed an issue where the dialog would not close when the Escape key was pressed.
+
+- `#FB60123` - Fixed an issue where dynamically changing the dialog target caused the dialog element to remain stuck in its previous DOM position.
+
 ## 27.1.58 (2024-11-05)
 
 ### Dialog

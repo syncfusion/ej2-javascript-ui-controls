@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-maps",
-	"version": "16.42.7",
+	"version": "27.1.56",
 	"description": "The Maps component is used to visualize the geographical data and represent the statistical data of a particular geographical area on earth with user interactivity, and provides various customizing options",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -29,7 +29,7 @@
 		"canteen": "^1.0.5",
 		"jasmine-ajax": "^3.3.1",
 		"jasmine-core": "^2.6.1",
-		 "karma": "6.4.2",
+		"karma": "6.4.2",
 		"karma-chrome-launcher": "^2.2.0",
 		"karma-generic-preprocessor": "^1.1.0",
 		"karma-htmlfile-reporter": "^0.3.5",

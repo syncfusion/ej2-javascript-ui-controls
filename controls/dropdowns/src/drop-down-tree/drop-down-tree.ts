@@ -1750,6 +1750,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                         this.checkAllParent.focus();
                     }
                     break;
+                case 'tab':
+                    if (!this.isPopupOpen && this.inputFocus) {
+                        this.onFocusOut();
+                    }
+                    break;
                 }
             }
         });

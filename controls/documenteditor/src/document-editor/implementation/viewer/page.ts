@@ -1391,7 +1391,11 @@ export class ParagraphWidget extends BlockWidget {
         let element: ElementBox = (this.childWidgets[0] as LineWidget).children[0];
         do {
             if (element instanceof TextElementBox && element.text !== '') {
-                width += this.bodyWidget.page.documentHelper.textHelper.getWidth(element.text, element.characterFormat, element.scriptType);
+                if (element.isWidthUpdated && element.text[element.text.length - 1] !== ' ') {
+                    width += element.trimEndWidth;
+                } else {
+                    width += this.bodyWidget.page.documentHelper.textHelper.getWidth(element.text, element.characterFormat, element.scriptType);
+                }
             } else if (element instanceof FieldElementBox && element.fieldType === 0) {
                 let fieldBegin: FieldElementBox = element as FieldElementBox;
                 if (fieldBegin.fieldEnd != null) {

@@ -367,7 +367,7 @@ export class DataLabel {
                 styles: 'position: absolute;background-color:' + data.color + ';' +
                     getFontStyle(dataLabel.font, this.chart.themeStyle.datalabelFont) + ';border:' + data.border.width + 'px solid ' + data.border.color + ';'
             }),
-            point.index, data.template, this.chart, point, series, this.chart.element.id + '_DataLabel', labelIndex);
+            point.index, (this.chart.enableHtmlSanitizer ? this.chart.sanitize(data.template as string) : data.template), this.chart, point, series, this.chart.element.id + '_DataLabel', labelIndex);
         this.calculateTemplateLabelSize(parentElement, childElement, point, series, dataLabel, labelIndex, clip, redraw);
     }
     public calculateTemplateLabelSize(

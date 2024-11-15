@@ -299,6 +299,7 @@ export class Tooltip extends BaseTooltip {
     }
 
     private getTemplateText(data: any): Points | Points[] {
+        this.template = this.chart.enableHtmlSanitizer ? this.chart.sanitize(this.template as string) : this.template;
         if (this.template && this.chart.tooltip.shared) {
             const point: Points[] = [];
             for (let i: number = 0; i < data.length; i++) {
@@ -399,7 +400,7 @@ export class Tooltip extends BaseTooltip {
                 argument.headerText = this.findHeader(data);
                 (<PointData[]>this.currentPoints).push(data);
                 if (this.template != null) {
-                    argument.template.push(this.template.toString());
+                    argument.template.push(chart.enableHtmlSanitizer ? chart.sanitize(this.template.toString()) : this.template.toString());
                 }
                 argument.text.push(this.getTooltipText(data));
                 pointXValue = (!chart.requireInvertedAxis) ? chart.mouseX - data.series.clipRect.x : chart.mouseY - data.series.clipRect.y;

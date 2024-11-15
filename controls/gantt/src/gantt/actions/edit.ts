@@ -2573,15 +2573,22 @@ export class Edit {
         }
         const deleteRecordIDs: string[] = [];
         if (deletedRecords.length > 0) {
-            const recordIndex : number = this.parent.flatData.indexOf(deletedRecords[deletedRecords.length - 1]);
-            this.parent.staticSelectedRowIndex = this.parent.selectedRowIndex = recordIndex;
-            const record : IGanttData = this.parent.flatData[this.parent.selectedRowIndex + 1];
+            let recordIndex : number;
+            let record : IGanttData;
             if (this.parent.enableVirtualization) {
+                recordIndex = this.parent.flatData.indexOf(deletedRecords[deletedRecords.length - 1]);
+                this.parent.staticSelectedRowIndex = this.parent.selectedRowIndex = recordIndex;
+                record = this.parent.flatData[this.parent.selectedRowIndex + 1];
                 // perform toolbar CollapseAll later delete action issue handle
                 if (!this.parent.isCollapseAll) {
                     // Random parent record delete action, maintaining proper record selection
                     this.parent.staticSelectedRowIndex = (recordIndex - (deletedRecords.length - 1));
                 }
+            }
+            else {
+                recordIndex = this.parent.currentViewData.indexOf(deletedRecords[deletedRecords.length - 1]);
+                this.parent.staticSelectedRowIndex = this.parent.selectedRowIndex = recordIndex;
+                record = this.parent.currentViewData[this.parent.selectedRowIndex + 1];
             }
             if (!isNullOrUndefined(record)) {
                 this.parent.currentSelection = record;
@@ -2589,7 +2596,8 @@ export class Edit {
             else {
                 const prevRecordIndex: number = this.parent.selectedRowIndex - 1;
                 if (prevRecordIndex >= 0) {
-                    this.parent.currentSelection = this.parent.flatData[prevRecordIndex as number];
+                    this.parent.currentSelection = this.parent.enableVirtualization ?
+                        this.parent.flatData[prevRecordIndex as number] : this.parent.currentViewData[prevRecordIndex as number];
                 }
             }
         }
@@ -3839,6 +3847,11 @@ export class Edit {
             if (row) {
                 const rowIndex: number = Number(row.getAttribute('data-rowindex'));
                 currentViewData[index as number].index = rowIndex;
+                if (currentViewData[index as number].parentItem && currentViewData[index as number].parentItem.taskId) {
+                    const parentRecord: IGanttData = this.parent.getRecordByID(currentViewData[index as number].parentItem.taskId);
+                    currentViewData[index as number].parentItem.index = parentRecord.index;
+                    currentViewData[index as number].parentItem.level = parentRecord.level;
+                }
             }
         }
     }

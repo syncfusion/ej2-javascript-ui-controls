@@ -3,7 +3,7 @@ import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, get
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress, workbookLocale, workbookReadonlyAlert } from './../common/index';
 import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel, isCustomDateTime } from './../index';
 import { updateCell, intToDate, dateToInt, applyCF, ApplyCFArgs, CellUpdateArgs, ConditionalFormat } from './../common/index';
-import { DateFormatCheckArgs, checkDateFormat, parseFormulaArgument } from '../common/index';
+import { DateFormatCheckArgs, checkDateFormat, parseFormulaArgument, wrapEvent, ExtendedWorkbook } from '../common/index';
 import { checkIsNumberAndGetNumber } from '../common/internalization';
 
 /**
@@ -109,7 +109,14 @@ export class WorkbookAutoFill {
         let prevCellData: CellModel; let dateVal: Date; let dateObj: Date;
         const dataSheetIndex: number = isUndefined(options.dataSheetIndex) ? this.parent.activeSheetIndex : options.dataSheetIndex;
         const dataSheet: SheetModel = getSheet(this.parent, dataSheetIndex);
-        const fillSheetIndex: number = isUndefined(options.fillSheetIndex) ? this.parent.activeSheetIndex : options.fillSheetIndex;
+        let fillSheetIndex: number; let activeSheet: boolean;
+        if (isUndefined(options.fillSheetIndex)) {
+            fillSheetIndex = this.parent.activeSheetIndex;
+            activeSheet = true;
+        } else {
+            fillSheetIndex = options.fillSheetIndex;
+            activeSheet = fillSheetIndex === this.parent.activeSheetIndex;
+        }
         const fillSheet: SheetModel = getSheet(this.parent, fillSheetIndex);
         const dminr: number = options.dataRange[0]; const dminc: number = options.dataRange[1]; const dmaxr: number = options.dataRange[2];
         const dmaxc: number = options.dataRange[3];
@@ -117,11 +124,12 @@ export class WorkbookAutoFill {
         const fmaxc: number = options.fillRange[3];
         const isVFill: boolean = ['Down', 'Up'].indexOf(options.direction) > -1;
         const isReverseFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
-        const len: number = isVFill ? dmaxc - dminc : dmaxr - dminr; const withFrmt: boolean = options.fillType === 'FillSeries';
-        let prop: CellUpdateArgs; let cfRefreshAll: boolean;
+        const len: number = isVFill ? dmaxc - dminc : dmaxr - dminr; const fillWithFrmt: boolean = options.fillType === 'FillSeries';
+        let prop: CellUpdateArgs; let cfRefreshAll: boolean; let cancel: boolean;
         const cf: ConditionalFormat[] = dataSheet.conditionalFormats && dataSheet.conditionalFormats.length &&
             [].slice.call(dataSheet.conditionalFormats);
         const cfRule: ConditionalFormatModel[] = [];
+        const applyWrapToOuterCells: (options: CellUpdateArgs) => void = activeSheet && this.applyWrapToOuterCells(fillSheet);
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dminr, dminc, dmaxr, dmaxc, fminr, fminc, fmaxr, fmaxc, i);
             patrnRange = pRanges.patternRange;
@@ -253,7 +261,7 @@ export class WorkbookAutoFill {
                     this.parent.notify(workbookReadonlyAlert, null);
                     return;
                 }
-                if (withFrmt) {
+                if (fillWithFrmt) {
                     Object.assign(cellProps, data[l as number], null, true);
                 } else {
                     cellProps.style = prevCellData.style;
@@ -270,12 +278,23 @@ export class WorkbookAutoFill {
                     delete cellProps.notes;
                 }
                 prop = { cell: cellProps, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
-                    uiRefresh: true, pvtExtend: true, skipFormatCheck: true };
-                updateCell(this.parent, fillSheet, prop);
-                if (cf && !cfRefreshAll) {
-                    cfRefreshAll = prop.isFormulaDependent;
-                    if (!cfRefreshAll) {
-                        updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                    pvtExtend: true, skipFormatCheck: true };
+                if (activeSheet && !isHiddenRow(fillSheet, cellIdx.rowIndex) && !isHiddenCol(fillSheet, cellIdx.colIndex)) {
+                    prop.td = this.parent.getCell(cellIdx.rowIndex, cellIdx.colIndex);
+                    if (prop.td) {
+                        prop.uiRefresh = true;
+                    }
+                }
+                cancel = updateCell(this.parent, fillSheet, prop);
+                if (!cancel) {
+                    if (activeSheet) {
+                        applyWrapToOuterCells(prop);
+                    }
+                    if (cf && !cfRefreshAll) {
+                        cfRefreshAll = prop.isFormulaDependent;
+                        if (!cfRefreshAll) {
+                            updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                        }
                     }
                 }
                 cellProps = {};
@@ -316,12 +335,21 @@ export class WorkbookAutoFill {
         const len: number = isVFill ? dMaxC - dMinC : dMaxR - dMinR;
         const dataSheetIndex: number = isUndefined(options.dataSheetIndex) ? this.parent.activeSheetIndex : options.dataSheetIndex;
         const dataSheet: SheetModel = getSheet(this.parent, dataSheetIndex);
-        const fillSheetIndex: number = isUndefined(options.fillSheetIndex) ? this.parent.activeSheetIndex : options.fillSheetIndex;
+        let fillSheetIndex: number; let activeSheet: boolean;
+        if (isUndefined(options.fillSheetIndex)) {
+            activeSheet = true;
+            fillSheetIndex = this.parent.activeSheetIndex;
+        } else {
+            activeSheet = options.fillSheetIndex === this.parent.activeSheetIndex;
+            fillSheetIndex = options.fillSheetIndex;
+        }
         const fillSheet: SheetModel = getSheet(this.parent, fillSheetIndex);
         const formatOnly: boolean = options.fillType === 'FillFormattingOnly';
         let prevCellData: CellModel; let cfRefreshAll: boolean; let prop: CellUpdateArgs;
         const cf: ConditionalFormat[] = dataSheet.conditionalFormats && dataSheet.conditionalFormats.length &&
             [].slice.call(dataSheet.conditionalFormats);
+        let cancel: boolean;
+        const applyWrapToOuterCells: (options: CellUpdateArgs) => void = activeSheet && this.applyWrapToOuterCells(fillSheet);
         const cfRule: ConditionalFormatModel[] = [];
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dMinR, dMinC, dMaxR, dMaxC, fMinR, fMinC, fMaxR, fMaxC, i);
@@ -357,13 +385,22 @@ export class WorkbookAutoFill {
                     this.parent.notify(workbookReadonlyAlert, null);
                     return;
                 }
-                prop = { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true, uiRefresh: true,
-                    pvtExtend: true };
-                updateCell(this.parent, fillSheet, prop);
-                if (cf && !cfRefreshAll) {
-                    cfRefreshAll = prop.isFormulaDependent;
-                    if (!cfRefreshAll) {
-                        updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                prop = { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
+                    pvtExtend: true, skipFormatCheck: true };
+                if (activeSheet && !isHiddenRow(fillSheet, cellIdx.rowIndex) && !isHiddenCol(fillSheet, cellIdx.colIndex)) {
+                    prop.td = this.parent.getCell(cellIdx.rowIndex, cellIdx.colIndex);
+                    prop.uiRefresh = !!prop.td;
+                }
+                cancel = updateCell(this.parent, fillSheet, prop);
+                if (!cancel) {
+                    if (activeSheet) {
+                        applyWrapToOuterCells(prop);
+                    }
+                    if (cf && !cfRefreshAll) {
+                        cfRefreshAll = prop.isFormulaDependent;
+                        if (!cfRefreshAll) {
+                            updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                        }
                     }
                 }
                 cellProperty = {};
@@ -375,6 +412,29 @@ export class WorkbookAutoFill {
             this.parent.notify(
                 applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true, isEdit: true });
         }
+    }
+
+    private applyWrapToOuterCells(sheet: SheetModel): (options: CellUpdateArgs) => void {
+        let viewTopIdx: number; let viewLeftIdx: number;
+        const frozenRow: number = this.parent.frozenRowCount(sheet);
+        const frozenCol: number = this.parent.frozenColCount(sheet);
+        const viewport: { topIndex: number, bottomIndex: number, leftIndex: number, rightIndex: number } =
+            (this.parent as ExtendedWorkbook).viewport;
+        if (viewport) {
+            viewTopIdx = viewport.topIndex + frozenRow;
+            viewLeftIdx = viewport.leftIndex + frozenCol;
+        }
+        let wrapArgs: { wrap: boolean, sheet: SheetModel, initial: boolean, outsideViewport: boolean, range: number[] };
+        return (options: CellUpdateArgs): void => {
+            if (!options.td && getCell(options.rowIdx, options.colIdx, sheet, false, true).wrap && ((options.rowIdx >= frozenRow &&
+                options.rowIdx < viewTopIdx) || (options.colIdx >= frozenCol && options.colIdx < viewLeftIdx))) {
+                if (!wrapArgs) {
+                    wrapArgs = { range: null, wrap: true, sheet: sheet, initial: true, outsideViewport: true };
+                }
+                wrapArgs.range = [options.rowIdx, options.colIdx, options.rowIdx, options.colIdx];
+                this.parent.notify(wrapEvent, wrapArgs);
+            }
+        };
     }
 
     private updateFillValues(isVFill: boolean, dminr: number, dminc: number, dmaxr: number, dmaxc: number, fminr: number, fminc: number,

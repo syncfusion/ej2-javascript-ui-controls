@@ -97,7 +97,7 @@ export class ParetoSeries extends ColumnBase {
         }
         for (let i: number = 0; i < length; i++) {
             count = count + data[i as number][series.yName];
-            data[i as number][series.yName] = Math.round((count / sum) * 100);
+            data[i as number][series.yName] = Number(((count / sum) * 100).toFixed(2));
         }
         return data;
     }

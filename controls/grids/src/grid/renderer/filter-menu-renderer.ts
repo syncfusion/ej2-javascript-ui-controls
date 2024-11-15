@@ -207,7 +207,8 @@ export class FilterMenuRenderer {
             this.dlgObj.element.style.maxHeight = this.maxHeight;
         }
         this.dlgObj.show();
-        if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight) {
+        if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight &&
+            !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
             resetDialogAppend(this.parent, this.dlgObj);
         }
         const optrInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flm_optrdiv').querySelector('input');

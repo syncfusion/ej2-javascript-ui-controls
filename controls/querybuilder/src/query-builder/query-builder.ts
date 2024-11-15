@@ -1598,7 +1598,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     dropDownObj = getComponent(ruleElemCln[i as number].querySelector('.e-rule-filter input.e-dropdownlist') as HTMLElement, 'dropdownlist');
                     if (dropDownObj && dropDownObj.value) {
                         this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value as string) as ColumnsModel;
-                        validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
+                        validateRule = !isNullOrUndefined(dropDownObj.value) && (this.selectedColumn as ColumnsModel).validation;
                     }
                 }
                 fieldElem = tempElem.querySelector('.e-rule-field input.e-control');
@@ -1655,7 +1655,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             }
                         }
                     }
-                } else if ((dropDownObj && dropDownObj.element && isNullOrUndefined(dropDownObj.index)) ||
+                } else if ((dropDownObj && dropDownObj.element && isNullOrUndefined(dropDownObj.value)) ||
                 (dropDownTreeObj && dropDownTreeObj.element && (isNullOrUndefined(dropDownTreeObj.value) ||
                 dropDownTreeObj.value.length < 1))) {
                     if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {

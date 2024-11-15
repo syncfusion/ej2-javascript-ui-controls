@@ -79,10 +79,12 @@ export class Annotations {
         const bounds: ClientRect = map.svgObject.getBoundingClientRect();
         left = Math.abs(bounds.left - elementRect.left);
         top = Math.abs(bounds.top - elementRect.top);
-        const annotationXValue: number = (annotation.x.indexOf('%') > -1) ? (availSize.width / 100) * parseFloat(annotation.x) :
-            parseFloat(annotation.x);
-        const annotationYValue: number = (annotation.y.indexOf('%') > -1) ? (availSize.height / 100) * parseFloat(annotation.y) :
-            parseFloat(annotation.y);
+        const annotationX: string = !isNullOrUndefined(annotation.x) ? annotation.x : '0%';
+        const annotationY: string = !isNullOrUndefined(annotation.y) ? annotation.y : '0%';
+        const annotationXValue: number = (annotationX.indexOf('%') > -1) ? (availSize.width / 100) * parseFloat(annotationX) :
+            parseFloat(annotationX);
+        const annotationYValue: number = (annotationY.indexOf('%') > -1) ? (availSize.height / 100) * parseFloat(annotationY) :
+            parseFloat(annotationY);
         left = (annotation.horizontalAlignment === 'None') ? (left + annotationXValue) : left;
         top = (annotation.verticalAlignment === 'None') ? (top + annotationYValue) : top;
         switch (annotation.verticalAlignment) {

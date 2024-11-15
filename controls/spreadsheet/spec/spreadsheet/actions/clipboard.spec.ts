@@ -1422,7 +1422,7 @@ describe('Clipboard ->', () => {
                 });
             });
         });
-    describe('EJ2-875893, EJ2-875535', () => {
+    describe('EJ2-875893, EJ2-875535, EJ2-917171', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{
@@ -1485,6 +1485,83 @@ describe('Clipboard ->', () => {
                     expect(td.classList).toContain('e-validation-list');
                     done();
                 }, 5);
+            });
+        });
+        it('Row height increases when a merged cell with wrap text applied is pasted into the Spreadsheet', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setBorder({ border: '3px solid #000' }, 'H2:J2');
+            spreadsheet.merge('H2:J2');
+            helper.edit('H2', 'This is a row with Autofit issue This is a row with Autofit issue This is a row with Autofit issue This is a row with Autofit issue This is a row with Autofit issue');
+            spreadsheet.wrap('H2', true);
+            expect(spreadsheet.sheets[1].rows[1].cells[7].wrap).toBeTruthy();
+            expect(helper.invoke('getRow', [1]).style.height).toBe('22px');
+            expect(spreadsheet.sheets[1].rows[1].height).toBe(22);
+            expect(spreadsheet.sheets[1].rows[6].height).toBeUndefined();
+            helper.invoke('copy', ['H2']).then(() => {
+                helper.invoke('paste', ['H7']);
+                expect(helper.invoke('getRow', [6]).style.height).toBe('22px');
+                expect(spreadsheet.sheets[1].rows[6].height).toBe(22);
+                expect(spreadsheet.sheets[1].rows[6].cells[7].wrap).toBeTruthy();
+                expect(spreadsheet.sheets[1].rows[8].height).toBeUndefined();
+                helper.invoke('paste', ['H9']);
+                expect(helper.invoke('getRow', [8]).style.height).toBe('22px');
+                expect(spreadsheet.sheets[1].rows[8].height).toBe(22);
+                expect(spreadsheet.sheets[1].rows[8].cells[7].wrap).toBeTruthy();
+                done();
+            });
+        });
+    });
+    describe('EJ2-917171 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Cancelling Cut in action begin event', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.actionBegin = (args: any): void => {
+                if (args.action === 'cut') {
+                    args.args.cancel = true;
+                }
+            }
+            helper.edit('A1','Casual Shoes');
+            helper.edit('A2','Sports Shoes');
+            helper.invoke('selectRange', ['A1:A2']);
+            helper.getElement('#' + helper.id + '_cut').click();
+            setTimeout((): void => {
+                helper.invoke('selectRange', ['C1:C2']);
+                helper.invoke('paste');
+                expect(spreadsheet.sheets[0].rows[9]).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[15]).toBeUndefined();
+                done();
+            });
+        });
+    });
+    describe('EJ2-917171 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Cancelling Paste in action begin event.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.actionBegin = (args: any): void => {
+                if (args.action === 'clipboard') {  
+                    args.args.eventArgs.cancel = true;
+                }
+            }
+            helper.edit('A1','Casual Shoes');
+            helper.edit('A2','Sports Shoes');
+            helper.invoke('selectRange', ['A1:A2']);
+            helper.getElement('#' + helper.id + '_cut').click();
+            setTimeout((): void => {
+                helper.invoke('selectRange', ['C1:C2']);
+                helper.invoke('paste');
+                expect(spreadsheet.sheets[0].rows[9]).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[15]).toBeUndefined();
+                done();
             });
         });
     });

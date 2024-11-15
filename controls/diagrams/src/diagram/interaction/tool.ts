@@ -1567,10 +1567,8 @@ export class ResizeTool extends ToolBase {
                 if (!(deltaHeight === 1 && deltaWidth === 1)) {
                     deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
                 }
-            } else if (startPoint !== endPoint) {
-                deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
             } else {
-                deltaHeight = deltaWidth = 0;
+                deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
             }
         }
         const oldValue: SelectorModel = {
@@ -2034,7 +2032,7 @@ export class PolygonDrawingTool extends ToolBase {
                 offsetX: this.currentPosition.x,
                 offsetY: this.currentPosition.y,
                 width: 5, height: 5,
-                style: { strokeColor: 'black', strokeWidth: 1 },
+                // 916722: Apply custom style to polygon shape by removing the default style during polygon drawing.
                 shape: {
                     type: 'Basic',
                     shape: 'Polygon',

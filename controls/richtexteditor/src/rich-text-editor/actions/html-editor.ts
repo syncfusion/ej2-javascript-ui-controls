@@ -147,7 +147,11 @@ export class HtmlEditor {
     private isTableClassAdded(): void  {
         const tableElement : NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('table');
         for (let i: number = 0; i < tableElement.length; i++) {
-            if (!tableElement[i as number].classList.contains('e-rte-table') && !tableElement[i as number].classList.contains('e-rte-paste-table') ){
+            // e-rte-table class is added to the table element for styling.
+            // e-rte-paste-table class is added for pasted table element from MS Word and other sources such as Web will not have any styles.
+            // e-rte-custom-table class is added for custom table element will not have any styles.
+            if (!tableElement[i as number].classList.contains('e-rte-table') && !tableElement[i as number].classList.contains('e-rte-paste-table')
+                && !tableElement[i as number].classList.contains('e-rte-custom-table')){
                 tableElement[i as number].classList.add('e-rte-table');
             }
         }

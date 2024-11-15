@@ -183,6 +183,14 @@ describe('Maps Component testing with its projection types ', () => {
             maps.projectionType = 'Equirectangular';
             maps.refresh();
         });
+        it('Null projection checking with USA map', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(maps.element.id + '_LayerIndex_0_Polygon_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            maps.projectionType = null;
+            maps.refresh();
+        });
     });
 
     describe('Maps layer testing', () => {

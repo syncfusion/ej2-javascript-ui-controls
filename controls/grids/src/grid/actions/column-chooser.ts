@@ -8,7 +8,7 @@ import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
 import { ShowHide } from './show-hide';
 import { Dialog, calculateRelativeBasedPosition, DialogModel } from '@syncfusion/ej2-popups';
-import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses, setChecked, resetDialogAppend } from '../base/util';
+import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses, setChecked, resetDialogAppend, Global, appendChildren, getListHeight, infiniteRemoveElements, infiniteAppendElements } from '../base/util';
 import { ResponsiveDialogAction } from '../base/enum';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
@@ -32,6 +32,8 @@ export class ColumnChooser implements IAction {
     private changedColumns: string[] = [];
     private unchangedColumns: string[] = [];
     private mainDiv: HTMLElement;
+    private infiniteDiv: HTMLElement;
+    private infiniteLoadedElement:  HTMLElement[] = [];
     private innerDiv: HTMLElement;
     private ulElement: HTMLElement;
     private isDlgOpen: boolean = false;
@@ -47,8 +49,16 @@ export class ColumnChooser implements IAction {
     private searchBoxObj: SearchBox;
     private searchOperator: string = 'startswith';
     private targetdlg: Element;
+    private itemsCount: number = 50;
+    private infiniteSkipCount: number = 0;
+    private infiniteColumns: Column[] = [];
+    private infiniteInitialLoad: boolean = false;
+    private prevInfiniteScrollDirection: string = '';
+    private infiniteScrollAppendDiff: number;
     private prevShowedCols: string[] = [];
     private hideDialogFunction: Function = this.hideDialog.bind(this);
+    private infiniteRenderMode: boolean = false;
+
 
     //Module declarations
     /** @hidden */
@@ -68,6 +78,7 @@ export class ColumnChooser implements IAction {
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
+        this.infiniteRenderMode = this.parent.enableColumnVirtualization ? true : false;
         this.addEventListener();
         this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
         this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
@@ -102,6 +113,8 @@ export class ColumnChooser implements IAction {
         if (!gridElement.querySelector( '.' + literals.gridContent) && (!gridElement.querySelector('.' + literals.gridHeader)) || !gridElement) { return; }
         this.removeEventListener();
         this.unWireEvents();
+        this.infiniteLoadedElement = null;
+        this.infiniteDiv = null;
         if (!isNullOrUndefined(this.dlgObj) && this.dlgObj.element && !this.dlgObj.isDestroyed) {
             this.dlgObj.destroy();
         }
@@ -142,8 +155,10 @@ export class ColumnChooser implements IAction {
         this.parent.on(events.resetColumns, this.onResetColumns, this);
         this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
         if (this.parent.enableAdaptiveUI) {
-            this.parent.on(events.renderResponsiveColumnChooserDiv, this.renderResponsiveColumnChooserDiv, this);
             this.parent.on(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction, this);
+        }
+        if (this.infiniteRenderMode || this.parent.enableAdaptiveUI) {
+            this.parent.on(events.renderResponsiveColumnChooserDiv, this.renderResponsiveColumnChooserDiv, this);
         }
     }
 
@@ -161,10 +176,17 @@ export class ColumnChooser implements IAction {
         this.parent.off(events.resetColumns, this.onResetColumns);
         this.parent.removeEventListener(events.dataBound, this.hideDialogFunction);
         this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
+        if (this.infiniteDiv) {
+            EventHandler.remove(this.infiniteDiv, 'scroll', this.infiniteScrollHandler);
+            EventHandler.remove(this.infiniteDiv, 'mouseup', this.infiniteScrollMouseKeyUpHandler);
+            EventHandler.remove(this.infiniteDiv, 'mousedown', this.infiniteScrollMouseKeyDownHandler);
+        }
         if (this.parent.enableAdaptiveUI) {
             this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
-            this.parent.off(events.renderResponsiveColumnChooserDiv, this.renderResponsiveColumnChooserDiv);
             this.parent.off(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction);
+        }
+        if (this.infiniteRenderMode || this.parent.enableAdaptiveUI) {
+            this.parent.off(events.renderResponsiveColumnChooserDiv, this.renderResponsiveColumnChooserDiv);
         }
     }
 
@@ -244,6 +266,9 @@ export class ColumnChooser implements IAction {
                 return;
             }
             if (target) { this.targetdlg = target; }
+            if (this.infiniteRenderMode) {
+                this.dlgObj.show();
+            }
             this.refreshCheckboxState();
             this.dlgObj.dataBind();
             this.dlgObj.element.style.maxHeight = '430px';
@@ -281,7 +306,9 @@ export class ColumnChooser implements IAction {
                 }
             }
             this.removeCancelIcon();
-            this.dlgObj.show();
+            if (!this.infiniteRenderMode) {
+                this.dlgObj.show();
+            }
             if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight &&
                 !this.parent.element.classList.contains('e-drillthrough-grid')) {
                 resetDialogAppend(this.parent, this.dlgObj);
@@ -324,14 +351,19 @@ export class ColumnChooser implements IAction {
         if ((<{ cancel?: boolean }>args).cancel) {
             return;
         }
+        if (this.infiniteRenderMode) {
+            this.dlgObj.show();
+        }
         if (!this.isInitialOpen) {
             this.dlgObj.content = this.renderChooserList();
             this.updateIntermediateBtn();
         } else {
             this.refreshCheckboxState();
         }
-
         this.dlgObj.dataBind();
+        if (this.infiniteRenderMode) {
+            this.refreshCheckboxState();
+        }
         this.dlgObj.position = { X: 'center', Y: 'center' };
         if (isNullOrUndefined(X)) {
             if (this.parent.enableAdaptiveUI) {
@@ -345,7 +377,9 @@ export class ColumnChooser implements IAction {
             this.dlgObj.element.style.left = X + 'px';
         }
         this.dlgObj.beforeOpen = this.customDialogOpen.bind(this);
-        this.dlgObj.show();
+        if (!this.infiniteRenderMode) {
+            this.dlgObj.show();
+        }
         if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight &&
             !this.parent.element.classList.contains('e-drillthrough-grid')) {
             resetDialogAppend(this.parent, this.dlgObj);
@@ -388,7 +422,7 @@ export class ColumnChooser implements IAction {
     }
 
     private getColumns(): Column[] {
-        const columns: Column[] = this.parent.getColumns().filter((column: Column) => (column.type !== 'checkbox'
+        const columns: Column[] = (this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns()).filter((column: Column) => (column.type !== 'checkbox'
          && column.showInColumnChooser === true) || (column.type === 'checkbox' && column.field !== undefined));
         return columns;
     }
@@ -460,7 +494,16 @@ export class ColumnChooser implements IAction {
         searchDiv.appendChild(ccsearchele);
         searchDiv.appendChild(ccsearchicon);
         this.searchBoxObj = new SearchBox(ccsearchele, this.serviceLocator);
-        const innerDivContent: HTMLElement | string[] | string = this.refreshCheckboxList(this.parent.getColumns() as Column[]);
+        let columns: Column[] = this.getColumns();
+        if (this.infiniteRenderMode && !this.isInitialOpen) {
+            columns = this.parent.columns as Column[];
+            for (let i: number = 0; i < columns.length; i++) {
+                if (columns[parseInt(i.toString(), 10)].showInColumnChooser) {
+                    this.infiniteColumns.push(columns[parseInt(i.toString(), 10)] as Column);
+                }
+            }
+        }
+        const innerDivContent: HTMLElement | string[] | string = this.refreshCheckboxList(columns);
         this.innerDiv.appendChild((innerDivContent as Element));
         conDiv.appendChild(this.innerDiv);
         if (this.parent.enableAdaptiveUI) {
@@ -477,11 +520,13 @@ export class ColumnChooser implements IAction {
     private confirmDlgBtnClick(args: Object): void {
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
-        if (this.searchValue && this.filterColumns.length && this.ulElement.querySelector('.e-selectall.e-check')) {
+        const columns: Column[] = this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns();
+        const isCheckALL: Element = (this.infiniteRenderMode ? this.mainDiv : this.ulElement).querySelector('.e-selectall.e-check');
+        if (this.searchValue && this.filterColumns.length && isCheckALL) {
             this.changedColumns = this.filterColumns.map((column: Column) => { return column.uid; });
             this.showColumn = [];
             this.hideColumn = [];
-            this.parent.getColumns().map((column: Column) => {
+            (columns as Column[]).map((column: Column) => {
                 if (this.changedColumns.indexOf(column.uid) !== -1) {
                     this.showColumn.push(column.uid);
                 } else if (column.showInColumnChooser) {
@@ -492,10 +537,11 @@ export class ColumnChooser implements IAction {
             this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
         }
         this.changedColumnState(this.changedColumns);
-        const uncheckedLength: number = this.ulElement.querySelector('.e-uncheck') &&
+        const uncheckedLength: number = this.infiniteRenderMode ? this.infiniteLoadedElement.filter(
+            (arr: HTMLElement) => arr.querySelector('.e-uncheck')).length : this.ulElement.querySelector('.e-uncheck') &&
             this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
-            if (uncheckedLength < this.parent.getColumns().length) {
+            if (uncheckedLength < columns.length) {
                 if (this.hideColumn.length) {
                     this.columnStateChange(this.hideColumn, false);
                 }
@@ -543,25 +589,31 @@ export class ColumnChooser implements IAction {
         this.changedColumns = [];
         this.filterColumns = [];
         this.searchValue = '';
+        if (this.infiniteRenderMode) {
+            const focusListElement: HTMLElement = this.dlgDiv.querySelector('.e-cclist.e-cc-selectall.e-colfocus');
+            if (focusListElement) {
+                focusListElement.classList.remove('e-colfocus');
+            }
+        }
         this.hideDialog();
     }
 
     private changedColumnState(changedColumns: string[]): void {
         for (let index: number = 0; index < changedColumns.length; index++) {
             const colUid: string = changedColumns[parseInt(index.toString(), 10)];
-            const currentCol: Column = this.parent.getColumnByUid(colUid);
-            this.changedStateColumns.push(currentCol);
+            const currentColumn: Column = this.parent.getColumnByUid(colUid, this.infiniteRenderMode);
+            this.changedStateColumns.push(currentColumn);
         }
     }
 
     private columnStateChange(stateColumns: string[], state: boolean): void {
         for (let index: number = 0; index < stateColumns.length; index++) {
             const colUid: string = stateColumns[parseInt(index.toString(), 10)];
-            const currentCol: Column = this.parent.getColumnByUid(colUid);
-            if (currentCol.type !== 'checkbox') {
-                currentCol.visible = state;
+            const currentColumn: Column = this.parent.getColumnByUid(colUid,  this.infiniteRenderMode);
+            if (currentColumn.type !== 'checkbox') {
+                currentColumn.visible = state;
             }
-            this.stateChangeColumns.push(currentCol);
+            this.stateChangeColumns.push(currentColumn);
         }
     }
 
@@ -576,19 +628,19 @@ export class ColumnChooser implements IAction {
     }
 
     private checkstatecolumn(isChecked: boolean, coluid: string, selectAll: boolean = false): void {
-        const currentCol: Column = this.parent.getColumnByUid(coluid);
+        const currentColumn: Column = this.parent.getColumnByUid(coluid, this.infiniteRenderMode);
         if (isChecked) {
             if (this.hideColumn.indexOf(coluid) !== -1) {
                 this.hideColumn.splice(this.hideColumn.indexOf(coluid), 1);
             }
-            if (this.showColumn.indexOf(coluid) === -1 && !(currentCol && currentCol.visible)) {
+            if (this.showColumn.indexOf(coluid) === -1 && !(currentColumn && currentColumn.visible)) {
                 this.showColumn.push(coluid);
             }
         } else {
             if (this.showColumn.indexOf(coluid) !== -1) {
                 this.showColumn.splice(this.showColumn.indexOf(coluid), 1);
             }
-            if (this.hideColumn.indexOf(coluid) === -1 && (currentCol && currentCol.visible)) {
+            if (this.hideColumn.indexOf(coluid) === -1 && (currentColumn && currentColumn.visible)) {
                 this.hideColumn.push(coluid);
             }
         }
@@ -609,8 +661,11 @@ export class ColumnChooser implements IAction {
         let clearSearch: boolean = false;
         let okButton: Button;
         const buttonEle: HTMLElement = this.dlgDiv.querySelector('.e-footer-content');
-        const selectedCbox: number = this.ulElement.querySelector('.e-check') &&
+        let selectedCheckbox: number = this.ulElement.querySelector('.e-check') &&
         this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
+        if (this.infiniteRenderMode) {
+            selectedCheckbox = this.infiniteLoadedElement.filter((arr: HTMLElement) => arr.querySelector('.e-check')).length;
+        }
         this.isInitialOpen = true;
         if (buttonEle) {
             okButton = (buttonEle.querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
@@ -624,17 +679,26 @@ export class ColumnChooser implements IAction {
             this.filterColumns = new DataManager((this.getColumns() as Object[]) as JSON[]).executeLocal(new Query()
                 .where('headerText', this.searchOperator, searchVal, true, this.parent.columnChooserSettings.ignoreAccent)) as Column[];
         }
+        if (this.infiniteRenderMode) {
+            this.updateIfiniteSelectAll();
+        }
 
         if (this.filterColumns.length) {
             this.innerDiv.innerHTML = ' ';
             this.innerDiv.classList.remove('e-ccnmdiv');
+            this.infiniteInitialLoad = true;
+            this.infiniteLoadedElement = [];
             this.innerDiv.appendChild(<HTMLElement>this.refreshCheckboxList(this.filterColumns));
+            if (this.infiniteRenderMode) {
+                this.mainDiv.querySelector('.e-ccheck .e-selectall').parentElement.classList.remove('e-checkbox-disabled');
+                this.updateIntermediateBtn();
+            }
             if (!clearSearch) {
                 this.addcancelIcon();
                 this.refreshCheckboxButton();
             } else {
-                if (okButton && selectedCbox) { okButton.disabled = false; }
-                if (selectedCbox && this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
+                if (okButton && selectedCheckbox) { okButton.disabled = false; }
+                if (selectedCheckbox && this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
                     this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: false });
                 }
             }
@@ -642,6 +706,10 @@ export class ColumnChooser implements IAction {
             const nMatchele: HTMLElement = this.parent.createElement('span', { className: 'e-cc e-nmatch' });
             nMatchele.innerHTML = this.l10n.getConstant('Matchs');
             this.innerDiv.innerHTML = ' ';
+            if (this.infiniteRenderMode) {
+                removeClass([this.mainDiv.querySelector('.e-frame.e-selectall')], ['e-check', 'e-stop', 'e-uncheck']);
+                this.mainDiv.querySelector('.e-ccheck .e-selectall').parentElement.classList.add('e-checkbox-disabled');
+            }
             this.innerDiv.appendChild(nMatchele);
             this.innerDiv.classList.add('e-ccnmdiv');
             if (okButton) { okButton.disabled = true; }
@@ -651,6 +719,16 @@ export class ColumnChooser implements IAction {
         }
         this.flag = true;
         this.stopTimer();
+    }
+
+    private updateIfiniteSelectAll(): void {
+        this.changedColumns = [];
+        this.hideColumn = [];
+        this.showColumn = [];
+        const unCheckItem: HTMLElement[] = this.infiniteLoadedElement.filter((arr: HTMLElement) => arr.querySelector('.e-uncheck'));
+        for (let i: number = 0; i < unCheckItem.length; i++) {
+            this.checkState(unCheckItem[parseInt(i.toString(), 10)].querySelector('.e-frame'), true);
+        }
     }
 
     private wireEvents(): void {
@@ -674,23 +752,26 @@ export class ColumnChooser implements IAction {
 
     private checkBoxClickHandler(e: MouseEvent): void {
         let checkstate: boolean;
-        const elem: Element = parentsUntil(e.target as Element, 'e-checkbox-wrapper');
-        if (elem) {
-            const selectAll: Element = elem.querySelector('.e-selectall');
+        const selectAllElement: Element = parentsUntil(e.target as Element, 'e-checkbox-wrapper');
+        const columns: Column[] = this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns();
+        if (selectAllElement) {
+            const selectAll: Element = selectAllElement.querySelector('.e-selectall');
             if (selectAll) {
-                this.updateSelectAll(!elem.querySelector('.e-check'));
+                this.updateSelectAll(!selectAllElement.querySelector('.e-check'));
             } else  {
-                toogleCheckbox(elem.parentElement);
+                toogleCheckbox(selectAllElement.parentElement);
             }
-            (elem.querySelector('.e-chk-hidden') as HTMLElement).focus();
-            if (elem.querySelector('.e-check')) {
+            (selectAllElement.querySelector('.e-chk-hidden') as HTMLElement).focus();
+            if (selectAllElement.querySelector('.e-check')) {
                 checkstate = true;
-            } else if (elem.querySelector('.e-uncheck')) {
+            } else if (selectAllElement.querySelector('.e-uncheck')) {
                 checkstate = false;
             }
-            this.updateIntermediateBtn();
-            const columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
-            const column: Column[] =  (this.searchValue && this.searchValue.length) ? this.filterColumns : this.parent.getColumns();
+            if (!this.infiniteRenderMode) {
+                this.updateIntermediateBtn();
+            }
+            const columnUid: string = parentsUntil(selectAllElement, 'e-ccheck').getAttribute('uid');
+            const column: Column[] =  (this.searchValue && this.searchValue.length) ? this.filterColumns : columns;
             if (columnUid === this.parent.element.id + '-selectAll') {
                 this.changedColumns = [];
                 this.unchangedColumns = [];
@@ -702,16 +783,32 @@ export class ColumnChooser implements IAction {
             } else {
                 this.checkstatecolumn(checkstate, columnUid);
             }
-            this.refreshCheckboxButton();
+            const isSelectAll: boolean = this.infiniteRenderMode && selectAllElement.querySelector('.e-selectall') &&
+                selectAllElement.querySelector('.e-uncheck') ? true : false;
+            this.refreshCheckboxButton(isSelectAll);
             this.setFocus(parentsUntil(e.target as Element, 'e-cclist'));
+            if (this.infiniteRenderMode) {
+                this.updateIntermediateBtn();
+            }
         }
     }
 
     private updateIntermediateBtn(): void {
-        const cnt: number = this.ulElement.children.length - 1;
+        const count: number = this.infiniteRenderMode ? this.infiniteLoadedElement.length : this.ulElement.children.length - 1;
         let className: string[] = [];
-        const elem: Element = this.ulElement.children[0].querySelector('.e-frame');
-        const selected: number = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
+        let hideColumnsCount: number = 0;
+        let showColumnsCount: number = 0;
+        (this.searchValue && this.searchValue.length ? this.filterColumns : this.infiniteColumns).filter((column: Column) => {
+            if (column.visible === false) {
+                hideColumnsCount++;
+            } else {
+                showColumnsCount++;
+            }
+        });
+        const selectAllElement: Element =  (this.infiniteRenderMode && this.mainDiv.querySelector('.e-cc-selectall') ?
+            this.mainDiv.querySelector('.e-cc-selectall') : this.ulElement.children[0]).querySelector('.e-frame');
+        const selected: number = this.infiniteRenderMode ? this.infiniteLoadedElement.filter(
+            (arr: HTMLElement) => arr.querySelector('.e-check')).length : this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         let btn: Button;
         if (!this.parent.enableAdaptiveUI) {
             btn = (<{ btnObj?: Button }>(this.dlgObj as DialogModel)).btnObj[0];
@@ -719,11 +816,12 @@ export class ColumnChooser implements IAction {
         } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
             this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: false });
         }
-        const inputElem: HTMLInputElement = elem.parentElement.querySelector('input');
-        if (cnt === selected) {
+        const inputElem: HTMLInputElement = selectAllElement.parentElement.querySelector('input');
+        if (count === selected && (!this.infiniteRenderMode || (this.infiniteRenderMode &&
+            hideColumnsCount === this.showColumn.length))) {
             className = ['e-check'];
             setChecked(inputElem, true);
-        } else if (selected) {
+        } else if (selected || (this.infiniteRenderMode && !selected && showColumnsCount !== this.hideColumn.length)) {
             className = ['e-stop'];
             inputElem.indeterminate = true;
         } else {
@@ -738,25 +836,30 @@ export class ColumnChooser implements IAction {
         if (!this.parent.enableAdaptiveUI) {
             btn.dataBind();
         }
-        removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
-        addClass([elem], className);
+        removeClass([selectAllElement], ['e-check', 'e-stop', 'e-uncheck']);
+        addClass([selectAllElement], className);
     }
 
     private updateSelectAll(checked: boolean): void {
-        const cBoxes: Element[] = [].slice.call(this.ulElement.getElementsByClassName('e-frame'));
-        for (const cBox of cBoxes) {
-            removeAddCboxClasses(cBox, checked);
-            const cBoxInput: HTMLInputElement = cBox.parentElement.querySelector('input');
-            if (cBox.classList.contains('e-check')) {
+        let checkBoxItems: Element[] = [].slice.call(this.ulElement.getElementsByClassName('e-frame'));
+        if (this.infiniteRenderMode) {
+            checkBoxItems = [];
+            this.infiniteLoadedElement.map((arr: HTMLElement) => checkBoxItems.push(arr.querySelector('.e-frame')));
+            checkBoxItems.unshift(this.mainDiv.querySelector('.e-cc-selectall').querySelector('.e-frame'));
+        }
+        for (const checkBoxItem of checkBoxItems) {
+            removeAddCboxClasses(checkBoxItem, checked);
+            const cBoxInput: HTMLInputElement = checkBoxItem.parentElement.querySelector('input');
+            if (checkBoxItem.classList.contains('e-check')) {
                 setChecked(cBoxInput, true);
             }
-            else if (cBox.classList.contains('e-uncheck')) {
+            else if (checkBoxItem.classList.contains('e-uncheck')) {
                 setChecked(cBoxInput, false);
             }
         }
     }
 
-    private refreshCheckboxButton(): void {
+    private refreshCheckboxButton(checkstate?: boolean): void {
         const visibleCols: Column[] = this.parent.getVisibleColumns();
         for (let i: number = 0; i < visibleCols.length; i++) {
             const columnUID: string = visibleCols[parseInt(i.toString(), 10)].uid;
@@ -770,7 +873,10 @@ export class ColumnChooser implements IAction {
                 this.prevShowedCols.splice(index, 1);
             }
         }
-        const selected: number = this.showColumn.length !== 0 ? 1 : this.prevShowedCols.length;
+        let selected: number = this.showColumn.length !== 0 ? 1 : this.prevShowedCols.length;
+        if (this.infiniteRenderMode) {
+            selected = this.infiniteLoadedElement.filter((arr: HTMLElement) => arr.querySelector('.e-uncheck')).length;
+        }
         let btn: Button;
         if (!this.parent.enableAdaptiveUI) {
             btn = (this.dlgDiv.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
@@ -778,15 +884,19 @@ export class ColumnChooser implements IAction {
         } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
             this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: false });
         }
-        const srchShowCols: string[] = [];
-        const searchData: NodeListOf<HTMLInputElement> = [].slice.call(this.parent.element.getElementsByClassName('e-cc-chbox'));
+        const sreachShowColumns: string[] = [];
+        const searchData: NodeListOf<HTMLInputElement> = [].slice.call(document.getElementsByClassName('e-cc-chbox'));
         for (let i: number = 0, itemsLen: number = searchData.length; i < itemsLen; i++) {
             const element: HTMLInputElement = searchData[parseInt(i.toString(), 10)] as HTMLInputElement;
+            if (this.infiniteRenderMode && element.classList.contains('e-selectall')) {
+                continue;
+            }
             const columnUID: string = parentsUntil(element, 'e-ccheck').getAttribute('uid');
-            srchShowCols.push(columnUID);
+            sreachShowColumns.push(columnUID);
         }
-        const hideCols: string[] = this.showColumn.filter((column: string) => srchShowCols.indexOf(column) !== -1);
-        if (selected === 0 && hideCols.length === 0) {
+        const hideColumns: string[] = this.showColumn.filter((column: string) => sreachShowColumns.indexOf(column) !== -1);
+        if ((this.infiniteRenderMode && (checkstate || sreachShowColumns.length === selected)) ||
+            (!this.infiniteRenderMode && selected === 0 && hideColumns.length === 0)) {
             if (!this.parent.enableAdaptiveUI) {
                 btn.disabled = true;
             } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
@@ -798,17 +908,30 @@ export class ColumnChooser implements IAction {
         }
     }
 
-    private refreshCheckboxList(gdCol: Column[]): HTMLElement {
+    private refreshCheckboxList(chooserColumns: Column[]): HTMLElement {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
         const selectAllValue: string = this.l10n.getConstant('SelectAll');
-        const cclist: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
+        const columnChooserList: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall',
+            'styles': this.infiniteRenderMode ? 'list-style:None' : ''
+        });
         const selectAll: Element = this.createCheckBox(selectAllValue, false, this.parent.element.id + '-selectAll');
-        if (gdCol.length) {
+        if (chooserColumns.length) {
             selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
             selectAll.querySelector('.e-frame').classList.add('e-selectall');
             this.checkState(selectAll.querySelector('.e-icons'), true);
-            cclist.appendChild(selectAll);
-            this.ulElement.appendChild(cclist);
+            columnChooserList.appendChild(selectAll);
+            if (this.infiniteRenderMode) {
+                if (this.mainDiv.querySelector('.e-cc-contentdiv') && !this.mainDiv.querySelector('.e-cc-selectall')) {
+                    this.infiniteDiv = this.mainDiv.querySelector('.e-cc-contentdiv');
+                    this.mainDiv.insertBefore(columnChooserList, this.infiniteDiv);
+                    this.infiniteDiv.classList.add('e-checkbox-infinitescroll');
+                    EventHandler.add(this.infiniteDiv, 'scroll', this.infiniteScrollHandler, this);
+                    EventHandler.add(this.infiniteDiv, 'mouseup', this.infiniteScrollMouseKeyUpHandler, this);
+                    EventHandler.add(this.infiniteDiv, 'mousedown', this.infiniteScrollMouseKeyDownHandler, this);
+                }
+            } else {
+                this.ulElement.appendChild(columnChooserList);
+            }
         }
         if (this.parent.cssClass) {
             if (this.parent.cssClass.indexOf(' ') !== -1) {
@@ -817,11 +940,74 @@ export class ColumnChooser implements IAction {
                 addClass([selectAll], [this.parent.cssClass]);
             }
         }
-        for (let i: number = 0; i < gdCol.length; i++) {
-            const columns: Column = (gdCol[parseInt(i.toString(), 10)] as Column);
-            this.renderCheckbox(columns);
+        if (this.infiniteRenderMode && chooserColumns.length > (this.itemsCount * 3)) {
+            this.infiniteSkipCount = this.itemsCount * 2;
         }
+        this.renderCheckbox(chooserColumns.slice(0, this.infiniteRenderMode ? this.itemsCount * 3 : chooserColumns.length));
         return this.ulElement;
+    }
+
+    private infiniteScrollMouseKeyDownHandler(): void {
+        EventHandler.remove(this.infiniteDiv, 'scroll', this.infiniteScrollHandler);
+    }
+
+    private infiniteScrollMouseKeyUpHandler(e: MouseEvent): void {
+        EventHandler.add(this.infiniteDiv, 'scroll', this.infiniteScrollHandler, this);
+        const target: HTMLElement = this.infiniteDiv;
+        if (this.ulElement.children.length > 1 && (target.scrollTop >= target.scrollHeight - target.offsetHeight ||
+            target.scrollTop <= 0)) {
+            this.infiniteScrollHandler();
+        }
+        Global.timer = (setTimeout(() => { this.clickHandler(e); Global.timer = null; }, 0) as Object);
+    }
+
+
+    private infiniteScrollHandler(): void {
+        const target: HTMLElement = this.infiniteDiv;
+        const columns: Column[] = this.searchValue && this.searchValue.length ? this.filterColumns : this.infiniteColumns;
+        if (target.scrollTop >= target.scrollHeight - target.offsetHeight
+            && this.infiniteLoadedElement.length <= (this.infiniteSkipCount + this.itemsCount)
+            && this.ulElement.children.length === this.itemsCount * 3
+            && (!columns.length || columns.length > (this.infiniteSkipCount + this.itemsCount))) {
+            const diffcount: number = columns.length - (this.infiniteSkipCount + this.itemsCount);
+            let count: number = 0;
+            if (diffcount < this.itemsCount) {
+                count = diffcount;
+            }
+            infiniteRemoveElements(([].slice.call(this.ulElement.children)).splice(0, this.itemsCount));
+            this.infiniteInitialLoad = true;
+            this.infiniteSkipCount += this.itemsCount;
+            this.renderCheckbox(columns.slice(this.infiniteSkipCount, this.infiniteSkipCount + (count + this.itemsCount)));
+            this.prevInfiniteScrollDirection = 'down';
+        } else if (target.scrollTop >= target.scrollHeight - target.offsetHeight && this.infiniteLoadedElement.length > (
+            this.infiniteSkipCount + this.itemsCount) && this.ulElement.children.length === this.itemsCount * 3) {
+            infiniteRemoveElements(([].slice.call(this.ulElement.children)).splice(0, this.itemsCount));
+            this.infiniteSkipCount += this.prevInfiniteScrollDirection === 'down' ? this.itemsCount :
+                (this.itemsCount * 3);
+            appendChildren(this.ulElement, this.infiniteLoadedElement.slice(this.infiniteSkipCount, this.itemsCount +
+                this.infiniteSkipCount));
+            this.prevInfiniteScrollDirection = 'down';
+        } else if (target.scrollTop === 0 && !this.infiniteInitialLoad && this.infiniteSkipCount
+            && this.infiniteLoadedElement.length && this.infiniteLoadedElement.length > this.itemsCount * 3
+            && this.ulElement.children.length === this.itemsCount * 3) {
+            infiniteRemoveElements(([].slice.call(this.ulElement.children)).splice(this.itemsCount * 2, this.itemsCount));
+            this.infiniteSkipCount -= this.prevInfiniteScrollDirection === 'up' ? this.itemsCount : this.itemsCount * 3;
+            infiniteAppendElements([].slice.call(this.infiniteLoadedElement.slice(this.infiniteSkipCount, this.infiniteSkipCount +
+                this.itemsCount)), this.ulElement);
+            this.prevInfiniteScrollDirection = 'up';
+            this.infiniteDiv.scrollTop = this.infiniteScrollAppendDiff;
+        } else if (target.scrollTop === 0 && !this.infiniteInitialLoad && this.infiniteSkipCount &&
+            (this.infiniteSkipCount > this.itemsCount * 2) && this.infiniteLoadedElement.length &&
+            this.ulElement.children.length < this.itemsCount * 3) {
+            infiniteRemoveElements(([].slice.call(this.ulElement.children)).splice(
+                (this.itemsCount * 2), columns.length % this.itemsCount));
+            this.infiniteSkipCount = (Math.floor(columns.length / this.itemsCount) - 3) *
+                this.itemsCount;
+            infiniteAppendElements([].slice.call(this.infiniteLoadedElement.slice(this.infiniteSkipCount, this.infiniteSkipCount +
+                this.itemsCount)), this.ulElement);
+            this.infiniteDiv.scrollTop = this.infiniteScrollAppendDiff;
+            this.prevInfiniteScrollDirection = 'up';
+        }
     }
 
     private refreshCheckboxState(): void {
@@ -836,7 +1022,7 @@ export class ColumnChooser implements IAction {
                 columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[parseInt(i.toString(), 10)],
                                          'e-ccheck').getAttribute('uid');
             } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid'); }
-            const column: Column = gridObject.getColumnByUid(columnUID);
+            const column: Column = gridObject.getColumnByUid(columnUID, this.infiniteRenderMode);
             const uncheck: NodeListOf<Element> = [].slice.call(element.parentElement.getElementsByClassName('e-uncheck'));
             if (column.visible && !uncheck.length) {
                 element.checked = true;
@@ -870,25 +1056,38 @@ export class ColumnChooser implements IAction {
         return createCboxWithWrap(uid, cbox, 'e-ccheck');
     }
 
-    private renderCheckbox(column: Column): void {
-        let cclist: HTMLElement;
-        let hideColState: boolean;
-        let showColState: boolean;
-        if (column.showInColumnChooser) {
-            cclist = this.parent.createElement('li', { className: 'e-cclist e-cc', styles: 'list-style:None', id: 'e-ccli_' + column.uid });
-            hideColState = this.hideColumn.indexOf(column.uid) === -1 ? false : true;
-            showColState = this.showColumn.indexOf(column.uid) === -1 ? false : true;
-            const cccheckboxlist: Element =
-                this.createCheckBox(column.headerText, (column.visible && !hideColState) || showColState, column.uid);
-            cclist.appendChild(cccheckboxlist);
-            if (this.parent.cssClass) {
-                if (this.parent.cssClass.indexOf(' ') !== -1) {
-                    addClass([cccheckboxlist], this.parent.cssClass.split(' '));
-                } else {
-                    addClass([cccheckboxlist], [this.parent.cssClass]);
+    private renderCheckbox(columns: Column[]): void {
+        const checkBoxItems: HTMLElement = this.parent.createElement('div');
+        const offsetHeight: number = this.ulElement.offsetHeight;
+        for (let i: number = 0; i < columns.length; i++) {
+            const column: Column = columns[parseInt(i.toString(), 10)];
+            if (column.showInColumnChooser) {
+                const columnChooserList: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc', styles: 'list-style:None', id: 'e-ccli_' + column.uid });
+                const hideColumnState: boolean = this.hideColumn.indexOf(column.uid) === -1 ? false : true;
+                const showColumnState: boolean = this.showColumn.indexOf(column.uid) === -1 ? false : true;
+                const columnchooserccheckboxlist: Element =
+                    this.createCheckBox(column.headerText, (column.visible && !hideColumnState) || showColumnState, column.uid);
+                columnChooserList.appendChild(columnchooserccheckboxlist);
+                if (this.parent.cssClass) {
+                    if (this.parent.cssClass.indexOf(' ') !== -1) {
+                        addClass([columnchooserccheckboxlist], this.parent.cssClass.split(' '));
+                    } else {
+                        addClass([columnchooserccheckboxlist], [this.parent.cssClass]);
+                    }
                 }
+                if (this.infiniteRenderMode && this.infiniteDiv) {
+                    columnChooserList.style.height = getListHeight(this.infiniteDiv, true) + 'px';
+                }
+                checkBoxItems.appendChild(columnChooserList);
             }
-            this.ulElement.appendChild(cclist);
+        }
+        if (this.infiniteRenderMode && this.infiniteInitialLoad) {
+            this.infiniteLoadedElement.push(...[].slice.call(checkBoxItems.children));
+            this.infiniteInitialLoad = false;
+        }
+        appendChildren(this.ulElement, [].slice.call(checkBoxItems.children));
+        if (this.infiniteRenderMode && !this.infiniteScrollAppendDiff) {
+            this.infiniteScrollAppendDiff = this.ulElement.offsetHeight - offsetHeight;
         }
         if (this.isInitialOpen) {
             this.updateIntermediateBtn();

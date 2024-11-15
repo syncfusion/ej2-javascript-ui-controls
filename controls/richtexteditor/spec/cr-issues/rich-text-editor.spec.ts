@@ -10,7 +10,7 @@ import { SelectionCommands } from '../../src/editor-manager/plugin/selection-com
 import { NodeSelection } from '../../src/selection/selection';
 import { ActionBeginEventArgs, IRenderer, PasteCleanupArgs, QuickToolbar } from '../../src/index';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT, INSRT_IMG_EVENT_INIT, NUMPAD_ENTER_EVENT_INIT } from '../constant.spec';
+import { BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT, ESCAPE_KEY_EVENT_INIT, INSRT_IMG_EVENT_INIT, NUMPAD_ENTER_EVENT_INIT } from '../constant.spec';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -3723,6 +3723,120 @@ describe('RTE CR issues ', () => {
             expect(typeof (editor as any).onFocusHandler).toBe('function');
             expect(typeof (editor as any).onBlurHandler).toBe('function');
             expect(typeof (editor as any).onResizeHandler).toBe('function');
+        });
+    });
+
+    describe('919473 - Custom table styles are not maintained when toggling the custom source code view.', ()=> {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: `<table class="e-rte-custom-table" style="width: 100%;"><tbody><tr><td>1</td><td>2</td></tr></tbody></table>`
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it ('Should have e-rte-custom-table after render.', (done: DoneFn)  => {
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('table').classList.contains('e-rte-custom-table')).toBe(true);
+                expect(editor.inputElement.querySelector('table').classList.contains('e-rte-table')).not.toBe(true);
+                done();
+            },100);
+        });
+        it ('Should have e-rte-custom-table after Source code view.', (done: DoneFn) => {
+            editor.value = '';
+            editor.dataBind();
+            editor.showSourceCode();
+            editor.sourceCodeModule.getPanel().value =  `<table class="e-rte-custom-table" style="width: 100%;"><tbody><tr><td>1</td><td>2</td></tr></tbody></table>`;
+            const previewIcon: HTMLElement = editor.element.querySelector('.e-preview');
+            previewIcon.click();
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('table').classList.contains('e-rte-custom-table')).toBe(true);
+                expect(editor.inputElement.querySelector('table').classList.contains('e-rte-table')).not.toBe(true);
+                done();
+            }, 100);
+        });
+        it ('Should have only e-rte-custom-table after paste action.', (done: DoneFn) => {
+            editor.value = '';
+            editor.dataBind();
+            editor.focusIn();
+            const dataTransfer: DataTransfer = new DataTransfer();
+            const clipBoardHTML: string = '\n\n\x3C!--StartFragment--><table class="e-rte-custom-table" style="box-sizing: border-box; margin-bottom: 10px; border-collapse: collapse; empty-cells: show; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; width: 965px;"><tbody><tr><td>1</td><td>2</td></tr></tbody></table>\x3C!--EndFragment-->\n\n';
+            dataTransfer.setData('text/html', clipBoardHTML);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.inputElement.dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('table').classList.contains('e-rte-custom-table')).toBe(true);
+                expect(editor.inputElement.querySelector('table').classList.contains('e-rte-table')).not.toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('919899 - Console error when clicking the "Image" toolbar icon in the Rich Text Editor .', ()=> {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                value: `<table class="e-rte-custom-table" style="width: 100%;"><tbody><tr><td>1</td><td>2</td></tr></tbody></table>`
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should not throw any console error when clicking the image toolbar icon.', (done: DoneFn) => {
+            const errorSpy: jasmine.Spy = jasmine.createSpy('error');
+            console.error = errorSpy;
+            editor.focusIn();
+            editor.formatter.editorManager.nodeSelection.setCursorPoint(editor.inputElement.ownerDocument, editor.inputElement, 1);
+            const imageToolbarIcon: HTMLElement = editor.element.querySelector('.e-image');
+            imageToolbarIcon.click();
+            setTimeout(() => {
+                expect(errorSpy).not.toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+
+        it('Should not throw any console error when applying heading format. After Table.', (done: DoneFn) => {
+            const errorSpy: jasmine.Spy = jasmine.createSpy('error');
+            console.error = errorSpy;
+            editor.focusIn();
+            editor.formatter.editorManager.nodeSelection.setCursorPoint(editor.inputElement.ownerDocument, editor.inputElement, 1);
+            const dropDownButton: HTMLElement = editor.element.querySelector('.e-formats-tbar-btn');
+            dropDownButton.click();
+            setTimeout(() => {
+                const heading1: HTMLElement = document.querySelector('.e-rte-dropdown-popup .e-item.e-h1');
+                heading1.click();
+                setTimeout(() => {
+                    expect(errorSpy).not.toHaveBeenCalled();
+                    expect(editor.inputElement.querySelector('h1')).not.toBe(null);
+                    done();
+                }, 100);
+            }, 100);
+        });
+
+        it('Should not throw any console error when applying heading format. Before Table.', (done: DoneFn) => {
+            const errorSpy: jasmine.Spy = jasmine.createSpy('error');
+            console.error = errorSpy;
+            editor.focusIn();
+            editor.formatter.editorManager.nodeSelection.setCursorPoint(editor.inputElement.ownerDocument, editor.inputElement, 0);
+            const dropDownButton: HTMLElement = editor.element.querySelector('.e-formats-tbar-btn');
+            dropDownButton.click();
+            setTimeout(() => {
+                const heading1: HTMLElement = document.querySelector('.e-rte-dropdown-popup .e-item.e-h1');
+                heading1.click();
+                setTimeout(() => {
+                    expect(errorSpy).not.toHaveBeenCalled();
+                    expect(editor.inputElement.querySelector('h1')).not.toBe(null);
+                    done();
+                }, 100);
+            }, 100);
         });
     });
 

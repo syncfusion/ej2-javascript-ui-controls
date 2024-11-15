@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I644056` - The style property now applies correctly to polygon objects during runtime drawing.
+
 ## 27.1.58 (2024-11-05)
 
 ### Diagram

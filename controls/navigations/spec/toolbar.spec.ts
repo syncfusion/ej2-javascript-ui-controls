@@ -4479,6 +4479,9 @@ describe('Toolbar Control', () => {
             let leftItem: any = element.querySelector('.e-toolbar-items .e-toolbar-left');
             let centerItem: any = element.querySelector('.e-toolbar-items .e-toolbar-center');
             let rightItem: any = element.querySelector('.e-toolbar-items .e-toolbar-right');
+            expect(leftItem.getAttribute('role')).toBe('group');
+            expect(centerItem.getAttribute('role')).toBe('group');
+            expect(rightItem.getAttribute('role')).toBe('group');
             expect(centerItem.childElementCount).toBe(1);
             expect(leftItem.childElementCount).toBe(5);
         });

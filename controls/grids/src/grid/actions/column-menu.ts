@@ -46,6 +46,9 @@ export class ColumnMenu implements IAction {
     private WRAP: string = 'e-col-menu';
     private COL_POP: string = 'e-colmenu-popup';
     private CHOOSER: string = '_chooser_';
+    private AUTOFIT: string = 'e-icon-autofit';
+    private AUTOFITALL: string = 'e-icon-autofitall';
+    private COLUMNCHOOSER: string = 'e-icon-columnchooser';
     //Module declarations
     /** @hidden */
     public parent: IGrid;
@@ -526,6 +529,15 @@ export class ColumnMenu implements IAction {
             break;
         case 'Filter':
             menuItem = { iconCss: this.FILTER };
+            break;
+        case 'ColumnChooser':
+            menuItem = { iconCss: this.COLUMNCHOOSER };
+            break;
+        case 'AutoFit':
+            menuItem = { iconCss: this.AUTOFIT };
+            break;
+        case 'AutoFitAll':
+            menuItem = { iconCss: this.AUTOFITALL };
             break;
         }
         this.defaultItems[`${item}`] = {

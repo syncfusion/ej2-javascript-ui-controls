@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I650135` - The cumulative percentage in the Pareto chart tooltip will display the precise value to two decimal points.
+- `#I648361` - The exponential trendline now renders correctly for the datetime axis.
+
 ## 27.1.58 (2024-11-05)
 
 ### Chart

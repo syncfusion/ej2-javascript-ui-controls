@@ -794,9 +794,16 @@ export class Selection implements IAction {
             this.isRowDeselect = true;
 
             for (let i: number = 0, len: number = this.selectedRowIndexes.length; i < len; i++) {
-                const currentRow: Element = this.parent.editSettings.mode === 'Batch' ?
-                    this.parent.getRows()[this.selectedRowIndexes[parseInt(i.toString(), 10)]]
-                    : this.parent.getDataRows()[this.selectedRowIndexes[parseInt(i.toString(), 10)]];
+                let currentRow: Element;
+                if (this.parent.enableVirtualization || (this.parent.enableInfiniteScrolling
+                    && this.parent.infiniteScrollSettings.enableCache)) {
+                    currentRow = this.parent.getRowByIndex(this.selectedRowIndexes[parseInt(i.toString(), 10)]);
+                }
+                else {
+                    currentRow = this.parent.editSettings.mode === 'Batch' ?
+                        this.parent.getRows()[this.selectedRowIndexes[parseInt(i.toString(), 10)]]
+                        : this.parent.getDataRows()[this.selectedRowIndexes[parseInt(i.toString(), 10)]];
+                }
                 const rowObj: Row<Column> = this.getRowObj(currentRow);
                 if (rowObj) {
                     data.push(rowObj.data);
@@ -953,7 +960,8 @@ export class Selection implements IAction {
      * @returns {void}
      */
     public selectCell(cellIndex: IIndex, isToggle?: boolean): void {
-        if (!this.isCellType()) { return; }
+        if (!this.isCellType() || (this.isCellType() && (this.parent.enableVirtualization ||
+            (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache)))) { return; }
         const gObj: IGrid = this.parent;
         let args: Object;
         const selectedCell: Element = gObj.getCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
@@ -1158,7 +1166,8 @@ export class Selection implements IAction {
      * @hidden
      */
     public addCellsToSelection(cellIndexes: IIndex[]): void {
-        if (!this.isCellType()) { return; }
+        if (!this.isCellType() || (this.isCellType() && (this.parent.enableVirtualization ||
+            (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache)))) { return; }
         const gObj: IGrid = this.parent;
         let selectedCell: Element;
         let index: number;
@@ -3238,7 +3247,10 @@ export class Selection implements IAction {
                     return this.isSelectAllRowCount(count);
                 }
             } else {
-                const data: object[] = (this.parent.groupSettings.columns.length) ? this.getData()['records'] : this.getData();
+                let data: object[] = this.getData();
+                if (this.parent.groupSettings.columns.length && data['records']) {
+                    data = data['records'];
+                }
                 for (let i: number = 0; i < data.length; i++) {
                     const pKey: string = this.getPkValue(this.primaryKey, data[parseInt(i.toString(), 10)]);
                     if (!this.selectedRowState[`${pKey}`]) {

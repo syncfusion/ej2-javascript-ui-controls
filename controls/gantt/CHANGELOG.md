@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#644829` - Words and taskbar alignment are misaligned in pdf file when row height is less than 20 issue has been fixed.
+- `#I645725` - Console error occurs when taskbar drag and drop with touch interaction issue has been fixed.
+- `#I646644` - Console error occurs while dependency has decimal offset day values issue has been fixed.
+
 ## 27.1.58 (2024-11-05)
 
 ### GanttChart

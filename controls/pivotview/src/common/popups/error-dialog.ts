@@ -2,7 +2,6 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 
 /**
  * `ErrorDialog` module to create error dialog.
@@ -29,20 +28,15 @@ export class ErrorDialog {
      * @function createErrorDialog
      * @param {string} title - title.
      * @param {string} description - description.
-     * @param {HTMLElement} target - target.
      * @returns {void}
      * @hidden
      */
-    public createErrorDialog(title: string, description: string, target?: HTMLElement): void {
+    public createErrorDialog(title: string, description: string): void {
         const errorDialog: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_ErrorDialog',
             className: cls.ERROR_DIALOG_CLASS
         });
         this.parent.element.appendChild(errorDialog);
-        const zIndex: number = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
-            this.parent.renderMode === 'Popup' && this.parent.control ? (this.parent.control as PivotFieldList).dialogRenderer.fieldListDialog.zIndex + 1 :
-            (this.parent.moduleName === 'pivotfieldlist' && this.parent.renderMode === 'Fixed' && this.parent.control ? 1000002 :
-                (this.parent.moduleName === 'pivotview' && this.parent.control ? 1000002 : 1000001)));
         this.errorPopUp = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: false,
@@ -55,7 +49,6 @@ export class ErrorDialog {
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: 'auto',
-            zIndex: zIndex,
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
@@ -75,7 +68,10 @@ export class ErrorDialog {
     private closeErrorDialog(): void {
         this.errorPopUp.close();
     }
-    private removeErrorDialog(): void {
+
+    /** @hidden */
+
+    public removeErrorDialog(): void {
         if (this.errorPopUp && !this.errorPopUp.isDestroyed) {
             this.errorPopUp.destroy();
             this.errorPopUp = null;

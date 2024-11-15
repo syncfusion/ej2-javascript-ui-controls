@@ -121,8 +121,8 @@ describe('Data validation ->', () => {
             let cellEle: HTMLElement = helper.invoke('getCell', [1, 7]);
             expect(cellEle.querySelector('.e-validation-list')).toBeNull();
             expect(cellEle.innerText).toBe('$20.77');
-            helper.invoke('updateCell', [{ validation: { type: 'List', value1: '10,20,20' } }, 'H3']);
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[7].validation)).toBe('{"type":"List","value1":"10,20,20"}');
+            helper.invoke('updateCell', [{ validation: { type: 'List', value1: '100,200,200' } }, 'H3']);
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[7].validation)).toBe('{"type":"List","value1":"100,200,200"}');
             expect(helper.invoke('getCell', [2, 7]).querySelector('.e-validation-list')).toBeNull();
             done();
         });
@@ -2036,7 +2036,7 @@ describe('Data validation ->', () => {
         });
     });
     describe('CR - Issues->', () => {
-        describe('EJ2-50373, EJ2-50399, EJ2-60806, EJ2-50626, EJ2-51866->', () => {
+        describe('EJ2-50373, EJ2-50399, EJ2-60806, EJ2-50626, EJ2-51866, EJ2-917793 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }, { rows: [{ cells: [{ value: '1' }] },
@@ -2171,6 +2171,29 @@ describe('Data validation ->', () => {
                     done();
                 });
             }); 
+            it('EJ2-917793 - Script error occurs while selecting the cells in which list validation values contain an equal sign ->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('addDataValidation', [{ type: 'List', value1: 'test=texttable,text=linear,text=dynamic' }, 'D2:D11']);
+                const cell: CellModel = spreadsheet.sheets[0].rows[1].cells[3];
+                expect(JSON.stringify(cell.validation)).toBe('{"type":"List","operator":"Between","value1":"test=texttable,text=linear,text=dynamic","ignoreBlank":true,"inCellDropDown":true,"isHighlighted":true}');
+                helper.invoke('selectRange', ['D2']);
+                const td: HTMLElement = helper.invoke('getCell', [1, 3]).children[0];
+                expect(td.classList).toContain('e-validation-list');
+                (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup li:nth-child(1)');
+                    expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBe('test=texttable');
+                    expect(helper.invoke('getCell', [1, 3]).innerText).toBe('test=texttable');
+                    helper.invoke('addInvalidHighlight', ['D2:D11']);
+                    let td: HTMLElement = helper.invoke('getCell', [1, 3]);
+                    expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
+                    expect(td.style.color).toBe('rgb(0, 0, 0)');
+                    td = helper.invoke('getCell', [4, 3]);
+                    expect(td.style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    expect(td.style.color).toBe('rgb(255, 0, 0)');
+                    done();
+                });
+            });
         });
     });
     describe('EJ2-65124->', () => {

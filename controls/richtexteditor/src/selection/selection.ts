@@ -150,7 +150,8 @@ export class NodeSelection {
         const tableCursor: ImageOrTableCursor = this.processedTableImageCursor(range);
         if (tableCursor.start || tableCursor.end) {
             if (tableCursor.startName === 'TABLE' || tableCursor.endName === 'TABLE') {
-                return [];
+                const tableNode: Node = tableCursor.start ? tableCursor.startNode : tableCursor.endNode;
+                return [tableNode];
             }
         }
         if ((startNode === endNode || (startNode.nodeName === 'BR' && startNode === range.endContainer.childNodes[range.endOffset])) &&
@@ -494,37 +495,39 @@ export class NodeSelection {
         selection.addRange(range);
     }
 
-    private isTableOrImageStart(range: Range): { start: boolean; startNodeName: string} {
+    private isTableOrImageStart(range: Range): { start: boolean; startNodeName: string; startNode?: HTMLElement } {
         const customHandlerElements: string[] = ['TABLE'];
         const startContainer: Element = range.startContainer as Element;
         const startOffset: number = range.startOffset;
+        const startNode: HTMLElement = startContainer.childNodes[startOffset as number] as HTMLElement;
         const isCursorAtStart: boolean = range.collapsed && (startContainer.nodeType === 1) &&
-        (startContainer as HTMLElement).isContentEditable && startContainer.childNodes[startOffset as number] &&
-        (customHandlerElements.indexOf((startContainer.childNodes[startOffset as number] as HTMLElement).nodeName) > -1);
+        (startContainer as HTMLElement).isContentEditable && startNode &&
+        (customHandlerElements.indexOf(startNode.nodeName) > -1);
         if (isCursorAtStart) {
-            return { start : isCursorAtStart, startNodeName: (startContainer.childNodes[startOffset as number] as HTMLElement).nodeName };
+            return { start: isCursorAtStart, startNodeName: startNode.nodeName, startNode: startNode };
         } else {
-            return { start : false, startNodeName: ''};
+            return { start: false, startNodeName: '', startNode: undefined };
         }
     }
 
-    private isTableOrImageEnd(range: Range): { end: boolean; endNodeName: string} {
+    private isTableOrImageEnd(range: Range): { end: boolean; endNodeName: string; endNode?: HTMLElement } {
         const customHandlerElements: string[] = ['TABLE'];
         const startContainer: Element = range.startContainer as Element;
         const startOffset: number = range.startOffset;
+        const endNode: HTMLElement = startContainer.childNodes[startOffset - 1] as HTMLElement;
         const isCursorAtEnd: boolean = range.collapsed && (startContainer.nodeType === 1) &&
-        (startContainer as HTMLElement).isContentEditable && startContainer.childNodes[startOffset - 1] &&
-        (customHandlerElements.indexOf((startContainer.childNodes[startOffset - 1] as HTMLElement).nodeName) > -1);
+        (startContainer as HTMLElement).isContentEditable && endNode &&
+        (customHandlerElements.indexOf(endNode.nodeName) > -1);
         if (isCursorAtEnd) {
-            return { end : isCursorAtEnd, endNodeName: (startContainer.childNodes[startOffset - 1] as HTMLElement).nodeName };
+            return { end: isCursorAtEnd, endNodeName: endNode.nodeName, endNode: endNode };
         } else {
-            return { end : false, endNodeName: ''};
+            return { end: false, endNodeName: '', endNode: undefined };
         }
     }
 
-    private processedTableImageCursor(range: Range): ImageOrTableCursor  {
-        const { start, startNodeName }: { start: boolean; startNodeName: string } = this.isTableOrImageStart(range);
-        const { end, endNodeName}: { end: boolean; endNodeName: string} = this.isTableOrImageEnd(range);
-        return { start, startName: startNodeName, end, endName: endNodeName };
+    public processedTableImageCursor(range: Range): ImageOrTableCursor {
+        const { start, startNodeName, startNode } = this.isTableOrImageStart(range);
+        const { end, endNodeName, endNode } = this.isTableOrImageEnd(range);
+        return { start, startName: startNodeName, end, endName: endNodeName, startNode, endNode };
     }
 }

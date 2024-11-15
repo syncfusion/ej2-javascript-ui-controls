@@ -845,7 +845,7 @@ export class UndoRedo {
             if ((args && args.action === 'wrap' && args.eventArgs.wrap) || (prevCell.wrap && !cells[i as number].wrap)) {
                 this.parent.notify(wrapEvent, {
                     range: [cells[i as number].rowIndex, cells[i as number].colIndex, cells[i as number].rowIndex,
-                        cells[i as number].colIndex], wrap: false, sheet: sheet
+                        cells[i as number].colIndex], wrap: false, sheet: sheet, initial: true
                 });
             }
             if (args && cells[i as number].hyperlink && args.action === 'clear') {

@@ -776,7 +776,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         this.value = value;
-        if (value == null && this.textareaWrapper.container.classList.contains('e-valid-input')) {
+        if (value == null && this.textareaWrapper.container.classList.contains('e-valid-input') && !(this.floatLabelType === 'Always' && this.textareaWrapper.container.classList.contains('e-outline'))) {
             this.textareaWrapper.container.classList.remove('e-valid-input');
         }
         this.isProtectedOnChange = prevOnChange;

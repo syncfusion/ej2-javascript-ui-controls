@@ -2319,20 +2319,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!this.enableSelection) {
             return;
         }
-        let left: number = this.documentHelper.owner.selection.sectionFormat.leftMargin;
-        let top: number;
-        if (!this.selection.isForward) {
-            left += this.selection.end.location.x;
-            top = this.selection.end.location.y;
-
-        } else {
-            left += this.selection.start.location.x;
-            top = picturePositionY;
-        }
         const attributes: Object = {
             'id': this.element.id + 'PICTURE_CONTENT_CONTROL', innerHTML: 'Picture',
             class: 'e-btn-icon e-icons e-de-ctnr-image e-icon-left',
-            style: 'height:' + 20 + 'px;width:' + 70 + 'px;left:' + left + 'px;top:' + top + 'px;z-index:5;position:absolute;background-color:#ccc;border:1px solid #ccc;display:',
+            style: 'height:' + 20 + 'px;width:' + 70 + 'px;z-index:5;position:absolute;background-color:#ccc;border:1px solid #ccc;display:',
 
         };
         let pictureCC: HTMLElement;
@@ -2341,6 +2331,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         let picture_cc: HTMLElement = document.getElementById(this.element.id + 'PICTURE_CONTENT_CONTROL');
         if ((isNullOrUndefined(picture_cc) && showPicContentControl) || pictureElement) {
             pictureCC = this.rulerHelper.createHtmlElement('div', attributes);
+            this.setPictureContentControlPositions(pictureCC)
             element.insertBefore(pictureCC, element.firstChild);
             pictureCC.style.display = "block";
             pictureCC.addEventListener('click', (event) => {
@@ -2351,6 +2342,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             });
         } else if (!isNullOrUndefined(picture_cc) && showPicContentControl && !pictureElement) {
             picture_cc.style.display = "block";
+            this.setPictureContentControlPositions(picture_cc)
             picture_cc.addEventListener('click', (event) => {
                 contentControlImage =this.getImageContentControl();
                 if ((contentControlImage instanceof ContentControl && !contentControlImage.contentControlProperties.lockContentControl && contentControlImage.contentControlProperties.type == 'Picture' && !this.documentHelper.owner.isReadOnlyMode)) {
@@ -2363,6 +2355,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         const locale: L10n = new L10n('documenteditor', this.defaultLocale);
         locale.setLocale(this.locale);
         locale.getConstant('Picture')
+    }
+    /**
+        * Update the picture content control dialog position
+        *
+        * @private
+        * @returns {void}
+    */
+    public setPictureContentControlPositions(pictureElement: HTMLElement): void {
+        let left: number = this.selection.isForward ? this.selection.start.location.x : this.selection.end.location.x;
+        let top: number = this.selection.getTop(this.documentHelper.selection.start.currentWidget);
+        pictureElement.style.left = ((left * this.documentHelper.zoomFactor) + this.documentHelper.pages[0].boundingRectangle.x).toString() + 'px';
+        pictureElement.style.top = (top * this.documentHelper.zoomFactor).toString() + 'px';
     }
     /**
     * @private

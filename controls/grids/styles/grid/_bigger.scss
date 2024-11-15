@@ -1647,6 +1647,9 @@
     .e-responsivedescendingdiv .e-resdescending-icon,
     .e-responsivegroupdiv .e-resgroup-icon,
     .e-responsiveungroupdiv .e-resungroup-icon,
+    .e-responsiveautofitalldiv .e-resautofitall-icon,
+    .e-responsiveautofitdiv .e-resautofit-icon,
+    .e-responsivecolumndiv .e-rescolumn-icon,
     .e-responsivecoldiv .e-ressort-icon,
     .e-responsivefilterdiv .e-resfilter-icon {
       margin-top: $grid-responsive-column-menu-icon-margin-top;
@@ -2129,11 +2132,15 @@
             }
 
             li {
-              color: $grid-rowcell-color;
+              @if $grid-skin != 'bootstrap5.3' {
+                color: $grid-rowcell-color;
+              }
             }
  
             & .e-submenu.e-selected {
-              background-color: $grid-responsive-header-background;
+              @if $grid-skin != 'bootstrap5.3' {
+                background-color: $grid-responsive-header-background;
+              }
             }
  
             & .e-submenu {

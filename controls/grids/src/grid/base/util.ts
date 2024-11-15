@@ -2268,6 +2268,50 @@ export function clearReactVueTemplates(parent: IGrid | IXLFilter, templates: str
 
 /**
  *
+ * @param { HTMLElement[] } removeElem - Defines checkbox wrapper element
+ * @returns {void}
+ * @hidden
+ */
+export function infiniteRemoveElements(removeElem: HTMLElement[]): void {
+    for (let i: number = 0; i < removeElem.length; i++) {
+        remove(removeElem[i as number]);
+    }
+}
+
+/**
+ *
+ * @param { HTMLElement[] } appendElem - Defines checkbox wrapper element
+ * @param { HTMLElement } ulElement - Defines ul element
+ * @returns {void}
+ * @hidden
+ */
+export function infiniteAppendElements(appendElem: HTMLElement[], ulElement: HTMLElement): void {
+    for (let i: number = 0; i < appendElem.length; i++) {
+        ulElement.insertBefore(appendElem[i as number], ulElement.children[i as number]);
+    }
+}
+
+/**
+ *
+ * @param { HTMLElement } element - Defines checkbox wrapper element
+ * @param { boolean } isChooser - Defines checkbox filter column chooser
+ * @returns { number } list height value
+ * @hidden
+ */
+export function getListHeight(element: Element, isChooser?: boolean): number {
+    const listDiv: HTMLDivElement = isChooser ? <HTMLDivElement>createElement('li', { className: 'e-cclist', styles: 'visibility: hidden; list-style: none' }) :
+        <HTMLDivElement>createElement('div', { className: 'e-ftrchk', styles: 'visibility: hidden' });
+    listDiv.innerHTML = isChooser ? '<div class="e-ccheck"><div class="e-checkbox-wrapper"><span class="e-frame e-icons e-check"></span><span class="e-label">A</span></div></div>' :
+        '<div class="e-checkbox-wrapper"><span class="e-frame e-icons e-check"></span><span class="e-label e-checkboxfiltertext">A</div></span>';
+    element.appendChild(listDiv);
+    const rect: ClientRect = listDiv.getBoundingClientRect();
+    element.removeChild(listDiv);
+    const listHeight: number = Math.round(rect.height);
+    return listHeight;
+}
+
+/**
+ *
  * @param { Element } row - Defines row element
  * @returns { number } row index
  */

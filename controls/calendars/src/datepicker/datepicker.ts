@@ -2386,6 +2386,12 @@ export class DatePicker extends Calendar implements IInput {
                 if (this.calendarElement && this.isCalendar()) {
                     super.onPropertyChanged(newProp, oldProp);
                 }
+                if (prop === 'min' && isNullOrUndefined(this.min)) {
+                    this.min = new Date(1900, 0, 1);
+                }
+                if (prop === 'max' && isNullOrUndefined(this.max)) {
+                    this.max = new Date(2099, 11, 31);
+                }
                 break;
             }
             if (!this.isDynamicValueChanged) {

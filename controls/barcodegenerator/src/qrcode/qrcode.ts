@@ -230,6 +230,8 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     }
 
     private initialize(): void {
+        //Task 913519: Barcode visibility issue and Dependabot issues
+        this.element.style.display = 'block';
         //Initialize the height of qrcode generator
         this.element.style.height = this.getElementSize(this.height);
         //Initialize the width of qrcode generator

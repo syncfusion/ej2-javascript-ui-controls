@@ -12,8 +12,10 @@ import { EmitType, createElement, extend } from '@syncfusion/ej2-base';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Reorder } from '../../../src/grid/actions/reorder';
+import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 
-Grid.Inject(VirtualScroll, Filter, Reorder);
+Grid.Inject(VirtualScroll, ColumnChooser, Toolbar, Filter, Reorder);
 
 let ctr: number = 0;
 let count500: string[] = Array.apply(null, Array(5)).map(() => 'Column' + ++ctr + '');
@@ -606,4 +608,78 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
     //         destroy(gridObj);
     //     });
     // });
+
+     describe('915217 : Support for Displaying All Columns in Column Chooser with Column Virtualization', () => {
+        let gridObj: any;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data2,
+                    columns: count5000.slice(0, 270),
+                    enableColumnVirtualization: true,
+                    enableVirtualization: true,
+                    height: 400,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser']
+                }, done);
+        });
+
+        it('open the column chooser dialog', (done: Function) => {
+            (gridObj.columnChooserModule as any).openColumnChooser();
+            done();
+        });
+
+        it('scroll down 1st page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+        });
+
+        it('scroll down 2nd page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+        });
+
+        it('scroll down 3rd page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+        });
+
+        it('scroll up 3rd page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+        });
+        
+        it('scroll up 2nd page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+        });
+
+        it('scroll up 1st page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+        });
+
+        it('scroll down 1st page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+        });
+
+        it('scroll down 2nd page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+        });
+
+        it('scroll down 3rd page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+        });
+
+        it('scroll up 3rd page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+        });
+        
+        it('scroll up 2nd page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+        });
+
+        it('scroll up 1st page', () => {
+            (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+        });
+
+            afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

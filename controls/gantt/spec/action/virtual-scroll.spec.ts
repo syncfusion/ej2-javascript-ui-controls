@@ -982,3 +982,71 @@ describe('console error click fit to project in virtual mode', () => {
         }
     });
 });
+describe('Selection Row index dynamically changed', () => {
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll, Sort);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: releaseVirtualData,
+            treeColumnIndex: 1,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                parentID: 'parentID'
+            },
+            enableVirtualization: true,
+            enableTimelineVirtualization: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                newRowPosition: 'Bottom'
+            },
+            allowReordering: true,
+            enableContextMenu: true,
+            columns: [
+                { field: 'TaskID' },
+                { field: 'TaskName' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search'],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            highlightWeekends: true,
+            allowFiltering: true,
+            gridLines: 'Both',
+            height: '550px',
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            allowResizing: true,
+            splitterSettings: {
+                columnIndex: 3
+            },
+        }, done);
+    });
+    it('Checking the select Row Index', () => {
+        ganttObj.selectedRowIndex = 50;
+        expect(ganttObj.selectedRowIndex).toBe(50)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

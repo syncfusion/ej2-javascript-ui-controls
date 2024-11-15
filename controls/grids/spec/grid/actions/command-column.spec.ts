@@ -1005,4 +1005,58 @@ describe('Command Column ', () => {
             gridObj = null;
         });
     });
+    
+    describe('EJ2-917983 - Deleting with in the command column does not work when the delete confirmation dialog is enabled => ', function () {
+        let gridObj: Grid;
+        let actionBegin: (e?: Object) => void;
+        beforeAll(function (done: Function) {
+            gridObj = createGrid({
+                dataSource: data.slice(0, 30),
+                height: 270,
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    allowEditOnDblClick: false,
+                    showDeleteConfirmDialog: true,
+                },
+                allowPaging: true,
+                pageSettings: { pageCount: 5 },
+                allowSelection: false,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    {
+                        headerText: 'Manage Records', width: 160,
+                        commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                        { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                        { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                    }
+                ],
+            }, done);
+        });
+
+        it('Delete the cell', (done : Function) => {
+            (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[1].click();  
+            done();         
+        });
+        
+        it('Check the deleted record', (done : Function) => {
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect(args.data.length).toBe(1);
+                    done();
+                }
+            };            
+            gridObj.actionBegin = actionBegin;
+            select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+        });
+
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
+        });
+    });
 });

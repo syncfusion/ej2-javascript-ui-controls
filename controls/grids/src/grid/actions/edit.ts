@@ -551,6 +551,9 @@ export class Edit implements IAction {
         switch ((this.dialogObj.element.querySelector('.e-dlg-content').firstElementChild as HTMLElement).innerText) {
         case this.l10n.getConstant('ConfirmDelete'):
             this.editModule.deleteRecord(this.fieldname, this.data);
+            if (this.parent.editSettings.showDeleteConfirmDialog  && !this.parent.allowSelection) {
+                this.parent.commandDelIndex = undefined;
+            }
             break;
         case this.l10n.getConstant('CancelEdit'):
             this.editModule.closeEdit();

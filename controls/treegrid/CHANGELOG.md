@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I644706` - Resolved issues related to cell editing when virtualization is enabled.
+- `#I646360` - `Dialog` now renders properly when both the template column and detail template are enabled in Tree Grid.
+- `#I644696` - Page refreshes now prevented when adding a record on the last page with virtualization enabled.
+
 ## 27.1.56 (2024-10-23)
 
 ### Tree Grid

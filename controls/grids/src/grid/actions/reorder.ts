@@ -224,6 +224,7 @@ export class Reorder implements IAction {
             }
         }
         gObj.getColumns(true);
+        gObj.preventAutoFit = true;
         gObj.notify(events.columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
         if (preventRefresh !== false) {
             gObj.notify(events.modelChanged, {
@@ -424,6 +425,7 @@ export class Reorder implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
+        this.parent.preventAutoFit = false;
         this.parent.trigger(events.actionComplete, extend(e, { type: events.actionComplete }));
         const target: Element = this.fromCol && this.parent.getColumnHeaderByField(this.fromCol);
         if (target) {

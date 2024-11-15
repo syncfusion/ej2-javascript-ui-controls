@@ -122,8 +122,14 @@ export class ImageCommand {
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
             const onImageLoadEvent: () => void = () => {
                 if (!isNOU(this.parent.currentDocument)) {
-                    imgElm.setAttribute('width', (imgElm as HTMLElement).offsetWidth.toString());
-                    imgElm.setAttribute('height', (imgElm as HTMLElement).offsetHeight.toString());
+                    const imgWidth: string = imgElm.getAttribute('width');
+                    const imgHeight: string = imgElm.getAttribute('height');
+                    if (isNOU(imgWidth) || imgWidth === 'auto') {
+                        imgElm.setAttribute('width', (imgElm as HTMLElement).offsetWidth.toString());
+                    }
+                    if (isNOU(imgHeight) || imgHeight === 'auto') {
+                        imgElm.setAttribute('height', (imgElm as HTMLElement).offsetHeight.toString());
+                    }
                     e.callBack({
                         requestType: (e.value === 'Replace') ? (e.item.subCommand = 'Replace', 'Replace') : 'Images',
                         editorMode: 'HTML',

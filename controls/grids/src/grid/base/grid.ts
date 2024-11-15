@@ -1063,6 +1063,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public commandDelIndex: number = undefined;
     /** @hidden */
+    public preventAutoFit: boolean = false;
+    /** @hidden */
     public asyncTimeOut: number = 50;
     /** @hidden */
     public isExportGrid: boolean = false;
@@ -4092,8 +4094,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             break;
         case 'dataSource':
             // eslint-disable-next-line no-case-declarations
-            const pending: PendingState = this.getDataModule().getState();
-            if (this.allowSelection && this.isPersistSelection && !(pending && pending.isPending)) {
+            const requestPendingState: PendingState = this.getDataModule().getState();
+            if (this.allowPaging && this.pageSettings.pageSizes && !this.getDataModule().isRemote()
+                && !(requestPendingState && requestPendingState.isPending)) {
+                if (this.pagerModule.pagerObj.isAllPage) {
+                    const count: number = this.dataSource instanceof DataManager ? (this.dataSource as DataManager).dataSource.json.length :
+                        'result' in this.dataSource ? this.dataSource.count : (this.dataSource as Object[]).length;
+                    if ((this.pageSettings.pageSizes as Object[]).indexOf('All') === -1 && this.pageSettings.pageSize !== count) {
+                        this.pagerModule.pagerObj.isAllPage = false;
+                    } else {
+                        this.setProperties({ pageSettings: { pageSize: count } }, true);
+                        this.pagerModule.pagerObj.setProperties({ pageSize: count }, true);
+                    }
+                }
+            }
+            if (this.allowSelection && this.isPersistSelection && !(requestPendingState && requestPendingState.isPending)) {
                 this.clearSelection();
             }
             if (!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result) {
@@ -4106,12 +4121,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         getValue(pKeyField, this.dataSource[props[parseInt(i.toString(), 10)]]),
                         this.dataSource[props[parseInt(i.toString(), 10)]]);
                 }
-            } else if (pending.isPending) {
+            } else if (requestPendingState.isPending) {
                 let gResult: Object = !isNullOrUndefined(this.dataSource) ? (<DataResult>this.dataSource).result : [];
-                const names: string[] = (pending.group || []);
+                const names: string[] = (requestPendingState.group || []);
                 if (names.length && !this.groupSettings.enableLazyLoading && !((gResult as Object[]).length && gResult[0].field)) {
                     for (let i: number = 0; i < names.length; i++) {
-                        gResult = DataUtil.group(<Object[]>gResult, names[parseInt(i.toString(), 10)], pending.aggregates || []);
+                        gResult = DataUtil.group(<Object[]>gResult, names[parseInt(i.toString(), 10)], requestPendingState.aggregates
+                            || []);
                     }
                 }
                 this.dataSource = {
@@ -4119,7 +4135,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     aggregates: (<DataResult>this.dataSource).aggregates
                 };
                 this.getDataModule().setState({});
-                pending.resolver(this.dataSource);
+                requestPendingState.resolver(this.dataSource);
             } else {
                 if ((!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result
                  && (<DataResult>this.dataSource).count && this.groupSettings.columns.length)) {
@@ -4313,7 +4329,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.updateColumnModel(this.columns as Column[]);
         }
         const columns: Column[] = vLen === 0 ? this.columnModel :
-            this.columnModel.slice(inview[0], inview[vLen - 1] + 1);
+            this.getVisibleColumns().slice(inview[0], inview[vLen - 1] + 1);
         let left : Column[] = [];
         let right: Column[] = [];
         const movable: Column[] = [];
@@ -5225,12 +5241,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column by UID.
      *
      * @param  {string} uid - Specifies the column UID.
+     * @param  {boolean} isColumns - Defines the all columns.
      *
      * @returns {Column} Returns the column
      */
-    public getColumnByUid(uid: string): Column {
+    public getColumnByUid(uid: string, isColumns?: boolean): Column {
+        const cols: Column[] | string[] | ColumnModel[] = isColumns ? this.columns : this.getColumns();
         return iterateArrayOrObject<Column, Column>(
-            [...<Column[]>this.getColumns(), ...this.getStackedColumns(this.columns as Column[])],
+            [...<Column[]>cols, ...this.getStackedColumns(this.columns as Column[])],
             (item: Column) => {
                 if (item.uid === uid) {
                     return item;
@@ -6980,7 +6998,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.classList.add('e-device');
             this.enableAdaptiveUI = false;
         }
-        if (this.adaptiveUIMode === 'Mobile' && !Browser.isDevice) {
+        if (this.adaptiveUIMode === 'Mobile' && !(Browser.isDevice || this.rowRenderingMode === 'Vertical')) {
             this.enableAdaptiveUI = false;
         }
         if (this.rowHeight) {

@@ -1192,7 +1192,8 @@ export class Matrix {
 
     public get(rowIndex: number, columnIndex: number, navigator: number[], action?: string, validator?: Function): number[] {
         const tmp: number = columnIndex; if (rowIndex + navigator[0] < 0) { return [rowIndex, columnIndex]; }
-        if (!document.querySelectorAll('.e-popup-open:not(.e-dialog)').length || document.querySelectorAll('.e-popup-open.e-tooltip-wrap').length) {
+        if (!document.querySelectorAll('.e-popup-open:not(.e-dialog)').length || document.querySelectorAll('.e-popup-open.e-tooltip-wrap').length ||
+            document.querySelectorAll('.e-popup-open.e-multicolumn-list').length) {
             rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
         }
         let emptyTable: boolean = true;

@@ -567,11 +567,11 @@ export class Trendlines {
         const x3: number = xValues[xValues.length - 1] + trendline.forwardForecast;
         const y3: number = slopeInterceptExp.intercept * Math.exp(slopeInterceptExp.slope * x3);
         ptsExp.push(
-            this.getDataPoint(x1, y1, series, ptsExp.length));
+            this.getDataPoint(x1, isNaN(y1) ? 0 : y1, series, ptsExp.length));
         ptsExp.push(
-            this.getDataPoint(x2, y2, series, ptsExp.length));
+            this.getDataPoint(x2, isNaN(y2) ? 0 : y2, series, ptsExp.length));
         ptsExp.push(
-            this.getDataPoint(x3, y3, series, ptsExp.length));
+            this.getDataPoint(x3, isNaN(y3) ? 0 : y3, series, ptsExp.length));
         return ptsExp;
     }
 

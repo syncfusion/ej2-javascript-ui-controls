@@ -4824,10 +4824,11 @@ Remove terinal segment in initial
             if (obj instanceof Node) {
                 if (canRotate(obj) && canPageEditable(this.diagram)) {
                     if (includeParent !== false || parent !== obj) {
-                        oldValues = { rotateAngle: obj.rotateAngle } as Node;
-                        obj.rotateAngle += angle;
-                        obj.rotateAngle = (obj.rotateAngle + 360) % 360;
-                        const newOffset: PointModel = transformPointByMatrix(matrix, { x: obj.offsetX, y: obj.offsetY });
+                        //918299 - Flip and rotation of the group node now work properly by calculating the wrapper offset instead of the individual offset
+                        oldValues = { offsetX: obj.wrapper.offsetX, offsetY: obj.wrapper.offsetY, rotateAngle: obj.rotateAngle } as Node;
+                        //909137 - Undo Operation Improper After Rotating Node Counterclockwise. Remove the below line and add the angle to same line.
+                        obj.rotateAngle = ((obj.rotateAngle + angle) + 360) % 360;
+                        const newOffset: PointModel = transformPointByMatrix(matrix, { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY });
                         obj.offsetX = newOffset.x;
                         obj.offsetY = newOffset.y;
                         this.diagram.nodePropertyChange(
@@ -6121,8 +6122,7 @@ Remove terinal segment in initial
                     this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
                 }
                 if (actualObject instanceof Node &&
-                    actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader &&
-                    !checkParentAsContainer(this.diagram, actualObject)) {
+                    actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader) {
                     if (actualObject.offsetX !== actualObject.wrapper.offsetX || actualObject.offsetY !== actualObject.wrapper.offsetY ||
                         actualObject.width !== actualObject.wrapper.width || actualObject.height !== actualObject.wrapper.height ||
                         actualObject.rotateAngle !== actualObject.wrapper.rotateAngle) {
@@ -6137,9 +6137,7 @@ Remove terinal segment in initial
                 } else if (actualObject instanceof Selector) {
                     for (let i: number = 0; i < actualObject.nodes.length; i++) {
                         const node: Node = actualObject.nodes[i] as Node;
-                        if (node instanceof Node && node.shape.type !== 'SwimLane' &&
-                            !checkParentAsContainer(this.diagram, node)
-                            && !node.isLane
+                        if (node instanceof Node && node.shape.type !== 'SwimLane' && !node.isLane
                             && !node.isPhase && !node.isHeader) {
                             node.offsetX += offsetX; node.offsetY += offsetY;
                             node.width += width; node.height += height; node.rotateAngle += rotateAngle;

@@ -561,8 +561,9 @@ export class GanttTreeGrid {
                     }
                 }
                 let indexvalue: number = 0;
-                // To maintain 1st record selection, while deleting the last parent record
-                this.parent.flatData.map((data: Object, index: number) => {
+                const dataCollection: IGanttData[] = this.parent.enableVirtualization ? this.parent.flatData : this.parent.currentViewData;
+                // To maintain 1st record selection, while deleting the last parent record at Virtual mode
+                dataCollection.map((data: Object, index: number) => {
                     if (!isNullOrUndefined(this.parent.currentSelection)
                     && (data['ganttProperties'].taskId === this.parent.currentSelection[this.parent.taskFields.id]))  {
                         indexvalue = index;

@@ -97,7 +97,9 @@ export class CommandColumn {
                 gObj.selectRow(gObj.commandDelIndex, false);
                 gObj.isFocusFirstCell = true;
                 gObj.editModule.deleteRecord();
-                gObj.commandDelIndex = undefined;
+                if (!(gObj.editSettings.showDeleteConfirmDialog && !gObj.allowSelection)) {
+                    gObj.commandDelIndex = undefined;
+                }
                 break;
             }
         });

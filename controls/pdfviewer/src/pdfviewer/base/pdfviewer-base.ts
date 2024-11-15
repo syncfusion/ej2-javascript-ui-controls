@@ -4458,16 +4458,22 @@ export class PdfViewerBase {
                     switch (event.keyCode) {
                     case 72: { //h key
                         event.preventDefault();
-                        //this used to select pan mode
-                        this.pdfViewer.interactionMode = 'Pan';
-                        this.focusViewerContainer();
+                        if (this.pdfViewer.toolbarModule && this.pdfViewer.enableToolbar &&
+                            this.pdfViewer.toolbarSettings.toolbarItems.indexOf('PanTool') !== -1) {
+                            //this used to select pan mode
+                            this.pdfViewer.interactionMode = 'Pan';
+                            this.focusViewerContainer();
+                        }
                     }
                         break;
                     case 86: {   //v key
                         event.preventDefault();
-                        //this used to select text selection mode
-                        this.pdfViewer.interactionMode = 'TextSelection';
-                        this.focusViewerContainer();
+                        if (this.pdfViewer.toolbarModule && this.pdfViewer.enableToolbar &&
+                            this.pdfViewer.toolbarSettings.toolbarItems.indexOf('SelectionTool') !== -1) {
+                            //this used to select text selection mode
+                            this.pdfViewer.interactionMode = 'TextSelection';
+                            this.focusViewerContainer();
+                        }
                     }
                         break;
                     }

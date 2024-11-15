@@ -776,6 +776,35 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('917938 - Percentage values for height and width are not applied to images in the editor.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold', 'Formats']
+                },
+                insertImageSettings: { height: "100%", width: "100%", resizeByPercent : true }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Percentage values for height and width are not applied to images in the editor', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-rte-image")[0]
+            expect(target.getAttribute('width') === '100%').toBe(true);
+            expect(target.getAttribute('height') === '100%').toBe(true);
+        });
+    });
 
     describe('Inserting image and applying heading in IE11', () => {
         let rteEle: HTMLElement;

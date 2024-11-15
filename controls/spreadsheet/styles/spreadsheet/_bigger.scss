@@ -72,6 +72,15 @@
         }
       }
     }
+
+    & .e-menu-wrapper {
+      &.e-popup.e-menu-popup.e-chart-menu ul,
+      &.e-popup.e-menu-popup.e-chart-type-menu ul {
+        & .e-menu-item {
+          height: auto;
+        }
+      }
+    }
   }
 
   .e-bigger .e-spreadsheet,

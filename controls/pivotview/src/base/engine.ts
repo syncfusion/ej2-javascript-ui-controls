@@ -161,7 +161,6 @@ export class PivotEngine {
     private enablePaging: boolean = false;
     private enableVirtualization: boolean = false;
     private enableHtmlSanitizer: boolean = false;
-    private isParentLevelAdded: boolean = true;
     private enableOptimizedRendering: boolean = false;
     private groupedDataType: { [key: string]: string } = {};
 
@@ -3707,7 +3706,6 @@ export class PivotEngine {
                 } else {
                     this.rowFirstLvl = this.rowFirstLvl + headers[pos as number].level;
                 }
-                this.isParentLevelAdded = axis === 'column' ? (this.colFirstLvl > 0 ? false : true) : (this.rowFirstLvl > 0 ? false : true);
                 this.pageInLimit = true;
             }
             if (this.pageInLimit && !this.enablePaging) {
@@ -3739,11 +3737,6 @@ export class PivotEngine {
                 }
                 slicedHeaders[slicedHeaders.length - 1].members =
                     this.performSlicing(headers[pos as number].members, [], startPos, axis);
-            }
-            if (!this.isParentLevelAdded && this.enablePaging) {
-                this.memberCnt += (slicedHeaders[slicedHeaders.length - 1].level <= this.measureIndex ?
-                    (axis === 'column' ? this.colValuesLength : this.rowValuesLength) : 1) * slicedHeaders[slicedHeaders.length - 1].level;
-                this.isParentLevelAdded = true;
             }
             if (!this.pageInLimit) {
                 slicedHeaders.pop();

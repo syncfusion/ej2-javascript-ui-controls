@@ -566,6 +566,119 @@ describe('Auto fill ->', () => {
             done();
         });
     });
+    describe('Autofill with scrolling on wrap cells (Cells outside the viewport) ->', () => {
+        let spreadsheet: Spreadsheet; let sheet: any; let virtualTrack: HTMLElement;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ topLeftCell: 'A75', columns: [{ width: 180 }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Fill series down', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            spreadsheet.updateCell({ value: 'Romona Heaslip Hello Taurus Pink Cargo jnwdnnc' }, 'A2');
+            sheet = spreadsheet.sheets[0];
+            expect(sheet.topLeftCell).toBe('A75');
+            expect(sheet.rows[1].cells[0].wrap).toBeUndefined();
+            expect(sheet.rows[1].height).toBeUndefined();
+            expect(sheet.rows[1].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            virtualTrack = helper.getElementFromSpreadsheet('.e-sheet-content .e-virtualtrack');
+            expect(virtualTrack.style.height).toBe('2200px');
+            helper.invoke('wrap', ['A2:A2']);
+            expect(virtualTrack.style.height).toBe('2218px');
+            expect(sheet.rows[1].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[1].height).toBe(38);
+            expect(sheet.rows[2]).toBeUndefined();
+            helper.invoke('autoFill', ['A3:A80', 'A2', 'Down', 'FillSeries']);
+            expect(sheet.topLeftCell).toBe('A75');
+            expect(virtualTrack.style.height).toBe('3622px');
+            expect(sheet.rows[2].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[2].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[2].height).toBe(38);
+            expect(sheet.rows[30].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[30].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[30].height).toBe(38);
+            expect(sheet.rows[51].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[51].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[51].height).toBe(38);
+            expect(sheet.rows[65].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[65].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[65].height).toBe(38);
+            expect(sheet.rows[79].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[79].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[79].height).toBe(38);
+            done();
+        });
+        it('Fill without formatting down', (done: Function) => {
+            helper.invoke('wrap', ['A3:A80', false]);
+            expect(virtualTrack.style.height).toBe('2218px');
+            helper.invoke('autoFill', ['A3:A80', 'A2', 'Down', 'FillWithoutFormatting']);
+            expect(sheet.topLeftCell).toBe('A75');
+            expect(virtualTrack.style.height).toBe('2218px');
+            expect(sheet.rows[2].cells[0].wrap).toBeFalsy();
+            expect(sheet.rows[2].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[2].height).toBe(20);
+            expect(sheet.rows[30].cells[0].wrap).toBeFalsy();
+            expect(sheet.rows[30].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[30].height).toBe(20);
+            expect(sheet.rows[51].cells[0].wrap).toBeFalsy();
+            expect(sheet.rows[51].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[51].height).toBe(20);
+            expect(sheet.rows[65].cells[0].wrap).toBeFalsy();
+            expect(sheet.rows[65].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[65].height).toBe(20);
+            expect(sheet.rows[79].cells[0].wrap).toBeFalsy();
+            expect(sheet.rows[79].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[79].height).toBe(20);
+            done();
+        });
+        it('Fill formatting only down', (done: Function) => {
+            helper.invoke('autoFill', ['A3:A80', 'A2', 'Down', 'FillFormattingOnly']);
+            expect(sheet.topLeftCell).toBe('A75');
+            expect(virtualTrack.style.height).toBe('3622px');
+            expect(sheet.rows[2].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[2].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[2].height).toBe(38);
+            expect(sheet.rows[30].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[30].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[30].height).toBe(38);
+            expect(sheet.rows[51].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[51].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[51].height).toBe(38);
+            expect(sheet.rows[65].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[65].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[65].height).toBe(38);
+            expect(sheet.rows[79].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[79].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[79].height).toBe(38);
+            done();
+        });
+        it('Copy cells down', (done: Function) => {
+            helper.invoke('wrap', ['A3:A80', false]);
+            expect(virtualTrack.style.height).toBe('2218px');
+            helper.invoke('autoFill', ['A3:A80', 'A2', 'Down', 'CopyCells']);
+            expect(sheet.topLeftCell).toBe('A75');
+            expect(virtualTrack.style.height).toBe('3622px');
+            expect(sheet.rows[2].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[2].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[2].height).toBe(38);
+            expect(sheet.rows[30].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[30].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[30].height).toBe(38);
+            expect(sheet.rows[51].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[51].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[51].height).toBe(38);
+            expect(sheet.rows[65].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[65].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[65].height).toBe(38);
+            expect(sheet.rows[79].cells[0].wrap).toBeTruthy();
+            expect(sheet.rows[79].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
+            expect(sheet.rows[79].height).toBe(38);
+            done();
+        });
+    });
     describe('Not Providing Fill range and Data range in autofill ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);

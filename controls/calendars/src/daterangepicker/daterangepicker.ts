@@ -3414,6 +3414,21 @@ export class DateRangePicker extends CalendarBase {
         this.popupObj.hide();
         this.popupWrapper = this.createElement('div', { id: this.element.id + '_popup', className: ROOT + ' ' + POPUP });
         this.renderControl();
+        this.openEventArgs = {
+            popup: this.popupObj || null,
+            cancel: false,
+            date: this.inputElement.value,
+            model: this,
+            event: event ? event : null,
+            appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
+        };
+        const eventArgs: RangePopupEventArgs = this.openEventArgs;
+        this.trigger('open', eventArgs, (eventArgs: RangePopupEventArgs) => {
+            this.openEventArgs = eventArgs;
+            if (this.openEventArgs.cancel) {
+                return;
+            }
+        });
         this.openEventArgs.appendTo.appendChild(this.popupWrapper);
         this.showPopup();
         this.isCustomRange = true;

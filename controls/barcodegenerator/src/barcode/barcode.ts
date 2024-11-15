@@ -220,6 +220,8 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     }
 
     private initialize(): void {
+        //Task 913519: Barcode visibility issue and Dependabot issues
+        this.element.style.display = 'block';
         //Initialize the height of the barcode generator
         this.element.style.height = this.getElementSize(this.height);
         //Initialize the width of the barcode generator

@@ -8,7 +8,7 @@ import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition, calculateSize } from './utils/helper';
 import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle, querySelector } from './utils/helper';
-import { createStyle } from './utils/helper';
+import { createStyle, getProcessedMarginValue } from './utils/helper';
 import { ZoomSettings, LegendSettings } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
 import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel, PolygonSettingsModel } from './model/base-model';
@@ -1396,8 +1396,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const mapsElement: HTMLElement = document.getElementById(this.element.id);
         if (!isNullOrUndefined(mapsElement)) {
             const element: ClientRect = mapsElement.getBoundingClientRect();
+            const marginLeft: number = getProcessedMarginValue(this.margin.left);
             const minPosition: GeoPosition = this.isTileMap ?
-                this.pointToLatLong((this.mapAreaRect.x - this.margin.left), - this.mapAreaRect.y) :
+                this.pointToLatLong((this.mapAreaRect.x - marginLeft), - this.mapAreaRect.y) :
                 this.getGeoLocation(0, (this.mapAreaRect.x + element.left), this.mapAreaRect.y);
             const maxPosition: GeoPosition = this.isTileMap ? this.pointToLatLong(this.mapAreaRect.width,
                                                                                   (this.mapAreaRect.height - this.mapAreaRect.y)) :
@@ -1464,8 +1465,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const ele: Element = createElement('div', {
                 id: this.element.id + '_tile_parent'
             });
+            const marginRight: number = getProcessedMarginValue(this.margin.right);
             (ele as HTMLElement).style.cssText = 'position: absolute; left: ' +
-                (this.mapAreaRect.x) + 'px; right: ' + (this.margin.right) + 'px; top: '
+                (this.mapAreaRect.x) + 'px; right: ' + (marginRight) + 'px; top: '
                 + (this.mapAreaRect.y + padding) + 'px; height: ' +
                 (this.mapAreaRect.height) + 'px; width: '
                 + (this.mapAreaRect.width) + 'px; overflow: hidden;';
@@ -1473,7 +1475,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 id: this.element.id + '_tiles'
             });
             (ele1 as HTMLElement).style.cssText = 'position: absolute; left: ' +
-                (this.mapAreaRect.x) + 'px;  right: ' + (this.margin.right) + 'px; top: '
+                (this.mapAreaRect.x) + 'px;  right: ' + (marginRight) + 'px; top: '
                 + (this.mapAreaRect.y + padding) + 'px; height: ' + (this.mapAreaRect.height) + 'px; width: '
                 + (this.mapAreaRect.width) + 'px; overflow: hidden;';
             this.element.appendChild(ele);
@@ -1567,7 +1569,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             opacity: title.textStyle.opacity
         };
         let height: number;
-        const width: number = Math.abs((this.margin.left + this.margin.right) - this.availableSize.width);
+        const marginTop: number = getProcessedMarginValue(this.margin.top);
+        const marginBottom: number = getProcessedMarginValue(this.margin.bottom);
+        const marginLeft: number = getProcessedMarginValue(this.margin.left);
+        const marginRight: number = getProcessedMarginValue(this.margin.right);
+        const width: number = Math.abs((marginLeft + marginRight) - this.availableSize.width);
         style.fontFamily = !isNullOrUndefined(style.fontFamily) ? style.fontFamily : this.themeStyle.fontFamily;
         style.fontWeight = type === 'title' ? style.fontWeight || this.themeStyle.titleFontWeight : style.fontWeight || this.themeStyle.titleFontWeight;
         style.size = type === 'title' ? (style.size || this.themeStyle.titleFontSize) : (style.size || this.themeStyle.subTitleFontSize || Theme.mapsSubTitleFont.size);
@@ -1578,8 +1584,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const trimmedTitle: string = textTrim(width, title.text, style);
             const elementSize: Size = measureText(trimmedTitle, style);
             const rect: Rect = (isNullOrUndefined(bounds)) ? new Rect(
-                this.margin.left, this.margin.top, this.availableSize.width, this.availableSize.height) : bounds;
-            const location: Point = findPosition(rect, title.alignment, elementSize, type);
+                marginLeft, marginTop, this.availableSize.width, this.availableSize.height) : bounds;
+            const location: Point = findPosition(rect, !isNullOrUndefined(title.alignment) ? title.alignment : 'Center', elementSize, type);
             const options: TextOption = new TextOption(
                 this.element.id + '_Map_' + type, location.x, location.y, 'start', trimmedTitle
             );
@@ -1591,8 +1597,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             element.setAttribute('aria-label', title.text);
             element.setAttribute('role', 'region');
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
-                height = Math.abs((titleBounds.y + this.margin.bottom) - this.availableSize.height);
-                this.mapAreaRect = new Rect(this.margin.left, titleBounds.y + 10, width, height - 10);
+                height = Math.abs((titleBounds.y + marginBottom) - this.availableSize.height);
+                this.mapAreaRect = new Rect(marginLeft, titleBounds.y + 10, width, height - 10);
             }
             if (type !== 'subtitle' && title.subtitleSettings.text) {
                 this.renderTitle(title.subtitleSettings, 'subtitle', titleBounds, groupEle);
@@ -1600,8 +1606,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.svgObject.appendChild(groupEle);
             }
         } else {
-            height = Math.abs((this.margin.top + this.margin.bottom) - this.availableSize.height);
-            this.mapAreaRect = new Rect(this.margin.left, this.margin.top, width, height);
+            height = Math.abs((marginTop + marginBottom) - this.availableSize.height);
+            this.mapAreaRect = new Rect(marginLeft, marginTop, width, height);
         }
     }
 
@@ -2509,7 +2515,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public shapeSelection(layerIndex: number, propertyName: string | string[], name: string, enable?: boolean): void {
-        if (!this.isDestroyed) {
+        if (!this.isDestroyed && !isNullOrUndefined(this.layers[layerIndex as number])) {
             let targetEle: Element;
             let subLayerIndex: number;
             const popertyNameArray: string[] = Array.isArray(propertyName) ? propertyName : Array(propertyName);
@@ -2528,7 +2534,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             }
-            if (selectionsettings.enable) {
+            if (!isNullOrUndefined(selectionsettings) && selectionsettings.enable) {
                 let targetId: string;
                 let dataIndex: number;
                 let shapeIndex: number;
@@ -3279,9 +3285,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {GeoPosition}- Returns the geographical coordinates.
      */
     public getGeoLocation(layerIndex: number, x: number, y: number): GeoPosition {
-        let latitude: number = 0;
-        let longitude: number = 0;
-        if (!this.isDestroyed) {
+        let latitude: number = null;
+        let longitude: number = null;
+        if (!this.isDestroyed && !this.isTileMap) {
             const container: HTMLElement = document.getElementById(this.element.id);
             const elementClientRect: ClientRect = this.element.getBoundingClientRect();
             const pageX: number = x - container.offsetLeft - (elementClientRect.left - container.offsetLeft) - window.scrollX;
@@ -3314,16 +3320,18 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {GeoPosition} - Returns the geographical coordinates.
      */
     public getTileGeoLocation(x: number, y: number): GeoPosition {
-        let latitude: number = 0;
-        let longitude: number = 0;
-        if (!this.isDestroyed) {
-            const ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const latLong: any = this.pointToLatLong(
-                x + this.mapAreaRect.x - ele.offsetLeft,
-                y + this.mapAreaRect.y - ele.offsetTop);
-            latitude = latLong['latitude'];
-            longitude = latLong['longitude'];
+        let latitude: number = null;
+        let longitude: number = null;
+        if (this.isTileMap) {
+            const element: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
+            if (!this.isDestroyed && !isNullOrUndefined(element)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const latLong: any = this.pointToLatLong(
+                    x + this.mapAreaRect.x - element.offsetLeft,
+                    y + this.mapAreaRect.y - element.offsetTop);
+                latitude = latLong['latitude'];
+                longitude = latLong['longitude'];
+            }
         }
         return { latitude: latitude, longitude: longitude };
     }

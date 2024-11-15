@@ -1055,7 +1055,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.dlgClosedBy = DLG_ESCAPE_CLOSED;
             const query: HTMLElement = <HTMLElement>document.querySelector('.e-popup-open:not(.e-dialog)');
             // 'document.querySelector' is used to find the elements rendered based on body
-            if (!(!isNullOrUndefined(query) && !query.classList.contains('e-toolbar-pop'))){
+            if (!(!isNullOrUndefined(query) && !query.classList.contains('e-toolbar-pop') && !query.classList.contains('e-slider-tooltip'))){
                 this.hide(event);
             }
         }
@@ -1870,6 +1870,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (this.enableResize) {
             this.setResize();
+        }
+        if (!isNullOrUndefined(this.targetEle)) {
+            if (this.isModal && !isNullOrUndefined(this.dlgContainer)) {
+                this.targetEle.appendChild(this.dlgContainer);
+            } else if (!isNullOrUndefined(this.element)) {
+                this.targetEle.appendChild(this.element);
+            }
         }
     }
 

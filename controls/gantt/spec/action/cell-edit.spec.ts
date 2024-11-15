@@ -1436,7 +1436,7 @@ describe('Work', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
     });
     it('Editing Work column with fixed work', () => {
-         expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[69.83%],Resource 1[69.83%]');
+        expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[69.83%],Resource 1[69.83%]');
          expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0][ganttObj.resourceFields.unit]).toBe(69.83);
          expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1][ganttObj.resourceFields.unit]).toBe(69.83);
          expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(20);

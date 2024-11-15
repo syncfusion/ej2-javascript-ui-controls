@@ -1136,7 +1136,7 @@ export class Table {
             return;
         }
         const target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
-        const closestTable: Element = closest(target, 'table.e-rte-table, table.e-rte-paste-table');
+        const closestTable: Element = closest(target, 'table.e-rte-table, table.e-rte-paste-table, table.e-rte-custom-table');
         const isResizing: boolean = this.parent.contentModule.getEditPanel().querySelectorAll('.e-table-box.e-rbox-select, .e-table-rhelper.e-column-helper, .e-table-rhelper.e-row-helper').length > 0;
         if (!isResizing && !isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable &&
             this.parent.contentModule.getEditPanel().contains(closestTable)) {

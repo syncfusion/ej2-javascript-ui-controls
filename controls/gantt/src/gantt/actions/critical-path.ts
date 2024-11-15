@@ -588,7 +588,9 @@ export class CriticalPath {
         if (fromDataObject) {
             fromDataObject.splice(0, 1);
             if (fromDataObject.length > 0) {
-                this.slackCalculation(fromDataObject, collection, collectionTaskId, checkEndDate, flatRecords, modelRecordIds);
+                fromDataObject.forEach((item: any) => {
+                    this.slackCalculation([item], collection, collectionTaskId, checkEndDate, flatRecords, modelRecordIds);
+                });
             }
         }
     }

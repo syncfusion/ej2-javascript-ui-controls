@@ -2856,6 +2856,7 @@ export let updatePortEdges: Function = (portContent: DiagramElement, flip: FlipD
 export let alignElement: Function = (element: Container, offsetX: number, offsetY: number, diagram: Diagram, flip: FlipDirection): void => {
     if (element.hasChildren()) {
         for (let child of element.children) {
+            child.flip = flip;
             let childX: number = ((offsetX - child.offsetX) + offsetX);
             let childY: number = ((offsetY - child.offsetY) + offsetY);
             if (flip === 'Horizontal' || flip === 'Both') {

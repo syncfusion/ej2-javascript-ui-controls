@@ -760,7 +760,8 @@ export class Clipboard {
                     let hgt: number =
                         getTextHeightWithBorder(this.parent as Workbook, rIdx, cIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ?
                             getLines(this.parent.getDisplayText(cell),
-                                     getExcludedColumnWidth(sheet, rIdx, cIdx), cell.style, this.parent.cellStyle) : 1);
+                                     getExcludedColumnWidth(sheet, rIdx, cIdx, cell.colSpan > 1 ? cIdx + cell.colSpan - 1 : cIdx),
+                                     cell.style, this.parent.cellStyle) : 1);
                     hgt = Math.round(hgt);
                     if (hgt < 20) {
                         hgt = 20; // default height

@@ -34,6 +34,8 @@ export class Edit {
     private prevAriaRowIndex: string = '-1';
     private isAddedRowByMethod: boolean = false;
     private isAddedRowByContextMenu: boolean = false;
+    private editedRowIndex: number;
+    private isScrollByFocus : boolean;
     /**
      * Constructor for Edit module
      *
@@ -302,7 +304,7 @@ export class Edit {
             this.recordDoubleClick(args as Object);
         }
         if (args.action === 'escape') {
-            this.parent.closeEdit();
+            this.closeEdit();
         }
     }
 
@@ -370,6 +372,9 @@ export class Edit {
     private batchCancel(): void {
         if (this.parent.editSettings.mode === 'Cell') {
             const cellDetails: RowInfo = getValue('editModule.cellDetails', this.parent.grid.editModule);
+            if (!isNullOrUndefined(this.editedRowIndex)) {
+                cellDetails.rowIndex = this.editedRowIndex;
+            }
             const treeCell: HTMLElement = this.parent.getCellFromIndex(cellDetails.rowIndex, this.parent.treeColumnIndex) as HTMLElement;
             this.parent.renderModule.cellRender({
                 data: cellDetails.rowData,
@@ -684,6 +689,7 @@ export class Edit {
                     this.prevAriaRowIndex = '-1';
                 }
                 if (!this.parent.enableVirtualization || this.parent.enableVirtualization && !Object.keys(this.parent.grid.contentModule['emptyRowData']).length) {
+                    this.isScrollByFocus = true;
                     focussedElement.focus();
                 }
                 if (this.parent.enableVirtualization && !Object.keys(this.parent.grid.contentModule['emptyRowData']).length) {
@@ -1050,5 +1056,18 @@ export class Edit {
             }
             this.parent.grid.editModule.editCell(rowIndex, field);
         }
+    }
+
+    /**
+     * Cancels edited state.
+     *
+     * @returns {void}
+     */
+    private closeEdit(): void {
+        if (this.parent.enableVirtualization && this.parent.grid.editSettings.mode === 'Batch' && this.parent.grid.pageSettings.currentPage > 1) {
+            this.editedRowIndex = this.parent.grid.editModule.editModule['cellDetails'].rowIndex;
+            this.parent.grid.editModule.editModule['cellDetails'].rowIndex = parseInt(this.parent.getRows()[this.parent.grid.editModule.editModule['cellDetails'].rowIndex].getAttribute('data-rowIndex'), 10);
+        }
+        this.parent.grid.editModule.closeEdit();
     }
 }

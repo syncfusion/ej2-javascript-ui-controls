@@ -538,7 +538,7 @@ describe('UI Spec ', () => {
 
         it('Should have proper height when the image is loaded.', (done: DoneFn) => {
             setTimeout(() => {
-                expect((editor.contentModule.getPanel() as HTMLElement).style.height).toBe('244px');
+                expect((editor.contentModule.getPanel() as HTMLElement).style.height).toBe('233px');
                 done();
             }, 400);
         });

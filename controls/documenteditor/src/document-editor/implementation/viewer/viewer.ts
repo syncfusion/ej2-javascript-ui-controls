@@ -1863,7 +1863,7 @@ export class DocumentHelper {
                 reject();
             };
             if (base64String && (HelperMethods.startsWith(base64String, 'http://') || HelperMethods.startsWith(base64String, 'https://'))) {
-                fetch(base64String).then((response: Response) => {
+                fetch(base64String, { cache: 'no-cache' }).then((response: Response) => {
                     return response.blob();
                 }).then((blob: Blob) => {
                     return new Promise((resolve, reject) => {
@@ -1994,7 +1994,7 @@ export class DocumentHelper {
                 this.owner.isUpdateTrackChanges = true;
             }
         });
-        let picture_cc: HTMLElement = document.getElementById('container_editorPICTURE_CONTENT_CONTROL');
+        let picture_cc: HTMLElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
         if (!isNullOrUndefined(picture_cc)) {
             this.owner.renderPictureContentControlElement(this.owner, false, false);
         }
@@ -2659,7 +2659,14 @@ export class DocumentHelper {
                     }      
                 }
                 if (!formField && this.isFormFillProtectedMode) {
-                    this.selection.navigateToNextFormField();
+                    let contentControl: ContentControl = this.owner.editor.getContentControl();
+                    let canEditContentControl = false;
+                    if ((!isNullOrUndefined(contentControl) && contentControl instanceof ContentControl && !contentControl.contentControlProperties.lockContentControl)) {
+                        canEditContentControl = true;
+                    }
+                    if (!canEditContentControl) {
+                        this.selection.navigateToNextFormField();
+                    }
                 }
             } else if (this.isMouseDown) {
                 if (this.formFields.length > 0) {
@@ -6399,6 +6406,10 @@ export class PageLayoutViewer extends LayoutViewer {
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.currentPage !== undefined && this.owner.imageResizerModule.currentPage === page && this.owner.imageResizerModule.isImageResizerVisible) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
+        const pictureElement: HTMLElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
+        if (!isNullOrUndefined(pictureElement) && pictureElement.style.display !== 'none') {
+            this.owner.setPictureContentControlPositions(pictureElement);
+        }
         this.visiblePages.push(page);
         if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellCheckerModule.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && (this.documentHelper.cachedPages.indexOf(page.index) < 0 || this.owner.editorModule.isPasteContentCheck)) {
             this.owner.documentHelper.cachedPages.push(page.index);
@@ -6583,6 +6594,10 @@ export class WebLayoutViewer extends LayoutViewer {
         let height: number = this.getContentHeight() * this.documentHelper.zoomFactor + this.padding.top + this.padding.bottom;
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.currentPage !== undefined && this.owner.imageResizerModule.currentPage === page && this.owner.imageResizerModule.isImageResizerVisible) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
+        }
+        const pictureElement: HTMLElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
+        if (!isNullOrUndefined(pictureElement) && pictureElement.style.display !== 'none') {
+            this.owner.setPictureContentControlPositions(pictureElement);
         }
         this.visiblePages.push(page);
         if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellCheckerModule.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && (this.documentHelper.cachedPages.indexOf(page.index) < 0 || this.owner.editorModule.isPasteContentCheck)) {

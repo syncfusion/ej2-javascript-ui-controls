@@ -1595,6 +1595,11 @@ describe('code coverage for excel filter file - 1 => ', () => {
         (gridObj.element.getElementsByClassName('e-filtermenudiv')[1] as any).click();
     });
 
+    it('preventClose code coverage', () => {
+        gridObj.filterModule.filterModule.excelFilterBase.options.isResponsiveFilter = true;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.preventClose({ event: { target: {}}});
+    });
+
     it('excel filter file method and fucntion code coverage', () => {
         (gridObj.filterModule as any).filterModule.excelFilterBase.selectHandler({});
         (gridObj.filterModule as any).filterModule.excelFilterBase.excelSetFocus();

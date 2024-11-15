@@ -283,7 +283,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public refreshColOffsets(): void {
         let col: number = 0; this.cOffsets = {}; const gLen: number = this.parent.groupSettings.columns.length;
-        const cols: Column[] = (<Column[]>this.parent.columns);
+        const cols: Column[] = (<Column[]>this.parent.getVisibleColumns());
         const cLen: number = cols.length;
         const isVisible: Function = (column: Column) => column.visible &&
             (!this.parent.groupSettings.showGroupedColumn ? this.parent.groupSettings.columns.indexOf(column.field) < 0 : column.visible);

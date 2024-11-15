@@ -324,4 +324,25 @@ describe('Iframe Content renderer module', () => {
             destroy(editor);
         });
     });
+
+    describe('917928 - Slow Image resizing in IFrame Editor is not smooth.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+                value: `<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 100%; height: 400px;">`,
+                height: 400
+            });
+        });
+        it('Should have the box sizing border border box for the image.', () => {
+            const image: HTMLImageElement = editor.inputElement.querySelector('img') as HTMLImageElement;
+            const computedStyle: CSSStyleDeclaration = editor.inputElement.ownerDocument.defaultView.getComputedStyle(image);
+            expect(computedStyle.boxSizing).toBe('border-box');
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+    });
 });

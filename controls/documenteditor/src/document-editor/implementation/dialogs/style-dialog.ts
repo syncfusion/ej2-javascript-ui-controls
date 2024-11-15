@@ -842,6 +842,8 @@ export class StyleDialog {
                 tmpStyle.type = this.getTypeValue();
                 tmpStyle.name = styleName;
                 tmpStyle.basedOn = basedOn;
+                tmpStyle.characterFormat=this.characterFormat;
+                tmpStyle.paragraphFormat=this.paragraphFormat;
                 this.documentHelper.styles.push(tmpStyle as any);
                 this.documentHelper.addToStylesMap(tmpStyle);
                 name = styleName;

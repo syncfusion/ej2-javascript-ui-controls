@@ -1838,4 +1838,55 @@ describe('Resize module', () => {
         });
     });
 
+    describe('EJ2-917434 - Resized column width getting reset after column reorder', () => {
+        let gridObj: Grid;
+        let initialValue: boolean = true;
+        let resizeColumnValue: string;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowResizing: true,
+                    allowReordering: true,
+                    width: 700,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ],
+                    dataBound: function () {
+                        if (initialValue) {
+                            initialValue = false;
+                            gridObj.autoFitColumns([]);
+                            resizeColumnValue = (gridObj.columns[1] as any).width;
+                            done();
+                        }
+                    }
+                }, done);
+        });
+    
+        it('Resizing the column', (done: Function) => {
+            const handler: Element = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[1];
+            (gridObj.resizeModule as any).resizeStart({ target: handler, pageX: 0 });
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 150 });
+            (gridObj.resizeModule as any).resizeEnd({ target: handler });
+            done();
+        });
+
+        it('Reorder the column', (done: Function) => {
+            gridObj.reorderColumns('CustomerID', 'ShipCountry');
+            done();
+        });
+
+        it('Column width', (done: Function) => {
+            expect(gridObj.getColumns()[4].width).not.toEqual(resizeColumnValue);
+            done();
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

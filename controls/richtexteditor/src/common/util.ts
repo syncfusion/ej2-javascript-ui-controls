@@ -83,7 +83,8 @@ export function updateTextNode(value: string, enterAction?: string): string {
         }
         const tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
         for (let i: number = 0; i < tableElm.length; i++) {
-            if (tableElm[i as number].classList.length > 0 && !tableElm[i as number].classList.contains('e-rte-table')) {
+            if (tableElm[i as number].classList.length > 0 && !tableElm[i as number].classList.contains('e-rte-table') &&
+            !tableElm[i as number].classList.contains('e-rte-custom-table')) {
                 tableElm[i as number].classList.add('e-rte-paste-table');
                 if (tableElm[i as number].classList.contains('e-rte-paste-word-table')) {
                     tableElm[i as number].classList.remove('e-rte-paste-word-table');

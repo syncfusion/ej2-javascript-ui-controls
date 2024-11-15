@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I648755` - Fixed an issue where, with sequential upload enabled, if the first file is paused, the second file will not automatically start uploading.
+
+### TextBox
+
+#### Bug Fixes
+
+- `#I648833` - Fixed an issue with the floating label and border changes that occur upon clicking the reset button.
+
 ## 27.1.58 (2024-11-05)
 
 ### NumericTextBox

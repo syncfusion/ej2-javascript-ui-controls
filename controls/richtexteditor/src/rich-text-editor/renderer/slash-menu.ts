@@ -160,6 +160,14 @@ export class SlashMenu {
                         this.parent.executeCommand('formatBlock', itemModel.subCommand);
                         break;
                     }
+                } else {
+                    if (this.parent.inputElement.classList.contains('e-mention')) {
+                        const slashMenuPopup: HTMLElement = this.parent.inputElement.ownerDocument.getElementById(this.parent.inputElement.id + '_slash_menu_popup');
+                        const isSlashMenuPopupOpen: boolean = slashMenuPopup && slashMenuPopup.classList.contains('e-popup-open');
+                        if (isSlashMenuPopupOpen) {
+                            this.mention.hidePopup();
+                        }
+                    }
                 }
             }
         });

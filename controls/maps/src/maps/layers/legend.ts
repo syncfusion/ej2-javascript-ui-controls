@@ -755,13 +755,13 @@ export class Legend {
                 if (textEle.textContent === collection[i as number]['text'] && collection[i as number]['data'].length > 0
                 && idIndex === i) {
                     const layer: LayerSettingsModel = this.maps.layers[collection[i as number]['data'][0]['layerIndex']];
-                    let enable: boolean; let module: HighlightSettingsModel | SelectionSettingsModel;
+                    let enable: boolean; let legendModule: HighlightSettingsModel | SelectionSettingsModel;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     let data: any[];
                     if (!isNullOrUndefined(layer)) {
                         enable = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
-                        module = void 0;
-                        module = (value === 'selection') ? layer.selectionSettings : layer.highlightSettings;
+                        legendModule = void 0;
+                        legendModule = (value === 'selection') ? layer.selectionSettings : layer.highlightSettings;
                         data = collection[i as number]['data'];
                     }
 
@@ -808,14 +808,14 @@ export class Legend {
                                     const shapeOldFillOpacity: string = this.legendHighlightCollection[length - 1]['shapeOldOpacity'];
                                     this.shapePreviousColor = this.legendHighlightCollection[length - 1]['shapeOldFillColor'];
                                     this.setColor(
-                                        shapeElement, !isNullOrUndefined(module.fill) ? module.fill : shapeOldColor,
-                                        isNullOrUndefined(module.opacity) ? shapeOldFillOpacity : module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
+                                        shapeElement, !isNullOrUndefined(legendModule.fill) ? legendModule.fill : shapeOldColor,
+                                        isNullOrUndefined(legendModule.opacity) ? shapeOldFillOpacity : legendModule.opacity.toString(), legendModule.border.color, legendModule.border.width.toString(), 'highlight');
                                     this.setColor(
-                                        targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor,
-                                        isNullOrUndefined(module.opacity) ? shapeOldFillOpacity : module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
+                                        targetElement, !isNullOrUndefined(legendModule.fill) ? legendModule.fill : legendHighlightColor,
+                                        isNullOrUndefined(legendModule.opacity) ? shapeOldFillOpacity : legendModule.opacity.toString(), legendModule.border.color, legendModule.border.width.toString(), 'highlight');
                                 } else if (value === 'selection') {
                                     this.legendHighlightCollection = [];
-                                    this.maps.legendSelectionClass = module;
+                                    this.maps.legendSelectionClass = legendModule;
                                     if (j === 0) {
                                         this.pushCollection(
                                             targetElement, this.maps.legendSelectionCollection, collection[i as number],
@@ -836,11 +836,11 @@ export class Legend {
                                     this.maps.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeElement);
                                     this.maps.legendSelectionCollection[selectLength - 1]['shapeOldFillColor'] = this.shapePreviousColor;
                                     this.setColor(
-                                        targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor,
-                                        module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                                        targetElement, !isNullOrUndefined(legendModule.fill) ? legendModule.fill : legendSelectionColor,
+                                        legendModule.opacity.toString(), legendModule.border.color, legendModule.border.width.toString(), 'selection');
                                     this.setColor(
-                                        shapeElement, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor,
-                                        module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                                        shapeElement, !isNullOrUndefined(legendModule.fill) ? legendModule.fill : legendSelectionColor,
+                                        legendModule.opacity.toString(), legendModule.border.color, legendModule.border.width.toString(), 'selection');
                                     if (this.maps.selectedElementId.indexOf(shapeElement.getAttribute('id')) === - 1) {
                                         this.maps.selectedElementId.push(shapeElement.getAttribute('id'));
                                     }
@@ -954,7 +954,7 @@ export class Legend {
     }
 
     public shapeHighLightAndSelection(
-        targetElement: Element, data: object, module: SelectionSettingsModel | HighlightSettingsModel,
+        targetElement: Element, data: object, legendModule: SelectionSettingsModel | HighlightSettingsModel,
         getValue: string, layerIndex: number): void {
         if (data !== undefined) {
             this.updateLegendElement();
@@ -1001,7 +1001,7 @@ export class Legend {
                     const selectionIndex: number = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
                     if (selectionIndex === -1) {
                         this.maps.selectedLegendElementId.push(indexes['actualIndex']);
-                        this.maps.legendSelectionClass = <SelectionSettingsModel>module;
+                        this.maps.legendSelectionClass = <SelectionSettingsModel>legendModule;
                     } else {
                         if ((checkSelection <= 1) && (targetElement.getAttribute('class') === 'ShapeselectionMapStyle'
                             || targetElement.getAttribute('class') === 'LineselectionMapStyle')) {
@@ -1067,15 +1067,15 @@ export class Legend {
                             } else if (j === length - 1) {
                                 this.removeShapeHighlightCollection();
                                 this.setColor(
-                                    legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'),
-                                    module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
+                                    legendShape, !isNullOrUndefined(legendModule.fill) ? legendModule.fill : legendShape.getAttribute('fill'),
+                                    legendModule.opacity.toString(), legendModule.border.color, legendModule.border.width.toString(), 'highlight');
                             }
                         }
                     } else {
                         this.removeShapeHighlightCollection();
                         this.setColor(
-                            legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'),
-                            module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
+                            legendShape, !isNullOrUndefined(legendModule.fill) ? legendModule.fill : legendShape.getAttribute('fill'),
+                            !isNullOrUndefined(legendModule.opacity) ? legendModule.opacity.toString() : '1', legendModule.border.color, legendModule.border.width.toString(), 'highlight');
                     }
                 } else if (getValue === 'selection') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1084,7 +1084,7 @@ export class Legend {
                         let j: number = 0;
                         while (j < this.maps.legendSelectionCollection.length) {
                             if (shapeElement['LegendEle'] !== this.maps.legendSelectionCollection[j as number]['legendElement'] &&
-                                !(<SelectionSettingsModel>module).enableMultiSelect) {
+                                !(<SelectionSettingsModel>legendModule).enableMultiSelect) {
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 const element: any = this.maps.legendSelectionCollection[j as number];
                                 const selectedLegendIndex: number = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
@@ -1100,14 +1100,14 @@ export class Legend {
                         selectionEle['IsSelected'] && (targetElement.getAttribute('class') === 'ShapeselectionMapStyle'
                             || targetElement.getAttribute('class') === 'LineselectionMapStyle'))) {
                         let multiSelection: number = 0;
-                        if ((<SelectionSettingsModel>module).enableMultiSelect) {
+                        if ((<SelectionSettingsModel>legendModule).enableMultiSelect) {
                             for (let i: number = 0; i < shapeElement['Elements'].length; i++) {
                                 if (targetElement.getAttribute('class') === shapeElement['Elements'][i as number].getAttribute('class')) {
                                     multiSelection++;
                                 }
                             }
                         }
-                        if (multiSelection <= 1 && (!(<SelectionSettingsModel>module).enableMultiSelect ?
+                        if (multiSelection <= 1 && (!(<SelectionSettingsModel>legendModule).enableMultiSelect ?
                             this.maps.legendSelection : true)) {
                             this.maps.selectedLegendElementId.splice(this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']), 1);
                             if (!isNullOrUndefined(shapeElement['LegendEle'])) {
@@ -1136,12 +1136,12 @@ export class Legend {
                         if (addId) {
                             this.maps.selectedLegendElementId.push(indexes['actualIndex']);
                         }
-                        this.maps.legendSelectionClass = <SelectionSettingsModel>module;
+                        this.maps.legendSelectionClass = <SelectionSettingsModel>legendModule;
                         this.removeLegend(this.shapeHighlightCollection);
                         if (!isNullOrUndefined(legendShape)) {
                             this.setColor(
-                                legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'),
-                                module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                                legendShape, !isNullOrUndefined(legendModule.fill) ? legendModule.fill : legendShape.getAttribute('fill'),
+                                !isNullOrUndefined(legendModule.opacity) ? legendModule.opacity.toString() : '1', legendModule.border.color, legendModule.border.width.toString(), 'selection');
                             const legendSelectionIndex: number = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
                             this.maps.legendSelectionCollection[legendSelectionIndex as number]['MapShapeCollection']['Elements'].push(targetElement);
                         }
@@ -1217,10 +1217,10 @@ export class Legend {
         const collection: any[] = this.maps.legendModule.legendCollection;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let currentCollection: any[];
-        if (legendType === 'Default' && !isNullOrUndefined(this.maps.legendModule.totalPages)) {
+        if (legendType === 'Default' && !isNullOrUndefined(this.maps.legendModule.totalPages) && (this.maps.legendModule.totalPages.length > 0)) {
             currentCollection = this.maps.legendModule.totalPages[this.maps.legendModule.currentPage]['Collection'];
         }
-        const currentCollectionLength: number = legendType === 'Default' ? currentCollection['length'] : 1;
+        const currentCollectionLength: number = (legendType === 'Default' && !isNullOrUndefined(currentCollection)) ? currentCollection['length'] : 1;
         for (let i: number = 0; i < collection.length; i++) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const dataValue: any[] = collection[i as number]['data'];
@@ -1685,7 +1685,7 @@ export class Legend {
                 if (!isNullOrUndefined(dataSource) && dataSource.length > 0) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
-                        const equalValue: string = ((colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, colorValuePath)) :
+                        const equalValue: string = ((colorValuePath && colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, colorValuePath)) :
                             (data[colorValuePath as string]));
                         if (equalValue === colorMap.value) {
                             eqaulColorProcess = true;
@@ -1778,7 +1778,8 @@ export class Legend {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const newData: any[] = [];
                 const legendFill: string = (isNullOrUndefined(fill)) ? dataValue : fill;
-                if (!isNullOrUndefined(dataValue) && colorMapping.length === 0) {
+                if (!isNullOrUndefined(dataValue) && colorMapping.length === 0 &&
+                    (!isNullOrUndefined(valuePath) || !isNullOrUndefined(dataPath))) {
                     legendText = !isNullOrUndefined(data[valuePath as string]) ? ((valuePath.indexOf('.') > -1) ?
                         getValueFromObject(data, valuePath) : data[valuePath as string]) : ((dataPath.indexOf('.') > -1) ?
                         getValueFromObject(data, dataPath) : data[dataPath as string]);

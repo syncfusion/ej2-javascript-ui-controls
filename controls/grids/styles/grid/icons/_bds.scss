@@ -18,6 +18,18 @@
       content: '\e748';
     }
 
+    .e-icon-autofit::before {
+      content: '\e914';
+    }
+
+    .e-icon-autofitall::before {
+      content: '\e915';
+    }
+
+    .e-icon-columnchooser::before {
+      content: '\e916';
+    }
+
     .e-icon-ascending::before {
       content: '\e7df';
     }
@@ -189,6 +201,18 @@
     content: '\e7d8';
   }
 
+  & .e-rescolumn-icon.e-icons::before {
+    content: '\e9db';
+  }
+
+  & .e-resautofit-icon.e-icons::before {
+    content: '\e9d9';
+  }
+
+  & .e-resautofitall-icon.e-icons::before {
+    content: '\e9da';
+  }
+
   & .e-resgroup-icon.e-icons::before,
   & .e-resungroup-icon.e-icons::before {
     content: '\e724';
@@ -207,6 +231,9 @@
   }
   .e-menu-icon.e-csvexport::before {
     content: '\e7ba';
+  }
+  .e-menu-icon.e-columnchooser::before {
+    content: '\e9db';
   }
 }
 

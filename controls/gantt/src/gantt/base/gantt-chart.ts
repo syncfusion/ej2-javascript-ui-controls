@@ -683,8 +683,11 @@ export class GanttChart {
      * @returns {void}
      */
     public onTaskbarClick(e: PointerEvent | KeyboardEventArgs, target: EventTarget, taskbarElement: Element): void {
+        let rowIndex: number;
         const chartRow: Node = closest(target as Element, 'tr');
-        const rowIndex: number = getValue('rowIndex', chartRow);
+        if (!isNullOrUndefined(chartRow)) {
+            rowIndex = getValue('rowIndex', chartRow);
+        }
         const data: IGanttData = this.getRecordByTarget(e);
         const args: ITaskbarClickEventArgs = {
             data: data,

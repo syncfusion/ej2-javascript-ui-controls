@@ -15,7 +15,7 @@ import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { Query } from '@syncfusion/ej2-data';
+import { Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSearchBeginEventArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
@@ -3776,4 +3776,50 @@ describe('coverage improvemnet.', () => {
         });
     });
 
+    describe('EJ2-914578: Need to support on-demand support for Excel/Checkbox filtering in custom binding  =>', () => {
+        let gridObj: Grid;
+        let dataStateChange: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: { result: filterData, count: filterData.length },
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'CheckBox', enableInfiniteScrolling: true },
+                    columns: [{ field: 'OrderID', type: 'number' },
+                    { field: 'CustomerID' }
+                    ],
+                    dataStateChange: dataStateChange,
+                },
+                done);
+        });
+        
+        it('coverage for custom data =>', (done: Function) => {
+            dataStateChange = (state?: any): void => {
+                if (state.action && (state.action.requestType === 'filterchoicerequest' || state.action.requestType === 'filterSearchBegin' ||
+                    state.action.requestType === 'stringfilterrequest')) {
+                    var query = new Query();
+                    query.skip(state.skip);
+                    query.take(state.take);
+                    if (gridObj.filterSettings.enableInfiniteScrolling && state.requiresCounts) {
+                        query.isCountRequired = state.requiresCounts;
+                    }
+                    state.dataSource(new DataManager(filterData).executeLocal(query));
+                }
+                done();
+            };
+            gridObj.dataStateChange = dataStateChange;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('makeInfiniteScrollRequest coverage =>', (done: Function) => {
+            (gridObj.filterModule as any).filterModule.checkBoxBase.makeInfiniteScrollRequest();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

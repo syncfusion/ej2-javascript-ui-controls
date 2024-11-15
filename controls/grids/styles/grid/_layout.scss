@@ -322,6 +322,10 @@
         @include grid-margin-padding($grid-columnchooser-ul-margin, $grid-columnchooser-ul-padding);
       }
 
+      .e-checkbox-infinitescroll .e-ccul-ele {
+        margin: 0;
+      }
+
       li.e-cclist {
         padding: $grid-columnchooser-li-padding;
       }
@@ -341,6 +345,12 @@
       .e-cc-contentdiv {
         height: 196px;
         overflow-y: auto;
+      }
+
+      .e-cc-contentdiv.e-checkbox-infinitescroll {
+        border-top-style: $grid-border-type;
+        border-top-width: $grid-border-size;
+        border-top-color: $grid-columnchooser-footer-border-color;
       }
 
       .e-cc-searchdiv {
@@ -1238,7 +1248,7 @@
       white-space: nowrap;
       width: auto;
     }
-
+    
     .e-rowcell.e-gridchkbox {
       @if $grid-skin == 'fluent' {
         padding-left: 8px;
@@ -1576,7 +1586,7 @@
         border-right-style: solid;
       }
     }
-
+    
     .e-filterbarcell .e-filtertext::-webkit-search-cancel-button,
     .e-search input::-webkit-search-cancel-button {
       display: none;

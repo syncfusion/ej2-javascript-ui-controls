@@ -973,6 +973,52 @@ describe('Map layer testing', () => {
         let trigger: MouseEvents = new MouseEvents();
         let ele: HTMLDivElement;
         let spec: Element;
+        let tooltipElement: HTMLElement;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            tooltips = new Maps({
+                //  format: 'n0',
+                enableRtl: false,
+                layers: [{
+                    tooltipSettings: {
+                        visible: true,
+                        template: 'Name: ${name}',
+                        valuePath: 'name',
+                    },
+                    shapeData: usMap,
+                    shapeDataPath: 'name',
+                    shapePropertyPath: ['name', 'admin'],
+                    shapeSettings: {
+                        autofill: true,
+                    }
+                }]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            tooltips.destroy();
+            tooltips.mapsTooltipModule = new MapsTooltip(tooltips);
+            tooltips.mapsTooltipModule.destroy();
+            remove(ele);
+        });
+        it('tooltip data from invalid shapePropertyPath', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                done();
+            };
+            let layer: LayerSettingsModel = tooltips.layers[0];
+            layer.dataSource = electiondata;
+            layer.shapePropertyPath = ['Invalid'];
+            tooltips.refresh();
+        });
+    });
+    describe('tooltip testing', () => {
+        let id: string = 'mapst';
+        let tooltips: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
         let tooltipElements: HTMLCollection;
         let tooltipElement: HTMLElement;
         beforeAll(() => {

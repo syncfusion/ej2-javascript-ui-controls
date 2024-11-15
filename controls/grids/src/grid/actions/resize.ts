@@ -101,7 +101,7 @@ export class Resize implements IAction {
             }
             return c.autoFit === true;
         }).map((c: Column) => c.field || c.headerText);
-        if (newarray.length > 0) {
+        if (newarray.length > 0 && !this.parent.preventAutoFit) {
             this.autoFitColumns(newarray);
         }
         const contentTable: HTMLElement = this.parent.getContentTable() as HTMLElement;

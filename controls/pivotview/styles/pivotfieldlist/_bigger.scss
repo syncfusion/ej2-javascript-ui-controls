@@ -807,6 +807,12 @@
 
           .e-field-table {
             height: $field-list-search-popup-table-bigger-height !important;
+
+            .e-field-list-tree-outer-div {
+              @if ($skin-name =='fluent2' or $skin-name =='tailwind') {
+                height: 310px !important;
+              }
+            }
           }
 
           .e-axis-table {

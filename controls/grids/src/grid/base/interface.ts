@@ -659,6 +659,7 @@ export interface IGrid extends Component<HTMLElement> {
     lockcolPositionCount?: number;
     commandDelIndex?: number;
     isFocusFirstCell?: boolean;
+    preventAutoFit?: boolean;
     isPrinting?: boolean;
     id?: string;
     isSelectedRowIndexUpdating?: boolean;
@@ -707,7 +708,7 @@ export interface IGrid extends Component<HTMLElement> {
     getColumnHeaderByIndex?(index: number): Element;
     getColumnByField?(field: string): Column;
     getColumnIndexByField?(field: string): number;
-    getColumnByUid?(uid: string): Column;
+    getColumnByUid?(uid: string, isColumn?: boolean): Column;
     getColumnIndexByUid?(uid: string): number;
     getColumnByIndex?(index: number): Column;
     getUidByColumnField?(field: string): string;
@@ -2662,7 +2663,7 @@ export interface IFilter {
     type?: string;
     dataSource?: Object[] | DataManager;
     hideSearchbox?: boolean;
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
     ui?: IFilterMUI;
     operator?: string;
     params?: DatePickerModel | NumericTextBoxModel | DropDownListModel | AutoCompleteModel | DateTimePickerModel;
@@ -3118,4 +3119,11 @@ export interface ColumnTemplateArgs {
     column?: Column;
     /** Defines the row index. */
     index?: string;
+}
+
+export interface ItemTemplateArgs {
+    /** Defines the column */
+    column?: Column;
+    /** Defines the parent */
+    parent?: IGrid;
 }

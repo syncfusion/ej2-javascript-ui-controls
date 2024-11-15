@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I645043` - Now, the radio button field data is not lost when scrolling through the provided document.
+- `#I648250` - Now, the form field drag element is active when moving form fields.
+- `#I646730` - Now, the Text Selection and Pan keyboard shortcuts are disabled when the corresponding options are not available in the toolbar.
+- `#I635071` - Now, the checkbox form fields are properly checked in the downloaded document.
+
 ## 27.1.58 (2024-11-05)
 
 ### PDF Viewer

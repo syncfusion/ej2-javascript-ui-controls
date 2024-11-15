@@ -440,7 +440,7 @@ export class NumberFormatting implements IAction {
                     this.dialog.close();
                 } catch (exception) {
                     this.parent.setProperties({ dataSourceSettings: { formatSettings: format } }, true);
-                    this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormat'), this.dialog.element);
+                    this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormat'));
                     this.parent.hideWaitingPopup();
                 }
             } else {

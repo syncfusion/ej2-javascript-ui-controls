@@ -266,22 +266,26 @@ export class DataLabel {
                     }
                     labelTemplateElement.appendChild(labelElement);
                 } else {
-                    if (dataLabelSettings.smartLabelMode === 'Trim') {
+                    const smartLabelMode: string = !isNullOrUndefined(dataLabelSettings.smartLabelMode) ? dataLabelSettings.smartLabelMode.toString() : 'None';
+                    if (smartLabelMode === 'Trim') {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const textType: any = typeof text === 'number' ? (text as any).toString() : text;
                         trimmedLable = textTrim(width, textType, style, null, true);
                         elementSize = measureTextElement(trimmedLable, style);
                         options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
                     }
-                    if (dataLabelSettings.smartLabelMode === 'None') {
+                    if (smartLabelMode === 'None') {
                         options = new TextOption(labelId, (textLocation.x), textLocation.y, 'middle', text, '', '');
                     }
-                    if (dataLabelSettings.smartLabelMode === 'Hide') {
+                    if (smartLabelMode === 'Hide') {
                         text = (width >= textSize['width']) ? text : '';
                         options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                     }
-                    text = options['text'] as string;
-                    if (dataLabelSettings.intersectionAction === 'Hide') {
+                    if (!isNullOrUndefined(options)) {
+                        text = options['text'] as string;
+                    }
+                    const intersectionAction: string = !isNullOrUndefined(dataLabelSettings.intersectionAction) ? dataLabelSettings.intersectionAction.toString() : 'None';
+                    if (intersectionAction === 'Hide') {
                         for (let i: number = 0; i < intersect.length; i++) {
                             if (!isNullOrUndefined(intersect[i as number])) {
                                 if (!(this.value[index as number]['leftWidth'] > intersect[i as number]['rightWidth']
@@ -297,7 +301,7 @@ export class DataLabel {
                         options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', text, '', '');
                     }
                     let difference: number;
-                    if (dataLabelSettings.intersectionAction === 'Trim') {
+                    if (intersectionAction === 'Trim') {
                         for (let j: number = 0; j < intersect.length; j++) {
                             if (!isNullOrUndefined(intersect[j as number])) {
                                 if (intersect[j as number]['rightWidth'] < this.value[index as number]['leftWidth']
@@ -326,7 +330,7 @@ export class DataLabel {
                         intersect.push(this.value[index as number]);
                         options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
                     }
-                    if (dataLabelSettings.intersectionAction === 'None') {
+                    if (intersectionAction === 'None') {
                         options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                     }
                     if (trimmedLable.length > 1) {

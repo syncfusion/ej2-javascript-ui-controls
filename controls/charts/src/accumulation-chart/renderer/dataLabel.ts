@@ -803,7 +803,8 @@ export class AccumulationDataLabel extends AccumulationBase {
         point.label = this.getDatalabelText(dataLabel.format, this.accumulation, point.originalText || point.y.toString());
         const argsData: IAccTextRenderEventArgs = {
             cancel: false, name: textRender, series: this.accumulation.visibleSeries[0], point: point,
-            text: point.label, border: border, color: dataLabel.fill, template: dataLabel.template, font: argsFont
+            text: point.label, border: border, color: dataLabel.fill, template: this.accumulation.enableHtmlSanitizer ?
+                this.accumulation.sanitize(dataLabel.template as string) : dataLabel.template, font: argsFont
         };
         this.accumulation.trigger(textRender, argsData);
         point.argsData = argsData;

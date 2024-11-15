@@ -318,14 +318,16 @@ export class LayerPanel {
                     Number(getValueFromObject(bubbleSettings.dataSource[i as number], bubbleSettings.valuePath)) :
                     parseFloat(bubbleSettings.dataSource[i as number][bubbleSettings.valuePath])) :
                     parseFloat(bubbleSettings.dataSource[i as number][bubbleSettings.valuePath]);
-                if (i !== 0) {
-                    if (bubbledata > range.max) {
-                        range.max = bubbledata;
-                    } else if (bubbledata < range.min) {
-                        range.min = bubbledata;
+                if (!isNaN(bubbledata)) {
+                    if (i !== 0) {
+                        if (bubbledata > range.max) {
+                            range.max = bubbledata;
+                        } else if (bubbledata < range.min) {
+                            range.min = bubbledata;
+                        }
+                    } else {
+                        range.max = range.min = bubbledata;
                     }
-                } else {
-                    range.max = range.min = bubbledata;
                 }
             }
         }
@@ -357,7 +359,8 @@ export class LayerPanel {
         if (isNullOrUndefined(this.mapObject.baseMapRectBounds) && this.currentLayer.isBaseLayer) {
             this.mapObject.baseMapRectBounds = this.rectBounds;
         }
-        const colors: string[] = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
+        const colors: string[] = (!isNullOrUndefined(shapeSettings.palette) && shapeSettings.palette.length > 1) ?
+            shapeSettings.palette : getShapeColor(this.mapObject.theme);
         const labelTemplateEle: HTMLElement = createElement('div', {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_Label_Template_Group',
             className: this.mapObject.element.id + '_template'

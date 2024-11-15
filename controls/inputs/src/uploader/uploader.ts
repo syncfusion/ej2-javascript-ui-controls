@@ -3530,6 +3530,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             chunkSize: this.asyncSettings.chunkSize
         };
         this.abortUpload(metaData, custom, eventArgs);
+        if (this.sequentialUpload) {
+            this.uploadSequential();
+        }
     }
 
     private abortUpload(metaData: MetaData, custom: boolean, eventArgs?: PauseResumeEventArgs): void {

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I650340` - The alignment issue in the TreeView component, which occurred when using the IconCss field property with the e-icons class while enabling checkbox support, has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I644385` - An issue that prevented access to the `refreshOverflow` method in the Tab has been resolved.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I635313` - An issue with the Column Chooser in the grid, where the JAWS screen reader was reading items twice due to toolbar styles, has been resolved
+
 ## 27.1.58 (2024-11-05)
 
 ### Tab

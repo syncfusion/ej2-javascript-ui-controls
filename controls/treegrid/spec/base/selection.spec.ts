@@ -1306,3 +1306,35 @@ describe('Bug 913512: Selection not clearing on selecting checkbox and expanding
         destroy(gridObj);
     });
 });
+
+describe('Bug 919833: Script Error throws while clicking Up and down Arrow', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 2,
+                allowPaging: true,
+                allowSelection: false,
+                enableHover: false,
+                columns: [
+                    { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+                    { field: 'taskName', headerText: 'Customer ID', width: 150 },
+                    { field: 'duration', headerText: 'Freight', type: 'number', width: 150 },
+                    { field: 'progress', headerText: 'Ship Name', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Clear the selection', () => {
+        gridObj.clearSelection();
+        expect(1).toBe(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

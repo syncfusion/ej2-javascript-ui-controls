@@ -1816,9 +1816,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             return;
         }
         const alignDiv: HTMLElement[] = [];
-        alignDiv.push(this.createElement('div', { className: CLS_TBARLEFT }));
-        alignDiv.push(this.createElement('div', { className: CLS_TBARCENTER }));
-        alignDiv.push(this.createElement('div', { className: CLS_TBARRIGHT }));
+        alignDiv.push(this.createElement('div', { className: CLS_TBARLEFT, attrs: { role: 'group' } }));
+        alignDiv.push(this.createElement('div', { className: CLS_TBARCENTER , attrs: { role: 'group' } }));
+        alignDiv.push(this.createElement('div', { className: CLS_TBARRIGHT, attrs: { role: 'group' } }));
         if (pos === 0 && item.align !== 'Left') {
             alignDiv.forEach((ele: HTEle) => {
                 itemEle.appendChild(ele);

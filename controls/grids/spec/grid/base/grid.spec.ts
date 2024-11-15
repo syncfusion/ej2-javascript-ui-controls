@@ -5104,3 +5104,53 @@ describe('EJ2-899784 - Need to add headervalueaccessor property in aspcore and m
         gridObj = null;
     });
 });
+
+describe('Coverage for 916454: actionBegin event triggered multiple times when dynamically changing the data source', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 10),
+                allowPaging: true,
+                pageSettings: { pageSize: 10, pageSizes: [10, 20, 50] },
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 10 },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ]
+            }, done);
+    });
+
+    it('Change DataSource', () => {
+        gridObj.dataSource = data.slice(0, 8);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Second coverage for 916454: actionBegin event triggered multiple times when dynamically changing the data source', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 10),
+                allowPaging: true,
+                pageSettings: { pageSize: 10, pageSizes: ['All', 10, 20, 50] },
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 10 },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ]
+            }, done);
+    });
+
+    it('Change DataSource with pageSizes ALL', () => {
+        gridObj.dataSource = data.slice(0, 8);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

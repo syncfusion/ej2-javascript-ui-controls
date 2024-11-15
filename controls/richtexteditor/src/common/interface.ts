@@ -111,6 +111,8 @@ export interface ImageOrTableCursor  {
     startName: string;
     end: boolean;
     endName: string;
+    startNode?: HTMLElement;
+    endNode?: HTMLElement;
 }
 
 /**

@@ -357,6 +357,38 @@ describe('878730 - Bullet format list not removed properly when we replace the c
     });
 });
 
+describe('911546 - List order not maintained when Heading 6 is pasted.', () => {
+    let innervalue: string = '<ol id="parentDiv"><li style=""><h6 style="font-size: 1.142em; line-height: 1.5; margin: 10px 0px;">djslkfjsdjflk</h6></li></ol>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('List order not maintained when Heading 6 is pasted.', () => {
+        let editNode: Element = document.getElementById('divElement');
+        let selectNode: Element = document.getElementById('parentDiv');
+        let pasteElement: HTMLElement = document.createElement('div');
+        pasteElement.classList.add('pasteContent');
+        const liTag: HTMLElement = document.createElement('li');
+        const h6Tag: HTMLElement = document.createElement('h6');
+        h6Tag.style.fontSize = '1.142em';
+        h6Tag.style.lineHeight = '1.5';
+        h6Tag.style.margin = '10px 0';
+        h6Tag.textContent = 'djslkfjsdjflk';
+        liTag.appendChild(h6Tag);
+        pasteElement.appendChild(liTag);
+        domSelection.setSelectionNode(document, selectNode);
+        InsertHtml.Insert(document, pasteElement, editNode);
+        expect(document.getElementById('parentDiv').innerHTML === '<li><h6 style="font-size: 1.142em; line-height: 1.5; margin: 10px 0px;">djslkfjsdjflk</h6></li>').toBe(true);
+    });
+});
+
 describe('EJ2-49169-InsertHtml for the pasted elements not inserted properly', function () {
     let innervalue: string = '<p><span>Please click this link to download a calendar reminder for this date and time</span></p><p><a classname="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank">https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics </a></p><p><br></p><p>This will affect both the US and DK production site.</p><p><br></p>';
     let nonDOMvalue: string = '<br>';
@@ -517,6 +549,47 @@ describe('EJ2-52641- Text inserted outside of the RichTextEditor after Shift + E
         rangeNodes.push(nonElement);
         (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
         expect((divElement as any).childNodes[1].childNodes.length).toBe(1);
+    });
+});
+
+describe('917388 - Table Insertion Occurs in Wrong Place When Cursor Is in a Span Element', function () {
+    let innervalue: string = `<div class="content-container">
+            <div class="content-title">
+                <img class="content-logo" alt="PJM Logo" width="auto" height="auto" />
+                <h2 class="content-title">Help Topic Title</h2>
+            </div>
+            <div class="content-inner">
+                <hr />
+                <p style="text-align: left;">
+                    <span class="focusElement" style="color: rgb(0, 0, 0); font-family: Helvetica, Arial, " segoe ui" , tahoma, geneva, verdana, sans-serif; font-size: 15px; font-style: normal; font-weight: 400; text-align: left; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">Help topic text goes here.
+        
+                    </span>
+                </p>
+            </div>
+        </div>`;
+    let range: Range; 
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Table Insertion Occurs in Wrong Place When Cursor Is in a Span Element', function () {
+        let focusElement: any = document.querySelector('.focusElement');
+        range = document.createRange();
+        let textLength = focusElement.textContent.length;
+        range.setStart(focusElement.firstChild, textLength);
+        range.setEnd(focusElement.firstChild, textLength);
+        let table: Element = document.createElement('table');
+        domSelection.setSelectionText(document, focusElement.firstChild, focusElement.firstChild, textLength, textLength);
+        (InsertHtml as any).Insert(document, table, divElement,true);
+        expect(document.getElementsByClassName('content-inner')[0].children.length === 4).toBe(true);
+        expect(document.getElementsByClassName('content-inner')[0].children[2].tagName === 'TABLE').toBe(true);
     });
 });
 

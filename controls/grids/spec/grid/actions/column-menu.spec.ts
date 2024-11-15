@@ -624,7 +624,7 @@ describe('column menu module', () => {
         });
         it('Column menu without icon test', () => {
             let st: { [key: string]: string } = (gridObj.columnMenuModule as any).getDefaultItem('ColumnChooser')
-            expect(st.iconCss).toBe(null);
+            expect(st.iconCss).not.toBe(null);
         });
         it('get key id from unknown key', () => {
             let st: boolean = (gridObj.columnMenuModule as any).getKeyFromId('SortAscending');

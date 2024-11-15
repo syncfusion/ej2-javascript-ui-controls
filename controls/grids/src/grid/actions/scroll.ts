@@ -6,7 +6,7 @@ import { getScrollBarWidth, getUpdateUsingRaf } from '../base/util';
 import {
     scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, virtualScrollEdit, infiniteScrollHandler, closeFilterDialog
 } from '../base/constant';
-import { lazyLoadScrollHandler, checkScrollReset } from '../base/constant';
+import { lazyLoadScrollHandler, checkScrollReset, lastRowCellBorderUpdated } from '../base/constant';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
 import * as literals from '../base/string-literals';
@@ -466,6 +466,7 @@ export class Scroll implements IAction {
                 this.parent.notify(checkScrollReset, args);
                 if (sHeight < clientHeight && this.parent.height !== 'auto') {
                     this.setLastRowCell();
+                    this.parent.notify(lastRowCellBorderUpdated, args);
                 }
                 if (this.parent.frozenRows) {
                     this.resizeFrozenRowBorder();

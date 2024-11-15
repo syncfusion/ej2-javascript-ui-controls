@@ -1749,26 +1749,29 @@ export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, 
  * @param {HTMLElement} row - specify the row
  * @param {HTMLElement} hRow - specify the hRow.
  * @param {boolean} notifyRowHgtChange - specify boolean value.
+ * @param {boolean} outsideViewport - Specify whether the row is outside the viewport.
  * @returns {void} - Setting row height in view an model.
  */
 export function setRowEleHeight(
     parent: Spreadsheet, sheet: SheetModel, height: number, rowIdx: number, row?: HTMLElement,
-    hRow?: HTMLElement, notifyRowHgtChange: boolean = true): void {
+    hRow?: HTMLElement, notifyRowHgtChange: boolean = true, outsideViewport?: boolean): void {
     const prevHgt: number = getRowHeight(sheet, rowIdx, true);
-    const frozenCol: number = parent.frozenColCount(sheet);
     const dprHgt: number = getDPRValue(height);
-    row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
-    if (row) {
-        row.style.height = `${dprHgt}px`;
-    }
-    if (sheet.frozenColumns) {
-        hRow = hRow || parent.getRow(rowIdx, null, frozenCol - 1);
-    } else {
-        const frozenRow: number = parent.frozenRowCount(sheet);
-        hRow = hRow || parent.getRow(rowIdx, rowIdx < frozenRow ? parent.sheetModule.getSelectAllTable() : parent.getRowHeaderTable());
-    }
-    if (hRow) {
-        hRow.style.height = `${dprHgt}px`;
+    if (!outsideViewport) {
+        const frozenCol: number = parent.frozenColCount(sheet);
+        row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
+        if (row) {
+            row.style.height = `${dprHgt}px`;
+        }
+        if (sheet.frozenColumns) {
+            hRow = hRow || parent.getRow(rowIdx, null, frozenCol - 1);
+        } else {
+            const frozenRow: number = parent.frozenRowCount(sheet);
+            hRow = hRow || parent.getRow(rowIdx, rowIdx < frozenRow ? parent.sheetModule.getSelectAllTable() : parent.getRowHeaderTable());
+        }
+        if (hRow) {
+            hRow.style.height = `${dprHgt}px`;
+        }
     }
     setRowHeight(sheet, rowIdx, height);
     parent.setProperties({ sheets: parent.sheets }, true);

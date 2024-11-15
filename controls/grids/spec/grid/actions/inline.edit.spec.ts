@@ -4869,6 +4869,15 @@ describe('EJ2-907682: The focus moves to the previous row on tabbing an editable
         expect((gridObj.getContent().querySelectorAll('.e-row')[3] as any).cells[2].classList.contains('e-focused')).toBeTruthy();
         done();
     });
+
+    it('EJ2-919977: Coverage', function (done) {
+        (gridObj as any).updateRow( -1, {
+            OrderID: 10250,
+            CustomerID: 'RTER',
+            ShipCountry: 'America',
+          });
+        done();
+    });
     
     afterAll(() => {
         destroy(gridObj);

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I646789` - Now, the table is correctly inserted at the end of the span element when the cursor is focused there in the Rich Text Editor.
+
+- `#I637655` - Now, the list retains its format properly when pasted into the Rich Text Editor, even when within an `<h6>` tag.
+
+- `#I649429` - Now, the custom table with the class name `e-rte-custom-table` will not have the editor's default table styles.
+
+- `#I647956` - Now, the percentage values for image height and width are now applied to image in the Rich Text Editor.
+
 ## 27.1.58 (2024-11-05)
 
 ### RichTextEditor

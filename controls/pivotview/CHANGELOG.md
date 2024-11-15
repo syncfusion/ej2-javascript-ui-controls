@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I645195` - The pivot table will now display the proper data based on the current page size when using the paging option.
+- `#I645619` - The error popup will now appear correctly when entering an invalid formula in the calculated field UI.
+
 ## 27.1.58 (2024-11-05)
 
 ### Pivot Table

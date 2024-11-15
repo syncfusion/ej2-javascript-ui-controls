@@ -343,7 +343,7 @@ export class DataValidation {
         let count: number = 0;
         const definedNames: DefineNameModel[] = this.parent.definedNames;
         let value: string = validation.value1;
-        const isRange: boolean = value.indexOf('=') !== -1;
+        const isRange: boolean = value.startsWith('=');
         if (definedNames.length > 0 && isRange) {
             const listValue: string = value.split('=')[1];
             for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
@@ -359,7 +359,7 @@ export class DataValidation {
         if (isRange) {
             let sheet: SheetModel; let address: string;
             if (value.indexOf('!') > -1) {
-                const rangeArr: string[] = value.split('=')[1].split('!');
+                const rangeArr: string[] = value.substring(1).split('!');
                 if (rangeArr[0].startsWith('\'') && rangeArr[0].endsWith('\'')) {
                     rangeArr[0] = rangeArr[0].substring(1, rangeArr[0].length - 1);
                 }
@@ -393,7 +393,8 @@ export class DataValidation {
             }
             let indexes: number[];
             const range: string[] = address.split(':');
-            if ((range[0].match(/[a-z]+$/ig) && range[1].match(/[a-z]+$/ig)) || (range[0].match(/^[0-9]/g) && range[1].match(/^[0-9]/g))) {
+            if (range[0] && range[1] && ((range[0].match(/[a-z]+$/ig) && range[1].match(/[a-z]+$/ig)) ||
+                (range[0].match(/^[0-9]/g) && range[1].match(/^[0-9]/g)))) {
                 const addressInfo: { startIdx: number, endIdx: number, isCol: boolean } = this.parent.getIndexes(address);
                 if (addressInfo.isCol) {
                     indexes = [0, addressInfo.startIdx, sheet.usedRange.rowIndex, addressInfo.startIdx];
@@ -1068,40 +1069,26 @@ export class DataValidation {
             getElementsByClassName('e-validation-dlg')[0] as HTMLElement;
         const allowData: HTMLElement = dlgContEle.getElementsByClassName('e-allowdata')[0] as HTMLElement;
         const allowEle: HTMLInputElement = allowData.getElementsByClassName('e-allow')[0].getElementsByTagName('input')[0];
-        const dataEle: HTMLElement = allowData.getElementsByClassName('e-data')[0].getElementsByTagName('input')[0];
+        const dataEle: HTMLInputElement = allowData.getElementsByClassName('e-data')[0].getElementsByTagName('input')[0];
         const values: HTMLElement = dlgContEle.getElementsByClassName('e-values')[0] as HTMLElement;
         const valueArr: string[] = [];
         valueArr[0] = values.getElementsByTagName('input')[0].value;
         valueArr[1] = values.getElementsByTagName('input')[1] ? values.getElementsByTagName('input')[1].value : '';
         const type: ValidationType = this.formattedType(allowEle.value);
         let isValid: boolean = true;
-        const numObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
-        if (type === 'Decimal' && numObj.decimal !== '.') {
-            const isNotCulturedNumber: (val: string) => boolean = (val: string): boolean => isNumber(val) && val.includes('.') &&
-                (numObj.group !== '.' || !parseThousandSeparator(val, this.parent.locale, numObj.group, numObj.decimal));
-            if (isNotCulturedNumber(valueArr[0]) || isNotCulturedNumber(valueArr[1])) {
-                isValid = false;
-                errorMsg = l10n.getConstant('InvalidNumberError');
-            }
-        }
-        parseLocaleNumber(valueArr, this.parent, numObj);
         const ignoreBlank: boolean = (dlgContEle.querySelector('.e-ignoreblank .e-checkbox') as HTMLInputElement).checked;
         const inCellDropDown: boolean = allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper') ?
             allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper').querySelector('.e-check') ? true : false : null;
         const range: string = (dlgContEle.querySelector('.e-cellrange').getElementsByTagName('input')[0] as HTMLInputElement).value;
         let operator: string;
         if (dataEle) {
-            operator = (dataEle as HTMLInputElement).value;
-            operator = this.formattedValue(operator);
+            operator = this.formattedValue(dataEle.value);
         }
         const valArr: string[] = [];
-        if (valueArr[0] !== '') {
-            valArr.push(valueArr[0]);
-        }
-        if (valueArr[1] !== '') {
-            valArr.push(valueArr[1]);
-        }
         if (type === 'List') {
+            if (valueArr[0] !== '') {
+                valArr.push(valueArr[0]);
+            }
             if (valueArr[0].startsWith('=')) {
                 let address: string = valueArr[0].substring(1);
                 if (address.includes(':')) {
@@ -1129,6 +1116,23 @@ export class DataValidation {
             } else if (valueArr[0].length > 256) {
                 isValid = false;
                 errorMsg = l10n.getConstant('ListLengthError');
+            }
+        } else {
+            const numObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+            if (type === 'Decimal' && numObj.decimal !== '.') {
+                const isNotCulturedNumber: (val: string) => boolean = (val: string): boolean => isNumber(val) && val.includes('.') &&
+                    (numObj.group !== '.' || !parseThousandSeparator(val, this.parent.locale, numObj.group, numObj.decimal));
+                if (isNotCulturedNumber(valueArr[0]) || isNotCulturedNumber(valueArr[1])) {
+                    isValid = false;
+                    errorMsg = l10n.getConstant('InvalidNumberError');
+                }
+            }
+            parseLocaleNumber(valueArr, this.parent, numObj);
+            if (valueArr[0] !== '') {
+                valArr.push(valueArr[0]);
+            }
+            if (valueArr[1] !== '') {
+                valArr.push(valueArr[1]);
             }
         }
         if (isValid) {
@@ -1356,7 +1360,7 @@ export class DataValidation {
                         const val: string = args.value.toString();
                         const isNumVal: boolean = isNumber(val);
                         const numObj: LocaleNumericSettings = isNumVal && <LocaleNumericSettings>getNumericObject(this.parent.locale);
-                        if (value1.indexOf('=') !== -1) {
+                        if (value1.startsWith('=')) {
                             let listVal: string;
                             const data: { [key: string]: string }[] = this.getListDataSource(validation);
                             for (let idx: number = 0; idx < data.length; idx++) {

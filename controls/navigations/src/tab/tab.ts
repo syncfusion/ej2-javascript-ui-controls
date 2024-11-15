@@ -683,6 +683,21 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
 
     /**
+     * Reorganizes and adjusts the Tab headers to fit the available width without re-rendering the entire Tab component.
+     * 
+     * This method is useful for optimizing the layout when:
+     * - A hidden tab item becomes visible.
+     * - The number of tab items changes dynamically.
+     * 
+     * @returns {void} This method does not return a value.
+     */
+    public refreshOverflow(): void {
+        if (!isNOU(this.tbObj)) {
+            this.tbObj.refreshOverflow();
+        }
+    }
+
+    /**
      * Initialize component
      *
      * @private
@@ -735,9 +750,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.initRender = false;
         if (this.isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
             this.renderReactTemplates(() => {
-                if (!isNOU(this.tbObj)) {
-                    this.tbObj.refreshOverflow();
-                }
+                this.refreshOverflow();
                 this.refreshActiveBorder();
             });
         }
@@ -1021,7 +1034,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         } else {
             trg.classList.remove(CLS_CLOSE_SHOW);
         }
-        this.tbObj.refreshOverflow();
+        this.refreshOverflow();
         this.refreshActiveTabBorder();
     }
     private prevCtnAnimation(prev: number, current: number): AnimationModel {
@@ -2340,8 +2353,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (!isNullOrUndefined(item.firstElementChild)) {
             item.firstElementChild.setAttribute('aria-hidden', '' + value);
         }
-        if (this.overflowMode === 'Popup' && this.tbObj) {
-            this.tbObj.refreshOverflow();
+        if (this.overflowMode === 'Popup') {
+            this.refreshOverflow();
         }
     }
 

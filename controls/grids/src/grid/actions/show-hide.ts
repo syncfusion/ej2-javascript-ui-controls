@@ -194,11 +194,7 @@ export class ShowHide {
                 this.parent.clearSelection();
             }
             if (this.parent.enableColumnVirtualization) {
-                const colsInCurrentView: Column[] =
-                    columns.filter((col1: Column) => (currentViewCols.some((col2: Column) => col1.field === col2.field)));
-                if (colsInCurrentView.length) {
-                    this.parent.notify(events.columnVisibilityChanged, columns);
-                }
+                this.parent.notify(events.refreshFrozenPosition, { isModeChg: true });
             } else {
                 if (this.parent.isFrozenGrid() && columns.length) {
                     this.parent.notify(events.refreshFrozenPosition, { isModeChg: true });

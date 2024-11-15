@@ -446,6 +446,24 @@ describe('Highlight Settings', () => {
             highlight.legendSettings.mode = 'Interactive';
             highlight.refresh();
         });
+        it('Checking opacity with null value', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_LayerIndex_0_shapeIndex_29_dataIndex_29');
+            trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            let eventObj: Object = {};
+            eventObj = {
+                target: spec,
+                type: 'mousemove',
+                pageX: spec.getBoundingClientRect().left,
+                pageY: (spec.getBoundingClientRect().top + 10)
+            };
+            highlight.mouseLeaveOnMap(<PointerEvent>eventObj);
+            done();
+        };
+            highlight.layers[0].highlightSettings.opacity = null;
+            highlight.layers[0].highlightSettings.border.opacity = null;
+            highlight.refresh();
+        });
     });
     describe('Highlight Settings', () => {
         describe('Testing highlight is applied or not', () => {

@@ -324,9 +324,9 @@ export class CommentReviewPane {
 
     public addComment(comment: CommentElementBox, isNewComment: boolean, selectComment: boolean): void {
         this.isNewComment = isNewComment;
-        this.selectReviewTab('Comments');
         this.owner.documentHelper.currentSelectedComment = comment;
         this.commentPane.insertComment(comment);
+        this.selectReviewTab('Comments');
         if (!isNewComment) {
             const commentView: CommentView = this.commentPane.comments.get(comment);
             commentView.cancelEditing();

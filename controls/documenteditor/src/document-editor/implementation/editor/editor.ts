@@ -463,27 +463,41 @@ export class Editor {
                 }
 
                 const paragraph: ParagraphWidget = new ParagraphWidget();
-                const insertFormat: WCharacterFormat = new WCharacterFormat();
-                const selectionFormat: WCharacterFormat = this.copyInsertFormat(insertFormat, false);
+                let insertFormat: WCharacterFormat = new WCharacterFormat();
+                let startParagraph: ParagraphWidget = this.selection.start.paragraph;
+                if (!this.selection.isForward) {
+                    startParagraph = this.selection.end.paragraph;
+                }
+                const currentInline: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
+                if (startParagraph.isEmpty()) {
+                    insertFormat = startParagraph.characterFormat;
+                } else if (!isNullOrUndefined(currentInline.element)) {
+                    insertFormat = currentInline.element.characterFormat;
+                } else {
+                    insertFormat = this.copyInsertFormat(insertFormat, false);
+                }
                 const line: LineWidget = new LineWidget(paragraph);
                 const fieldBegin: FieldElementBox = new FieldElementBox(0);
-                fieldBegin.characterFormat.mergeFormat(selectionFormat);
+                fieldBegin.characterFormat.assignFormat(insertFormat);
                 line.children.push(fieldBegin);
                 const fieldCodeSpan: TextElementBox = new TextElementBox();
-                fieldCodeSpan.characterFormat.mergeFormat(selectionFormat);
+                fieldCodeSpan.characterFormat.assignFormat(insertFormat);
                 fieldCodeSpan.text = code;
                 line.children.push(fieldCodeSpan);
                 const fieldSeparator: FieldElementBox = new FieldElementBox(2);
-                fieldSeparator.characterFormat.mergeFormat(selectionFormat);
+                fieldSeparator.characterFormat.assignFormat(insertFormat);
                 fieldSeparator.fieldBegin = fieldBegin;
                 fieldBegin.fieldSeparator = fieldSeparator;
                 line.children.push(fieldSeparator);
                 const fieldResultSpan: TextElementBox = new TextElementBox();
                 fieldResultSpan.text = result;
-                fieldResultSpan.characterFormat.mergeFormat(selectionFormat);
+                fieldResultSpan.characterFormat.assignFormat(insertFormat);
+                if (!this.documentHelper.textHelper.isRTLText(result) && fieldResultSpan.characterFormat.bidi) {
+                    fieldResultSpan.characterFormat.bidi = false;
+                }
                 line.children.push(fieldResultSpan);
                 const fieldEnd: FieldElementBox = new FieldElementBox(1);
-                fieldEnd.characterFormat.mergeFormat(selectionFormat);
+                fieldEnd.characterFormat.assignFormat(insertFormat);
                 fieldEnd.fieldSeparator = fieldSeparator;
                 fieldEnd.fieldBegin = fieldBegin;
                 fieldBegin.fieldEnd = fieldEnd;
@@ -6363,7 +6377,7 @@ export class Editor {
             }
         }
         let element = document.getElementById("contenticon");
-        let picElement = document.getElementById('container_editorPICTURE_CONTENT_CONTROL');
+        let picElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
         if(element)
         {
             element.style.display = 'none';
@@ -13179,7 +13193,20 @@ export class Editor {
         }
         this.applyContinueNumberingInternal(selection);
     }
-
+    /**
+     * Continues the numbering sequence of the current list from the selected paragraph.
+     *
+     * @returns {void}
+     */
+    public continueNumbering(): void {
+        let selection: Selection = this.selection;
+        if (this.editorHistory) {
+            this.editorHistory.initializeHistory('ContinueNumbering');
+        }
+        if(!isNullOrUndefined(selection)) {
+            this.applyContinueNumberingInternal(selection);
+        }
+    }
     /**
      * @private
      * @param selection 
@@ -13192,10 +13219,12 @@ export class Editor {
             paraFormat = this.getParagraphFormat(paragraph, numberingInfo.listLevelNumber, numberingInfo.listPattern);
         }
         paraFormat = !isNullOrUndefined(paraFormat) ? paraFormat : paragraph.paragraphFormat;
-        this.changeListId(numberingInfo.currentList, paragraph, paraFormat, numberingInfo.listLevelNumber, numberingInfo.listPattern);
-        this.reLayout(selection, false);
-        if (this.owner.enableAutoFocus) {
-            this.documentHelper.updateFocus();
+        if (!isNullOrUndefined(numberingInfo.currentList)) {
+            this.changeListId(numberingInfo.currentList, paragraph, paraFormat, numberingInfo.listLevelNumber, numberingInfo.listPattern);
+            this.reLayout(selection, false);
+            if (this.owner.enableAutoFocus) {
+                this.documentHelper.updateFocus();
+            }
         }
     }
     private getContinueNumberingInfo(paragraph: ParagraphWidget): ContinueNumberingInfo {
@@ -13285,6 +13314,18 @@ export class Editor {
         return false;
     }
     /**
+     * Restarts the numbering of the current list from the selected paragraph.
+     */
+    public restartNumbering(): void {
+        if (this.editorHistory) {
+            this.editorHistory.initializeHistory('RestartNumbering');
+        }
+        let selection: Selection = this.documentHelper.selection;
+        if (!isNullOrUndefined(selection)) {
+            this.restartListAt(selection);
+        }
+    }
+    /**
      * @private
      * @returns {void}
      */
@@ -13299,18 +13340,20 @@ export class Editor {
      * @returns {void}
      */
     public restartListAt(selection: Selection): void {
-        let currentList: WList = selection.paragraphFormat.getList();
-        let list: WList = currentList.clone();
-        list.listId = this.documentHelper.lists[(this.documentHelper.lists.length - 1)].listId + 1;
-        //let nsid: number = HelperMethods.generateUniqueId(this.documentHelper.lists);
-        this.documentHelper.lists.push(list);
-        let abstractList: WAbstractList = currentList.abstractList.clone();
-        abstractList.abstractListId = this.documentHelper.abstractLists[(this.documentHelper.abstractLists.length - 1)].abstractListId + 1;
-        list.abstractListId = abstractList.abstractListId;
-        list.nsid = abstractList.nsid;
-        list.abstractList = abstractList;
-        this.documentHelper.abstractLists.push(abstractList);
-        this.restartListAtInternal(selection, list.listId, list.nsid);
+        if (selection.paragraphFormat.getList()) {
+            let currentList: WList = selection.paragraphFormat.getList();
+            let list: WList = currentList.clone();
+            list.listId = this.documentHelper.lists[(this.documentHelper.lists.length - 1)].listId + 1;
+            //let nsid: number = HelperMethods.generateUniqueId(this.documentHelper.lists);
+            this.documentHelper.lists.push(list);
+            let abstractList: WAbstractList = currentList.abstractList.clone();
+            abstractList.abstractListId = this.documentHelper.abstractLists[(this.documentHelper.abstractLists.length - 1)].abstractListId + 1;
+            list.abstractListId = abstractList.abstractListId;
+            list.nsid = abstractList.nsid;
+            list.abstractList = abstractList;
+            this.documentHelper.abstractLists.push(abstractList);
+            this.restartListAtInternal(selection, list.listId, list.nsid);
+        }
     }
     /**
      * @private
@@ -17501,10 +17544,24 @@ export class Editor {
         if (currentParagraph.paragraphFormat.listFormat.listId !== -1 && !isNullOrUndefined(currentParagraph.paragraphFormat.listFormat.listLevel)) {
             this.listNumberFormat = currentParagraph.paragraphFormat.listFormat.listLevel.numberFormat;
             this.listLevelPattern = currentParagraph.paragraphFormat.listFormat.listLevel.listLevelPattern;
-            this.listLevelNumber = currentParagraph.paragraphFormat.listFormat.listLevelNumber;
+            if (isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.paragraphFormat.listFormat.listLevelNumber > 0)
+            {
+                this.listLevelNumber = this.documentHelper.selection.start.paragraph.paragraphFormat.listFormat.listLevelNumber;
+            }
+            else
+            {
+                this.listLevelNumber = currentParagraph.paragraphFormat.listFormat.listLevelNumber;
+            }
         }
         if (!isNullOrUndefined(list)) {
-            levelNumber = currentParagraph.paragraphFormat.listFormat.listLevelNumber;
+            if (isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.paragraphFormat.listFormat.listLevelNumber > 0)
+            {
+                levelNumber = this.documentHelper.selection.start.paragraph.paragraphFormat.listFormat.listLevelNumber;
+            }
+            else
+            {
+                levelNumber = currentParagraph.paragraphFormat.listFormat.listLevelNumber;
+            }
             let tempList: WList = this.documentHelper.getListById(currentParagraph.paragraphFormat.listFormat.listId);
             startListLevel = this.documentHelper.layout.getListLevel(tempList, levelNumber);
             if (levelNumber > 0) {
@@ -17712,6 +17769,8 @@ export class Editor {
                 return;
             }
             let paragraph: ParagraphWidget = selection.start.paragraph;
+            // Revert the below line due to test case failure.
+            // paragraph.characterFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, true, paragraph);
             if (paragraph.isEmpty() && paragraph.paragraphFormat.listFormat.listId !== -1 && !isInsertParaBeforeTable) {
 
                 this.onApplyListInternal(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId), paragraph.paragraphFormat.listFormat.listLevelNumber - 1);
@@ -20251,15 +20310,12 @@ export class Editor {
                 let imgStr: string = this.documentHelper.getImageString(imageElementBox);
                 if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
                     const url = new URL(imgStr);
-                    if (url.search.length > 0) {
-                        imgStr += `&t=${new Date().getTime()}`;
-                    } else {
-                        imgStr += `?t=${new Date().getTime()}`;
-                    }
                     // Generate fall back image for URL images.
                     this.viewer.documentHelper.getBase64(base64String, width, height).then((imageUrlString: string) => {
                         if (!isNullOrUndefined(this.viewer) && !isNullOrUndefined(this.viewer.documentHelper)) {
                             this.viewer.documentHelper.images.get(parseInt(imageElementBox.imageString))[1] = imageUrlString;
+                            // set downloaded image to image element
+                            imageElementBox.element.src = imageUrlString;
                         }
                     });
                 }

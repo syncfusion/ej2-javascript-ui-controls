@@ -6,7 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usMap, India_Map, CustomPathData, flightRoutes, intermediatestops1, salesData } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { getElement, marker } from '../../../src/maps/utils/helper';
-import { Marker, ILoadEventArgs, BingMap, Zoom, MapsTooltip, NavigationLine, Legend } from '../../../src/maps/index';
+import { Marker, ILoadEventArgs, BingMap, Zoom, MapsTooltip, NavigationLine, Legend, IMarkerClusterRenderingEventArgs } from '../../../src/maps/index';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { debug } from 'util';
 Maps.Inject(Marker, Zoom, MapsTooltip, NavigationLine, Legend);
@@ -2517,6 +2517,73 @@ describe('Map marker properties tesing', () => {
             }];
             map.layers[0].shapeData = null;
             map.layers[0].urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
+            map.refresh();
+        });
+    });
+    describe('coverage Checking with Marker cluster click', () => {
+        let id: string = 'containers';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                titleSettings: {
+                    text: 'World Map with Marker Clustering',
+                    textStyle: {
+                        size: '16px'
+                    }
+                },
+                layers: [{
+                    shapeData: World_Map,
+                    markerClusterSettings: {
+                        allowClustering: true,
+                        shape: 'Circle',
+                        height: 40,
+                        width: 40
+                    },
+                    markerSettings: [{
+                        visible: true,
+                        dataSource: [
+                            { latitude: 37.7749, longitude: -122.4194, name: 'San Francisco' },
+                            { latitude: 34.0522, longitude: -118.2437, name: 'Los Angeles' },
+                            { latitude: 51.5074, longitude: -0.1278, name: 'London' },
+                            { latitude: 40.7128, longitude: -74.0060, name: 'New York' }
+                        ],
+                        shape: 'Balloon',
+                        height: 20,
+                        width: 15,
+                        tooltipSettings: {
+                            visible: true,
+                            valuePath: 'name'
+                        }
+                    }]
+                }],
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('coverage for the marker cluster event with border opacity', () => {
+            map.markerClusterRendering = (args: IMarkerClusterRenderingEventArgs) => {
+                args.cancel = true;
+            };
+            map.refresh();
+        });
+        it('coverage for the marker cluster event', () => {
+            map.markerClusterRendering = (args: IMarkerClusterRenderingEventArgs) => {
+                args.cancel = true;
+                args.cluster.border.opacity = 1;
+            };
+            map.refresh();
+        });
+        it('coverage for the marker longitude and latitude', () => {
+            map.markerClusterRendering = (args: IMarkerClusterRenderingEventArgs) => {
+                args.maps.layers[0].markerSettings[0].dataSource[0].latitude = null;
+                args.maps.layers[0].markerSettings[0].dataSource[0].longitude = null;
+            };
             map.refresh();
         });
     });

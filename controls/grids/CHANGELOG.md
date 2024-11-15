@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### Grid
+
+#### Bug fixes
+
+- `#I643163` - Resolved a script error that occurred during cell selection when `virtualization` was enabled.
+- `#I621506`, `#I622810` - Provided icons for column chooser, autofit all columns, autofit column in adaptive view.
+- `#FB62665` - Resolved type error in filter `itemTemplate` when binding functions.
+- `#I646099` - Resolved `rowSelecting` and `RowDeselected` event arguments are `undefined` when `virtualization` is enabled.
+- `#I648525` - Resolved an issue where deleting a record from the command column would not work when the delete confirmation dialog was enabled.
+- `#FB62045` - Resolved the on-demand for excel/checkbox filtering in custom binding.
+- `#I645596` - Resolved a resized column width resets after column reorder when `autofitColumns` method is invoked during initial rendering.
+- `#I639180` - The issue with the `ODataV4Adaptor` checkbox filtering not functioning correctly when using an external `where` filter query has been resolved.
+- `#I645754` - Fixed an issue that caused an error when opening the column chooser in vertical row rendering mode within `AdaptiveUI` mobile mode.
+
+## 27.1.58 (2024-11-05)
+
+### Grid
+
+#### Bug fixes
+
+- `I644169` - Resolved an issue where the `actionBegin` event triggers multiple times when dynamically updating the data source.
+- `I645803` - Resolved an issue where the Grid displays an empty state when a grouped column contains `null` values.
+
 ## 27.1.57 (2024-10-29)
 
 ### Grid

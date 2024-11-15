@@ -1393,6 +1393,16 @@ describe('Auto fill ->', () => {
             const spreadsheet: any = helper.getInstance();
             spreadsheet.print();
         });
+        it('Wrap', (done: Function) => {
+            helper.invoke('selectRange', ['A1:P30']);
+            helper.click('#spreadsheet_wrap');
+            done();
+        });
+        it('checking with Active sheet', async (): Promise<void> => {
+            await wait(3000); // Wait for 3 seconds
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.print();
+        });
     });
 
     async function wait(ms: number): Promise<void> {

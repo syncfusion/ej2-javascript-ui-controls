@@ -484,7 +484,7 @@ export class CanvasRenderer {
 }
 
 export function refreshDiagramElements(
-    canvas: HTMLCanvasElement, drawingObjects: DrawingElement[], renderer: DrawingRenderer,annotationCallback?:(annotationID: string) => boolean ): void {
+    canvas: HTMLCanvasElement, drawingObjects: DrawingElement[], renderer: DrawingRenderer, annotationCallback?:(annotationID: string) => boolean): void {
     for (let i: number = 0; i < drawingObjects.length; i++) {
         renderer.renderElement(drawingObjects[parseInt(i.toString(), 10)], canvas, undefined, undefined, undefined, undefined, undefined, undefined, annotationCallback);
     }

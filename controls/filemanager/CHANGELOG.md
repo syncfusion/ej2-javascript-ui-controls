@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I649098` - Fixed a console error that occurred during drag-and-drop in the File Manager component when using the NodeJS service.
+
 ## 27.1.55 (2024-10-22)
 
 ### FileManager

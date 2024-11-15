@@ -2170,53 +2170,60 @@ export class DiagramRenderer {
         if (flip !== 'None') {
             // Fetch annotation offset
             const textPos: PointModel = textElement.getAbsolutePosition(textElement.desiredSize);
-            // Inverting and translating Annotation
-            if (flipMode === 'All' || flipMode === 'LabelAndLabelText') {
-                if (flip === 'Horizontal' || flip === 'Both') {
-                    posX = element.bounds.center.x;
-                    offsetX = -element.bounds.center.x;
-                    scaleX = -1;
-                }
-                if (flip === 'Vertical' || flip === 'Both') {
-                    posY = element.bounds.center.y;
-                    offsetY = -element.bounds.center.y;
-                    scaleY = -1;
+            if (textPos) {
+                // Inverting and translating Annotation
+                if (flipMode === 'All' || flipMode === 'LabelAndLabelText') {
+                    if (flip === 'Horizontal' || flip === 'Both') {
+                        posX = element.bounds.center.x;
+                        offsetX = -element.bounds.center.x;
+                        scaleX = -1;
+                    }
+                    if (flip === 'Vertical' || flip === 'Both') {
+                        posY = element.bounds.center.y;
+                        offsetY = -element.bounds.center.y;
+                        scaleY = -1;
 
+                    }
+                    if (flip === 'Horizontal' || flip === 'Vertical') {
+                        const angle: number = Math.sin(element.rotateAngle * Math.PI / 180);
+                        //918299 - Issue with Polygon Shape Node Rotation After Grouping and Flipping
+                        if (textPos.y) {
+                            offsetX += -element.desiredSize.height * angle * (-2 * textPos.y / textElement.desiredSize.height + 1);
+                        }
+                        if (textPos.x) {
+                            offsetY += element.desiredSize.width * angle * (-2 * textPos.x / textElement.desiredSize.width + 1);
+                        }
+                    }
+                    attr = {
+                        'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
+                            + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
+                    };
                 }
-                if (flip === 'Horizontal' || flip === 'Vertical') {
-                    const angle: number = Math.sin(element.rotateAngle * Math.PI / 180);
-                    offsetX += - element.desiredSize.height * angle * (-2 * textPos.y / textElement.desiredSize.height + 1);
-                    offsetY += element.desiredSize.width * angle * (-2 * textPos.x / textElement.desiredSize.width + 1);
+                // Inverting Annotation without flipping position
+                else if (flipMode === 'LabelText' || flipMode === 'PortAndLabelText') {
+                    if (flip === 'Horizontal' || flip === 'Both') {
+                        posX = textElement.offsetX;
+                        offsetX = -textElement.offsetX;
+                        scaleX = -1;
+                    }
+                    if (flip === 'Vertical' || flip === 'Both') {
+                        posY = textElement.offsetY;
+                        offsetY = -textElement.offsetY;
+                        scaleY = -1;
+                    }
+                    attr = {
+                        'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
+                            + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
+                    };
                 }
-                attr = {
-                    'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
-                        + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
-                };
-            }
-            // Inverting Annotation without flipping position
-            else if (flipMode === 'LabelText' || flipMode === 'PortAndLabelText') {
-                if (flip === 'Horizontal' || flip === 'Both') {
-                    posX = textElement.offsetX;
-                    offsetX = -textElement.offsetX;
-                    scaleX = -1;
+                // Translating Annotation
+                else if (flipMode === 'PortAndLabel' || flipMode === 'Label') {
+                    let labelPosX: number = 0; let labelPosY: number = 0;
+                    const labelPos: PointModel = this.flipLabel(element, textElement, textPos, flip);
+                    labelPosX = labelPos.x - textElement.offsetX;
+                    labelPosY = labelPos.y - textElement.offsetY;
+                    attr = { 'transform': 'translate(' + labelPosX + ',' + labelPosY + ')' };
                 }
-                if (flip === 'Vertical' || flip === 'Both') {
-                    posY = textElement.offsetY;
-                    offsetY = -textElement.offsetY;
-                    scaleY = -1;
-                }
-                attr = {
-                    'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
-                        + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
-                };
-            }
-            // Translating Annotation
-            else if (flipMode === 'Label' || flipMode === 'PortAndLabel') {
-                let labelPosX: number = 0; let labelPosY: number = 0;
-                const labelPos: PointModel = this.flipLabel(element, textElement, textPos, flip);
-                labelPosX = labelPos.x - textElement.offsetX;
-                labelPosY = labelPos.y - textElement.offsetY;
-                attr = { 'transform': 'translate(' + labelPosX + ',' + labelPosY + ')' };
             }
 
         } else {
@@ -2296,7 +2303,7 @@ export class DiagramRenderer {
             };
             flippedOffsetX = topLeft.x + (element.desiredSize.width * ((labelPos.x / textElement.desiredSize.width)));
             flippedOffsetY = topLeft.y + (element.desiredSize.height * ((labelPos.y / textElement.desiredSize.height)));
-            if (flip === 'Horizontal' || flip === 'Both') {
+            if (flip === 'Both' || flip === 'Horizontal') {
                 flippedOffsetX = topLeft.x + (element.desiredSize.width * (1 - (labelPos.x / textElement.desiredSize.width)));
             }
             if (flip === 'Vertical' || flip === 'Both') {

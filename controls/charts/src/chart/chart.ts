@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Internationalization } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, Internationalization, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, L10n, setValue, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';
 import { remove, extend } from '@syncfusion/ej2-base';
@@ -708,6 +708,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     @Complex<ChartAreaModel>({ border: { color: null, width: 0.5 }, background: 'transparent' }, ChartArea)
     public chartArea: ChartAreaModel;
+
+    /**
+     * Specifies whether to display or remove the untrusted HTML values in the Chart component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * The `primaryXAxis` property configures the horizontal axis of the chart, including settings for axis labels, tick marks, grid lines, and axis ranges.
@@ -4500,6 +4509,20 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public hideCrosshair(): void {
         this.crosshairModule.removeCrosshair(Browser.isDevice ? 2000 : 1000);
+    }
+
+    /**
+     * Method to sanitize any potentially untrusted strings and scripts before rendering them.
+     *
+     * @param {string} value - Specifies the html value to sanitize
+     * @returns {string} Returns the sanitized html string
+     * @private
+     */
+    public sanitize(value: string): string {
+        if (this.enableHtmlSanitizer) {
+            return SanitizeHtmlHelper.sanitize(value);
+        }
+        return value;
     }
 
     /**

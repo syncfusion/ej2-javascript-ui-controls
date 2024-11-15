@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs, PdfTreeGridLayoutFormat } from '../../src/index';
-import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,editingResourcess, editingDatas, pdfquerycelldata,editingResources,CR911356manualTask, CR912356font, GanttData, adventProFonts1 } from '../base/data-source.spec';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,editingResourcess, editingDatas, pdfquerycelldata,editingResources,CR911356manualTask, CR912356font, GanttData, adventProFonts1, editingData4, editingResources4 } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfPen, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
@@ -12612,6 +12612,98 @@ describe('Gantt PDF Export  not visible last three records', () => {
             }, done);
     });
     it('Export data not visible last three records', () => {
+        ganttObj.pdfExport();
+       });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+}); 
+describe('Gantt PDF Export Words and taskbar alignment are misaligned in pdf file when row height is less than 20', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: editingData4,
+                dateFormat: 'MMM dd, y',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    resourceInfo: 'resources',
+                    milestone: 'isMilestone'
+                },
+             
+                holidays: [
+                    {
+                        from: new Date('04/04/2024'),
+                        to: new Date('04/04/2024'),
+                        label: 'Local Holiday',
+                    },
+                    {
+                        from: new Date('04/19/2024'),
+                        to: new Date('04/19/2024'),
+                        label: 'Good Friday',
+                    },
+                    {
+                        from: new Date('04/30/2024'),
+                        to: new Date('04/30/2024'),
+                        label: 'Release Holiday',
+                    },
+                ],
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', width: 250 },
+                ],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                toolbar: ['ExcelExport', 'CsvExport', 'PdfExport'],
+                toolbarClick: function (args) {
+                    if (args.item.id === 'ganttContainer_excelexport') {
+                        ganttObj.excelExport();
+                    } else if (args.item.id === 'ganttContainer_csvexport') {
+                        ganttObj.csvExport();
+                    } else if (args.item.id === 'ganttContainer_pdfexport') {
+                        ganttObj.pdfExport();
+                    }
+                },
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '450px',
+                treeColumnIndex: 1,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                },
+                resources: editingResources4,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                },
+                splitterSettings: {
+                    columnIndex: 2,
+                },
+                projectStartDate: new Date('03/25/2024'),
+                projectEndDate: new Date('07/28/2024'),
+                rowHeight: 15,
+            }, done);
+    });
+    it('Export data row height is less than 20', () => {
         ganttObj.pdfExport();
        });
     afterAll(() => {

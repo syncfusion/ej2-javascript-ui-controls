@@ -1861,6 +1861,12 @@ $lg-desktop: 1399.98;
     }
   }
 
+  .e-pv-mobile-toolbar .e-toolbar-item.e-overlay .e-tbar-btn:hover .e-pv-icon{
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+      color: $white;
+    }
+  }
+
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item {
     @if $skin-name != 'Material3' {
       height: inherit;
@@ -2210,6 +2216,21 @@ $lg-desktop: 1399.98;
     @if $skin-name == 'highcontrast' {
       background-color: $pv-annotation-dropdown-background-color-hover;
       border: 1px solid $pv-annotation-dropdown-border-color-hover;
+    }
+  }
+
+  .e-pv-sidebar-toolbar .e-pv-tbar-btn:hover:not(:disabled) {
+    @if $skin-name == 'Material3' {
+      background: $pv-annotation-dropdown-background-color-hover;
+      border: $pv-annotation-dropdown-border-color-hover;
+    }
+    @if $skin-name == 'FluentUI' {
+      background: $pv-annotation-dropdown-background-color-hover;
+      border: $pv-annotation-dropdown-border-color-hover;
+    }
+    @if $skin-name == 'tailwind' {
+      background: $pv-annotation-dropdown-background-color-hover;
+      border: $pv-annotation-dropdown-border-color-hover;
     }
   }
 
@@ -4080,13 +4101,7 @@ $lg-desktop: 1399.98;
   .e-pdfviewer .e-accordion .e-acrdn-item.e-selected.e-select.e-expand-state > .e-acrdn-header:focus,
   .e-pdfviewer .e-accordion .e-acrdn-item.e-selected > .e-acrdn-header {
     background: $pv-comment-panel-bg;
-    @if $skin-name == 'bootstrap5.3' {
-      box-shadow: 0 0 0 4px rgba(var(--color-sf-primary-shadow), .5);
-      color: var(--color-sf-primary);
-    }
-    @else {
-      box-shadow: none;
-    }
+    box-shadow: none;
   }
 
   .e-pdfviewer .e-pv-accordion-container.e-accordion .e-acrdn-item.e-select.e-selected.e-expand-state > .e-acrdn-header .e-acrdn-header-icon,
@@ -4395,6 +4410,17 @@ $lg-desktop: 1399.98;
     }
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
       color: $white;
+    }
+    @if $skin-name == 'fluent2-highcontrast' {
+      color: var(--color-sf-toolbar-icon-color);
+    }
+  }
+
+  .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item:hover .e-menu-icon,
+  .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item:hover .e-caret
+  {
+    @if $skin-name == 'fluent2' {
+      color: var(--color-sf-toolbar-icon-color);
     }
   }
 

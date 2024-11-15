@@ -50,7 +50,9 @@ export class AnnotationBase {
                 id: this.control.element.id + '_Annotation_' + index,
                 styles: 'position: absolute; z-index: 1'  //by default z-index set for annotation elements
             }),
-            index, annotation.content, this.control);
+            index, (this.control as Chart | AccumulationChart).enableHtmlSanitizer ?
+                (this.control as Chart | AccumulationChart).sanitize(annotation.content) :
+                annotation.content, this.control);
         return childElement;
     }
 

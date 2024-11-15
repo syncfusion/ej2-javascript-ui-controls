@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.2.2 (2024-11-15)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I648663` - The issue where the focus style remained on the Dropdown Tree element even after shifting focus to the next focusable element has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I634300` - Fixed an issue where clicking the Clear Icon did not remove all items as intended.
+
 ## 27.1.58 (2024-11-05)
 
 ### ComboBox

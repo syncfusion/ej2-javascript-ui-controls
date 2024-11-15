@@ -38,13 +38,16 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private previousInfo: VirtualInfo;
     /** @hidden */
     public isDataSourceChanged: boolean = false;
-    public getRowByIndex(index: number) : Element {
-        if (this.parent.enableVirtualization && this.parent.isFrozenGrid()){
+    public getRowByIndex(index: number): Element {
+        if (this.parent.enableVirtualization && this.parent.isFrozenGrid()) {
             return this.getRowCollection(index, true) as Element;
         }
-        else{
-            return this.parent.getDataRows().filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index)[0];
+        const dataRows: Element[] = this.parent.getDataRows();
+        const targetRow: Element = dataRows.find((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index);
+        if (!targetRow && this.parent.isEdit && this.parent.editSettings.mode === 'Batch') {
+            return index != null ? this.parent.getRows()[parseInt(index.toString(), 10)] : undefined;
         }
+        return targetRow;
     }
 
     public getFrozenRightVirtualRowByIndex(index: number): Element {
@@ -431,8 +434,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             - this.parent.pageSettings.pageSize;
             index = (index > 0) ? index : 0;
             if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 && index !== this[`${selectedRowIndex}`] &&
-                ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop) &&
-                !(this.parent.root && this.parent.root.treeGrid && this.parent.root.treeGrid.isGantt)) {
+                ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop)) {
                 index = this[`${selectedRowIndex}`];
             }
             this.startIndex = index;
@@ -476,7 +478,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             let nextSetResIndex: number = ~~(content.scrollTop / rowHeight);
             const isLastBlock: boolean = (this[`${selectedRowIndex}`] + this.parent.pageSettings.pageSize) < this.totalRecords ? false : true;
             if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 &&
-             nextSetResIndex !== this[`${selectedRowIndex}`] && !isLastBlock && !(this.parent.root && this.parent.root.treeGrid && this.parent.root.treeGrid.isGantt)) {
+             nextSetResIndex !== this[`${selectedRowIndex}`] && !isLastBlock) {
                 nextSetResIndex = this[`${selectedRowIndex}`];
             }
             let lastIndex: number = nextSetResIndex + this.parent.pageSettings.pageSize;
@@ -650,7 +652,12 @@ export class TreeInterSectionObserver extends InterSectionObserver {
         const debounced100: Function = debounce(callback, delay);
         const debounced50: Function = debounce(callback, 50);
         this[`${options}`].prevTop = this[`${options}`].prevLeft = 0;
+        const isScrollByFocus: string = 'isScrollByFocus';
         return (e: Event) => {
+            if (instance.isEdit && instance.root.editModule[`${isScrollByFocus}`]) {
+                instance.root.editModule[`${isScrollByFocus}`] = false;
+                return;
+            }
             const top: number = this[`${options}`].movableContainer ? this[`${options}`].container.scrollTop : (<HTMLElement>e.target).scrollTop;
             const left: number = this[`${options}`].movableContainer ? this[`${options}`].scrollbar.scrollLeft : (<HTMLElement>e.target).scrollLeft;
             let direction: ScrollDirection = this[`${options}`].prevTop < top ? 'down' : 'up';

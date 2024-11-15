@@ -469,6 +469,7 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.animationComplete = null;
             chartObj.tooltip.template = '<div>${x}</div><div>${y}</div>';
             chartObj.title = 'Template';
+            chartObj.enableHtmlSanitizer = true;
             chartObj.loaded = loaded1;
             chartObj.dataBind();
         });

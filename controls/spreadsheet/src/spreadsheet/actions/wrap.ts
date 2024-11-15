@@ -5,7 +5,7 @@ import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, r
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
 import { positionAutoFillElement, colWidthChanged, getLineHeight } from '../common/index';
 import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook, ApplyCFArgs, applyCF, RowModel } from '../../workbook/index';
-import { getRowHeight, getAddressFromSelectedRange, beginAction, setRowHeight } from '../../workbook/index';
+import { getRowHeight, getAddressFromSelectedRange, beginAction, isHiddenRow, isHiddenCol } from '../../workbook/index';
 
 
 /**
@@ -46,25 +46,27 @@ export class WrapText {
     private wrapTextHandler(
         args: {
             range: number[], wrap: boolean, sheet: SheetModel, initial: boolean, td: Element, row: HTMLElement,
-            hRow: HTMLElement, isCustomHgt?: boolean, isPublic?: boolean
+            hRow: HTMLElement, isCustomHgt?: boolean, isPublic?: boolean, outsideViewport?: boolean
         }): void {
         if (args.initial || inView(this.parent, args.range, true)) {
             if (args.isPublic && isReadOnlyCells(this.parent, args.range)) { return; }
-            if (args.initial && !args.td && inView(this.parent, args.range, true)) {
+            if (args.initial && !args.td && !args.outsideViewport && inView(this.parent, args.range, true)) {
                 args.initial = false;
             }
             let ele: HTMLElement; let cell: CellModel; let colwidth: number; let maxHgt: number; let hgt: number;
-            let isCustomHgt: boolean; let rowCustomHeight: boolean; let lineHgt: number; let row: RowModel;
+            let isCustomHgt: boolean; let rowCustomHeight: boolean; let lineHgt: number; let row: RowModel; let visibleRow: boolean;
+            const frozenRow: number = this.parent.frozenRowCount(args.sheet);
             for (let i: number = args.range[0]; i <= args.range[2]; i++) {
                 maxHgt = 0;
                 row = getRow(args.sheet, i);
                 rowCustomHeight = row.customHeight;
                 isCustomHgt = rowCustomHeight || args.isCustomHgt;
+                visibleRow = !isHiddenRow(args.sheet, i);
                 for (let j: number = args.range[1]; j <= args.range[3]; j++) {
                     cell = getCell(i, j, args.sheet, null, true);
                     if (cell.rowSpan < 0 || cell.colSpan < 0) { continue; }
                     const isMerge: boolean = (cell.rowSpan > 1 || cell.colSpan > 1);
-                    ele = (args.initial ? args.td : this.parent.getCell(i, j)) as HTMLElement;
+                    ele = args.initial ? <HTMLElement>args.td : (visibleRow && !isHiddenCol(args.sheet, j) && this.parent.getCell(i, j));
                     if (ele) {
                         if (args.wrap) {
                             lineHgt = getLineHeight(cell.style && cell.style.fontFamily ? cell.style : this.parent.cellStyle);
@@ -134,16 +136,23 @@ export class WrapText {
                             setMaxHgt(args.sheet, i, j, 20);
                             maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
                         }
-                        if (j === args.range[3] && ((args.wrap && maxHgt > 20 && getMaxHgt(args.sheet, i) <= maxHgt) || ((!args.wrap ||
-                            !displayText) && getMaxHgt(args.sheet, i) < getRowHeight(args.sheet, i) && getRowHeight(args.sheet, i) > 20))) {
-                            if (ele) {
-                                setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow);
-                                if (args.sheet.conditionalFormats && args.sheet.conditionalFormats.length) {
-                                    this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [i, j], isAction: true });
+                        if (j === args.range[3]) {
+                            const prevHgt: number = getRowHeight(args.sheet, i);
+                            if ((args.wrap && maxHgt > 20 && getMaxHgt(args.sheet, i) <= maxHgt) || ((!args.wrap || !displayText) &&
+                                getMaxHgt(args.sheet, i) < prevHgt && prevHgt > 20)) {
+                                if (prevHgt !== maxHgt) {
+                                    if (ele) {
+                                        setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow, visibleRow);
+                                        if (ele && args.sheet.conditionalFormats && args.sheet.conditionalFormats.length) {
+                                            this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [i, j], isAction: true });
+                                        }
+                                    } else {
+                                        setRowEleHeight(
+                                            this.parent, args.sheet, maxHgt, i, null, null, visibleRow,
+                                            !visibleRow || i > this.parent.viewport.bottomIndex ||
+                                            (i >= frozenRow && i < this.parent.viewport.topIndex + frozenRow));
+                                    }
                                 }
-                            } else {
-                                setRowHeight(args.sheet, i, maxHgt);
-                                this.parent.setProperties({ sheets: this.parent.sheets }, true);
                             }
                         }
                     }

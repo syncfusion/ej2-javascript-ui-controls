@@ -326,7 +326,7 @@ export class FormFieldsBase {
                                 }
                             }
                             else {
-                                const integerValue: number = isNullOrUndefined(fields) ? -1 : 0;
+                                const integerValue: number = isNullOrUndefined(fieldValueString) ? -1 : parseInt(fieldValueString, 10);
                                 const checkBoxField: PdfCheckBoxField = currentField as PdfCheckBoxField;
                                 if (checkBoxField.itemsCount > 0) {
                                     if (integerValue === -1) {

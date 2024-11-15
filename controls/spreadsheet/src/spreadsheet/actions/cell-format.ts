@@ -1,10 +1,10 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
-import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, getDPRValue, completeAction } from '../common/index';
+import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, completeAction } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
-import { setRowHeight, CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded, CFArgs } from '../../workbook/index';
+import { CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded, CFArgs } from '../../workbook/index';
 import { getSwapRange, skipHiddenIdx, isHiddenCol, isImported } from '../../workbook/index';
 import { removeClass } from '@syncfusion/ej2-base';
 import { deleteChart, deleteImage } from '../common/index';
@@ -134,7 +134,7 @@ export class CellFormat {
                 let hgt: number = 0;
                 hgt = getTextHeightWithBorder(
                     this.parent, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle,
-                    cell.wrap ? getLines(
+                    cell.wrap && !cell.colSpan ? getLines(
                         this.parent.getDisplayText(cell), getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle)
                         : 1);
                 const val: string = cell.value && cell.value.toString();
@@ -167,16 +167,9 @@ export class CellFormat {
                 if (isLastCell) {
                     this.checkHeight = false;
                     const maxHgt: number = getMaxHgt(sheet, rowIdx);
-                    let prevHgt: number = getRowHeight(sheet, rowIdx);
+                    const prevHgt: number = getRowHeight(sheet, rowIdx);
                     if (onActionUpdate ? maxHgt !== prevHgt : maxHgt > prevHgt) {
-                        if (outsideViewport) {
-                            prevHgt = getDPRValue(prevHgt);
-                            setRowHeight(sheet, rowIdx, maxHgt);
-                            this.parent.setProperties({ sheets: this.parent.sheets }, true);
-                            this.parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: getDPRValue(maxHgt) - prevHgt });
-                        } else {
-                            setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, null, null, true);
-                        }
+                        setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, null, null, true, outsideViewport);
                     }
                 }
             }

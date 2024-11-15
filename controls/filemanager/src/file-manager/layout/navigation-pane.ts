@@ -531,7 +531,7 @@ export class NavigationPane {
                 this.addDragDrop();
                 break;
             case 'navigationPaneSettings':
-                read(this.parent, events.finalizeEnd, '/');
+                read(this.parent, events.finalizeEnd, this.parent.path);
                 if (e.oldProp.navigationPaneSettings.sortOrder !== e.newProp.navigationPaneSettings.sortOrder) {
                     this.treeObj.sortOrder = e.newProp.navigationPaneSettings.sortOrder;
                 }

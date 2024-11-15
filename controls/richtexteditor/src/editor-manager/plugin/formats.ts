@@ -6,6 +6,7 @@ import { isNullOrUndefined as isNOU, detach, createElement, closest } from '@syn
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { markerClassName } from './dom-node';
 import { NodeCutter } from './nodecutter';
+import { ImageOrTableCursor } from '../../common';
 /**
  * Formats internal component
  *
@@ -263,6 +264,14 @@ export class Formats {
 
     private applyFormats(e: IHtmlSubCommands): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const tableCursor: ImageOrTableCursor = this.parent.nodeSelection.processedTableImageCursor(range);
+        if (tableCursor.start || tableCursor.end) {
+            if (tableCursor.startName === 'TABLE' || tableCursor.endName === 'TABLE') {
+                const tableNode: Node = tableCursor.start ? tableCursor.startNode : tableCursor.endNode;
+                this.applyTableSidesFormat(e, tableCursor.start, tableNode as HTMLTableElement);
+                return;
+            }
+        }
         let isSelectAll: boolean = false;
         if (this.parent.editableElement === range.endContainer &&
             !isNOU(this.parent.editableElement.children[range.endOffset - 1]) &&
@@ -508,6 +517,24 @@ export class Formats {
         tagName = tagName.toLowerCase();
         for (let i: number = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
             (element as HTMLElement).style.removeProperty(ignoreAttr[i as number]);
+        }
+    }
+
+    private applyTableSidesFormat(e: IHtmlSubCommands, start: boolean, table: HTMLTableElement): void {
+        const formatNode: Node = createElement(e.subCommand as string);
+        if (!(e.enterAction === 'BR')) {
+            formatNode.appendChild(createElement('br'));
+        }
+        table.insertAdjacentElement(start ? 'beforebegin' : 'afterend', formatNode as Element);
+        this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, formatNode as Element, 0);
+        if (e.callBack) {
+            e.callBack({
+                requestType: e.subCommand,
+                editorMode: 'HTML',
+                event: e.event,
+                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                elements: this.parent.domNode.blockNodes() as Element[]
+            });
         }
     }
 
