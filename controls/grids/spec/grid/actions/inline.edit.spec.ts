@@ -3443,6 +3443,61 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             gridObj = null;
         });
     });
+
+    describe('EJ2-921558 Boolean edit column affects AddNewRow form during row editing in EJ2 Grid', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', showAddNewRow: true, newRowPosition: 'Top' },
+                    allowPaging: true,
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                            validationRules: { required: true, number: true }, width: 140
+                        },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID',
+                            validationRules: { required: true, minLength: 5 }, width: 140
+                        },
+                        {
+                            field: 'Verified', headerText: 'Verified', type: 'boolean', editType: 'booleanedit', displayAsCheckBox: true, width: 140,
+                        },
+                        {
+                            field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit',
+                            width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },
+                        },
+                        {
+                            field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                            edit: { params: { popupHeight: '300px' } }
+                        }],
+                }, done);
+        });
+
+        it('Select and edit any row', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(1);
+            (gridObj.editModule as any).editModule.startEdit(gridObj.getRows()[1]);
+        });
+
+        it('Check all the input element in addrow have disabled attribute', (done: Function) => {
+            let inputs = gridObj.element.querySelectorAll('.e-addedrow input');
+            expect(inputs[2].hasAttribute('disabled')).toBe(true);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });
 
 describe('Editing on ForeignKey column is not working in frozen grid when allowEditOnDblClick is false', () => {
@@ -4923,5 +4978,69 @@ describe('EJ2-905237: Issue in Adding/Editing when grid component is rendered in
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+describe('EJ2-908122: DateTimePickerModel is missing in the IEditCell params of the Grid =>', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, validationRules: { required: true }, textAlign: 'Right' },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 170, format: 'dd/MM/yyyy HH:MM', edit: { params: {format: 'dd/MM/yyyy HH:MM', timeFormat: 'HH:MM' }}, editType: 'datetimepickeredit' },
+                ],
+            }, done);
+    });
+
+    it('Add the record', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'add') {
+                expect(args.form.querySelector('.e-datetimepicker').ej2_instances[0].timeFormat).toBe('HH:MM');
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.addRecord();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-908921: Add Form Opens When Pressing Insert Key While Alert Message is Displayed =>', () => {
+    let gridObj: Grid;    
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: false, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    { field: 'Verified', type: 'boolean', editType: 'booleanedit' },
+                ],
+            }, done);
+    });
+
+    it('Click the Edit button and call AddRecord method', (done: Function) => {
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        gridObj.keyboardModule.keyAction({ action: 'insert', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
+        expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(0);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = preventDefault = null;
     });
 });

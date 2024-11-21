@@ -93,7 +93,7 @@ export class Print {
         if (spreadsheet.chartColl.length > 0) {
             for (let i: number = 0; i < spreadsheet.chartColl.length; i++) {
                 const chart: ChartModel = spreadsheet.chartColl[i as number];
-                const sheetIdx: number = getSheetIndex(spreadsheet, chart.range.split('!')[0]);
+                const sheetIdx: number = getSheetIndex(spreadsheet, chart.range.substring(0, chart.range.lastIndexOf('!')));
                 if (sheetIndex === sheetIdx) {
                     const chartleft: { clientX: number, isImage?: boolean } = { clientX: chart.left, isImage: true };
                     const chartTop: { clientY: number, isImage?: boolean } = { clientY: chart.top, isImage: true };

@@ -52,9 +52,11 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
                 }
             }
         }
-        const isNotStringTemplate: boolean = column.footerTemplate ? typeof (column.footerTemplate) !== 'string'
-            : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
-                : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false;
+        const isNotStringTemplate: boolean = column.footerTemplate ? typeof (column.footerTemplate) !== 'string' && !(column.footerTemplate.prototype &&
+            column.footerTemplate.prototype.CSPTemplate) : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string' &&
+            !(column.groupFooterTemplate.prototype && column.groupFooterTemplate.prototype.CSPTemplate)
+            : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' && !(column.groupCaptionTemplate.prototype &&
+            column.groupCaptionTemplate.prototype.CSPTemplate) : false;
         const isReactCompiler: boolean = this.parent.isReact && isNotStringTemplate;
         const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
             this.parent.parentDetails.parentInstObj.isReact && isNotStringTemplate;

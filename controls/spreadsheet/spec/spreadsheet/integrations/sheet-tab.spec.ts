@@ -1,4 +1,4 @@
-import { SpreadsheetModel, Spreadsheet, SheetModel, DialogBeforeOpenEventArgs } from '../../../src/index';
+import { SpreadsheetModel, Spreadsheet, SheetModel, DialogBeforeOpenEventArgs, ImageModel } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 
@@ -362,6 +362,139 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
     });
 
     describe('CR Issues ->', () => {
+        describe('EJ2-917412 - Sheet name with Exclamation Mark ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ name: 'Sheet!12!34', rows: [{ cells: [{ value: 'Welcome to Spreadsheet!!!' }] }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Script error occurs while importing an excel file with exclamation mark in the sheet name', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.activeSheetIndex).toBe(0);
+                expect(spreadsheet.sheets[0].name).toBe('Sheet!12!34');
+                spreadsheet.cellFormat({ fontSize: '13pt' }, 'Sheet!12!34!A1');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.fontSize).toBe('13pt');
+                spreadsheet.updateCell({value: 'Spreadsheet'}, 'Sheet!12!34!A2');
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('Spreadsheet');
+                spreadsheet.numberFormat('$#,##0.00', 'Sheet!12!34!A3');
+                expect(spreadsheet.sheets[0].rows[2].cells[0].format).toBe('$#,##0.00');
+                spreadsheet.freezePanes(2, 3);
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toBe(0);
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('D3');
+                    done();
+                });
+            });
+
+            it('Insert images with exclamation mark in the sheet name ', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.insertImage([{ src: "https://www.w3schools.com/images/w3schools_green.jpg" }], "Sheet!12!34!D3");
+                const image: ImageModel[] = spreadsheet.sheets[0].rows[2].cells[3].image;
+                expect(image[0].height).toBe(300);
+                expect(image[0].width).toBe(400);
+                expect(image[0].top).toBe(43);
+                expect(image[0].left).toBe(192);
+                expect(image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                const imageId: string = image[0].id;
+                spreadsheet.deleteImage(imageId, 'Sheet!12!34!D3');
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('#' + imageId)).toBeNull();
+                    done();
+                });
+            });
+
+            it('Chart cases with exclamation mark in the sheet name ', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.insertChart([{ type: 'Column', theme: 'Material', range: 'Sheet!12!34!E1:F4', }]);
+                setTimeout(() => {
+                    let chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                    expect(chart).not.toBeNull();
+                    expect(spreadsheet.sheets[0].rows[0].cells[4].chart[0].range).toBe('Sheet!12!34!E1:F4');
+                    spreadsheet.deleteChart();
+                    chart = helper.getElement().querySelector('.e-datavisualization-chart');
+                    expect(chart).toBeNull();
+                    done();
+                });
+            });
+
+            it('Data validation with exclamation mark in the sheet name ', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.edit('E4', '20');
+                spreadsheet.addDataValidation({ type: 'List', value1: '=Sheet!12!34!A1' }, 'Sheet!12!34!E4');
+                helper.invoke('addInvalidHighlight', ['Sheet!12!34!E4']);
+                let td: HTMLElement = helper.invoke('getCell', [3, 4]);
+                expect(td.style.backgroundColor).toBe('rgb(255, 255, 0)');
+                expect(td.style.color).toBe('rgb(255, 0, 0)');
+                helper.edit('E4', 'Welcome to Spreadsheet!!!');
+                td = helper.invoke('getCell', [3, 4]);
+                expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(td.style.color).toBe('rgb(0, 0, 0)');
+                spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'LessThanOrEqualTo', value1: '20' }, 'Sheet!12!34!D2:D11');
+                spreadsheet.addInvalidHighlight();
+                done();
+            });
+
+            it('Editing, Find and Replace cases with exclamation mark in the sheet name ', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.edit('A5','10');
+                helper.edit('A6','10');
+                helper.edit('A7', '10');
+                helper.edit('A8', '10');
+                expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe(10);
+                expect(spreadsheet.sheets[0].rows[5].cells[0].value).toBe(10);
+                expect(spreadsheet.sheets[0].rows[6].cells[0].value).toBe(10);
+                expect(spreadsheet.sheets[0].rows[7].cells[0].value).toBe(10);
+                spreadsheet.replaceHandler({
+                    value: '10',
+                    mode: 'Sheet',
+                    isCSen: false,
+                    isEMatch: false,
+                    searchBy: 'By Row',
+                    findOpt: 'next',
+                    replaceValue: '100',
+                    replaceBy: 'replaceAll',
+                    sheetIndex: 0,
+                    isAction: true
+                });
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe(100);
+                    expect(spreadsheet.sheets[0].rows[5].cells[0].value).toBe(100);
+                    expect(spreadsheet.sheets[0].rows[6].cells[0].value).toBe(100);
+                    expect(spreadsheet.sheets[0].rows[7].cells[0].value).toBe(100);
+                    helper.triggerKeyNativeEvent(71, true);
+                    setTimeout(() => {
+                        helper.setAnimationToNone('.e-goto-dlg.e-dialog');
+                        const goToText: HTMLInputElement = helper.getElementFromSpreadsheet('.e-goto-dlg .e-text-goto') as HTMLInputElement;
+                        helper.click('.e-goto-dlg .e-btn-goto-ok'); // Check this now
+                        expect(helper.getElementFromSpreadsheet('.e-goto-alert-span').textContent).toBe('Reference value is not valid.');
+                        goToText.value = 'Sheet!12!34!H10';
+                        helper.click('.e-goto-dlg .e-btn-goto-ok');
+                        expect(helper.getInstance().sheets[0].selectedRange).toBe('H10:H10');
+                        expect(helper.getElementFromSpreadsheet('.e-goto-dlg.e-dialog')).toBeNull(); // Need to check this
+                        done();
+                    });
+                });
+            });
+
+            it('Hyperlink cases with exclamation mark in the sheet name ', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.addHyperlink('Sheet!12!34!A45', 'Sheet!12!34!A5', 'Hyperlink');
+                expect(spreadsheet.sheets[0].rows[4].cells[0].hyperlink).toBe('Sheet!12!34!A45');
+                expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Hyperlink');
+                helper.invoke('selectRange', ['A5']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 2, [12]);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A45:A45');
+                    spreadsheet.removeHyperlink('Sheet!12!34!A5');
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].hyperlink).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Hyperlink');
+                    done();
+                }, 20);
+            });
+        });
+
         describe('I328870, fb24295, EJ2-50411, EJ2-52987, EJ2-50389, EJ2-50564,  ->', () => {
             let spreadsheet: Spreadsheet;
             beforeAll((done: Function) => {

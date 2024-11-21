@@ -604,7 +604,8 @@ export class UndoRedo {
                     if (parentItem.childRecords.length > 1) {
                         const recIndex: number = this.parent.ids.indexOf(rowItems[i as number].ganttProperties.taskId.toString());
                         const previousRecord: IGanttData = this.parent.flatData[recIndex - 1];
-                        if (previousRecord.parentItem && previousRecord.parentItem.taskId === parentItem.ganttProperties.taskId) {
+                        if (previousRecord.parentItem &&
+                            previousRecord.parentItem.taskId.toString() === parentItem.ganttProperties.taskId.toString()) {
                             record['position'] = 'below';
                             record['id'] = extend([], [this.parent.flatData[this.parent.ids.indexOf(rowItems[i as number].ganttProperties.taskId.toString()) - 1].ganttProperties.taskId], [], true)[0];
                         }
@@ -616,7 +617,9 @@ export class UndoRedo {
                             let rowIndex: number = i;
                             do {
                                 const rowData: IGanttData = rowItems[rowIndex + 1];
-                                if (!rowData || (rowData && currentData.ganttProperties.taskId !== rowData.ganttProperties.taskId)) {
+                                if (!rowData ||
+                                    (rowData && currentData.ganttProperties.taskId.toString() !==
+                                     rowData.ganttProperties.taskId.toString())) {
                                     if (currentData && currentData.parentItem) {
                                         record['id'] = extend([], [currentData.ganttProperties.taskId], [], true)[0];
                                     }
@@ -650,7 +653,7 @@ export class UndoRedo {
                     let currentData: IGanttData;
                     let prevInd: number;
                     for (let k: number = 0; k < this.parent.treeGrid.parentData.length; k++) {
-                        if (this.parent.treeGrid.parentData[k as number]['ganttProperties'].taskId === rowItems[i as number].ganttProperties.taskId) {
+                        if (this.parent.treeGrid.parentData[k as number]['ganttProperties'].taskId.toString() === rowItems[i as number].ganttProperties.taskId.toString()) {
                             parentIndex = k;
                             currentData = this.parent.treeGrid.parentData[k + 1];
                             prevInd = k + 1;
@@ -660,7 +663,7 @@ export class UndoRedo {
                     let rowIndex: number = i;
                     do {
                         const rowData: IGanttData = rowItems[rowIndex + 1];
-                        if (!rowData || (rowData && currentData['ganttProperties'].taskId !== rowData.ganttProperties.taskId)) {
+                        if (!rowData || (rowData && currentData['ganttProperties'].taskId.toString() !== rowData.ganttProperties.taskId.toString())) {
                             if (currentData) {
                                 record['id'] = extend([], [currentData['ganttProperties'].taskId], [], true)[0];
                             }
@@ -684,7 +687,7 @@ export class UndoRedo {
                     let currentData: IGanttData;
                     let prevInd: number;
                     for (let k: number = 0; k < this.parent.treeGrid.parentData.length; k++) {
-                        if (this.parent.treeGrid.parentData[k as number]['ganttProperties'].taskId === rowItems[i as number].ganttProperties.taskId) {
+                        if (this.parent.treeGrid.parentData[k as number]['ganttProperties'].taskId.toString() === rowItems[i as number].ganttProperties.taskId.toString()) {
                             parentIndex = k;
                             currentData = this.parent.treeGrid.parentData[k + 1];
                             prevInd = k + 1;
@@ -697,7 +700,7 @@ export class UndoRedo {
                             let rowIndex: number = i;
                             do {
                                 const rowData: IGanttData = rowItems[rowIndex + 1];
-                                if (!rowData || (rowData && currentData['ganttProperties'].taskId !== rowData.ganttProperties.taskId)) {
+                                if (!rowData || (rowData && currentData['ganttProperties'].taskId.toString() !== rowData.ganttProperties.taskId.toString())) {
                                     if (!currentData) {
                                         currentData = this.parent.treeGrid.parentData[parentIndex as number];
                                     }
@@ -725,8 +728,8 @@ export class UndoRedo {
                     else {
                         let childIndex: number;
                         for (let k: number = 0; k < parentItem.childRecords.length; k++) {
-                            if (parentItem.childRecords[i as number].ganttProperties.taskId ===
-                                rowItems[i as number].ganttProperties.taskId) {
+                            if (parentItem.childRecords[i as number].ganttProperties.taskId.toString() ===
+                                rowItems[i as number].ganttProperties.taskId.toString()) {
                                 childIndex = k;
                                 break;
                             }
@@ -764,8 +767,8 @@ export class UndoRedo {
                     else {
                         let currentIndex: number;
                         for (let j: number = 0; j < parentRecord.childRecords.length; j++) {
-                            if (parentRecord.childRecords[j as number].ganttProperties.taskId ===
-                                rowItems[i as number].ganttProperties.taskId) {
+                            if (parentRecord.childRecords[j as number].ganttProperties.taskId.toString() ===
+                                rowItems[i as number].ganttProperties.taskId.toString()) {
                                 currentIndex = j;
                                 break;
                             }
@@ -793,7 +796,9 @@ export class UndoRedo {
                                 let rowIndex: number = i;
                                 do {
                                     const rowData: IGanttData = rowItems[rowIndex + 1];
-                                    if (!rowData || (rowData && currentData.ganttProperties.taskId !== rowData.ganttProperties.taskId)) {
+                                    if (!rowData ||
+                                        (rowData && currentData.ganttProperties.taskId.toString() !==
+                                         rowData.ganttProperties.taskId.toString())) {
                                         if (currentData.parentItem) {
                                             record['id'] = extend([], ['T' + currentData.ganttProperties.taskId], [], true)[0];
                                             if (detail === 'deletedIndexes') {

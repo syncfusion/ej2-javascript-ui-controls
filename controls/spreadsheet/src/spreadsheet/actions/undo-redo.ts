@@ -88,7 +88,7 @@ export class UndoRedo {
         case 'removeValidation':
             if (eventArgs.isColSelected) {
                 this.beforeActionData = { cellDetails: [] };
-                const rangeArr: string[] = eventArgs.range.split('!')[1].split(':');
+                const rangeArr: string[] = eventArgs.range.substring(eventArgs.range.lastIndexOf('!') + 1).split(':');
                 for (let start: number = getColIndex(rangeArr[0]), end: number = getColIndex(rangeArr[1]); start <= end; start++) {
                     if (sheet.columns[start as number] && sheet.columns[start as number].validation) {
                         this.beforeActionData.cellDetails.push({ colIndex: start, validation: sheet.columns[start as number].validation });
@@ -328,8 +328,8 @@ export class UndoRedo {
                     this.parent.sortCollection = [];
                 }
                 this.parent.sortCollection.splice(
-                    idx, 0, { sortRange: args.eventArgs.range.split('!')[1], sheetIndex: sheetIndex, columnIndex:
-                        getColIndex((args.eventArgs.sortOptions.sortDescriptors as SortDescriptor).field), order:
+                    idx, 0, { sortRange: args.eventArgs.range.substring(args.eventArgs.range.lastIndexOf('!') + 1), sheetIndex: sheetIndex,
+                        columnIndex: getColIndex((args.eventArgs.sortOptions.sortDescriptors as SortDescriptor).field), order:
                         (args.eventArgs.sortOptions.sortDescriptors as SortDescriptor).order });
                 updateSortIcon(idx, true);
             }
@@ -390,7 +390,9 @@ export class UndoRedo {
 
     private undoForClipboard(args: CollaborativeEditArgs, isUndo: boolean, actionArgs?: ActionEventArgs): CollaborativeEditArgs {
         const eventArgs: UndoRedoEventArgs = args.eventArgs;
-        const address: string[] = eventArgs.pastedRange.split('!');
+        const address: string[] = [];
+        address[0] = eventArgs.pastedRange.substring(0, eventArgs.pastedRange.lastIndexOf('!'));
+        address[1] = eventArgs.pastedRange.substring(eventArgs.pastedRange.lastIndexOf('!') + 1);
         const range: number[] = getRangeIndexes(address[1]);
         const sheetIndex: number = getSheetIndex(this.parent as Workbook, address[0]);
         const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIndex);
@@ -551,12 +553,16 @@ export class UndoRedo {
         args: CollaborativeEditArgs, preventEvt?: boolean, preventReSelect?: boolean,
         isFromAutoFillOption?: boolean): CollaborativeEditArgs {
         const eventArgs: UndoRedoEventArgs = args.eventArgs;
-        let address: string[] = [];
+        const address: string[] = [];
+        const undoRange: string = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace'
+            || args.action === 'cellDelete' || args.action === 'hyperlink' || args.action === 'addNote' || args.action === 'editNote'
+            || args.action === 'deleteNote' || args.action === 'removeHyperlink') ? eventArgs.address : eventArgs.range;
         if (args.action === 'autofill') {
-            address = eventArgs.fillRange.split('!');
+            address[0] = eventArgs.fillRange.substring(0, eventArgs.fillRange.lastIndexOf('!'));
+            address[1] = eventArgs.fillRange.substring(eventArgs.fillRange.lastIndexOf('!') + 1);
         } else {
-            address = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace'
-                || args.action === 'cellDelete' || args.action === 'hyperlink' || args.action === 'addNote' || args.action === 'editNote' || args.action === 'deleteNote' || args.action === 'removeHyperlink') ? eventArgs.address.split('!') : eventArgs.range.split('!');
+            address[0] = undoRange.substring(0, undoRange.lastIndexOf('!'));
+            address[1] = undoRange.substring(undoRange.lastIndexOf('!') + 1);
         }
         const sheetIndex: number = getSheetIndex(this.parent as Workbook, address[0]);
         const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIndex);

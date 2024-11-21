@@ -97,7 +97,7 @@ describe('DropDown Tree control List datasource', () => {
         });
         it('for showCheckBox with autoCheck and value', () => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, showCheckBox: true, treeSettings: { autoCheck: true }, value: ['21', '7'] }, '#ddtree');
-            expect(ddtreeObj.text).toBe('India,Assam,Bihar,Tamil Nadu,Punjab,Brazil,Paraná,Ceará,Acre');
+            expect(ddtreeObj.text).toBe('India,Brazil,Assam,Bihar,Tamil Nadu,Punjab,Paraná,Ceará,Acre');
         });
         it('for showCheckBox with Delimiter mode and autocheck & loadOnDemand enabled', (done: Function) => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, showCheckBox: true, mode: 'Delimiter', treeSettings: { autoCheck: true, loadOnDemand: true } }, '#ddtree');

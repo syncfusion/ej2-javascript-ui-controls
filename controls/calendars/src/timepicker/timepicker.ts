@@ -1748,6 +1748,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         EventHandler.add(this.inputElement, 'input', this.inputEventHandler, this);
         if (this.enableMask){
             EventHandler.add(this.inputElement, 'keydown', this.keydownHandler, this);
+            EventHandler.add(this.inputElement, 'keyup', this.keyupHandler, this);
         }
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
@@ -1782,6 +1783,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             break;
         default:
             break;
+        }
+    }
+    private keyupHandler(e: KeyboardEventArgs): void{
+        if ((e.code === 'Backspace' || e.code === 'Delete') && (this.enableMask && this.showClearButton && this.inputElement && this.inputElement.value === this.maskedDateValue && this.inputWrapper && this.inputWrapper.clearButton && !this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide'))) {
+            this.inputWrapper.clearButton.classList.add('e-clear-icon-hide');
         }
     }
     protected formResetHandler(): void {
@@ -1837,6 +1843,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
         EventHandler.remove(this.inputElement, 'input', this.inputEventHandler);
+        if (this.enableMask) {
+            EventHandler.remove(this.inputElement, 'keyup', this.keyupHandler);
+        }
         if (this.inputEvent) {
             this.inputEvent.destroy();
         }
@@ -2566,6 +2575,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.inputElement.selectionStart =  0;
                 this.inputElement.selectionEnd = this.inputElement.value.length;
             }
+        }
+        if (this.enableMask && this.showClearButton && this.inputElement && this.inputElement.value === this.maskedDateValue && this.inputWrapper && this.inputWrapper.clearButton && !this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')) {
+            this.inputWrapper.clearButton.classList.add('e-clear-icon-hide');
         }
         this.trigger('focus', focusArguments);
         this.clearIconState();

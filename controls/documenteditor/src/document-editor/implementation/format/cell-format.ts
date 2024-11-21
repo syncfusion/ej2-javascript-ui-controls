@@ -232,6 +232,23 @@ export class WCellFormat {
             }
         }
     }
+    /**
+     * @private
+     */
+    public initializeCellBorders(): void {
+        this.borders.left.lineStyle = 'Single';
+        this.borders.left.lineWidth = 0.5;
+        this.borders.right.lineStyle = 'Single';
+        this.borders.right.lineWidth = 0.5;
+        this.borders.top.lineStyle = 'Single';
+        this.borders.top.lineWidth = 0.5;
+        this.borders.bottom.lineStyle = 'Single';
+        this.borders.bottom.lineWidth = 0.5;
+        this.borders.horizontal.lineStyle = 'Single';
+        this.borders.horizontal.lineWidth = 0.5;
+        this.borders.vertical.lineStyle = 'Single';
+        this.borders.vertical.lineWidth = 0.5;
+    }
     public static clear(): void {
         this.uniqueCellFormats.clear();
     }

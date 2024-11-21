@@ -1,7 +1,7 @@
 /**
  * Grid Filtering spec document
  */
-import { EventHandler, ChildProperty, EmitType, Browser } from '@syncfusion/ej2-base';
+import { EventHandler, ChildProperty, EmitType, Browser, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid, FilterSettings } from '../../../src/grid/base/grid';
@@ -1343,6 +1343,39 @@ describe('filter menu module =>', () => {
         });
     });
 
+    describe('EJ2: 916181 => All template is not rendering in React when using the CSPTemplate function. => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'CustomerID', width: 120, headerText: 'Customer ID', filterTemplate: initializeCSPTemplate(function() {
+                            return '<input type="text" id="ShipCountry" name="ShipCountry" />' }) },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }
+                    ]
+                }, done);
+        });
+
+        it('Click the filter icon', () => {
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+        });
+
+        it('Coverage for renderFIValueUI', (done: Function) => {
+            gridObj.isReact = true;
+            (gridObj.filterModule as any).filterModule.renderFlValueUI(document.body.querySelector('.e-flmenu-maindiv'),
+                document.body.querySelector('.e-icon-filter'), gridObj.getColumns()[0]);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 

@@ -70,6 +70,7 @@ export class DialogEdit {
     private parent: Gantt;
     private rowIndex: number;
     private isFromDialogPredecessor: boolean = false;
+    private isTriggered: boolean = false;
     /* eslint-disable-next-line */
     private formObj: any;
     /* eslint-disable-next-line */
@@ -584,6 +585,7 @@ export class DialogEdit {
         this.isEdit = false;
         this.isAddNewResource = false;
         this.editedRecord = {};
+        this.parent['triggeredColumnName'] = '';
         this.rowData = {};
         this.rowIndex = -1;
         this.addedRecord = null;
@@ -1136,7 +1138,15 @@ export class DialogEdit {
                 column.field === ganttObj.columnMapping.id || column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate) {
                 textBox.change = (args: CObject): void => {
-                    this.validateScheduleFields(args, column, ganttObj);
+                    if (!this.isTriggered) {
+                        if ((column.field === this.parent.taskFields.duration ||
+                             column.field === this.parent.taskFields.work) && !this.isTriggered
+                            && this.editedRecord.ganttProperties.taskType === 'FixedUnit') {
+                            this.isTriggered = true;
+                            this.parent['triggeredColumnName'] = column.field;
+                        }
+                        this.validateScheduleFields(args, column, ganttObj);
+                    }
                 };
             }
             fieldsModel[column.field] = common;
@@ -1151,7 +1161,15 @@ export class DialogEdit {
                 numeric.max = 100;
             }
             numeric.change = (args: CObject): void => {
-                this.validateScheduleFields(args, column, ganttObj);
+                if (!this.isTriggered) {
+                    if ((column.field === this.parent.taskFields.duration ||
+                         column.field === this.parent.taskFields.work) && !this.isTriggered
+                        && this.editedRecord.ganttProperties.taskType === 'FixedUnit') {
+                        this.isTriggered = true;
+                        this.parent['triggeredColumnName'] = column.field;
+                    }
+                    this.validateScheduleFields(args, column, ganttObj);
+                }
             };
             fieldsModel[column.field] = numeric;
             break;
@@ -1270,6 +1288,7 @@ export class DialogEdit {
         if (colName.search('Segments') === 0) {
             colName = colName.replace('SegmentsTabContainer', '');
             this.validateSegmentFields(ganttObj, colName, cellValue, args);
+            this.isTriggered = false;
             return true;
         } else {
             this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
@@ -1292,6 +1311,7 @@ export class DialogEdit {
                 this.updateScheduleFields(dialog, ganttProp, 'work');
             }
             this.dialogEditValidationFlag = false;
+            this.isTriggered = false;
             return true;
         }
     }
@@ -2480,7 +2500,7 @@ export class DialogEdit {
                         ganttObj.resources[j as number][resourceSettings.id] &&
                         (ganttObj.currentViewData[i as number].hasChildRecords ||
                             isNullOrUndefined(ganttObj.currentViewData[i as number].parentItem))) {
-                        resourceData.push(ganttObj.resources[j as number]);
+                        resourceData.push(extend([], [], [ganttObj.resources[j as number]], true)[0] as Object);
                     }
                 }
             }
@@ -2652,6 +2672,7 @@ export class DialogEdit {
     }
     private resourceSelection(id: string): void {
         const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>document.querySelector('#' + id)).ej2_instances[0];
+        this.parent['triggeredColumnName'] = '';
         const currentViewData: Object[] = resourceTreeGrid.getCurrentViewRecords();
         const resources: Object[] = this.ganttResources;
         if (resources && resources.length > 0) {

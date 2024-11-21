@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I648948` - Undo redo functionality does not work for newly added records remote data sample issue has been fixed.
+- `#I648941` - Critical path style not updated using dialog edit issue has been fixed.
+- `#F194958` - Script error is occurs when dynamically changing the grid line property without data source issue has been fixed.
+- `#I653638` - unit is not updated properly while setting task type as `FixedWork` issue has been fixed.
+- `#I645586` - Last 3 rows of the taskbar are not exported when performing PDF export with the `pageOrientation` set Portrait issue has been fixed.
+- `#I650238` - Work calculation is not functioning correctly when adding a record issue has been fixed.
+
 ## 27.2.2 (2024-11-15)
 
 ### GanttChart
@@ -11,6 +24,7 @@
 - `#644829` - Words and taskbar alignment are misaligned in pdf file when row height is less than 20 issue has been fixed.
 - `#I645725` - Console error occurs when taskbar drag and drop with touch interaction issue has been fixed.
 - `#I646644` - Console error occurs while dependency has decimal offset day values issue has been fixed.
+- `#I653638` - unit is not updated properly while setting task type as `FixedWork` issue has been fixed.
 
 ## 27.1.58 (2024-11-05)
 

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I648389` -  Fixed an issue where the CSS for the selected value was removed when the minimum and maximum properties were changed dynamically.
+
+- `#I654432` - Fixed an issue where the Clear Icon was displayed when the enable mask support had no value.
+
 ## 27.2.2 (2024-11-15)
 
 ### DatePicker

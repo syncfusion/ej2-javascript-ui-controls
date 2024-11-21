@@ -1324,3 +1324,17 @@ export let localDataSource: { [key: string]: Object }[] = [
     { id: 6, pid: 1, name: 'Best of 2017 So Far', icon:'e-icons e-folder' },
     { id: 7, name: 'Sales and Events', hasChild: true, icon:'e-icons e-folder' },
 ];
+
+export let hierarchicalDataSource1: { [key: string]: Object }[] = [
+    {
+        code: 'AF', name: 'Africa', expanded: true, icon:'e-icons e-folder', countries: [
+            { code: 'NGA', name: 'Nigeria', icon:'e-icons e-folder' },
+            { code: 'EGY', name: 'Egypt', icon:'e-icons e-folder' },
+            { code: 'ZAF', name: 'South Africa', icon:'e-icons e-folder' }
+        ]
+    },
+    {
+        code: 'AS', name: 'Asia', expanded: true, icon:'e-icons e-folder' , countries: []
+    },
+
+];

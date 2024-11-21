@@ -1572,6 +1572,12 @@ export class Edit {
             this.parent.editModule.dialogModule.isResourceUpdate = false;
             this.parent.editModule.dialogModule.previousResource = [];
         }
+        const criticalModule: CriticalPath = this.parent.criticalPathModule;
+        if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
+            criticalModule.showCriticalPath(true);
+            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection,
+                                                 true, criticalModule.predecessorCollectionTaskIds);
+        }
         if (!this.isTreeGridRefresh) {
             if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
                 if (!this.parent.treeGrid.grid.element.querySelector('form').ej2_instances[0].validate()) {
@@ -1597,12 +1603,6 @@ export class Edit {
                 this.parent.ganttChartModule.reRenderConnectorLines();
                 this.updateScheduleDatesOnEditing(args);
             }
-        }
-        const criticalModule: CriticalPath = this.parent.criticalPathModule;
-        if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
-            criticalModule.showCriticalPath(true);
-            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection,
-                                                 true, criticalModule.predecessorCollectionTaskIds);
         }
         if (!this.parent.editSettings.allowTaskbarEditing || (this.parent.editSettings.allowTaskbarEditing &&
             !this.taskbarEditModule.dependencyCancel)) {
@@ -3456,6 +3456,23 @@ export class Edit {
         }
     }
 
+    private addNewUndoCollection(record: Object, args: ITaskAddedEventArgs): void {
+        if (this.parent.undoRedoModule && (!this.parent.undoRedoModule['isUndoRedoPerformed'] || (this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['currentAction']['action'] === 'Add' && this.parent.viewType === 'ResourceView'))
+            && this.parent['isUndoRedoItemPresent']('Add')) {
+            record['action'] = 'Add';
+            const tempArray: IGanttData[] = (args.data as IGanttData[]).length > 0 ?
+                extend([], [], args.data as IGanttData[], true) as IGanttData[] : [args.data as IGanttData];
+            let addedRec: IGanttData[] = [];
+            for (let i: number = 0; i < tempArray.length; i++) {
+                addedRec = (this.parent.flatData.filter((data: IGanttData) => {
+                    return (tempArray[i as number].index === data.index && tempArray[i as number]['ganttProperties'].taskId === data.ganttProperties.taskId);
+                }));
+            }
+            record['addedRecords'] = extend([], [], addedRec, true);
+            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as object) = record;
+        }
+    }
+
     /**
      * Method to add new record.
      *
@@ -3706,20 +3723,7 @@ export class Edit {
                         if (this.parent.viewType === 'ResourceView' && this.parent.taskFields.work && ganttData) {
                             this.parent.dataOperation.updateParentItems(ganttData, true);
                         }
-                        if (this.parent.undoRedoModule && (!this.parent.undoRedoModule['isUndoRedoPerformed'] || (this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['currentAction']['action'] === 'Add' && this.parent.viewType === 'ResourceView'))
-                            && this.parent['isUndoRedoItemPresent']('Add')) {
-                            record['action'] = 'Add';
-                            const tempArray: IGanttData[] = (args.data as IGanttData[]).length > 0 ?
-                                extend([], [], args.data as IGanttData[], true) as IGanttData[] : [args.data as IGanttData];
-                            let addedRec: IGanttData[] = [];
-                            for (let i: number = 0; i < tempArray.length; i++) {
-                                addedRec = (this.parent.flatData.filter((data: IGanttData) => {
-                                    return (tempArray[i as number].index === data.index && tempArray[i as number]['ganttProperties'].taskId === data.ganttProperties.taskId);
-                                }));
-                            }
-                            record['addedRecords'] = extend([], [], addedRec, true);
-                            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as object) = record;
-                        }
+                        this.addNewUndoCollection(record, args);
                         this._resetProperties();
                     }
                     this.parent.isOnAdded = false;
@@ -3866,6 +3870,8 @@ export class Edit {
         });
         this.updateTreeGridUniqueID(cAddedRecord as IGanttData, 'add');
         this.refreshNewlyAddedRecord(args, cAddedRecord);
+        const objCollection: Object = {};
+        this.addNewUndoCollection(objCollection, args);
         this._resetProperties();
     }
     /**

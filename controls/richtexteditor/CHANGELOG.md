@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I647911` - Now, with the pre-wrap style applied to the Rich Text Editor, the enter action functions as expected.
+
+- `#I629344` - Now, the `Insert` button is disabled in the image dialog when the replacement image size exceeds the maximum allowed file size.
+
+- `#I649583`, `#I650404` - Now, the localization is properly applied to the `NumberFormatList` and `BulletFormatList` dropdown elements in the Rich Text Editor.
+
+- `#I195065` - Fixed an issue where the "Minimize" toolbar icon did not update when the toolbar was dynamically enabled or disabled.
+
 ## 27.2.2 (2024-11-15)
 
 ### RichTextEditor
@@ -10,11 +24,17 @@
 
 - `#I646789` - Now, the table is correctly inserted at the end of the span element when the cursor is focused there in the Rich Text Editor.
 
+- `#I649390` - Now, pressing space after mentioned items with `-` functions correctly in the Rich Text Editor.
+
 - `#I637655` - Now, the list retains its format properly when pasted into the Rich Text Editor, even when within an `<h6>` tag.
 
 - `#I649429` - Now, the custom table with the class name `e-rte-custom-table` will not have the editor's default table styles.
 
 - `#I647956` - Now, the percentage values for image height and width are now applied to image in the Rich Text Editor.
+
+- `#I652208` - Now, the console error that occurred when clicking the image toolbar icon with the cursor at the table side has now been resolved.
+
+- `#I627784` - Now, the slow image resizing smoothness in the IFrame editor has been improved.
 
 ## 27.1.58 (2024-11-05)
 

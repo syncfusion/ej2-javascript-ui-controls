@@ -11,6 +11,25 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 Kanban.Inject();
 
+describe('SynDatasource Testing', () => {
+    let kanbanObj: Kanban;
+    beforeAll(() => {
+        const dataManager: DataManager = new DataManager({
+            url: ''
+        });
+        const model: KanbanModel = { query: new Query() };
+        kanbanObj = util.createKanban(model, dataManager);
+    });
+    it('SynDatasource Testing', () => {
+        const promise = (kanbanObj.dataModule as any).syncDataSource(kanbanObj.dataModule.dataManager, "insert", JSON.parse('{"addedRecords":[{"Title":"1","Status":"Open","undefined":1,"Assignee":null,"RankId":"","Summary":""}],"changedRecords":[],"deletedRecords":[]}'),
+                        JSON.parse('{"Title":"1","Status":"Open","undefined":1,"Assignee":null,"RankId":"","Summary":""}'));
+        expect(promise !== null && promise !== undefined).toBe(true);
+    });
+    afterAll(() => {
+        util.destroy(kanbanObj);
+    });
+});
+
 describe('CRUD actions module', () => {
     beforeAll(() => {
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;

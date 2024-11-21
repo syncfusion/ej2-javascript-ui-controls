@@ -599,6 +599,8 @@ export class CanvasRenderer implements IRenderer {
 
             const imageObj: HTMLImageElement = new Image();
             imageObj.src = obj.source;
+            // 919867: Opacity for the image node is not applied to the exported image
+            this.setStyle(canvas, obj as StyleAttributes);
             const id: string[] = ctx.canvas.id.split('_');
             // eslint-disable-next-line
             const value: boolean = id[id.length - 1] === ('diagram' || 'diagramLayer') ? true : false;

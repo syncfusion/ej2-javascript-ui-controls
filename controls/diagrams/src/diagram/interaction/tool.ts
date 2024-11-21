@@ -342,6 +342,7 @@ export class ToolBase {
         if (isMouseDownAction && arg.cancel){
             {
                 this.commandHandler.diagram.resetTool();
+                this.inAction = false;
             }
         }
     }
@@ -2040,6 +2041,8 @@ export class PolygonDrawingTool extends ToolBase {
                         [{ x: this.startPoint.x, y: this.startPoint.y }, { x: this.currentPosition.x, y: this.currentPosition.y }]
                 }
             };
+            // 920152: elementDraw event not triggered for Polygon Drawing tool
+            this.triggerElementDrawEvent(args.source, 'Start', 'Node', this.getShapeType(), true);
             this.drawingObject = this.commandHandler.drawObject(node as Node);
         } else {
             let pt: PointModel;
@@ -2062,6 +2065,8 @@ export class PolygonDrawingTool extends ToolBase {
             obj.points[obj.points.length - 1].y = this.currentPosition.y;
             (this.drawingObject.wrapper.children[0] as PathElement).data = getPolygonPath(
                 (this.drawingObject.shape as BasicShapeModel).points);
+            // 920152: elementDraw event not triggered for Polygon Drawing tool
+            this.triggerElementDrawEvent(this.drawingObject, 'Progress', 'Node', this.getShapeType(), false);
             if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
                 const region: Rect = Rect.toBounds((this.drawingObject.shape as BasicShapeModel).points);
                 this.commandHandler.updateNodeDimension(this.drawingObject, region);
@@ -2083,6 +2088,8 @@ export class PolygonDrawingTool extends ToolBase {
         if (this.inAction) {
             this.inAction = false;
             this.commandHandler.addObjectToDiagram(this.drawingObject);
+            // 920152: elementDraw event not triggered for Polygon Drawing tool
+            this.triggerElementDrawEvent(this.drawingObject, 'Completed', 'Node', this.getShapeType(), false);
         }
         this.endAction();
     }
@@ -2120,6 +2127,8 @@ export class PolyLineDrawingTool extends ToolBase {
         if (this.inAction) {
             const obj: Connector = (this.drawingObject as Connector);
             obj.targetPoint = this.currentPosition;
+            // 920152: elementDraw event not triggered for Polyline Drawing tool
+            this.triggerElementDrawEvent(this.drawingObject, 'Progress', 'Connector', (this.drawingObject as ConnectorModel).type, false);
             this.commandHandler.updateConnectorPoints(obj);
         }
         return true;
@@ -2138,7 +2147,11 @@ export class PolyLineDrawingTool extends ToolBase {
                 sourcePoint: this.currentPosition,
                 targetPoint: this.currentPosition
             };
-            this.drawingObject = this.commandHandler.drawObject(connector as Connector);
+            // 920152: elementDraw event not triggered for Polyline Drawing tool
+            this.triggerElementDrawEvent(args.source, 'Start', 'Connector', (this.commandHandler.diagram.drawingObject as ConnectorModel).type, true);
+            if (this.inAction) {
+                this.drawingObject = this.commandHandler.drawObject(connector as Connector);
+            }
         } else {
             const drawObject: Connector = this.drawingObject as Connector;
             let segment: StraightSegmentModel;
@@ -2166,6 +2179,8 @@ export class PolyLineDrawingTool extends ToolBase {
                 const drawObject: ConnectorModel = this.drawingObject as ConnectorModel;
                 (drawObject.segments[drawObject.segments.length - 1] as StraightSegment).point = { x: 0, y: 0 };
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
+                // 920152: elementDraw event not triggered for Polyline Drawing tool
+                this.triggerElementDrawEvent(this.drawingObject, 'Completed', 'Connector', (this.drawingObject as ConnectorModel).type, false);
             }
         }
         this.endAction();
@@ -2417,6 +2432,8 @@ export class FreeHandTool extends ToolBase {
             (this.drawingObject.wrapper.children[0] as PathElement).data = getFreeHandPath(
                 (this.drawingObject.shape as BasicShapeModel).points);
             (obj as PathModel).data = getFreeHandPath((obj as BasicShapeModel).points);
+            // 920152: elementDraw event not triggered for Freehand Drawing tool
+            this.triggerElementDrawEvent(args.source, 'Progress', 'Connector', (this.drawingObject as any).type, false);
             if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
                 const region: Rect = Rect.toBounds((this.drawingObject.shape as BasicShapeModel).points);
                 this.commandHandler.updateNodeDimension(this.drawingObject, region);
@@ -2443,6 +2460,8 @@ export class FreeHandTool extends ToolBase {
                     [{ x: this.startPoint.x, y: this.startPoint.y }, { x: this.currentPosition.x, y: this.currentPosition.y }]
             }
         };
+        // 920152: elementDraw event not triggered for Freehand Drawing tool
+        this.triggerElementDrawEvent(args.source, 'Start', 'Connector', (this.commandHandler.diagram.drawingObject as any).type, true);
         this.drawingObject = this.commandHandler.drawObject(node as Node);
     }
     /**
@@ -2475,6 +2494,8 @@ export class FreeHandTool extends ToolBase {
             this.drawingObject = this.bezierCurveSmoothness(points, smoothValue, this.drawingObject, obj);
             this.commandHandler.updateConnectorPoints(this.drawingObject);
             this.commandHandler.addObjectToDiagram(this.drawingObject);
+            // 920152: elementDraw event not triggered for Freehand Drawing tool
+            this.triggerElementDrawEvent(this.drawingObject, 'Completed', 'Connector', (this.drawingObject as ConnectorModel).type, false);
             //(EJ2-70838)- Added code to resolve style property not added dynamically for freehand connector
             // Added code to resolve style property not added dynamically for freehand connector
             super.mouseUp(args);

@@ -1990,6 +1990,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             const bounds: Rect = this.legendModule.legendBounds;
             let rect: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
             if (this.enableCanvas) {
+                this.canvasRender.ctx.beginPath();
                 rect = new Rect(rect.x - borderWidth / 2, rect.y - borderWidth / 2, rect.width + borderWidth, rect.height + borderWidth);
                 (this.renderer as CanvasRenderer).canvasClip(rect);
             }
@@ -2701,6 +2702,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartTitleFont).width;
             maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
         }
+        const subTitleWidth: number = measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).width;
+        maxWidth = Math.max(titleWidth, subTitleWidth);
         const subTitleElementSize: Size = measureText(this.subTitleCollection.reduce((a: string, b: string) =>
             (a.length > b.length ? a : b)), this.subTitleStyle, this.themeStyle.chartSubTitleFont);
         const getAnchor: string = getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl);

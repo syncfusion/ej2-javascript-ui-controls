@@ -283,7 +283,7 @@ export class SpreadsheetHyperlink {
             if (!cellEle) {
                 return;
             }
-            let range: string[] = ['', ''];
+            const range: string[] = ['', ''];
             let rangeIndexes: number[];
             let isEmpty: boolean = true;
             let sheet: SheetModel = this.parent.getActiveSheet();
@@ -320,11 +320,12 @@ export class SpreadsheetHyperlink {
                             }
                         }
                     }
-                    if (address.indexOf('!') !== -1) {
-                        range = address.split('!');
+                    if (address.lastIndexOf('!') !== -1) {
+                        range[0] = address.substring(0, address.lastIndexOf('!'));
                         if (range[0].indexOf(' ') !== -1) {
                             range[0] = range[0].slice(1, range[0].length - 1);
                         }
+                        range[1] = address.substring(address.lastIndexOf('!') + 1);
                     } else {
                         range[0] = this.parent.getActiveSheet().name;
                         range[1] = address;
@@ -598,7 +599,7 @@ export class SpreadsheetHyperlink {
             let isDefinedNamed: boolean;
             const docContElem: HTMLElement = item.querySelector('.e-document') as HTMLElement;
             docContElem.getElementsByClassName('e-cont')[0].getElementsByClassName('e-text')[0].setAttribute('value', value);
-            let rangeArr: string[];
+            let sheetName: string; let range: string;
             // let sheet: SheetModel = this.parent.getActiveSheet();
             // let sheetIdx: number;
             if (this.parent.definedNames) {
@@ -622,13 +623,14 @@ export class SpreadsheetHyperlink {
                     }
                 }
             } else {
-                if (address && address.indexOf('!') !== -1) {
-                    rangeArr = address.split('!');
+                if (address && address.lastIndexOf('!') !== -1) {
+                    const lastIndex: number = address.lastIndexOf('!');
+                    sheetName = address.substring(0, lastIndex);
+                    range = address.substring(lastIndex + 1);
                     // sheetIdx = parseInt(rangeArr[0].replace(/\D/g, ''), 10) - 1;
                     // sheet = this.parent.sheets[sheetIdx];
                 }
-                const sheetName: string = rangeArr[0];
-                docContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').setAttribute('value', rangeArr[1]);
+                docContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').setAttribute('value', range);
                 const treeCont: HTMLElement = docContElem.getElementsByClassName('e-cont')[2] as HTMLElement;
                 const listEle: HTMLElement = treeCont.querySelectorAll('.e-list-item.e-level-1')[0] as HTMLElement;
                 for (let idx: number = 0; idx < listEle.getElementsByTagName('li').length; idx++) {
@@ -883,7 +885,7 @@ export class SpreadsheetHyperlink {
 
     private removeHyperlinkHandler(args: { range: string, preventEventTrigger?: boolean }): void {
         let range: string = args.range;
-        let rangeArr: string[];
+        let sheetName: string;
         let sheet: SheetModel = this.parent.getActiveSheet();
         let sheetIdx: number;
         if (!args.preventEventTrigger) {
@@ -894,15 +896,16 @@ export class SpreadsheetHyperlink {
             }
         }
         if (range && range.indexOf('!') !== -1) {
-            rangeArr = range.split('!');
+            const lastIndex: number = range.lastIndexOf('!');
+            sheetName = range.substring(0, lastIndex);
             const sheets: SheetModel[] = this.parent.sheets;
             for (let idx: number = 0; idx < sheets.length; idx++) {
-                if (sheets[idx as number].name === rangeArr[0]) {
+                if (sheets[idx as number].name === sheetName) {
                     sheetIdx = idx;
                 }
             }
             sheet = this.parent.sheets[sheetIdx as number];
-            range = rangeArr[1];
+            range = range.substring(lastIndex + 1);
         }
         const rangeIndexes: number[] = range ? getRangeIndexes(range) : getRangeIndexes(sheet.activeCell);
         let cellEle: HTMLElement; let classList: string[];

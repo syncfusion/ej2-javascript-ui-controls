@@ -1263,18 +1263,10 @@ describe('Hierarchial data filter testing', () => {
                 setTimeout(() => {
                     ddtreeObj.showPopup();
                     expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
-                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(5);
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(1);
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
                     expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("China");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Guangzhou");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Shanghai");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("Beijing");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[4] as HTMLElement).innerText).toBe("Shantou");
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('11') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('12') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('13') !== -1).toBe(true);
+                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Beijing");
                     expect(ddtreeObj.treeObj.checkedNodes.indexOf('14') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('15') !== -1).toBe(true);
                     done();
                 }, 350);
             }, 350);
@@ -1320,24 +1312,13 @@ describe('Hierarchial data filter testing', () => {
                     ddtreeObj.showPopup();
                     ddtreeObj.treeObj.autoCheck = true;
                     expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
-                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(5);
-                    expect(ddtreeObj.value.length).toBe(5);
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(5);
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[0].parentElement.parentElement.innerText).toBe("Australia");
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[1].parentElement.parentElement.innerText).toBe("New South Wales");
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[2].parentElement.parentElement.innerText).toBe("Victoria");
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[3].parentElement.parentElement.innerText).toBe("South Australia");
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[4].parentElement.parentElement.innerText).toBe("Western Australia");
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
+                    expect(ddtreeObj.value.length).toBe(2);
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(1);
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[0].parentElement.parentElement.innerText).toBe("Victoria");
                     expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("Australia");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("New South Wales");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Victoria");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("South Australia");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[4] as HTMLElement).innerText).toBe("Western Australia");
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('1') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('2') !== -1).toBe(true);
+                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Victoria");
                     expect(ddtreeObj.treeObj.checkedNodes.indexOf('3') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('4') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('6') !== -1).toBe(true);
                     filterEle.value = 'vic';
                     filterObj.value = 'vic';
                     eventArgs = { value: 'vic', container: filterEle };
@@ -1345,13 +1326,9 @@ describe('Hierarchial data filter testing', () => {
                     setTimeout(() => {
                         expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(2); 
                         expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("Australia");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("New South Wales");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Victoria");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("South Australia");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[4] as HTMLElement).innerText).toBe("Western Australia");
-                        expect(ddtreeObj.value.indexOf('1') !== -1).toBe(true);
-                        expect(ddtreeObj.value.indexOf('3') !== -1).toBe(true);
-                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Victoria");
+                        expect(ddtreeObj.treeObj.checkedNodes.indexOf('3') !== -1).toBe(true);
+                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
                         done();
                     }, 350);
                 }, 350);
@@ -1409,29 +1386,14 @@ describe('Hierarchial data filter testing', () => {
                 setTimeout(() => {
                     ddtreeObj.showPopup();
                     expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
-                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(9);
-                    expect(ddtreeObj.value.length).toBe(9);
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(2);
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[0].parentElement.parentElement.innerText).toBe("Brazil");
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[1].parentElement.parentElement.innerText).toBe("France");
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                    expect(ddtreeObj.value.length).toBe(4);
                     expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("Brazil");
                     expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Paraná");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Ceará");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("Acre");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[4] as HTMLElement).innerText).toBe("France");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[5] as HTMLElement).innerText).toBe("Pays de la Loire");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[6] as HTMLElement).innerText).toBe("Aquitaine");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[7] as HTMLElement).innerText).toBe("Brittany");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[8] as HTMLElement).innerText).toBe("Lorraine");
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('7') !== -1).toBe(true);
+                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("France");
+                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("Pays de la Loire");
                     expect(ddtreeObj.treeObj.checkedNodes.indexOf('8') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('9') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('10') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('16') !== -1).toBe(true);
                     expect(ddtreeObj.treeObj.checkedNodes.indexOf('17') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('18') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('19') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('20') !== -1).toBe(true);
                     filterEle.value = 'pa';
                     filterObj.value = 'pa';
                     eventArgs = { value: 'pa', container: filterEle };
@@ -1440,17 +1402,10 @@ describe('Hierarchial data filter testing', () => {
                         expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
                         expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("Brazil");
                         expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Paraná");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Ceará");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("Acre");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[4] as HTMLElement).innerText).toBe("France");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[5] as HTMLElement).innerText).toBe("Pays de la Loire");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[6] as HTMLElement).innerText).toBe("Aquitaine");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[7] as HTMLElement).innerText).toBe("Brittany");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[8] as HTMLElement).innerText).toBe("Lorraine");
-                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(4);
-                        expect(ddtreeObj.treeObj.checkedNodes.indexOf('7') !== -1).toBe(true);
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("France");
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("Pays de la Loire");
+                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
                         expect(ddtreeObj.treeObj.checkedNodes.indexOf('8') !== -1).toBe(true);
-                        expect(ddtreeObj.treeObj.checkedNodes.indexOf('16') !== -1).toBe(true);
                         expect(ddtreeObj.treeObj.checkedNodes.indexOf('17') !== -1).toBe(true);
                         done();
                     }, 350);
@@ -1499,20 +1454,11 @@ describe('Hierarchial data filter testing', () => {
                 setTimeout(() => {
                     ddtreeObj.showPopup();
                     expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
-                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(5);
-                    expect(ddtreeObj.value.length).toBe(5);
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check').length).toBe(1);
-                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-check')[0].parentElement.parentElement.innerText).toBe("France");
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
+                    expect(ddtreeObj.value.length).toBe(2);
                     expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("France");
                     expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Pays de la Loire");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Aquitaine");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("Brittany");
-                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[4] as HTMLElement).innerText).toBe("Lorraine");
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('16') !== -1).toBe(true);
                     expect(ddtreeObj.treeObj.checkedNodes.indexOf('17') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('18') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('19') !== -1).toBe(true);
-                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('20') !== -1).toBe(true);
                     filterEle.value = 'pa';
                     filterObj.value = 'pa';
                     eventArgs = { value: 'pa', container: filterEle };
@@ -1521,12 +1467,8 @@ describe('Hierarchial data filter testing', () => {
                         expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
                         expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("France");
                         expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Pays de la Loire");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Aquitaine");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("Brittany");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[4] as HTMLElement).innerText).toBe("Lorraine");
-                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
-                        expect(ddtreeObj.treeObj.checkedNodes.indexOf('16') !== -1).toBe(true);
                         expect(ddtreeObj.treeObj.checkedNodes.indexOf('17') !== -1).toBe(true);
+                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
                         done();
                     }, 350);
                 }, 350);
@@ -1831,21 +1773,14 @@ describe('Hierarchial data filter testing', () => {
                     setTimeout(() => {
                         ddtreeObj.showPopup();
                         expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
-                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(6);
-                        expect(ddtreeObj.value.length).toBe(6);
+                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                        expect(ddtreeObj.value.length).toBe(3);
                         expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("China");
                         expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Guangzhou");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Shanghai");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[3] as HTMLElement).innerText).toBe("Beijing");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[4] as HTMLElement).innerText).toBe("Shantou");
-                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[5] as HTMLElement).innerText).toBe("Bihar");
-                        expect(ddtreeObj.treeObj.checkedNodes.indexOf('11') !== -1).toBe(true);
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[2] as HTMLElement).innerText).toBe("Bihar");
                         expect(ddtreeObj.treeObj.checkedNodes.indexOf('12') !== -1).toBe(true);
-                        expect(ddtreeObj.treeObj.checkedNodes.indexOf('13') !== -1).toBe(true);
-                        expect(ddtreeObj.treeObj.checkedNodes.indexOf('14') !== -1).toBe(true);
-                        expect(ddtreeObj.treeObj.checkedNodes.indexOf('15') !== -1).toBe(true);
                         expect(ddtreeObj.treeObj.checkedNodes.indexOf('23') !== -1).toBe(true);
-                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(6);
+                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
                         done();
                     }, 350);
                 }, 350);
@@ -1963,16 +1898,77 @@ describe('Hierarchial data filter testing', () => {
                 setTimeout(() => {
                     ddtreeObj.showPopup();
                     expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
-                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(5);
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
                     filterEle.value = 'vic';
                     filterObj.value = 'vic';
                     eventArgs = { value: 'vic', container: filterEle };
                     filterObj.input(eventArgs);
                     setTimeout(() => {
                         expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(2);
-                        expect(ddtreeObj.value.indexOf('1') !== -1).toBe(true);
                         expect(ddtreeObj.value.indexOf('3') !== -1).toBe(true);
-                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
+                        done();
+                    }, 350);
+                }, 350);
+            }, 350);
+        });
+        it('Filter and select parent node and re-render dropdown', function (done) {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true, expandOn: 'Auto', loadOnDemand: true },
+                showCheckBox: true,
+                allowMultiSelection: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'bei';
+            filterObj.value = 'bei';
+            let eventArgs: any = { value: 'bei', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(() => {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(2);
+                let parentNode: HTMLElement = ddtreeObj.treeObj.element.querySelectorAll('li')[0];
+                let e: any = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                parentNode.querySelector('.e-frame').dispatchEvent(e);
+                e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                parentNode.querySelector('.e-frame').dispatchEvent(e);
+                e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                parentNode.querySelector('.e-frame').dispatchEvent(e);
+                expect(parentNode.getAttribute('aria-checked')).toBe('true');
+                expect(ddtreeObj.value.indexOf('11') !== -1).toBe(true);
+                expect(ddtreeObj.value.indexOf('14') !== -1).toBe(true);
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                filterEle.value = '';
+                filterObj.value = '';
+                eventArgs = { value: '', container: filterEle };
+                filterObj.input(eventArgs);
+                ddtreeObj.hidePopup();
+                setTimeout(() => {
+                    ddtreeObj.showPopup();
+                    ddtreeObj.treeObj.autoCheck = true;
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
+                    expect(ddtreeObj.value.length).toBe(2);
+                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("China");
+                    expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Beijing");
+                    expect(ddtreeObj.treeObj.checkedNodes.indexOf('14') !== -1).toBe(true);
+                    filterEle.value = 'bei';
+                    filterObj.value = 'bei';
+                    eventArgs = { value: 'bei', container: filterEle };
+                    filterObj.input(eventArgs);
+                    setTimeout(() => {
+                        expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(2); 
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("China");
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Beijing");
+                        expect(ddtreeObj.value.indexOf('11') !== -1).toBe(true);
+                        expect(ddtreeObj.value.indexOf('14') !== -1).toBe(true);
+                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
                         done();
                     }, 350);
                 }, 350);

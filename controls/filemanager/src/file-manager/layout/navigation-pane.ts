@@ -231,7 +231,7 @@ export class NavigationPane {
                     this.isNodeClickCalled = true;
                     this.isSameNodeClicked = false;
                     this.previousSelected = this.treeObj.selectedNodes;
-                    this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
+                    this.treeObj.setProperties({selectedNodes: [args.node.getAttribute('data-uid')]});
                 }
             }
             else if (this.previousSelected[0] !== args.node.getAttribute('data-uid')){
@@ -257,7 +257,7 @@ export class NavigationPane {
             read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
             this.parent.visitedItem = node;
             this.isPathDragged = this.isRenameParent = this.isRightClick = false;
-            this.treeObj.selectedNodes = [node.getAttribute('data-uid')];
+            this.treeObj.setProperties({selectedNodes: [node.getAttribute('data-uid')]});
         }
     }
 
@@ -334,7 +334,7 @@ export class NavigationPane {
         if ((args.event.which === 3) && (args.node.getAttribute('data-uid') !== this.treeObj.selectedNodes[0])) {
             this.isRightClick = true;
             this.isNodeClickCalled = true;
-            this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
+            this.treeObj.setProperties({selectedNodes: [args.node.getAttribute('data-uid')]});
         } else if (args.node.getAttribute('data-uid') === this.treeObj.selectedNodes[0] && this.parent.selectedItems.length !== 0) {
             this.parent.setProperties({ selectedItems: [] }, true);
             const layout: string = (this.parent.view === 'LargeIcons') ? 'largeiconsview' : 'detailsview';
@@ -346,7 +346,7 @@ export class NavigationPane {
             }
             this.isSameNodeClicked = true;
             this.isNodeClickCalled = true;
-            this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
+            this.treeObj.setProperties({selectedNodes: [args.node.getAttribute('data-uid')]});
         }
     }
 
@@ -400,7 +400,7 @@ export class NavigationPane {
     private onOpenEnd(args: ReadArgs): void {
         const sleId: string = this.parent.pathId[this.parent.pathId.length - 1];
         this.treeObj.expandAll(this.treeObj.selectedNodes);
-        this.treeObj.selectedNodes = [sleId];
+        this.treeObj.setProperties({selectedNodes: [sleId]});
         this.expandNodeTarget = 'add';
         this.onPathChanged(args);
     }
@@ -422,7 +422,7 @@ export class NavigationPane {
         this.onInit();
         const id: string = getValue('_fm_id', args.cwd);
         this.addChild(args.files, id, false);
-        this.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
+        this.treeObj.setProperties({ selectedNodes: [this.parent.pathId[this.parent.pathId.length - 1]]});
     }
 
     private onCreateEnd(args: ReadArgs): void {
@@ -546,7 +546,7 @@ export class NavigationPane {
     }
 
     private onSelectionChanged(e: NotifyArgs): void {
-        this.treeObj.selectedNodes = [e.selectedNode];
+        this.treeObj.setProperties({selectedNodes: [e.selectedNode]});
     }
 
     private onClearPathInit(e: NotifyArgs): void {

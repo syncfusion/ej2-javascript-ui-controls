@@ -158,16 +158,16 @@ export class SpreadsheetChart {
         if (!this.parent.chartColl || !this.parent.chartColl.length) {
             return;
         }
-        let chart: ChartModel; let rangeArr: string[]; let range: string; let insideRange: boolean;
+        let chart: ChartModel; let sheetName: string; let range: string; let insideRange: boolean;
         let chartEle: HTMLElement; let chartObj: Chart;
         for (let i: number = 0, len: number = this.parent.chartColl.length; i < len; i++) {
             chart = this.parent.chartColl[i as number];
             if (chart.range.includes('!')) {
-                rangeArr = chart.range.split('!');
-                if (this.parent.activeSheetIndex !== getSheetIndex(this.parent, rangeArr[0])) {
+                sheetName = chart.range.substring(0, chart.range.lastIndexOf('!'));
+                if (this.parent.activeSheetIndex !== getSheetIndex(this.parent, sheetName)) {
                     continue;
                 }
-                range = rangeArr[1];
+                range = chart.range.substring(chart.range.lastIndexOf('!') + 1);
             } else {
                 range = chart.range;
             }
@@ -622,8 +622,8 @@ export class SpreadsheetChart {
         argsOpt.triggerEvent = isNullOrUndefined(argsOpt.triggerEvent) ? true : argsOpt.triggerEvent;
         let seriesModel: SeriesModel[];
         argsOpt.isRefresh = isNullOrUndefined(argsOpt.isRefresh) ? false : argsOpt.isRefresh;
-        const sheetIdx: number = (chart.range && chart.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent as Workbook, chart.range.split('!')[0]) : this.parent.activeSheetIndex;
+        const sheetIdx: number = (chart.range && chart.range.lastIndexOf('!') > 0) ?
+            getSheetIndex(this.parent as Workbook, chart.range.substring(0, chart.range.lastIndexOf('!'))) : this.parent.activeSheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         let range: string = chart.range ? chart.range : this.parent.getActiveSheet().selectedRange;
         const rangeIdx: number[] = getRangeIndexes(range);
@@ -877,9 +877,10 @@ export class SpreadsheetChart {
             sheet = this.parent.sheets[this.parent.activeSheetIndex];
         } else {
             this.parent.notify(deleteChartColl, { id: args.id });
-            const sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) :
-                this.parent.activeSheetIndex;
-            const rangeVal: string = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
+            const lastIndex: number = args.range ? args.range.lastIndexOf('!') : 0;
+            const sheetIndex: number = args.range && lastIndex > 0 ?
+                getSheetIndex(this.parent as Workbook, args.range.substring(0, lastIndex)) : this.parent.activeSheetIndex;
+            const rangeVal: string = args.range ? lastIndex > 0 ? args.range.substring(lastIndex + 1) : args.range :
                 this.parent.getActiveSheet().selectedRange;
             const index: number[] = getRangeIndexes(rangeVal);
             rowIdx = index[0]; colIdx = index[1];

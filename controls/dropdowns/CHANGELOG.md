@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with "Listbox moveTo method thrown script error when toolbarSettings property is empty" has been resolved.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `I639573` - Resolved an issue where all child nodes of a parent node were automatically selected upon reopening the Dropdown Tree component after filtering and selecting the parent node.
+
 ## 27.2.2 (2024-11-15)
 
 ### DropDownTree
@@ -15,6 +29,8 @@
 #### Bug Fixes
 
 - `#I634300` - Fixed an issue where clicking the Clear Icon did not remove all items as intended.
+
+- `#I645267` - Fixed an issue where the checkbox was added for the option group element when the enableGroupCheckBox property was enabled, but it is not selectable.
 
 ## 27.1.58 (2024-11-05)
 

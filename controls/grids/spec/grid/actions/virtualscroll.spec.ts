@@ -1817,7 +1817,12 @@ describe('VirtualScroll code coverage 3', () => {
         (<HTMLElement>gObj.getContent().firstChild).scrollTop = 1000;
         setTimeout(done, 200);
     });
-
+    
+    it('VirtualScroll add action coevarge', (done: Function) => {
+        gObj.editSettings.newRowPosition = 'Bottom';
+        (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_add' } });
+        done();
+    });
 
     afterAll(() => {
         destroy(gObj);

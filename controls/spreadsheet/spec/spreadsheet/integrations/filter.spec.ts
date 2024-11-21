@@ -99,13 +99,18 @@ describe('Filter ->', () => {
 
         it('Filter popup open close using key action', (done: Function) => {
             helper.invoke('getCell', [0, 0]).focus();
+            helper.setModel('allowSorting', false);
             helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
             setTimeout(() => {
                 let filterPopup: HTMLElement = helper.getElement().lastElementChild;
                 expect(filterPopup.classList.contains('e-filter-popup')).toBeTruthy();
                 expect(parseInt(filterPopup.style.left, 10)).toBeGreaterThan(0); // Left collision check
+                // Sort items disabled state checking
+                expect(filterPopup.querySelector('.e-filter-sortasc').classList.contains('e-disabled')).toBeTruthy();
+                expect(filterPopup.querySelector('.e-filter-sortdesc').classList.contains('e-disabled')).toBeTruthy();
                 helper.triggerKeyNativeEvent(38, false, false, null, 'keydown', true);
                 expect(helper.getElement().querySelector('.e-filter-popup')).toBeNull();
+                helper.setModel('allowSorting', true);
                 done();
             });
         });
@@ -1940,8 +1945,8 @@ describe('Filter ->', () => {
         describe('EJ2-65848 ->', () => {
             let selectAll: HTMLElement;
             let checkboxList: HTMLElement;
-            let filterTable: HTMLElement;
-            let filterRow: HTMLElement;
+            let filterTable: any;
+            let filterRow: any;
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }],
@@ -1952,11 +1957,17 @@ describe('Filter ->', () => {
                 helper.invoke('destroy');
             });
             it('Check string value filtering is not working properly in the finite mode while setting virtualization as false ', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                // SF-655415 - Checking the 'Text' filter does not load properly when dynamically disabling and enabling the filter support.
+                spreadsheet.allowFiltering = false;
+                spreadsheet.dataBind();
+                spreadsheet.allowFiltering = true;
+                spreadsheet.dataBind();
                 const id: string = '#' + helper.id;
                 helper.getElement(`${id}_sorting`).click();
                 helper.getElement(`${id}_applyfilter`).click();
                 const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
-                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+                spreadsheet.keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
                 setTimeout(() => {
                     setTimeout(() => {
                         selectAll = helper.getElement('.e-checkboxlist .e-selectall');
@@ -1967,8 +1978,8 @@ describe('Filter ->', () => {
                             list.click();
                             helper.getElement('.e-filter-popup .e-btn.e-primary').click();
                             setTimeout(() => {
-                                filterTable = helper.getInstance().getContentTable().rows;
-                                filterRow = helper.getInstance().sheets[0].rows;
+                                filterTable = spreadsheet.getContentTable().rows;
+                                filterRow = spreadsheet.sheets[0].rows;
                                 expect(filterTable[1].cells[0].innerText).toBe('Casual Shoes');
                                 expect(filterTable[1].hidden).toBeFalsy();
                                 expect(filterTable[1].isFiltered).toBeFalsy();

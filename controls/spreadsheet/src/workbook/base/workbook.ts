@@ -1478,9 +1478,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             clearCFArgs.range = range || this.getActiveSheet().selectedRange;
             clearCFArgs.sheetIdx = this.activeSheetIndex;
         } else {
-            const addrInfo: string[] = range.split('!');
-            clearCFArgs.range = addrInfo[1];
-            clearCFArgs.sheetIdx = getSheetIndex(this, addrInfo[0]);
+            const lastIndex: number = range.lastIndexOf('!');
+            clearCFArgs.range = range.substring(lastIndex + 1);
+            clearCFArgs.sheetIdx = getSheetIndex(this, range.substring(0, lastIndex));
         }
         this.notify(clearCFRule, clearCFArgs);
     }
@@ -1501,7 +1501,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (address.includes('!')) {
             range = getIndexesFromAddress(address);
-            sheetIdx = getSheetIndex(this, address.split('!')[0]);
+            sheetIdx = getSheetIndex(this, address.substring(0, address.lastIndexOf('!')));
             if (sheetIdx === undefined) {
                 return;
             }

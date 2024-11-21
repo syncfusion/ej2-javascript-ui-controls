@@ -3,7 +3,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
-import { positionAutoFillElement, colWidthChanged, getLineHeight } from '../common/index';
+import { positionAutoFillElement, colWidthChanged, getLineHeight, updateWrapCell, ExtendedSpreadsheet } from '../common/index';
 import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook, ApplyCFArgs, applyCF, RowModel } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange, beginAction, isHiddenRow, isHiddenCol } from '../../workbook/index';
 
@@ -32,6 +32,7 @@ export class WrapText {
         this.parent.on(wrapEvent, this.wrapTextHandler, this);
         this.parent.on(rowHeightChanged, this.rowHeightChangedHandler, this);
         this.parent.on(colWidthChanged, this.colWidthChanged, this);
+        this.parent.on(updateWrapCell, this.updateWrapCell, this);
     }
 
     private removeEventListener(): void {
@@ -40,6 +41,7 @@ export class WrapText {
             this.parent.off(wrapEvent, this.wrapTextHandler);
             this.parent.off(rowHeightChanged, this.rowHeightChangedHandler);
             this.parent.off(colWidthChanged, this.colWidthChanged);
+            this.parent.off(updateWrapCell, this.updateWrapCell);
         }
     }
 
@@ -55,7 +57,15 @@ export class WrapText {
             }
             let ele: HTMLElement; let cell: CellModel; let colwidth: number; let maxHgt: number; let hgt: number;
             let isCustomHgt: boolean; let rowCustomHeight: boolean; let lineHgt: number; let row: RowModel; let visibleRow: boolean;
+            let isLessStandardHgt: boolean; let filterRange: number[];
             const frozenRow: number = this.parent.frozenRowCount(args.sheet);
+            if (!isNullOrUndefined(args.sheet.standardHeight) && args.sheet.standardHeight < 20) {
+                isLessStandardHgt = true;
+            } else {
+                filterRange = this.parent.allowFiltering &&
+                    (this.parent as ExtendedSpreadsheet).filterModule.filterRange.has(this.parent.activeSheetIndex) &&
+                    (this.parent as ExtendedSpreadsheet).filterModule.filterRange.get(this.parent.activeSheetIndex).range;
+            }
             for (let i: number = args.range[0]; i <= args.range[2]; i++) {
                 maxHgt = 0;
                 row = getRow(args.sheet, i);
@@ -65,7 +75,7 @@ export class WrapText {
                 for (let j: number = args.range[1]; j <= args.range[3]; j++) {
                     cell = getCell(i, j, args.sheet, null, true);
                     if (cell.rowSpan < 0 || cell.colSpan < 0) { continue; }
-                    const isMerge: boolean = (cell.rowSpan > 1 || cell.colSpan > 1);
+                    const isMerge: boolean = cell.rowSpan > 1 || cell.colSpan > 1;
                     ele = args.initial ? <HTMLElement>args.td : (visibleRow && !isHiddenCol(args.sheet, j) && this.parent.getCell(i, j));
                     if (ele) {
                         if (args.wrap) {
@@ -74,9 +84,9 @@ export class WrapText {
                         } else {
                             ele.classList.remove(WRAPTEXT); lineHgt = null;
                         }
-                        if (isCustomHgt || isMerge || row.height < 20
-                            || (!isNullOrUndefined(args.sheet.standardHeight) && args.sheet.standardHeight < 20)) {
-                            this.updateWrapCell(i, j, args.sheet, ele);
+                        if (isCustomHgt || isMerge || row.height < 20 || isLessStandardHgt ||
+                            (filterRange && i === filterRange[0] && j >= filterRange[1] && j <= filterRange[3])) {
+                            this.updateWrapCell({ rowIdx: i, colIdx: j, sheet: args.sheet, ele: ele });
                         }
                         if (Browser.isIE) {
                             ele.classList.add('e-ie-wrap');
@@ -204,59 +214,66 @@ export class WrapText {
         }
     }
 
-    private rowHeightChangedHandler(args: { rowIdx: number, isCustomHgt: boolean }): void {
+    private rowHeightChangedHandler(
+        args: { rowIdx: number, isCustomHgt?: boolean, colIdx?: number, sheet?: SheetModel, ele?: HTMLElement }): void {
         if (args.isCustomHgt) {
-            const sheet: SheetModel = this.parent.getActiveSheet(); let ele: HTMLElement;
+            args.sheet = this.parent.getActiveSheet();
             for (let i: number = this.parent.viewport.leftIndex, len: number = this.parent.viewport.rightIndex; i <= len; i++) {
-                if (getCell(args.rowIdx, i, sheet, false, true).wrap) {
-                    ele = this.parent.getCell(args.rowIdx, i);
-                    this.updateWrapCell(args.rowIdx, i, sheet, ele);
-                    if (ele.style.lineHeight) { ele.style.lineHeight = ''; }
+                if (getCell(args.rowIdx, i, args.sheet, false, true).wrap) {
+                    args.colIdx = i;
+                    args.ele = this.parent.getCell(args.rowIdx, i);
+                    this.updateWrapCell(args);
+                    if (args.ele.style.lineHeight) {
+                        args.ele.style.lineHeight = '';
+                    }
                 }
             }
         }
     }
-    private colWidthChanged(args: { colIdx: number, checkWrapCell: boolean }): void {
+    private colWidthChanged(args: { colIdx: number, rowIdx?: number, checkWrapCell?: boolean, sheet?: SheetModel, ele?: Element }): void {
         if (args.checkWrapCell) {
-            const sheet: SheetModel = this.parent.getActiveSheet();
+            args.sheet = this.parent.getActiveSheet();
             for (let i: number = this.parent.viewport.topIndex, len: number = this.parent.viewport.bottomIndex; i <= len; i++) {
-                if (getCell(i, args.colIdx, sheet, false, true).wrap) {
-                    this.updateWrapCell(i, args.colIdx, sheet, this.parent.getCell(i, args.colIdx));
+                if (getCell(i, args.colIdx, args.sheet, false, true).wrap) {
+                    args.rowIdx = i;
+                    args.ele = this.parent.getCell(i, args.colIdx);
+                    this.updateWrapCell(args);
                 }
             }
         }
     }
-    private updateWrapCell(rowIdx: number, colIdx: number, sheet: SheetModel, ele: Element): void {
-        if (ele && !ele.querySelector('.e-wrap-content')) {
+    private updateWrapCell(args: { rowIdx?: number, colIdx?: number, sheet?: SheetModel, ele?: Element }): void {
+        if (args.ele && !args.ele.querySelector('.e-wrap-content')) {
             const wrapSpan: HTMLElement = this.wrapCell.cloneNode() as HTMLElement;
-            const filterBtn: Element = ele.querySelector('.e-filter-btn');
-            while (ele.childElementCount && !isNullOrUndefined(ele.firstElementChild) && ele.firstElementChild.className.indexOf('e-addNoteIndicator') === -1) {
-                wrapSpan.appendChild(ele.firstElementChild);
+            const filterBtn: Element = args.ele.querySelector('.e-filter-btn');
+            while (args.ele.childElementCount && !isNullOrUndefined(args.ele.firstElementChild) &&
+                args.ele.firstElementChild.className.indexOf('e-addNoteIndicator') === -1) {
+                wrapSpan.appendChild(args.ele.firstElementChild);
             }
             let nodeElement: HTMLElement;
-            if (!isNullOrUndefined(ele.firstElementChild) && ele.firstElementChild.className.indexOf('e-addNoteIndicator') > -1) {
-                nodeElement = ele.firstElementChild as HTMLElement;
+            if (!isNullOrUndefined(args.ele.firstElementChild) && args.ele.firstElementChild.className.indexOf('e-addNoteIndicator') > -1) {
+                nodeElement = args.ele.firstElementChild as HTMLElement;
             }
             if (filterBtn) {
-                if (ele.firstChild) {
-                    ele.insertBefore(filterBtn, ele.firstChild);
+                if (args.ele.firstChild) {
+                    args.ele.insertBefore(filterBtn, args.ele.firstChild);
                 } else {
-                    ele.appendChild(filterBtn);
+                    args.ele.appendChild(filterBtn);
                 }
             }
-            if (!getCell(rowIdx, colIdx, sheet, false, true).hyperlink) {
-                const node: Node = ele.lastChild;
+            if (!getCell(args.rowIdx, args.colIdx, args.sheet, false, true).hyperlink) {
+                const node: Node = args.ele.lastChild;
                 if (node && node.nodeType === 3) {
                     wrapSpan.appendChild(document.createTextNode(node.textContent));
                     node.textContent = '';
                 } else {
-                    wrapSpan.appendChild(document.createTextNode(ele.textContent));
-                    ele.textContent = '';
+                    wrapSpan.appendChild(document.createTextNode(args.ele.textContent));
+                    args.ele.textContent = '';
                 }
             }
-            ele.appendChild(wrapSpan);
+            args.ele.appendChild(wrapSpan);
             if (!isNullOrUndefined(nodeElement)) {
-                ele.appendChild(nodeElement);
+                args.ele.appendChild(nodeElement);
             }
         }
     }

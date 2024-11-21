@@ -334,7 +334,6 @@ describe('Bug 911192: Error thrown when pressing the Enter key after placing the
             document, nodetext.childNodes[0], nodetext.childNodes[0].textContent.length);
         rteObj.executeCommand('insertHorizontalRule');
         (<any>rteObj).keyDown(keyboardEventArgs);
-        console.log(rteObj.inputElement.innerHTML);
         expect(rteObj.inputElement.innerHTML).toBe('<p>Testing</p><hr><p><br></p><p><br></p>');
     });
     it('check insertHorizontalRule Executecommand for one line text while cursor placed at start of the line and press enter', () => {
@@ -344,7 +343,6 @@ describe('Bug 911192: Error thrown when pressing the Enter key after placing the
             document, nodetext.childNodes[0], 0);
         rteObj.executeCommand('insertHorizontalRule');
         (<any>rteObj).keyDown(keyboardEventArgs);
-        console.log(rteObj.inputElement.innerHTML);
         expect(rteObj.inputElement.innerHTML).toBe('<hr><p><br></p><p>Testing</p>');
     });
     it('check insertHorizontalRule Executecommand for one line text while cursor placed at middle of the line and press enter', () => {
@@ -354,11 +352,65 @@ describe('Bug 911192: Error thrown when pressing the Enter key after placing the
             document, nodetext.childNodes[0], 4);
         rteObj.executeCommand('insertHorizontalRule');
         (<any>rteObj).keyDown(keyboardEventArgs);
-        console.log(rteObj.inputElement.innerHTML);
         expect(rteObj.inputElement.innerHTML).toBe('<p>Test</p><hr><p><br></p><p>ing</p>');
     });
 });
+describe('Bug 917790: Link disappears on pressing "Enter" with CSS "white-space: pre-wrap" applied in Rich text editor', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>'
+        });
+        done();
+    });
 
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Check the link availability after pressing enter key at the end after space', () => {
+        const whiteSpace: HTMLElement = rteObj.element.querySelector('.e-content') as HTMLElement;
+        whiteSpace.style.whiteSpace = 'pre-wrap';
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext.childNodes[2], nodetext.childNodes[2].textContent.length);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.textContent.includes('www.google.com')).toBe(true);
+    });
+
+    it('Check the link availability after pressing enter key at the end before space', () => {
+        const whiteSpace: HTMLElement = rteObj.element.querySelector('.e-content') as HTMLElement;
+        whiteSpace.style.whiteSpace = 'pre-wrap';
+        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext.childNodes[2], nodetext.childNodes[2].textContent.length - 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.textContent.includes('www.google.com')).toBe(true);
+    });
+
+    it('Check the link availability after pressing enter key at the start after space', () => {
+        const whiteSpace: HTMLElement = rteObj.element.querySelector('.e-content') as HTMLElement;
+        whiteSpace.style.whiteSpace = 'pre-wrap';
+        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext.childNodes[0], 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.textContent.includes('www.google.com')).toBe(true);
+    });
+
+    it('Check the link availability after pressing enter key at the start before space', () => {
+        const whiteSpace: HTMLElement = rteObj.element.querySelector('.e-content') as HTMLElement;
+        whiteSpace.style.whiteSpace = 'pre-wrap';
+        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext.childNodes[0], 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.textContent.includes('www.google.com')).toBe(true);
+    });
+});
 describe('Enter key support - When `DIV` is configured', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = false;

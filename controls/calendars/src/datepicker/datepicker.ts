@@ -1057,6 +1057,9 @@ export class DatePicker extends Calendar implements IInput {
                 this.inputElement.selectionEnd = this.inputElement.value.length;
             }
         }
+        if (this.enableMask && this.showClearButton && this.inputElement && this.inputElement.value === this.maskedDateValue && this.inputWrapper && this.inputWrapper.clearButton && !this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')) {
+            this.inputWrapper.clearButton.classList.add('e-clear-icon-hide');
+        }
         const focusArguments: BlurEventArgs = {
             model: this
         };
@@ -1566,6 +1569,9 @@ export class DatePicker extends Calendar implements IInput {
     }
     protected keyupHandler(e: KeyboardEventArgs): void {
         this.isKeyAction = (this.inputElement.value !== this.previousElementValue) ? true : false;
+        if (this.enableMask && this.showClearButton && this.inputElement && this.inputElement.value === this.maskedDateValue && this.inputWrapper && this.inputWrapper.clearButton && !this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')) {
+            this.inputWrapper.clearButton.classList.add('e-clear-icon-hide');
+        }
     }
     protected changeEvent(event?: MouseEvent | KeyboardEvent | Event): void {
         if (!this.isIconClicked && !(this.isBlur || this.isKeyAction)) {

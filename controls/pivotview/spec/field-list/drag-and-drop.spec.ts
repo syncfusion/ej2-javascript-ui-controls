@@ -944,10 +944,10 @@ describe('PivotView spec', () => {
                 document.body.appendChild(elem);
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
-                        catalog: 'Adventure Works DW 2008 SE',
+                        catalog: 'Adventure Works DW Standard Edition',
                         cube: 'Adventure Works',
                         providerType: 'SSAS',
-                        url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                        url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                         localeIdentifier: 1033,
                         drilledMembers: [
                             {
@@ -1028,7 +1028,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$72,200.48');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$39,856.79');
                     done();
                 }, 2000);
             });
@@ -1037,7 +1037,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$52,871.87');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$55,129.94');
                     done();
                 }, 2000);
             });
@@ -1053,7 +1053,7 @@ describe('PivotView spec', () => {
                 let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[1] as HTMLElement;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('105');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('64');
                     done();
                 }, 2000);
             });
@@ -1061,7 +1061,7 @@ describe('PivotView spec', () => {
                 let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[6] as HTMLElement;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$141,028.21');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$98,667.35');
                     done();
                 }, 2000);
             });
@@ -1069,7 +1069,7 @@ describe('PivotView spec', () => {
                 let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[3] as HTMLElement;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('79');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('49');
                     done();
                 }, 2000);
             });

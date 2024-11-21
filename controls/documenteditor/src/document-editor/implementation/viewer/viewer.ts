@@ -1056,6 +1056,9 @@ export class DocumentHelper {
         if (this.owner.trackChangesPane) {
             this.owner.trackChangesPane.clear();
         }
+        if (this.owner.xmlPaneModule) {
+            this.owner.xmlPaneModule.clear();
+        }
         this.setDefaultCharacterValue(this.characterFormat);
         this.setDefaultParagraphValue(this.paragraphFormat);
         if (this.owner.commentReviewPane) {
@@ -1979,6 +1982,11 @@ export class DocumentHelper {
         }
         if (this.restrictEditingPane.restrictPane && !this.isDocumentProtected) {
             this.restrictEditingPane.showHideRestrictPane(false);
+        }
+        if (this.owner.xmlPaneModule) {
+            this.owner.editor.XMLFilesNameSpaceCount = 1;
+            this.owner.xmlPaneModule.showXmlProperties(false);
+            this.owner.xmlPaneModule.isXmlPaneShow = false;
         }
         if (!isNullOrUndefined(this.owner.selectionModule) && this.owner.selectionModule.isViewPasteOptions) {
             this.owner.selectionModule.isViewPasteOptions = false;

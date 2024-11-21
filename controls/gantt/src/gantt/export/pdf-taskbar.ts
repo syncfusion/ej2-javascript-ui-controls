@@ -1304,9 +1304,9 @@ export class PdfGanttTaskbarCollection {
                 })
             }
         } else {
-            this.drawMilestone(page, startPoint, detail, cumulativeWidth, taskbar);
+            this.drawMilestone(page, startPoint, detail, cumulativeWidth, taskbar, false);
             if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-                this.drawMilestone(page, startPoint, detail, cumulativeWidth,taskbar);
+                this.drawMilestone(page, startPoint, detail, cumulativeWidth, taskbar, true);
             }
         }
         this.drawRightLabel(page, startPoint, detail, cumulativeWidth);
@@ -1989,12 +1989,13 @@ export class PdfGanttTaskbarCollection {
      * @param {PointF} startPoint .
      * @param {TimelineDetails} detail .
      * @param {number} cumulativeWidth .
-     *  @param {PdfGanttTaskbarCollection} taskbar .
+     * @param {PdfGanttTaskbarCollection} taskbar .
+     * @param {boolean} isBaseline .
      * @returns {void}
-     * Draw milestone task
+    Draw milestone task
      */
     private drawMilestone(page: PdfPage, startPoint: PointF, detail: TimelineDetails,
-                          cumulativeWidth: number, taskbar: PdfGanttTaskbarCollection): void {
+                          cumulativeWidth: number, taskbar: PdfGanttTaskbarCollection, isBaseline: boolean): void {
         if (detail.startDate <= this.startDate && this.startDate <= detail.endDate) {
             const taskGraphics: PdfGraphics = page.graphics;
             const pageIndex: number = page.section.indexOf(page);
@@ -2008,19 +2009,33 @@ export class PdfGanttTaskbarCollection {
             const baselineBrush: PdfBrush = new PdfSolidBrush(this.baselineColor);
             taskGraphics.save(); //saving graphics state
             const height: number = Math.floor(this.parent.chartRowsModule.taskBarHeight * 0.8);
-            if (this.isAutoFit()) {
-                taskGraphics.translateTransform(startPoint.x + (this.left - cumulativeWidth),
-                                                startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
+            if (!isBaseline) {
+                if (this.isAutoFit()) {
+                    taskGraphics.translateTransform(startPoint.x + (this.left - cumulativeWidth),
+                                                    startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
+                }
+                else {
+                    taskGraphics.translateTransform(startPoint.x + pixelToPoint(this.left - cumulativeWidth),
+                                                    startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
+                }
             }
-            else {
-                taskGraphics.translateTransform(startPoint.x + pixelToPoint(this.left - cumulativeWidth),
-                                                startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
+            if (isBaseline) {
+                if (this.isAutoFit()) {
+                    taskGraphics.translateTransform(startPoint.x + (taskbar.baselineLeft - cumulativeWidth),
+                                                    startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
+                }
+                else {
+                    taskGraphics.translateTransform(startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth),
+                                                    startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
+                }
             }
             taskGraphics.rotateTransform(45); //apply rotation
-            if (this.parent.renderBaseline && this.baselineStartDate && this.baselineEndDate) {
+            if (this.parent.renderBaseline && this.baselineStartDate && this.baselineEndDate && isBaseline) {
                 taskGraphics.drawRectangle(baselinePen, baselineBrush, 2, 2, pixelToPoint(height), pixelToPoint(height));
             }
-            taskGraphics.drawRectangle(milestonePen, milestoneBrush, 0, 0, pixelToPoint(height), pixelToPoint(height));
+            if (!isBaseline) {
+                taskGraphics.drawRectangle(milestonePen, milestoneBrush, 0, 0, pixelToPoint(height), pixelToPoint(height));
+            }
             taskGraphics.restore(); //restoring graphics state
             if (this.isAutoFit()) {
                 if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {

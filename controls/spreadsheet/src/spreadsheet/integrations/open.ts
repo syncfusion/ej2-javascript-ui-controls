@@ -6,8 +6,8 @@ import { OpenOptions, OpenFailureArgs } from '../common/interface';
 import { refreshSheetTabs, completeAction, unProtectSheetPassword } from '../common/event';
 import { dialog, importProtectWorkbook, locale, OpenArgs, JsonData } from '../common/index';
 import { Dialog } from '../services/index';
-import { openSuccess, openFailure, clearFormulaDependentCells } from '../../workbook/index';
-import { L10n } from '@syncfusion/ej2-base';
+import { openSuccess, openFailure, clearFormulaDependentCells, sheetsDestroyed } from '../../workbook/index';
+import { L10n, detach, select, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 export class Open {
@@ -29,6 +29,7 @@ export class Open {
     private addEventListener(): void {
         this.parent.on(openSuccess, this.openSuccess, this);
         this.parent.on(openFailure, this.openFailed, this);
+        this.parent.on(sheetsDestroyed, this.sheetsDestroyHandler, this);
     }
 
     /**
@@ -40,6 +41,7 @@ export class Open {
         if (!this.parent.isDestroyed) {
             this.parent.off(openSuccess, this.openSuccess);
             this.parent.off(openFailure, this.openFailed);
+            this.parent.off(sheetsDestroyed, this.sheetsDestroyHandler);
         }
     }
 
@@ -49,12 +51,10 @@ export class Open {
      * @returns {void} - Rendering upload component for importing files.
      */
     private renderFileUpload(): void {
-        const uploadID: string = this.parent.element.id + '_fileUpload';
-        this.parent.element.appendChild(this.parent.createElement('input', {
-            id: uploadID,
+        const uploadBox: HTMLInputElement = this.parent.element.appendChild(this.parent.createElement('input', {
+            id: this.parent.element.id + '_fileUpload',
             attrs: { type: 'file', accept: '.xls, .xlsx, .csv, .xlsm, .xlsb', name: 'fileUpload' }
         }));
-        const uploadBox: HTMLElement = document.getElementById(uploadID);
         uploadBox.onchange = this.fileSelect.bind(this);
         uploadBox.onerror = this.openFailed.bind(this);
         uploadBox.style.display = 'none';
@@ -76,7 +76,7 @@ export class Open {
             file: filesData
         };
         this.parent.open(impArgs);
-        (document.getElementById(this.parent.element.id + '_fileUpload') as HTMLInputElement).value = '';
+        select('#' + this.parent.element.id + '_fileUpload', this.parent.element).value = '';
     }
 
     /**
@@ -209,6 +209,13 @@ export class Open {
         /* Need to Implement */
     }
 
+    private sheetsDestroyHandler(args: { sheetIndex?: number }): void {
+        if (isNullOrUndefined(args.sheetIndex)) {
+            this.isImportedFile = false;
+            this.unProtectSheetIdx = [];
+        }
+    }
+
     /**
      * To Remove the event listeners.
      *
@@ -216,6 +223,12 @@ export class Open {
      */
     public destroy(): void {
         this.removeEventListener();
+        const uploadBox: HTMLInputElement = select('#' + this.parent.element.id + '_fileUpload', this.parent.element);
+        if (uploadBox) {
+            detach(uploadBox);
+        }
+        this.isImportedFile = null;
+        this.unProtectSheetIdx = null;
         this.parent = null;
     }
 

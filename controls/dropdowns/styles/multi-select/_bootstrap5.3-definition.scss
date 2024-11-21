@@ -222,4 +222,8 @@ $ddl-close-down-icon-left: 35px !default;
   .e-multiselect .e-input-group-icon.e-ddl-icon {
     border-left-width: 0;
   }
+
+  .e-float-input#{&}.e-control-wrapper.e-multiselect input[readonly] {
+    background: transparent;
+  }
 }

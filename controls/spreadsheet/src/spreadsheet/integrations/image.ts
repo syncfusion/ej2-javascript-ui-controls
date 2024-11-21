@@ -96,10 +96,11 @@ export class SpreadsheetImage {
         options: { src: string, id?: string, height?: number, width?: number, top?: number, left?: number }, range?: string,
         isPublic?: boolean, isUndoRedo?: boolean
     }): void {
-        const range: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
+        const lastIndex: number = args.range ? args.range.lastIndexOf('!') : 0;
+        const range: string = args.range ? (lastIndex > 0) ? args.range.substring(lastIndex + 1) : args.range
             : this.parent.getActiveSheet().selectedRange;
-        const sheetIndex: number = (args.range && args.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) : this.parent.activeSheetIndex;
+        const sheetIndex: number = (args.range && lastIndex > 0) ?
+            getSheetIndex(this.parent as Workbook, args.range.substring(0, lastIndex)) : this.parent.activeSheetIndex;
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const id: string = args.options.id ? args.options.id : getUniqueID(this.parent.element.id + '_overlay_picture_');
         const indexes: number[] = getRangeIndexes(range);
@@ -262,9 +263,10 @@ export class SpreadsheetImage {
             }
             document.getElementById(args.id).remove();
         } else if (!args.sheet) {
-            const rangeVal: string = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
-                this.parent.getActiveSheet().selectedRange;
-            const sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) :
+            const rangeVal: string = args.range ? args.range.lastIndexOf('!') > 0 ? args.range.substring(args.range.lastIndexOf('!') + 1)
+                : args.range : this.parent.getActiveSheet().selectedRange;
+            const sheetIndex: number = args.range && args.range.lastIndexOf('!') > 0 ?
+                getSheetIndex(this.parent as Workbook, args.range.substring(0, args.range.lastIndexOf('!'))) :
                 this.parent.activeSheetIndex;
             const index: number[] = getRangeIndexes(rangeVal);
             rowIdx = index[0]; colIdx = index[1];

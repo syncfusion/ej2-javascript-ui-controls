@@ -41,6 +41,7 @@ import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs
 import { ContextMenuSettingsModel } from './pdfviewer-model';
 import { IFormField, IFormFieldBound } from './form-designer/form-designer';
 import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { PdfViewerUtils } from './base/pdfviewer-utlis';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -7974,6 +7975,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return 'pdfViewer_' + Date.now().toString(36) + Math.random().toString(36).substring(2);
     }
 
+    private initializePdfiumModule(fontCollection: { [key: string]: any }): void {
+        this.viewerBase.pdfViewerRunner.postMessage({
+            url: this.getScriptPathForPlatform(),
+            fonts: fontCollection,
+            message: 'initialLoading'
+        });
+    }
+
     protected render(): void {
         if (this.enableHtmlSanitizer && this.serviceUrl) {
             this.serviceUrl = SanitizeHtmlHelper.sanitize(this.serviceUrl);
@@ -7987,12 +7996,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             const workerBob: any = new Blob([PdfiumRunner.toString().replace(/^[^{]*{([\s\S]*)}$/m, '$1')], { type: 'text/javascript' });
             const workerBlobUrl: any = URL.createObjectURL(workerBob);
             (window as any)['pdfViewerRunner_' + this.element.id] = this.viewerBase.pdfViewerRunner = new Worker(workerBlobUrl);
-
-            this.viewerBase.pdfViewerRunner.postMessage({
-                url: this.getScriptPathForPlatform(),
-                fonts: this.customFonts,
-                message: 'initialLoading'
-            });
+            if (this.customFonts && this.customFonts.length > 0) {
+                PdfViewerUtils.fetchCustomFonts(this.customFonts,
+                                                this.getScriptPathForPlatform()).then((fontCollection: { [key: string]: any }) => {
+                    this.pdfRenderer.FallbackFontCollection = fontCollection;
+                    this.initializePdfiumModule(fontCollection);
+                });
+            }
+            else {
+                this.initializePdfiumModule({});
+            }
             this.viewerBase.pdfViewerRunner.onmessage = function (event: any): void {
                 if (event.data.message === 'loaded') {
                     proxy.renderComponent();

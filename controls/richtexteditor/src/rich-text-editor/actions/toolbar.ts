@@ -196,6 +196,13 @@ export class Toolbar {
                 target: this.tbElement,
                 cssClass: this.parent.getCssClass()
             } as IToolbarRenderOptions);
+            if (this.parent.element.classList.contains('e-rte-full-screen')){
+                this.updateItem({
+                    targetItem: 'Maximize',
+                    updateItem: 'Minimize',
+                    baseToolbar: this.parent.getBaseToolbarObject()
+                });
+            }
             if (!this.parent.inlineMode.enable) {
                 if (this.parent.toolbarSettings.enableFloating) {
                     this.checkIsTransformChild();

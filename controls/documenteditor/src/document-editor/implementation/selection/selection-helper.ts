@@ -1220,17 +1220,14 @@ export class TextPosition {
 
     private getPreviousWordOffsetComment(comment: ElementBox, selection: Selection, indexInInline: number, type: number, isInField: boolean, isStarted: boolean, endSelection: boolean, endPosition: TextPosition): void {
         if (comment.previousNode) {
-            if ((comment as CommentCharacterElementBox).commentType === 0) {
-                const inline: TextElementBox = comment.previousNode as TextElementBox;
-                if (comment.previousNode instanceof TextElementBox
-                    && HelperMethods.lastIndexOfAny(inline.text, HelperMethods.wordSplitCharacters) !== inline.text.length - 1) {
-                    this.getPreviousWordOffset(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
-                } else {
-
-                    this.getPreviousWordOffset(comment.previousNode, selection, comment.previousNode.length, type, isInField, isStarted, endSelection, endPosition);
-                }
-            } else {
+            const inline: TextElementBox = comment.previousNode as TextElementBox;
+            // According to the current word selection behavior, if there is a word split character at the end of the previous inline element, then set the selection end position to the end position of the previous inline element.
+            if (comment.previousNode instanceof TextElementBox
+                && HelperMethods.lastIndexOfAny(inline.text, HelperMethods.wordSplitCharacters) === inline.text.length - 1
+                && selection.isSelectCurrentWord) {
                 endPosition.setPositionParagraph(comment.line, comment.line.getOffset(comment, 1));
+            } else {
+                this.getPreviousWordOffset(comment.previousNode, selection, comment.previousNode.length, type, isInField, isStarted, endSelection, endPosition);
             }
         } else {
             endPosition.setPositionParagraph(comment.line, selection.getStartLineOffset(comment.line));
@@ -1326,6 +1323,9 @@ export class TextPosition {
                     while (wordStartIndex > 0 && endSelection && txt[wordStartIndex] !== ' '
                         && (HelperMethods.wordSplitCharacters.indexOf(txt[wordStartIndex - 1])) !== -1) {
                         wordStartIndex--;
+                    }
+                    if (txt[wordStartIndex] === ' ' && !isNullOrUndefined(span.nextElement) && span.nextElement instanceof CommentCharacterElementBox && span.nextElement.commentType === 1) {
+                        wordStartIndex++;
                     }
                     if (txt[wordStartIndex] === ' ' || txt[wordStartIndex] === '　' || !endSelection) {
                         wordStartIndex++;

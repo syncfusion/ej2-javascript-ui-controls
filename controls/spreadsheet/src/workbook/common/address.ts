@@ -11,7 +11,7 @@ export function getRangeIndexes(range: string): number[] {
     let cellindexes: number[];
     const indexes: number[] = [];
     if (range) {
-        range = range.indexOf('!') > -1 ? range.split('!')[1] : range;
+        range = range.lastIndexOf('!') > -1 ? range.substring(range.lastIndexOf('!') + 1) : range;
         range = range.indexOf(':') === -1 ? range + ':' + range : range;
         const containsAlphabetsAndDigits: RegExp = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d)/g);
         if (!containsAlphabetsAndDigits.test(range)) {
@@ -106,7 +106,8 @@ export function getIndexesFromAddress(address: string): number[] {
  * @returns {string} - Get Range From Address.
  */
 export function getRangeFromAddress(address: string): string {
-    return address.split('!')[1] || address;
+    const sheetRefIndex: number = address.lastIndexOf('!');
+    return sheetRefIndex > -1 ? address.substring(sheetRefIndex + 1) : address;
 }
 
 /**

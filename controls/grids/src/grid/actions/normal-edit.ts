@@ -189,10 +189,17 @@ export class NormalEdit {
                 }
                 if ((<EJ2Intance>input).ej2_instances) {
                     if (prevent && isNullOrUndefined(column.defaultValue)) {
-                        (<EJ2Intance>input).ej2_instances[0].value = null;
-                        (input as HTMLInputElement).value = null;
+                        if ((input as HTMLInputElement).type === 'checkbox') {
+                            (<EJ2Intance>input).ej2_instances[0].checked = false;
+                            (input as HTMLInputElement).checked = false;
+                        } else {
+                            (<EJ2Intance>input).ej2_instances[0].value = null;
+                            (input as HTMLInputElement).value = null;
+                        }
                     }
-                    if (!isNullOrUndefined(disable)) {
+                    if ((input as HTMLInputElement).type === 'checkbox' && !isNullOrUndefined(disable)) {
+                        (<EJ2Intance>input).ej2_instances[0].disabled = disable && column.allowEditing ? false : true;
+                    } else if (!isNullOrUndefined(disable)) {
                         (<EJ2Intance>input).ej2_instances[0].enabled = disable && column.allowEditing ? true : false;
                     }
                 } else {

@@ -9317,7 +9317,14 @@ export class Editor {
         // }
         let row: TableRowWidget = prevBlock.childWidgets[prevBlock.childWidgets.length - 1] as TableRowWidget;
         let index: number = prevBlock.childWidgets.length;
-        prevBlock.insertTableRowsInternal(table.childWidgets as TableRowWidget[], index, true);
+        let initilizeCellBorder: boolean = false;
+        let newTableBorders: WBorders = table.tableFormat.borders;
+        let prevTableBorders: WBorders = prevBlock.tableFormat.borders;
+        if (newTableBorders.left.lineStyle !== prevTableBorders.left.lineStyle || newTableBorders.top.lineStyle !== prevTableBorders.top.lineStyle ||
+            newTableBorders.right.lineStyle !== prevTableBorders.right.lineStyle || newTableBorders.bottom.lineStyle !== prevTableBorders.bottom.lineStyle) {
+            initilizeCellBorder = true;
+        }
+        prevBlock.insertTableRowsInternal(table.childWidgets as TableRowWidget[], index, true, initilizeCellBorder);
         let cloneTable: TableWidget = prevBlock.clone();
         this.getInsertedTable(cloneTable, index);
         let paragraph: ParagraphWidget = this.selection.getFirstParagraph(row.nextWidget.childWidgets[0] as TableCellWidget);
@@ -11796,7 +11803,21 @@ export class Editor {
                     makeFirstLetterCapital = selection.getIndexInInline(inlineObj) === 0 || this.checkLastLetterSpace === ' ';
                     }
                     else {
-                        makeFirstLetterCapital = true;
+                        if (textElementBox.previousElement instanceof CommentCharacterElementBox ||
+                            textElementBox.previousElement instanceof BookmarkElementBox ||
+                            textElementBox.previousElement instanceof FieldElementBox) {
+                            let tempString: string = !isNullOrUndefined(textElementBox.previousElement.previousElement) ? (textElementBox.previousElement.previousElement as TextElementBox).text : undefined;
+                            if (isNullOrUndefined(tempString) || HelperMethods.endsWith(tempString)) {
+                                makeFirstLetterCapital = true;
+                            }
+                            else {
+                                makeFirstLetterCapital = false;
+                            }
+                        }
+                        else {
+                            makeFirstLetterCapital = true;
+                        }
+    
                     }
                 this.checkLastLetterSpace = textElementBox.text.charAt(textElementBox.length - 1);
             }
@@ -11862,6 +11883,12 @@ export class Editor {
     }
     //Change text into capitalize each word
     private capitalizeFirst(inputString: string, makeFirstLetterCapital: boolean): string {
+        const pattern = /^\w+'\w+$/;
+        if (pattern.test(inputString)) {
+            let words: string = inputString.split(/[^a-zA-Z0-9'\-]+/).toString();
+            words = inputString.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            return words;
+        }
         const words: string[] = inputString.split(/[^\w]+/g);
         const capitalizedWords: string[] = words.map((word, index) => {
             if (index === 0) {
@@ -18937,10 +18964,6 @@ export class Editor {
 
                     let checkCombine: boolean = false;
                     if (!(paragraph === paragraph.bodyWidget.lastChild && previousParagraph.bodyWidget.index !== paragraph.bodyWidget.index) && (paragraph.bodyWidget.sectionFormat.breakCode !== 'NoBreak' || paragraph !== paragraph.bodyWidget.firstChild)) {
-                        if (previousParagraph.characterFormat.revisions != undefined) {
-                            this.addRemovedRevisionInfo(previousParagraph.characterFormat, undefined, false);
-                            this.addRemovedNodes(previousParagraph.characterFormat);
-                        }
                         this.removePrevParaMarkRevision(paragraph);
                         this.removeBlock(paragraph, false, true);
                         checkCombine = true;

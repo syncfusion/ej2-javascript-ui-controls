@@ -6122,7 +6122,8 @@ Remove terinal segment in initial
                     this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
                 }
                 if (actualObject instanceof Node &&
-                    actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader) {
+                    actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader &&
+                    !checkParentAsContainer(this.diagram, actualObject)) {
                     if (actualObject.offsetX !== actualObject.wrapper.offsetX || actualObject.offsetY !== actualObject.wrapper.offsetY ||
                         actualObject.width !== actualObject.wrapper.width || actualObject.height !== actualObject.wrapper.height ||
                         actualObject.rotateAngle !== actualObject.wrapper.rotateAngle) {
@@ -6137,7 +6138,9 @@ Remove terinal segment in initial
                 } else if (actualObject instanceof Selector) {
                     for (let i: number = 0; i < actualObject.nodes.length; i++) {
                         const node: Node = actualObject.nodes[i] as Node;
-                        if (node instanceof Node && node.shape.type !== 'SwimLane' && !node.isLane
+                        if (node instanceof Node && node.shape.type !== 'SwimLane' &&
+                            !checkParentAsContainer(this.diagram, node)
+                            && !node.isLane
                             && !node.isPhase && !node.isHeader) {
                             node.offsetX += offsetX; node.offsetY += offsetY;
                             node.width += width; node.height += height; node.rotateAngle += rotateAngle;

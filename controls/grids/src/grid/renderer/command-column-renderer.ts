@@ -78,7 +78,8 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
         node.appendChild(this.unbounDiv.cloneNode());
         (<HTMLElement>node).setAttribute('aria-label', this.localizer.getConstant('CommandColumnAria') + cell.column.headerText);
         if (cell.column.commandsTemplate) {
-            if (this.parent.isReact && typeof (cell.column.commandsTemplate) !== 'string') {
+            if (this.parent.isReact && typeof (cell.column.commandsTemplate) !== 'string' && !(cell.column.commandsTemplate.prototype &&
+                cell.column.commandsTemplate.prototype.CSPTemplate)) {
                 const tempID: string = this.parent + 'commandsTemplate';
                 cell.column.getColumnTemplate()(data, this.parent, 'commandsTemplate', tempID, null, null, node.firstElementChild);
                 this.parent.renderTemplates();

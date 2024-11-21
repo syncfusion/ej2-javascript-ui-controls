@@ -1457,7 +1457,7 @@ export class BasicFormulas {
                     return computeExpResult;
                 }
                 if (actCell.indexOf('!') > - 1) {
-                    actCell = actCell.split('!')[1];
+                    actCell = actCell.substring(actCell.lastIndexOf('!') + 1);
                 }
                 let actRowIdx: number = this.parent.rowIndex(actCell);
                 let actColIdx: number = this.parent.colIndex(actCell);
@@ -1576,10 +1576,10 @@ export class BasicFormulas {
     public clearDependency(value: string): void {
         let actCell: string = this.parent.actCell;
         let actCellSheetName: string = '';
-        if (actCell.indexOf('!') > - 1) {
-            const actCellAddr: string[] = actCell.split('!');
-            actCell = actCellAddr[1];
-            actCellSheetName = actCellAddr[0] + '!';
+        if (actCell.lastIndexOf('!') > - 1) {
+            const actCellAddr: string = actCell;
+            actCell = actCellAddr.substring(actCellAddr.lastIndexOf('!') + 1);
+            actCellSheetName = actCellAddr.substring(0, actCellAddr.lastIndexOf('!')) + '!';
         }
         const actRowIdx: number = this.parent.rowIndex(actCell);
         const actColIdx: number = this.parent.colIndex(actCell);
@@ -3868,7 +3868,8 @@ export class BasicFormulas {
                             }
                             cellValue = cellValue === '' ? '0' : cellValue;
                             let activeCell: string = this.parent.actCell;
-                            activeCell = activeCell.indexOf('!') > - 1 ? activeCell.split('!')[1] : activeCell;
+                            activeCell = activeCell.indexOf('!') > - 1 ? activeCell.substring(activeCell.lastIndexOf('!') + 1) :
+                                activeCell;
                             const actRowIdx: number = this.parent.rowIndex(activeCell);
                             const actColIdx: number = this.parent.colIndex(activeCell);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3889,7 +3890,8 @@ export class BasicFormulas {
                             }
                             value = value === '' ? '0' : value;
                             let activeCell: string = this.parent.actCell;
-                            activeCell = activeCell.indexOf('!') > - 1 ? activeCell.split('!')[1] : activeCell;
+                            activeCell = activeCell.indexOf('!') > - 1 ? activeCell.substring(activeCell.lastIndexOf('!') + 1) :
+                                activeCell;
                             const actColIdx: number = this.parent.colIndex(activeCell);
                             const actRowIdx: number = this.parent.rowIndex(activeCell);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any

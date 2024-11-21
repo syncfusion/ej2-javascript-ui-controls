@@ -40,7 +40,9 @@ export const menuClass: CMenuClassList = {
     ascending: 'e-icon-ascending',
     descending: 'e-icon-descending',
     groupHeader: 'e-groupdroparea',
-    touchPop: 'e-gridpopup'
+    touchPop: 'e-gridpopup',
+    autofit: 'e-icon-autofit',
+    autofitall: 'e-icon-autofitall'
 };
 
 export interface CMenuClassList {
@@ -67,6 +69,8 @@ export interface CMenuClassList {
     descending: string;
     groupHeader: string;
     touchPop: string;
+    autofit: string;
+    autofitall: string;
 }
 
 /**
@@ -240,6 +244,9 @@ export class ContextMenu implements IAction {
                     this.parent.editModule.endEdit();
                 }
                 if (this.parent.getSelectedRecords().length === 1) {
+                    if (!this.parent.isCheckBoxSelection) {
+                        this.parent.isFocusFirstCell = true;
+                    }
                     this.parent.editModule.deleteRow(this.row);
                 } else {
                     this.parent.deleteRecord();
@@ -248,11 +255,17 @@ export class ContextMenu implements IAction {
             break;
         case 'Save':
             if (this.parent.editModule) {
+                if (this.parent.isEdit && this.parent.editSettings.mode !== 'Batch') {
+                    this.parent.isFocusFirstCell = true;
+                }
                 this.parent.editModule.endEdit();
             }
             break;
         case 'Cancel':
             if (this.parent.editModule) {
+                if (this.parent.isEdit) {
+                    this.parent.isFocusFirstCell = true;
+                }
                 this.parent.editModule.closeEdit();
             }
             break;
@@ -543,8 +556,10 @@ export class ContextMenu implements IAction {
         let menuItem: ContextMenuItemModel;
         switch (item) {
         case 'AutoFitAll':
+            menuItem = { target: menuClass.header, iconCss: menuClass.autofitall };
+            break;
         case 'AutoFit':
-            menuItem = { target: menuClass.header };
+            menuItem = { target: menuClass.header, iconCss: menuClass.autofit };
             break;
         case 'Group':
             menuItem = { target: menuClass.header, iconCss: menuClass.group };

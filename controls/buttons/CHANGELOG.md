@@ -8,6 +8,15 @@
 
 #### Bug Fixes
 
+- `#F857466`- The issue with "Need to set the label tag for attribute if user changes the checkbox input id in checkbox component" has been resolved.
+- `#F95768`- The issue with "Parent element click event `prevented` while clicking on switch component in angular." has been resolved.
+
+## 27.1.58 (2024-11-05)
+
+### Checkbox
+
+#### Bug Fixes
+
 - `#F95768`- The issue with "Checkbox not getting checked while using `usestate` in react" has been resolved.
 
 ## 27.1.53 (2024-10-15)

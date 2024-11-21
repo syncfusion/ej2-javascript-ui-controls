@@ -1541,8 +1541,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('MINUTE formula with input having minute value as 90->', (done: Function) => {
             helper.edit('C4', '3:90:44 AM');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(C4)"}');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('30');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":30,"formula":"=MINUTE(C4)"}');
             done();
         });
         it('MINUTE formula with cell having no value->', (done: Function) => {
@@ -16435,6 +16435,73 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });   
+        describe('EJ2-917774 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('#VALUE error occurs while updating the formula dependent cell with formatted value', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                spreadsheet.numberFormat('0.00%', 'D2:D11');
+                helper.edit('D12', '=SUM(D2:D11)');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].value).toBe(277);
+                expect(spreadsheet.sheets[0].rows[11].cells[3].formula).toBe('=SUM(D2:D11)');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].formattedText).toBe('27700.00%');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].format).toBe('0.00%');
+                helper.edit('D2', '10%');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].value).toBe('267.1');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].formattedText).toBe('26710.00%');
+                helper.edit('D3', '0%');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].value).toBe('247.1');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].formattedText).toBe('24710.00%');
+                helper.edit('D4', '20%');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].value).toBe('227.3');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].formattedText).toBe('22730.00%');
+                helper.edit('D5', '100%');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].value).toBe('213.3');
+                expect(spreadsheet.sheets[0].rows[11].cells[3].formattedText).toBe('21330.00%');
+                spreadsheet.numberFormat('$#,##0.00', 'E2:E11');
+                helper.edit('E12', '=SUM(E2:E11)');
+                expect(spreadsheet.sheets[0].rows[11].cells[4].value).toBe(175);
+                expect(spreadsheet.sheets[0].rows[11].cells[4].formula).toBe('=SUM(E2:E11)');
+                expect(spreadsheet.sheets[0].rows[11].cells[4].formattedText).toBe('$175.00');
+                expect(spreadsheet.sheets[0].rows[11].cells[4].format).toBe('$#,##0.00');
+                helper.edit('E2', '$10');
+                expect(spreadsheet.sheets[0].rows[11].cells[4].value).toBe(165);
+                expect(spreadsheet.sheets[0].rows[11].cells[4].formattedText).toBe('$165.00');
+                helper.edit('E3', '$10');
+                expect(spreadsheet.sheets[0].rows[11].cells[4].value).toBe(145);
+                expect(spreadsheet.sheets[0].rows[11].cells[4].formattedText).toBe('$145.00');
+                helper.edit('E4', '$10');
+                expect(spreadsheet.sheets[0].rows[11].cells[4].value).toBe(140);
+                expect(spreadsheet.sheets[0].rows[11].cells[4].formattedText).toBe('$140.00');
+                helper.edit('E5', '$10');
+                expect(spreadsheet.sheets[0].rows[11].cells[4].value).toBe(130);
+                expect(spreadsheet.sheets[0].rows[11].cells[4].formattedText).toBe('$130.00');
+                spreadsheet.numberFormat('0%', 'G2:G11');
+                helper.edit('G12', '=SUM(G2:G11)');
+                expect(spreadsheet.sheets[0].rows[11].cells[6].value).toBe(77);
+                expect(spreadsheet.sheets[0].rows[11].cells[6].formula).toBe('=SUM(G2:G11)');
+                expect(spreadsheet.sheets[0].rows[11].cells[6].formattedText).toBe('7700%');
+                expect(spreadsheet.sheets[0].rows[11].cells[6].format).toBe('0%');
+                helper.edit('G2', '100.45%');
+                expect(spreadsheet.sheets[0].rows[1].cells[6].value).toBe('1.0045');
+                expect(spreadsheet.sheets[0].rows[1].cells[6].formattedText).toBe('100%');
+                expect(spreadsheet.sheets[0].rows[1].cells[6].format).toBe('0%');
+                expect(spreadsheet.sheets[0].rows[1].cells[6].format).not.toBe('0.00%');
+                helper.edit('G3', '100.30%');
+                expect(spreadsheet.sheets[0].rows[2].cells[6].value).toBe('1.003');
+                expect(spreadsheet.sheets[0].rows[2].cells[6].formattedText).toBe('100%');
+                expect(spreadsheet.sheets[0].rows[2].cells[6].format).toBe('0%');
+                expect(spreadsheet.sheets[0].rows[2].cells[6].format).not.toBe('0.00%');
+                expect(spreadsheet.sheets[0].rows[11].cells[6].value).toBe('73.0075');
+                expect(spreadsheet.sheets[0].rows[11].cells[6].formattedText).toBe('7301%');
+                expect(spreadsheet.sheets[0].rows[11].cells[6].format).toBe('0%');
+                done();
+            });
+        });
     });
     describe('Stability ->', () => {
         describe('SUM Formula', () => {

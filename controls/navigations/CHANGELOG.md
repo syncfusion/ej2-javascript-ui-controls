@@ -2,13 +2,31 @@
 
 ## [Unreleased]
 
-## 27.2.2 (2024-11-15)
+## 27.2.3 (2024-11-21)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I625957` - The issue with "Context menu reposition issue while using the insertBefore and insertAfter method" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I649636` - An issue with Tab item selection, when the `allowDragAndDrop` property is enabled, has been fixed.
 
 ### TreeView
 
 #### Bug Fixes
 
 - `#I650340` - The alignment issue in the TreeView component, which occurred when using the IconCss field property with the e-icons class while enabling checkbox support, has been resolved.
+
+- `#I649622` - The issue with the preventTargetExpand parameter, when set to true in the TreeView component's addNodes method, has been resolved.
+
+- `#I639573` - Resolved an issue where all child nodes of a parent node were automatically selected upon reopening the DropdownTree component after filtering and selecting the parent node.
+
+## 27.2.2 (2024-11-15)
 
 ### Tab
 

@@ -13,10 +13,11 @@ export class WorkbookImage {
     }
 
     private setImage(args: { options: ImageModel[], range: string }): void {
-        const imgRange: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
+        const lastIndex: number = args.range ? args.range.lastIndexOf('!') : -1;
+        const imgRange: string = args.range ? (lastIndex > -1) ? args.range.substring(lastIndex + 1) : args.range
             : this.parent.getActiveSheet().selectedRange;
-        const sheetIdx: number = (args.range && args.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent, args.range.split('!')[0]) : this.parent.activeSheetIndex;
+        const sheetIdx: number = (args.range && lastIndex > -1) ?
+            getSheetIndex(this.parent, args.range.substring(0, lastIndex)) : this.parent.activeSheetIndex;
         const indexes: number[] = getRangeIndexes(imgRange);
         const sheet: SheetModel = isUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
         const cell: CellModel = getCell(indexes[0], indexes[1], sheet);

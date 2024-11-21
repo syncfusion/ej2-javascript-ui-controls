@@ -2959,16 +2959,16 @@ private calculatePathBounds(data: string): Rect {
                 let row: TableRowWidget = tableCell.ownerTable.childWidgets[i] as TableRowWidget;
                 let cell: TableCellWidget
                 for (let j: number = 0; j < row.childWidgets.length; j++) {
-                    let currentCell :TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                    if ((currentCell.columnIndex + currentCell.cellFormat.columnSpan - 1) === tableCell.columnIndex - 1) {
-                        cell = currentCell as TableCellWidget;
+                    let currentCell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    if (!isBidiTable ? (currentCell.columnIndex + currentCell.cellFormat.columnSpan - 1) === tableCell.columnIndex - 1 : currentCell.columnIndex === tableCell.columnIndex + tableCell.cellFormat.columnSpan) {
+                        cell = currentCell;
                         break;
-                    } else if ((row.childWidgets[j] as TableCellWidget).columnIndex >= tableCell.columnIndex && (row.childWidgets[j] as TableCellWidget).previousWidget) {
-                        cell = (row.childWidgets[j] as TableCellWidget).previousWidget as TableCellWidget;
+                    } else if (!isBidiTable && currentCell.columnIndex >= tableCell.columnIndex && currentCell.previousWidget) {
+                        cell = currentCell.previousWidget as TableCellWidget;
                         break;
                     }
                 }
-                if (cell && cell.columnIndex + cell.cellFormat.columnSpan - 1 === tableCell.columnIndex - 1) {
+                if (cell && (!isBidiTable ? (cell.columnIndex + cell.cellFormat.columnSpan - 1) === tableCell.columnIndex - 1 : cell.columnIndex === tableCell.columnIndex + tableCell.cellFormat.columnSpan)) {
                     let border: WBorder = !isBidiTable ? TableCellWidget.getCellRightBorder(cell) : TableCellWidget.getCellLeftBorder(cell);
                     let lineWidthInt: number = HelperMethods.convertPointToPixel(border.getLineWidth());
                     cellLeftMargin = tableCell.margin.left - lineWidthInt;
@@ -2988,7 +2988,10 @@ private calculatePathBounds(data: string): Rect {
         }
         // }
         if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 1) {
-            let cellX: number = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
+            let cellX: number = isBidiTable
+                ? cellWidget.x + cellWidget.width + cellWidget.margin.right - leftBorderWidth / 2
+                : cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
+
             let cellY: number = cellWidget.y - cellWidget.margin.top;
             for (let a: number = 0; a < tableCell.updatedTopBorders.length; a++) {
                 let borderInfo: BorderInfo = tableCell.updatedTopBorders[a];
@@ -2998,8 +3001,8 @@ private calculatePathBounds(data: string): Rect {
                 }
                 if (!isNullOrUndefined(border)) {
                     lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-                    this.renderSingleBorder(border.color, cellX, cellY + lineWidth / 2, cellX + borderInfo.width, cellY + lineWidth / 2, lineWidth, border.lineStyle);
-                    cellX = cellX + borderInfo.width;
+                    this.renderSingleBorder(border.color, cellX, cellY + lineWidth / 2, cellX + (isBidiTable ? -borderInfo.width : borderInfo.width), cellY + lineWidth / 2, lineWidth, border.lineStyle);
+                    cellX += isBidiTable ? -borderInfo.width : borderInfo.width;
                 }
             }
         } else {
@@ -3054,6 +3057,18 @@ private calculatePathBounds(data: string): Rect {
                 }
             }
         }
+
+        let allowButtomBorderRender = !isNullOrUndefined(nextRow) && isLastCell && (!(nextRow.rowFormat.gridAfter > 0 || nextRow.rowFormat.gridBefore > 0)
+            && (nextRow.lastChild as TableCellWidget).columnIndex + (nextRow.lastChild as TableCellWidget).cellFormat.columnSpan
+            > (tableCell.ownerRow.lastChild as TableCellWidget).columnIndex
+            && (nextRow.lastChild as TableCellWidget).columnIndex + (nextRow.lastChild as TableCellWidget).cellFormat.columnSpan
+            < (tableCell.ownerRow.lastChild as TableCellWidget).columnIndex
+            + (tableCell.ownerRow.lastChild as TableCellWidget).cellFormat.columnSpan)
+            && !isNullOrUndefined(nextRow.childWidgets) && nextRow.childWidgets.length
+            < tableCell.ownerRow.childWidgets.length + tableCell.cellFormat.columnSpan - 1
+            && cellWidget.x + cellWidget.width > ((nextRow.lastChild as TableCellWidget).x + (nextRow.lastChild as TableCellWidget).width + (nextRow.lastChild as TableCellWidget).margin.right)
+            && tableCell.cellFormat.borders.bottom.lineStyle !== 'Cleared';
+
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
             || (tableCell.cellFormat.rowSpan > 1
                 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan >= tableCell.ownerTable.childWidgets.length) ||
@@ -3063,7 +3078,8 @@ private calculatePathBounds(data: string): Rect {
                 ((!isNullOrUndefined(nextRow) && cellWidget.x < ((nextRow.firstChild as TableCellWidget).x - (nextRow.firstChild as TableCellWidget).margin.left) &&
                     nextRow.rowFormat.gridBefore > 0 && (nextRow.rowFormat.beforeWidth !== 0 || nextRow.rowFormat.gridBeforeWidth !== 0)) ||
                     (!isNullOrUndefined(nextRow) && cellWidget.x + cellWidget.width > ((nextRow.lastChild as TableCellWidget).x + (nextRow.lastChild as TableCellWidget).width + (nextRow.lastChild as TableCellWidget).margin.right) &&
-                        nextRow.rowFormat.gridAfter > 0 && (nextRow.rowFormat.afterWidth !== 0 || nextRow.rowFormat.gridAfterWidth !== 0))))) {
+                        nextRow.rowFormat.gridAfter > 0 && (nextRow.rowFormat.afterWidth !== 0 || nextRow.rowFormat.gridAfterWidth !== 0)))
+                || allowButtomBorderRender)) {
             let bottomBorder: WBorder = tableCell.cellFormat.borders.bottom;
             if (!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'Cleared') {
                 border = TableCellWidget.getCellBottomBorder(tableCell);
@@ -3077,7 +3093,8 @@ private calculatePathBounds(data: string): Rect {
             let startX: number = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
             let endX: number = cellWidget.x + cellWidget.width + cellWidget.margin.right;
             if (!(previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) &&
-                !isNullOrUndefined(nextRow) && !isBidiTable && nextRow.rowFormat.gridAfter > 0 && (nextRow.rowFormat.afterWidth !== 0 || nextRow.rowFormat.gridAfterWidth !== 0) && !isNullOrUndefined(nextRow.lastChild) && !isNullOrUndefined(TableCellWidget.getCellTopBorder(nextRow.lastChild as TableCellWidget)) && TableCellWidget.getCellTopBorder(nextRow.lastChild as TableCellWidget).lineStyle !== "None" && cellWidget.x < (nextRow.lastChild as TableCellWidget).x + (nextRow.lastChild as TableCellWidget).width + (nextRow.lastChild as TableCellWidget).margin.right) {
+                !isNullOrUndefined(nextRow) && !isBidiTable && nextRow.rowFormat.gridAfter > 0 && (nextRow.rowFormat.afterWidth !== 0 || nextRow.rowFormat.gridAfterWidth !== 0) && !isNullOrUndefined(nextRow.lastChild) && !isNullOrUndefined(TableCellWidget.getCellTopBorder(nextRow.lastChild as TableCellWidget)) && TableCellWidget.getCellTopBorder(nextRow.lastChild as TableCellWidget).lineStyle !== "None" && cellWidget.x < (nextRow.lastChild as TableCellWidget).x + (nextRow.lastChild as TableCellWidget).width + (nextRow.lastChild as TableCellWidget).margin.right
+                || allowButtomBorderRender) {
                 startX = (nextRow.lastChild as TableCellWidget).x + (nextRow.lastChild as TableCellWidget).width + (nextRow.lastChild as TableCellWidget).margin.right;
             }
             if (!(previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) &&
@@ -3137,7 +3154,7 @@ private calculatePathBounds(data: string): Rect {
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
-            this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), Math.ceil(this.getScaledValue(width) + 0.5), Math.ceil(this.getScaledValue(height) + 0.5));
+            this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
             this.pageContext.closePath();
         }
     }

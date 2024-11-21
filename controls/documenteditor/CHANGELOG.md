@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I642653` - Resolved the XML mapping data document importing issue.
+- `#I639842` - Resolved the layouting issue in RTL table.
+- `#I644826` - Resolved the comments escape characters issue when opening exported document.
+- `#I645913` - Resolved the selection issue incorrect behaviour with Comments.
+- `#I623329` - Resolved the performance issues with document editor.
+- `#I650898` - Resolved the Document generates a corrupted docx issue.
+- `#I643649` - Now selection in document does not get changed after modifying the style.
+- `#I644795` - Resolved the adding enter in syncfusion editor leads to weird tab behaviour issue.
+- `#I645817` - Resolved the change case functionality bugs.
+- `#I645091` - Resolved the table text outside table at end of page issue.
+
 ## 27.2.2 (2024-11-15)
 
 ### DocumentEditor

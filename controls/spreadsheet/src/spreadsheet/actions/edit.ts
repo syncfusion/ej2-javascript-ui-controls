@@ -728,7 +728,7 @@ export class Edit {
                 if (this.isEdit) {
                     if (!trgt.classList.contains('e-spreadsheet-edit')) {
                         if (checkIsFormula(this.editCellData.value)) {
-                            const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+                            const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.lastIndexOf('!'));
                             if (this.parent.getActiveSheet().name === sheetName) {
                                 this.endEdit();
                             }
@@ -751,7 +751,7 @@ export class Edit {
         let sheetIdx: number;
         let sheet: SheetModel; let isMergedHiddenCell: boolean;
         if (isNullOrUndefined(this.editCellData.sheetIndex)) {
-            if (addr && addr.split('!').length > 1) {
+            if (addr && addr.lastIndexOf('!') > -1) {
                 sheetIdx = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(addr));
             } else {
                 sheetIdx = this.parent.activeSheetIndex;
@@ -1118,7 +1118,7 @@ export class Edit {
             uniquArgs.sheetName = this.parent.getActiveSheet().name;
         }
         for (let i: number = 0; i < collection.length; i++) {
-            if (collection[i as number].split('!')[0] === uniquArgs.sheetName) {
+            if (collection[i as number].substring(0, collection[i as number].lastIndexOf('!')) === uniquArgs.sheetName) {
                 const rangeIdx: number[] = getRangeIndexes(collection[i as number]);
                 for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
                     for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
@@ -1375,7 +1375,7 @@ export class Edit {
 
     // Start edit the formula cell and set cursor position
     private initiateRefSelection(): void {
-        const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+        const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.lastIndexOf('!'));
         const value: string = this.editCellData.value;
         if (this.parent.getActiveSheet().name === sheetName && checkIsFormula(this.editCellData.value, true)) {
             this.startEdit(this.editCellData.addr, value, false);
@@ -1438,7 +1438,7 @@ export class Edit {
         address = isSingleCell(getIndexesFromAddress(address)) ? address.split(':')[0] : address;
         const formulaBar: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
         if (value && checkIsFormula(value, true)) {
-            const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+            const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.lastIndexOf('!'));
             const otherSheet: boolean = this.parent.getActiveSheet().name !== sheetName;
             if (otherSheet) {
                 address = '\'' + this.parent.getActiveSheet().name + '\'' + '!' + address;

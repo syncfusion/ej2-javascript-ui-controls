@@ -518,7 +518,6 @@ export class StockLegend extends BaseLegend {
     private refreshLegendToggle(chart: StockChart): void {
         const bounds: Rect = chart.stockLegendModule.legendBounds;
         chart.stockLegendModule.renderLegend(chart, chart.legendSettings, bounds);
-        chart.cartesianChart.cartesianChartRefresh(chart);
     }
 
     private changeSeriesVisiblity(series: Series, visibility: boolean): void {

@@ -2124,10 +2124,20 @@ export class TextSearch {
         if (data.documentTextCollection && data.uniqueId === proxy.pdfViewerBase.documentId) {
             proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderTexts, data);
             if (proxy.documentTextCollection.length > 0) {
-                proxy.documentTextCollection = data.documentTextCollection.concat(proxy.documentTextCollection);
-                proxy.documentTextCollection = proxy.orderPdfTextCollections(proxy.documentTextCollection);
+                if (((proxy.pdfViewer as any).isVue) && !((proxy.pdfViewer as any).isVue3)) {
+                    proxy.documentTextCollection = proxy.orderPdfTextCollections(JSON.parse(`[${JSON.stringify(proxy.documentTextCollection).slice(1, -1)},${JSON.stringify(data.documentTextCollection).slice(1, -1)}]`));
+                }
+                else {
+                    proxy.documentTextCollection = data.documentTextCollection.concat(proxy.documentTextCollection);
+                    proxy.documentTextCollection = proxy.orderPdfTextCollections(proxy.documentTextCollection);
+                }
             } else {
-                proxy.documentTextCollection = data.documentTextCollection;
+                if (((proxy.pdfViewer as any).isVue) && !((proxy.pdfViewer as any).isVue3)) {
+                    proxy.documentTextCollection = JSON.parse(`[${JSON.stringify(data.documentTextCollection).slice(1, -1)}]`);
+                }
+                else {
+                    proxy.documentTextCollection = data.documentTextCollection;
+                }
             }
             const pageCount: number = proxy.pdfViewerBase.pageCount;
             if (endIndex !== pageCount) {

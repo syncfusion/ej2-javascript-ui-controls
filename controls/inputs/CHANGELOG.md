@@ -10,6 +10,8 @@
 
 - `#I648755` - Fixed an issue where, with sequential upload enabled, if the first file is paused, the second file will not automatically start uploading.
 
+- `#I648407` - Fixed an issue where users were unable to add custom form data in the beforeUpload event.
+
 ### TextBox
 
 #### Bug Fixes

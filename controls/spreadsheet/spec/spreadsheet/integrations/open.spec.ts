@@ -52,6 +52,26 @@ describe('Open & Save ->', () => {
             //     });
             // });
         });
+        it('Changing allowOpen property dynamically', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.allowOpen).toBeTruthy();
+            expect(spreadsheet.openModule.isImportedFile).toBeTruthy();
+            const prevUploadInput: HTMLElement = spreadsheet.element.querySelector(`#${helper.id}_fileUpload`);
+            expect(prevUploadInput).not.toBeNull();
+            spreadsheet.allowOpen = false;
+            spreadsheet.dataBind();
+            expect(spreadsheet.allowOpen).toBeFalsy();
+            expect(spreadsheet.openModule).toBeUndefined();
+            expect(spreadsheet.element.querySelector(`#${helper.id}_fileUpload`)).toBeNull();
+            spreadsheet.allowOpen = true;
+            spreadsheet.dataBind();
+            expect(spreadsheet.allowOpen).toBeTruthy();
+            expect(spreadsheet.openModule.isImportedFile).toBeFalsy();
+            const uploadInput: HTMLElement = spreadsheet.element.querySelector(`#${helper.id}_fileUpload`);
+            expect(uploadInput).not.toBeNull();
+            expect(uploadInput).not.toBe(prevUploadInput);
+            done();
+        });
     });
 
     describe('Save method ->', () => {

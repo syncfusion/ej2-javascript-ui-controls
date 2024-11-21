@@ -1386,7 +1386,7 @@ function findIntermeditatePoints(
                 source.point = updateSegmentPoints(source, (ele.segments[parseInt(i.toString(), 10)] as OrthogonalSegment));
             } else {
                 const segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
-                if (segment && segment.points) {
+                if (segment && segment.points && segment.points.length > 0) {
                     source.point = segment.points[segment.points.length - 1];
                 }
             }

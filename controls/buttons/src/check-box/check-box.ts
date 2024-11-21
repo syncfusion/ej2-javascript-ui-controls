@@ -372,7 +372,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 this.element.parentNode.insertBefore(wrapper, this.element);
             }
         }
-        const label: Element = this.createElement('label', { attrs: { for: this.element.id } });
+        const label: Element = this.createElement('label', { attrs: { for: this.htmlAttributes.id ? this.htmlAttributes.id : this.element.id } });
         const frameSpan: Element = this.createElement('span', { className: 'e-icons ' + FRAME });
         wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {

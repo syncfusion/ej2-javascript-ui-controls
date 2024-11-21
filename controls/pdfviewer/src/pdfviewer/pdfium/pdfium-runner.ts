@@ -103,24 +103,6 @@ export function PdfiumRunner(): void {
         };
     }
 
-    /**
-     * @param {string} fontFile - Specifies the font path.
-     * @returns {void}
-     */
-    function registerFonts(fontFile: string): void {
-        fetch(fontFile).then((response: any) => {
-            if (response.ok) {
-                return response.arrayBuffer();
-            }
-        }).then((value: ArrayBuffer) => {
-            if (value) {
-                const parts: string[] = fontFile.split('/');
-                const fileName: string = parts.pop();
-                const name: string = '/usr/share/fonts/' + fileName;
-                PDFiumModule.FS.createDataFile(name, null, new Int8Array(value), true, true, true);
-            }
-        });
-    }
 
     /**
      *@returns {void}
@@ -164,17 +146,13 @@ export function PdfiumRunner(): void {
             PDFiumModule.onRuntimeInitialized = function (): void {
                 moduleLoaded = true;
                 checkIfEverythingWasLoaded();
-                if (event.data.fonts && event.data.fonts.length > 0) {
-                    PDFiumModule.FS.createPath('/', '/usr/share/fonts/', true, true);
-                    for (let i: number = 0; i < event.data.fonts.length; i++) {
-                        let fontpath: string;
-                        if (event.data.fonts[parseInt(i.toString(), 10)].startsWith('http://') || event.data.fonts[parseInt(i.toString(), 10)].startsWith('https://')) {
-                            fontpath = event.data.fonts[parseInt(i.toString(), 10)];
+                if (event.data.fonts && Object.keys(event.data.fonts).length > 0) {
+                    const filePath: string = '/usr/share/fonts/';
+                    PDFiumModule.FS.createPath('/', filePath, true, true);
+                    for (const key in event.data.fonts) {
+                        if (event.data.fonts[`${key}`] && key.indexOf('fallbackfonts') === -1) {
+                            PDFiumModule.FS.createDataFile(filePath + key, null, event.data.fonts[`${key}`], true, true, true);
                         }
-                        else {
-                            fontpath = PDFiumModule.url + '/' + event.data.fonts[parseInt(i.toString(), 10)];
-                        }
-                        registerFonts(fontpath);
                     }
                 }
             };

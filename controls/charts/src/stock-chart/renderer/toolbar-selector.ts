@@ -70,6 +70,21 @@ export class ToolBarSelector {
                     }
                 }
             }
+        } else if (type === this.stockChart.indicatorType) {
+            for (let i: number = 0; i < type.length; i++) {
+                result.push({ text: '&nbsp;&nbsp;&nbsp;' + type[i as number].toString() });
+            }
+            for (let i: number = 0; i < this.stockChart.indicators.length; i++) {
+                for (let j: number = 0; j < result.length; j++) {
+                    let text: string = result[j as number].text.replace('&nbsp;&nbsp;&nbsp;', '');
+                    text = text.toLowerCase().replace(/(^\w|_\w)/g, (match: string) => match.toUpperCase()).replace(/_/g, '');
+                    text = text === 'Accumulation distribution' ? 'AccumulationDistribution' : text === 'Bollinger bands' ? 'BollingerBands' : text;
+                    if (text === this.stockChart.indicators[i as number].type) {
+                        result[j as number].text = result[j as number].text.replace('&nbsp;&nbsp;&nbsp;', '&#10004&nbsp;');
+                        this.indicators.push(text);
+                    }
+                }
+            }
         } else if (type === this.stockChart.exportType) {
             for (let i: number = 0; i < type.length; i++) {
                 result.push({ text: type[i as number].toString() });

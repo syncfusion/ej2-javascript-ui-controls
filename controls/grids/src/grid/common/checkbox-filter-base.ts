@@ -1542,7 +1542,8 @@ export class CheckBoxFilterBase {
             && data[this.options.column.field] !== this.getLocalizedLabel('AddCurrentSelection')) {
             label.innerHTML = '';
             const isReactCompiler: boolean = this.parent.isReact && this.options.column.filter
-                && typeof (this.options.column.filter.itemTemplate) !== 'string';
+                && typeof (this.options.column.filter.itemTemplate) !== 'string' &&
+                !(this.options.column.filter.itemTemplate.prototype && this.options.column.filter.itemTemplate.prototype.CSPTemplate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const isReactChild: boolean = (this.parent as any).parentDetails && (this.parent as any).parentDetails.parentInstObj &&
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

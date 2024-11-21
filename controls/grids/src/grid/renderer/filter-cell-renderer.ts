@@ -53,7 +53,8 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                 if (this.parent.filterSettings.type === 'FilterBar') {
                     node.classList.add('e-fltrtemp');
                 }
-                const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
+                const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string' &&
+                    !(column.filterTemplate.prototype && column.filterTemplate.prototype.CSPTemplate);
                 const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                     this.parent.parentDetails.parentInstObj.isReact;
                 const tempID: string = this.parent.element.id + column.uid + 'filterTemplate';

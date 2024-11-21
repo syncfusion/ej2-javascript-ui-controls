@@ -2099,11 +2099,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 } else {
                     (<HTEle>this.dragItem.querySelector('.' + CLS_WRAP)).style.visibility = '';
                     removeClass([<HTEle>this.tbItems.querySelector('.' + CLS_INDICATOR)], CLS_HIDDEN);
+                    this.droppedIndex = isNOU(this.droppedIndex) ? this.getEleIndex(this.dragItem) : this.droppedIndex;
                     this.selectTab(this.droppedIndex, null, true);
                 }
             }
         });
         this.dragItem = null;
+        this.droppedIndex = null;
     }
 
     /**

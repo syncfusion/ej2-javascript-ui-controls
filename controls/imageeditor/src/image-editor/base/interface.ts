@@ -1,4 +1,4 @@
-import { FileType, ShapeType, ImageFinetuneOption, ImageFilterOption, FrameType, FrameLineStyle, ArrowheadType, RedactType } from '../index';
+import { FileType, ShapeType, ImageFinetuneOption, ImageFilterOption, FrameType, FrameLineStyle, ArrowheadType, RedactType, Direction } from '../index';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -492,6 +492,10 @@ export interface ShapeSettings {
      * Returns the border radius of the rectangle annotation.
      */
     borderRadius?: number;
+    /**
+     * Returns the transform collection of the annotations.
+     */
+    transformCollection?: TransformationCollection[];
 }
 
 /**
@@ -758,6 +762,20 @@ export interface ImageSettings {
      * Returns the background color of an image.
      */
     backgroundColor: string;
+}
+
+/**
+ * The Interface which contains the tranformation collection of annotation in Image Editor.
+ */
+export interface TransformationCollection {
+    /**
+     * Returns the transformed degree of annotation.
+     */
+    degree?: number;
+    /**
+     * Returns the transformed flip state of annotation.
+     */
+    flip?: Direction;
 }
 
 /**

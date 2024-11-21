@@ -54,10 +54,10 @@ describe('Pivot Olap Engine', () => {
             PivotView.Inject(FieldList);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008 SE',
+                    catalog: 'Adventure Works DW Standard Edition',
                     cube: 'Finance',
                     providerType: 'SSAS',
-                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
                     columns: [],
                     rows: [],
@@ -78,10 +78,10 @@ describe('Pivot Olap Engine', () => {
         });
         it('inital rendering', (done: Function) => {
             pivotGridObj.dataSourceSettings = {
-                catalog: 'Adventure Works DW 2008 SE',
+                catalog: 'Adventure Works DW Standard Edition',
                 cube: 'Finance',
                 providerType: 'SSAS',
-                url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                 localeIdentifier: 1033,
                 enableSorting: true,
                 columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },
@@ -101,16 +101,16 @@ describe('Pivot Olap Engine', () => {
             setTimeout(() => {
                 expect(pivotGridObj.pivotValues[1][1].actualText).toBe('[Account].[Accounts].&[2]');
                 expect(pivotGridObj.pivotValues[1][1].formattedText).toBe('Assets');
-                expect(pivotGridObj.pivotValues[3][1].formattedText).toBe('$13,740,731.00');
+                expect(pivotGridObj.pivotValues[3][1].formattedText).toBe('$384,254,267.00');
                 done();
             }, 2000);
         });
         it('Moving measure to row axis', (done: Function) => {
             pivotGridObj.dataSourceSettings = {
-                catalog: 'Adventure Works DW 2008 SE',
+                catalog: 'Adventure Works DW Standard Edition',
                 cube: 'Finance',
                 providerType: 'SSAS',
-                url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                 localeIdentifier: 1033,
                 enableSorting: true,
                 columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' }],
@@ -120,7 +120,7 @@ describe('Pivot Olap Engine', () => {
             };
             setTimeout(() => {
                 expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('Amount');
-                expect(pivotGridObj.pivotValues[3][1].formattedText).toBe('$13,740,731.00');
+                expect(pivotGridObj.pivotValues[3][1].formattedText).toBe('$384,254,267.00');
                 done();
             }, 3000);
         });
@@ -168,10 +168,10 @@ describe('Pivot Olap Engine', () => {
             let dataBound: EmitType<Object> = () => { done(); };
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008 SE',
+                    catalog: 'Adventure Works DW Standard Edition',
                     cube: 'Finance',
                     providerType: 'SSAS',
-                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
                     enableSorting: true,
                     columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },
@@ -207,10 +207,10 @@ describe('Pivot Olap Engine', () => {
         });
         it('Perform value sorting - row - 1', (done: Function) => {
             pivotGridObj.dataSourceSettings = {
-                catalog: 'Adventure Works DW 2008 SE',
+                catalog: 'Adventure Works DW Standard Edition',
                 cube: 'Finance',
                 providerType: 'SSAS',
-                url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                 localeIdentifier: 1033,
                 enableSorting: true,
                 columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' }],
@@ -238,10 +238,10 @@ describe('Pivot Olap Engine', () => {
         });
         it('Perform value sorting - User defined - 1', (done: Function) => {
             pivotGridObj.dataSourceSettings = {
-                catalog: 'Adventure Works DW 2008 SE',
+                catalog: 'Adventure Works DW Standard Edition',
                 cube: 'Finance',
                 providerType: 'SSAS',
-                url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                 localeIdentifier: 1033,
                 enableSorting: true,
                 columns: [
@@ -254,13 +254,13 @@ describe('Pivot Olap Engine', () => {
             },
             pivotGridObj.dataSourceSettings.valueAxis = 'column';
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[3][2].formattedText).toBe('$3,250,075.00');
+                expect(pivotGridObj.pivotValues[3][2].formattedText).toBe('NA');
                 (pivotGridObj.element.querySelectorAll('.e-table thead tr')[2].querySelectorAll('.e-headercell')[1] as HTMLElement).click();
                 done();
             }, 3000);
         });
         it('Perform value sorting - User defined - 2', (done: Function) => {
-            expect(pivotGridObj.pivotValues[3][2].formattedText).toBe('$5,583,900.00');
+            expect(pivotGridObj.pivotValues[3][2].formattedText).toBe('NA');
             pivotGridObj.dataSourceSettings.columns = [
                 { name: '[Date].[Fiscal]', caption: 'Date Fiscal' },
                 { name: '[Measures]', caption: 'Measures' }
@@ -294,14 +294,14 @@ describe('Pivot Olap Engine', () => {
         it('Perform value sorting - child level - 3', (done: Function) => {
             (pivotGridObj.element.querySelectorAll('.e-table thead tr')[2].querySelectorAll('.e-headercell')[2] as HTMLElement).click();
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-table tr')[4].querySelectorAll('td')[0].textContent).toBe('Budget Variance');
+                expect(pivotGridObj.element.querySelectorAll('.e-table tr')[4].querySelectorAll('td')[0].textContent).toBe('Budget Variance %');
                 done();
             }, 1000);
         });
         it('Perform value sorting - child level - 4', (done: Function) => {
             (pivotGridObj.element.querySelectorAll('.e-table thead tr')[2].querySelectorAll('.e-headercell')[2] as HTMLElement).click();
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-table tr')[4].querySelectorAll('td')[0].textContent).toBe('Budget');
+                expect(pivotGridObj.element.querySelectorAll('.e-table tr')[4].querySelectorAll('td')[0].textContent).toBe('Actual');
                 done();
             }, 2000);
         });
@@ -322,10 +322,10 @@ describe('Pivot Olap Engine', () => {
             PivotView.Inject(FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008 SE',
+                    catalog: 'Adventure Works DW Standard Edition',
                     cube: 'Finance',
                     providerType: 'SSAS',
-                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
                     enableSorting: true,
                     columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },
@@ -448,10 +448,10 @@ describe('Pivot Olap Engine', () => {
             PivotView.Inject(FieldList, GroupingBar);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008 SE',
+                    catalog: 'Adventure Works DW Standard Edition',
                     cube: 'Finance',
                     providerType: 'SSAS',
-                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
                     enableSorting: true,
                     columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },
@@ -480,10 +480,10 @@ describe('Pivot Olap Engine', () => {
         it('Destrying grouping chart table ', (done: Function) => {
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008 SE',
+                    catalog: 'Adventure Works DW Standard Edition',
                     cube: 'Finance',
                     providerType: 'SSAS',
-                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
                     enableSorting: true,
                     columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },
@@ -518,10 +518,10 @@ describe('Pivot Olap Engine', () => {
             PivotView.Inject(FieldList, CalculatedField);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008 SE',
+                    catalog: 'Adventure Works DW Standard Edition',
                     cube: 'Finance',
                     providerType: 'SSAS',
-                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
                     enableSorting: true,
                     columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },

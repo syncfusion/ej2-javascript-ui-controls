@@ -4523,8 +4523,8 @@ export class FormDesigner {
     }
     private getTextToImage(currentData: any): any {
         const signTypeCanvas: HTMLCanvasElement = createElement('canvas') as HTMLCanvasElement;
-        signTypeCanvas.width = currentData.lineBound.Width || 150;
-        signTypeCanvas.height = currentData.lineBound.Height || currentData.fontSize * 2;
+        signTypeCanvas.width = currentData.lineBound.Width / this.pdfViewerBase.getZoomFactor() || 150;
+        signTypeCanvas.height = currentData.lineBound.Height / this.pdfViewerBase.getZoomFactor() || currentData.fontSize * 2;
         const canvasContext: CanvasRenderingContext2D = signTypeCanvas.getContext('2d');
         const x: number = signTypeCanvas.width / 2;
         const y: number = (signTypeCanvas.height / 2) + currentData.fontSize / 2 - 10;

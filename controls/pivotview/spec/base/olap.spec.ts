@@ -55,10 +55,10 @@ describe('Pivot Olap Engine', () => {
             PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008 SE',
+                    catalog: 'Adventure Works DW Standard Edition',
                     cube: 'Adventure Works',
                     providerType: 'SSAS',
-                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
                     allowLabelFilter: true,
                     allowValueFilter: true,
@@ -176,10 +176,10 @@ describe('Pivot Olap Engine', () => {
             PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    catalog: 'Adventure Works DW 2008 SE',
+                    catalog: 'Adventure Works DW Standard Edition',
                     cube: 'Adventure Works',
                     providerType: 'SSAS',
-                    url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                     localeIdentifier: 1033,
                     allowLabelFilter: true,
                     allowValueFilter: true,
@@ -286,10 +286,10 @@ describe('Pivot Olap Engine', () => {
                 PivotView.Inject(GroupingBar, DrillThrough, Grouping, Toolbar, PDFExport, ExcelExport, ConditionalFormatting, NumberFormatting);
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
-                        catalog: 'Adventure Works DW 2008 SE',
+                        catalog: 'Adventure Works DW Standard Edition',
                         cube: 'Adventure Works',
                         providerType: 'SSAS',
-                        url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                        url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                         localeIdentifier: 1033,
                         allowLabelFilter: true,
                         allowValueFilter: true,
@@ -685,10 +685,10 @@ describe('Pivot Olap Engine', () => {
                 PivotView.Inject(FieldList, VirtualScroll, GroupingBar);
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
-                        catalog: 'Adventure Works DW 2008 SE',
+                        catalog: 'Adventure Works DW Standard Edition',
                         cube: 'Adventure Works',
                         providerType: 'SSAS',
-                        url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+                        url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
                         localeIdentifier: 1033,
                         enableSorting: true,
                         columns: [{ name: '[Measures]', caption: 'Measures' }],
@@ -829,10 +829,10 @@ describe('Pivot Olap Engine', () => {
     //         PivotView.Inject(FieldList, VirtualScroll, GroupingBar);
     //         pivotGridObj = new PivotView({
     //             dataSourceSettings: {
-    //                 catalog: 'Adventure Works DW 2008 SE',
+    //                 catalog: 'Adventure Works DW Standard Edition',
     //                 cube: 'Finance',
     //                 providerType: 'SSAS',
-    //                 url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+    //                 url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
     //                 localeIdentifier: 1033,
     //                 enableSorting: true,
     //                 columns: [{ name: '[Measures]', caption: 'Measures' }],
@@ -892,10 +892,10 @@ describe('Pivot Olap Engine', () => {
     //         PivotView.Inject(FieldList, VirtualScroll, GroupingBar);
     //         pivotGridObj = new PivotView({
     //             dataSourceSettings: {
-    //                 catalog: 'Adventure Works DW 2008 SE',
+    //                 catalog: 'Adventure Works DW Standard Edition',
     //                 cube: 'Finance',
     //                 providerType: 'SSAS',
-    //                 url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+    //                 url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
     //                 localeIdentifier: 1033,
     //                 enableSorting: true,
     //                 columns: [{ name: '[Measures]', caption: 'Measures' }],

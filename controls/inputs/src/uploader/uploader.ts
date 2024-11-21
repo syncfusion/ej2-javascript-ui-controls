@@ -3905,6 +3905,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             };
             this.trigger('beforeUpload', eventArgs, (eventArgs: BeforeUploadEventArgs) => {
                 if (!eventArgs.cancel) {
+                    this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                        eventArgs.customFormData : this.customFormDatas;
                     this.uploadFiles(uploadFiles, custom);
                 }
             });
@@ -4007,6 +4009,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 /* istanbul ignore next */
                 if (eventArgs.cancel) {
                     this.eventCancelByArgs(e, eventArgs, selectedFiles[i as number]);
+                }
+                if (this.customFormDatas && this.customFormDatas.length > 0) {
+                    this.updateFormData(formData, this.customFormDatas);
                 }
                 this.updateFormData(formData, eventArgs.customFormData);
             });

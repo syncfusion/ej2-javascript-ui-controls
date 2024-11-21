@@ -156,7 +156,7 @@ export class PdfGantt extends PdfTreeGrid {
                 const endDays: number = Math.round(((detail.endPoint - detail.startPoint)
                       / pixelToPoint(this.chartHeader.bottomTierCellWidth))) - 1;
                 const startdate: Date = detail.startDate;
-                startdate.setHours(0);
+                startdate.setHours(0, 0, 0);
                 const secondsToAdd: number = this.parent.workingTimeRanges[0].to * 1000;
                 detail.endDate = new Date(startdate.getTime() + secondsToAdd);
                 detail.endDate.setDate(detail.startDate.getDate() + endDays * count);

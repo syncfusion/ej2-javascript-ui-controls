@@ -394,7 +394,7 @@ export class CanvasRenderer {
                 let transform: DOMMatrix = ctx.getTransform();
                 image.onload = null;
                 image.onload = () => {
-                    var annotationID:string = alignOptions.id.split('_')[0];
+                    var annotationID:string = alignOptions.id.split('_content')[0];
                     var annotationObject: boolean = true; 
                     if (annotationCallback !== undefined && !annotationCallback(annotationID)) {
                         annotationObject = false; 

@@ -416,6 +416,40 @@ describe('Switch', () => {
         });
     });
 
+    describe('Parent element click event prevented while clicking on switch component', () => {
+        let switchBtn: Switch;
+        let input: HTMLElement;
+        let parentElement: HTMLElement;
+        let parentChecked: boolean = false;
+        beforeEach(() => {
+            parentElement = createElement('div', {
+                id: 'form'
+            }) as HTMLElement;
+            input = createElement('input', { id: 'switch1' }) as HTMLElement;
+            parentElement.appendChild(input);
+            parentElement.onclick = function () {
+                parentChecked = true;
+            }
+            document.body.appendChild(parentElement);
+        });
+        afterEach(() => {
+            parentElement.remove();
+            switchBtn.destroy();
+        })
+        it('ej2-918217: Parent element click event prevented while clicking on switch component in angular platforms.', () => {
+            switchBtn = new Switch({
+                checked: true
+            }, '#switch1');
+            switchBtn.click();
+            expect(parentChecked).toBeTruthy();
+            const event: any = {
+                preventDefault: (): void => { },
+                type: 'mousedown'
+            };
+            (switchBtn as any).mouseLeaveHandler(event);
+        });
+    });
+
     describe('Switch in HTML5 forms', () => {
         let input: HTMLFormElement;
         let input1: HTMLFormElement;

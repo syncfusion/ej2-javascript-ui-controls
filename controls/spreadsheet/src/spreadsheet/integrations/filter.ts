@@ -14,7 +14,7 @@ import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, Ke
 import { L10n, detach, classList, getNumericObject } from '@syncfusion/ej2-base';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
-import { refreshFilterCellsOnResize, ICellRenderer } from '../common/index';
+import { refreshFilterCellsOnResize, ICellRenderer, updateWrapCell } from '../common/index';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase, getUid } from '@syncfusion/ej2-grids';
 import { filterCmenuSelect, filterCboxValue, filterDialogCreated, filterDialogClose, createCboxWithWrap } from '@syncfusion/ej2-grids';
 import { parentsUntil, toogleCheckbox, fltrPrevent, beforeCustomFilterOpen } from '@syncfusion/ej2-grids';
@@ -128,7 +128,7 @@ export class Filter {
             this.parent.off(clearFilter, this.clearFilterHandler);
             this.parent.off(getFilteredColumn, this.getFilteredColumnHandler);
             this.parent.off(cMenuBeforeOpen, this.cMenuBeforeOpenHandler);
-            this.parent.on(filterCboxValue, this.filterCboxValueHandler);
+            this.parent.off(filterCboxValue, this.filterCboxValueHandler);
             this.parent.off(getFilterRange, this.getFilterRangeHandler);
             this.parent.off(filterCellKeyDown, this.filterCellKeyDownHandler);
             this.parent.off(setFilteredCollection, this.setFilteredCollection);
@@ -228,6 +228,9 @@ export class Filter {
      */
     private addMenuItem(ul: Element, text: string, className?: string, iconCss?: string): void {
         const li: HTMLElement = this.parent.createElement('li', { className: className + ' e-menu-item' });
+        if (!this.parent.allowSorting) {
+            li.classList.add('e-disabled');
+        }
         li.innerText = text;
         li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconCss }), li.firstChild);
         ul.insertBefore(li, ul.firstChild);
@@ -484,9 +487,11 @@ export class Filter {
      * @param { number} args.rowIndex - specify the rowIndex
      * @param { number} args.colIndex - specify the colIndex
      * @param { number} args.sIdx - specify the sIdx
+     * @param { boolean} args.isAction - specify the apply filter action.
      * @returns {void} - Creates filter buttons and renders the filter applied cells.
      */
-    private renderFilterCellHandler(args: { td: HTMLElement, rowIndex: number, colIndex: number, sIdx?: number }): void {
+    private renderFilterCellHandler(
+        args: { td: HTMLElement, rowIndex: number, colIndex: number, sIdx?: number, isAction?: boolean }): void {
         const sheetIdx: number = !isNullOrUndefined(args.sIdx) ? args.sIdx : this.parent.activeSheetIndex;
         if (sheetIdx === this.parent.activeSheetIndex) {
             const option: { range?: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx) &&
@@ -528,6 +533,13 @@ export class Filter {
                     }
                     filterButton.firstElementChild.className = `e-btn-icon e-icons e-filter-icon${filterSortCls}`;
                     args.td.insertBefore(filterButton, args.td.firstChild);
+                    if (args.isAction) {
+                        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
+                        if (getCell(args.rowIndex, args.colIndex, sheet, false, true).wrap) {
+                            this.parent.notify(
+                                updateWrapCell, { rowIdx: args.rowIndex, colIdx: args.colIndex, sheet: sheet, ele: args.td });
+                        }
+                    }
                     if (isNoteAvailable) {
                         this.parent.notify(createNoteIndicator,
                                            {targetElement: args.td, rowIndex: args.rowIndex, columnIndex: args.colIndex});
@@ -588,7 +600,7 @@ export class Filter {
                     }
                 }
             } else {
-                this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index, sIdx: sheetIdx });
+                this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index, sIdx: sheetIdx, isAction: true });
             }
         }
         if (this.parent.sortCollection) {
@@ -605,7 +617,7 @@ export class Filter {
      * @returns {boolean} - Checks whether the provided cell is a filter cell.
      */
     private isFilterCell(sheetIdx: number, rowIndex: number, colIndex: number): boolean {
-        const range: number[] = this.filterRange.get(sheetIdx) && this.filterRange.get(sheetIdx).range;
+        const range: number[] = this.filterRange.has(sheetIdx) && this.filterRange.get(sheetIdx).range;
         return (range && range[0] === rowIndex && range[1] <= colIndex && range[3] >= colIndex);
     }
 
@@ -1664,7 +1676,7 @@ export class Filter {
                 if (left < 0) { // Left collision wrt spreadsheet left
                     left = cellOff.left - parentOff.left;
                 }
-                filterPopup.style.left = `${left}px`;
+                filterPopup.style.left = `${left * this.parent.viewport.scaleX}px`;
                 filterPopup.style.top = '0px';
                 filterPopup.style.visibility = 'hidden';
                 if (filterPopup.classList.contains('e-hide')) {
@@ -1677,7 +1689,7 @@ export class Filter {
                         top = 0;
                     }
                 }
-                filterPopup.style.top = `${top}px`;
+                filterPopup.style.top = `${top * this.parent.viewport.scaleY}px`;
                 filterPopup.style.visibility = '';
             }
             this.parent.hideSpinner();

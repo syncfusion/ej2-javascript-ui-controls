@@ -270,7 +270,7 @@ export class WorkbookFormula {
         const definedNames: DefineNameModel[] = this.parent.definedNames;
         if (definedNames && definedNames.length > 0) {
             for (let i: number = definedNames.length - 1; i >= 0; i--) {
-                if (definedNames[i as number].refersTo.split('=')[1].split('!')[0].split('\'').join('') === sheetName) {
+                if (definedNames[i as number].refersTo.substring(1, definedNames[i as number].refersTo.lastIndexOf('!')).split('\'').join('') === sheetName) {
                     this.removeDefinedName(definedNames[i as number].name, definedNames[i as number].scope);
                 }
             }
@@ -619,14 +619,13 @@ export class WorkbookFormula {
                     }
                 }
                 const cellRefArr: string[] = formula.split(this.calculateInstance.getParseArgumentSeparator());
-                let cellRef: string; let fCell: CellModel; let model: SheetModel; let sheetIdx: number; let refArr: string[];
+                let cellRef: string; let fCell: CellModel; let model: SheetModel; let sheetIdx: number;
                 let sheetName: string; let index: number[];
                 for (let idx: number = 0; idx < cellRefArr.length; idx++) {
                     cellRef = cellRefArr[idx as number].split(':')[0];
                     if (cellRef.includes('!')) {
-                        refArr = cellRef.split('!');
-                        sheetName = refArr[0].split('\'').join('');
-                        cellRef = refArr[1];
+                        sheetName = cellRef.substring(0, cellRef.lastIndexOf('!')).split('\'').join('');
+                        cellRef = cellRef.substring(cellRef.lastIndexOf('!') + 1);
                     } else {
                         sheetName = '';
                     }
@@ -1202,11 +1201,11 @@ export class WorkbookFormula {
 
     private clearAllUniqueFormulaValue(): void {
         const ranges: string[] = this.calculateInstance.uniqueRange;
-        let uniqueAddr: string[]; let cell: CellModel; let sheet: SheetModel; let range: number[];
+        let cell: CellModel; let sheet: SheetModel; let range: number[];
         for (let i: number = 0; i < ranges.length; i++) {
-            uniqueAddr = ranges[i as number].split('!');
-            sheet = getSheet(this.parent, getSheetIndex(this.parent, uniqueAddr[0]));
-            range = getRangeIndexes(uniqueAddr[1]);
+            const lastIndex: number = ranges[i as number].lastIndexOf('!');
+            sheet = getSheet(this.parent, getSheetIndex(this.parent, ranges[i as number].substring(0, lastIndex)));
+            range = getRangeIndexes(ranges[i as number].substring(lastIndex + 1));
             cell = getCell(range[0], range[1], sheet);
             if (cell && cell.value === '#SPILL!') {
                 continue;
@@ -1248,7 +1247,7 @@ export class WorkbookFormula {
                         arr.push(this.getUniqueCharVal(str));
                         temp = temp.substr(1);
                     }
-                    str = temp.indexOf('!') + 1;
+                    str = temp.lastIndexOf('!') + 1;
                     arr.push(temp.substr(0, str));
                     arr.push(temp.substr(str));
                 } else if (this.isUniqueChar(str)) {
@@ -1332,20 +1331,23 @@ export class WorkbookFormula {
         const len: number = this.parent.definedNames.length;
         if (!len) { return; }
         const definedNames: DefineNameModel[] = Object.assign({}, this.parent.definedNames);
-        let range: number[]; let sheetName: string; let splitedRef: string[]; let definedName: DefineNameModel; let updated: boolean;
+        let range: number[]; let sheetName: string; let refAddress: string; let definedName: DefineNameModel; let updated: boolean;
         let checkSheetName: string; let rangeAddress: string;
         const containAlphabetAndDigit: RegExp = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d)/g); let isValidCellReference: boolean; let isFullColumn: boolean;
         for (let i: number = 0; i < len; i++) {
             isValidCellReference = true;
-            definedName = definedNames[i as number]; splitedRef = definedName.refersTo.split('!'); sheetName = splitedRef[0].split('=')[1];
+            definedName = definedNames[i as number];
+            const lastIndex: number = definedName.refersTo.lastIndexOf('!');
+            refAddress = definedName.refersTo.substring(lastIndex + 1);
+            sheetName = definedName.refersTo.substring(1, lastIndex);
             checkSheetName = sheetName;
             if (checkSheetName.match(/'/g)) { checkSheetName = checkSheetName.slice(1, -1); }
             if (checkSheetName !== args.sheet.name) { continue; }
-            if (!containAlphabetAndDigit.test(splitedRef[1]) && splitedRef[1].indexOf(':') > -1) {
+            if (!containAlphabetAndDigit.test(refAddress) && refAddress.indexOf(':') > -1) {
                 isValidCellReference = false;
-                isFullColumn = isNullOrUndefined(splitedRef[1].match(/[0-9]/)) ? true : false;
+                isFullColumn = isNullOrUndefined(refAddress.match(/[0-9]/)) ? true : false;
             }
-            range = getRangeIndexes(splitedRef[1]);
+            range = getRangeIndexes(refAddress);
             updated = this.parent.updateRangeOnInsertDelete(args, range);
             if (!isValidCellReference) {
                 rangeAddress = isFullColumn ? getRangeAddress(range).replace(/\d/g, '') : getRangeAddress(range).replace(/[a-zA-Z]/g, '');

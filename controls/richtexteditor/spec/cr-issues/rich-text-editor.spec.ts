@@ -5605,4 +5605,48 @@ describe('RTE CR issues ', () => {
                 done();
             });
         });
+
+        describe('920157: The "Minimize" toolbar icon does not update when dynamically enabling and disabling the toolbar.', () => {
+            let editorObj: RichTextEditor;
+            beforeAll(() => {
+                editorObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote', 'OrderedList',
+                            'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Print',
+                            {
+                                tooltipText: 'Custom Toolbar',
+                                template: '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;">Custom Toolbar</div></button>'
+                            }, '|', 'Undo', 'Redo', 'FullScreen'
+                        ]               
+                    },          
+                    focus: focus,
+                    blur: blur
+                });
+            });
+            function blur() {
+                editorObj.toolbarSettings.enable = false;
+                editorObj.dataBind();
+            }
+            function focus() {
+                editorObj.toolbarSettings.enable = true;
+                editorObj.dataBind();
+            }
+            it('should update minimize icon when toolbar is dynamically enabled/disabled', () => {
+                const maximizeButton: HTMLElement = editorObj.element.querySelector('.e-maximize');
+                expect(maximizeButton).not.toBeNull();
+                maximizeButton.click();
+                expect(editorObj.element.classList.contains("e-rte-full-screen")).toBe(true);
+                blur();
+                expect(editorObj.toolbarSettings.enable).toBe(false);
+                focus();
+                expect(editorObj.toolbarSettings.enable).toBe(true);
+                expect(editorObj.element.classList).toContain('e-rte-full-screen');       
+                const toolbarMinimizeElement = editorObj.element.querySelector('.e-minimize');
+                expect(toolbarMinimizeElement).not.toBeNull();
+            });
+            afterEach((done: DoneFn) => {
+                destroy(editorObj);
+                done();
+            });
+        });
 });

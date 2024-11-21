@@ -360,12 +360,27 @@ export class FormFields {
     }
 
     private getListValues(currentData: any): ItemModel[] {
-        const listItem: any = currentData['TextList'];
+        let listItem: any = currentData['TextList'];
         const options: ItemModel[] = [];
-        for (let i: number = 0; i < listItem.length; i++) {
-            if (listItem[parseInt(i.toString(), 10)] === currentData['SelectedValue'])
-            {this.selectedIndex.push(i); }
-            options.push({ itemName: listItem[parseInt(i.toString(), 10)], itemValue: listItem[parseInt(i.toString(), 10)] });
+        if (this.getFormFieldType(currentData) === 'DropDown'){
+            listItem = currentData['ComboBoxList'];
+            for (let i: number = 0; i < listItem.length; i++) {
+                const itemValue: string = listItem[parseInt(i.toString(), 10)].itemValue ? listItem[parseInt(i.toString(), 10)].itemValue
+                    : listItem[parseInt(i.toString(), 10)].ItemValue;
+                const itemName: string = listItem[parseInt(i.toString(), 10)].itemName ? listItem[parseInt(i.toString(), 10)].itemName
+                    : listItem[parseInt(i.toString(), 10)].ItemName;
+                if (itemName === currentData['SelectedValue']) {
+                    this.selectedIndex.push(i);
+                }
+                options.push({ itemName: itemName, itemValue: itemValue });
+            }
+        }
+        else {
+            for (let i: number = 0; i < listItem.length; i++) {
+                if (listItem[parseInt(i.toString(), 10)] === currentData['SelectedValue'])
+                {this.selectedIndex.push(i); }
+                options.push({ itemName: listItem[parseInt(i.toString(), 10)], itemValue: listItem[parseInt(i.toString(), 10)] });
+            }
         }
         if (this.getFormFieldType(currentData) === 'ListBox') {
             this.selectedIndex = currentData['SelectedList'];
@@ -707,6 +722,7 @@ export class FormFields {
                 bounds = formField.Bounds;
             }
         }
+        const textList: any = (formField.Name === 'DropDown') ? formField.ComboBoxList : formField.TextList;
         const formFieldCollection: FormFieldModel = {
             name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly,
             isRequired: formField.IsRequired, isSelected: formField.Selected,
@@ -717,7 +733,7 @@ export class FormFields {
                 formField.insertSpaces : formField.InsertSpaces, isTransparent: formField.isTransparent ? formField.isTransparent :
                 formField.IsTransparent, rotateAngle: formField.rotateAngle ? formField.rotateAngle : formField.RotationAngle,
             selectedIndex: formField.selectedIndex ? formField.selectedIndex : formField.SelectedList,
-            options: formField.options ? formField.options : formField.TextList ? formField.TextList : [], bounds: bounds,
+            options: formField.options ? formField.options : textList ? textList : [], bounds: bounds,
             signatureType: formField.signatureType ? formField.signatureType : '', zIndex: formField.zIndex, tooltip: formField.tooltip ?
                 formField.tooltip : formField.ToolTip ? formField.ToolTip : '', signatureIndicatorSettings: formField.signatureIndicatorSettings ?
                 formField.signatureIndicatorSettings : ''
@@ -2050,7 +2066,7 @@ export class FormFields {
     }
     private createDropDownField(data: any, pageIndex: number, index: number, printContainer: any): any {
         let inputField: any = document.createElement('select');
-        const childItems: any = data['TextList'];
+        const childItems: any = (data.Name === 'DropDown') ? data['ComboBoxList'] : data['TextList'];
         if (data.Selected && !printContainer) {
             const previousField: any = document.getElementById('editableDropdown' + pageIndex + '_' + index);
             if (previousField) {
@@ -2085,12 +2101,17 @@ export class FormFields {
         for (let j: number = 0; j < childItems.length; j++) {
             const option: HTMLOptionElement = document.createElement('option');
             option.className = 'e-dropdownSelect';
-            if (data.SelectedValue === childItems[parseInt(j.toString(), 10)] || data.selectedIndex === j) {
+            const itemName: any = childItems[parseInt(j.toString(), 10)].itemName ?
+                childItems[parseInt(j.toString(), 10)].itemName : childItems[parseInt(j.toString(), 10)].ItemName;
+            const itemValue: any = childItems[parseInt(j.toString(), 10)].itemValue ?
+                childItems[parseInt(j.toString(), 10)].itemValue : childItems[parseInt(j.toString(), 10)].ItemValue;
+            if (data.SelectedValue === itemName || data.selectedIndex === j) {
                 option.selected = true;
             } else {
                 option.selected = false;
             }
-            option.innerHTML = childItems[parseInt(j.toString(), 10)];
+            option.value = itemValue;
+            option.innerHTML = itemName;
             inputField.appendChild(option);
         }
         inputField.name = data.Text;

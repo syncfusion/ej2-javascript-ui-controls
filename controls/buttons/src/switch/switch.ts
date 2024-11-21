@@ -164,11 +164,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         this.element.focus();
         const changeEventArgs: ChangeEventArgs = { checked: this.element.checked, event: evt };
         this.trigger('change', changeEventArgs);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((this as any).isAngular && evt) {
-            evt.stopPropagation();
-            evt.preventDefault();
-        }
     }
     /**
      * Destroys the Switch widget.
@@ -427,9 +422,14 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
             }
         }
     }
-    private switchFocusHandler(): void {
+    private switchFocusHandler(e?: KeyboardEvent): void {
         if (this.isFocused) {
             (this.getWrapper() as Element).classList.add('e-focus');
+        }
+        if (e && e.type === 'keyup' && e.code === 'Space' && (this as any).isAngular) {
+            this.clickHandler(e);
+            e.stopPropagation();
+            e.preventDefault();
         }
     }
     private switchMouseUp(e: MouseEventArgs): void {

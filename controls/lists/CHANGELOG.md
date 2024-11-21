@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I654535` - The issue with the icons in the `Bootstrap 5.3` theme in ListView has been resolved.
+
 ## 27.1.48 (2024-09-18)
 
 ### ListView

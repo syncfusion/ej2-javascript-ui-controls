@@ -198,7 +198,9 @@ export class DialogEditRender {
         if (this.parent.editSettings.template) {
             const editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
             const dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
-            const isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string' &&
+                !((this.parent.editSettings.template as Function).prototype &&
+                (this.parent.editSettings.template as Function).prototype.CSPTemplate);
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             if (isReactCompiler || isReactChild) {

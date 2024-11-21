@@ -105,6 +105,7 @@ export class Gantt extends Component<HTMLElement>
     public scrollLeftValue: number;
     public isToolBarClick: boolean;
     public isLocaleChanged: boolean = false;
+    private triggeredColumnName: string = '';
     public dataMap: Map<string, IGanttData>;
     public initialLoadData: Object;
     public previousGanttColumns: ColumnModel[];
@@ -3908,11 +3909,11 @@ export class Gantt extends Component<HTMLElement>
             if (isNullOrUndefined(verticalLines)) {
                 this.renderChartVerticalLines();
             } else {
-                if (verticalLines.style.display === 'none') {
+                if (window.getComputedStyle(verticalLines).display === 'none') {
                     verticalLines.style.display = 'block';
                 }
             }
-            if (chartRowsTD[0].classList.contains(className)) {
+            if (chartRowsTD && chartRowsTD.length > 0 && chartRowsTD[0].classList.contains(className)) {
                 for (let c: number = 0; c < chartRowsTD.length; c++) {
                     removeClass([chartRowsTD[c as number]], className);
                 }
@@ -3921,7 +3922,7 @@ export class Gantt extends Component<HTMLElement>
             if (!isNullOrUndefined(verticalLines)) {
                 verticalLines.style.display = 'none';
             }
-            if (!chartRowsTD[0].classList.contains(className)) {
+            if (chartRowsTD && chartRowsTD.length > 0 && !chartRowsTD[0].classList.contains(className)) {
                 for (let c: number = 0; c < chartRowsTD.length; c++) {
                     addClass([chartRowsTD[c as number]], className);
                 }
@@ -3930,20 +3931,20 @@ export class Gantt extends Component<HTMLElement>
             if (isNullOrUndefined(verticalLines)) {
                 this.renderChartVerticalLines();
             } else {
-                if (verticalLines.style.display === 'none') {
+                if (window.getComputedStyle(verticalLines).display === 'none') {
                     verticalLines.style.display = 'block';
                 }
             }
-            if (!chartRowsTD[0].classList.contains(className)) {
+            if (chartRowsTD && chartRowsTD.length > 0 && !chartRowsTD[0].classList.contains(className)) {
                 for (let c: number = 0; c < chartRowsTD.length; c++) {
                     addClass([chartRowsTD[c as number]], className);
                 }
             }
         } else if (this.gridLines === 'None') {
-            if (!isNullOrUndefined(verticalLines) && verticalLines.style.display !== 'none') {
+            if (!isNullOrUndefined(verticalLines) && window.getComputedStyle(verticalLines).display !== 'none') {
                 verticalLines.style.display = 'none';
             }
-            if (chartRowsTD[0].classList.contains(className)) {
+            if (chartRowsTD && chartRowsTD.length > 0 && chartRowsTD[0].classList.contains(className)) {
                 for (let c: number = 0; c < chartRowsTD.length; c++) {
                     removeClass([chartRowsTD[c as number]], className);
                 }

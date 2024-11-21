@@ -100,7 +100,7 @@ export class WorkbookFilter {
             let sheet: SheetModel;
             let sheetIdx: number;
             if (range.indexOf('!') > -1) {
-                sheetIdx = getSheetIndex(this.parent, range.split('!')[0]);
+                sheetIdx = getSheetIndex(this.parent, range.substring(0, range.lastIndexOf('!')));
                 sheet = getSheet(this.parent, sheetIdx);
             } else {
                 sheet = this.parent.getActiveSheet();

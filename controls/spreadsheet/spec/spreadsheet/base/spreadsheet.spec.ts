@@ -443,7 +443,49 @@ describe('Spreadsheet base module ->', () => {
             expect(helper.getElement().style.height).toBe('500px');
             done();
         });
-
+        it('allowPrint testing', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.allowPrint).toBeTruthy();
+            helper.setAnimationToNone(`#${helper.id}_ribbon_menu`);
+            helper.click(`#${helper.id}_File`);
+            let printMenuItem: HTMLElement = helper.getElement(`#${helper.id}_Print`);
+            expect(printMenuItem).not.toBeNull();
+            expect(printMenuItem.classList.contains('e-disabled')).toBeFalsy();
+            helper.setModel('allowPrint', false);
+            expect(spreadsheet.allowPrint).toBeFalsy();
+            expect(printMenuItem.classList.contains('e-disabled')).toBeFalsy();
+            helper.click(`#${helper.id}_ribbon`);
+            helper.click(`#${helper.id}_File`);
+            printMenuItem = helper.getElement(`#${helper.id}_Print`);
+            expect(printMenuItem).not.toBeNull();
+            expect(printMenuItem.classList.contains('e-disabled')).toBeTruthy();
+            helper.setModel('allowPrint', true);
+            expect(printMenuItem.classList.contains('e-disabled')).toBeTruthy();
+            helper.click(`#${helper.id}_ribbon`);
+            helper.click(`#${helper.id}_File`);
+            printMenuItem = helper.getElement(`#${helper.id}_Print`);
+            expect(printMenuItem).not.toBeNull();
+            expect(printMenuItem.classList.contains('e-disabled')).toBeFalsy();
+            helper.click(`#${helper.id}_ribbon`);
+            done();
+        });
+        it('showAggregate testing', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.showAggregate).toBeTruthy();
+            expect(helper.getElement(`#${helper.id}_aggregate`)).toBeNull();
+            helper.invoke('selectRange', ['A1:A5']);
+            const aggregateBtn: HTMLElement = helper.getElement(`#${helper.id}_aggregate`);
+            expect(aggregateBtn).not.toBeNull();
+            expect(aggregateBtn.textContent).toBe('Count: 5');
+            helper.setModel('showAggregate', false);
+            expect(spreadsheet.showAggregate).toBeFalsy();
+            expect(helper.getElement(`#${helper.id}_aggregate`)).toBeNull();
+            helper.setModel('showAggregate', true);
+            expect(helper.getElement(`#${helper.id}_aggregate`)).not.toBeNull();
+            helper.invoke('selectRange', ['A1']);
+            expect(helper.getElement(`#${helper.id}_aggregate`)).toBeNull();
+            done();
+        });
     });
 
     describe('Methods checking - I ->', () => {

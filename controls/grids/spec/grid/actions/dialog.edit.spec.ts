@@ -1,7 +1,7 @@
 /**
  * Grid dialog edit spec document
  */
-import { extend, getValue, select } from '@syncfusion/ej2-base';
+import { extend, getValue, select, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -896,6 +896,51 @@ describe('Dialog Editing module', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionComplete = null;
+        });
+    });
+
+    describe('EJ2-916181 - All template is not rendering in React when using the CSPTemplate function => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true,
+                        mode: 'Dialog',
+                        template: initializeCSPTemplate(function() {
+                            return '<input id="CustomerID"name="CustomerID___CustomerID" value="${CustomerID}" style="height: 28px" />' })
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                            validationRules: { required: true, number: true }, width: 140
+                        },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID',
+                            validationRules: { required: true }, width: 140
+                        },
+                    ],
+                }, done);
+        });
+
+        it('Coverage the getEditElement', function (done) {
+            gridObj.actionBegin = function (args: any) {
+                if (args.requestType === 'beginEdit') {
+                    (gridObj as any).editModule.renderer.renderer.getEditElement((gridObj as any).editModule.renderer.getEditElements(args), args);
+                    done();
+                }
+            };
+            gridObj.isReact = true;
+            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 });

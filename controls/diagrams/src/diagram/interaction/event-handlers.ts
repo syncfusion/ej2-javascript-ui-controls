@@ -1170,6 +1170,8 @@ export class DiagramEventHandler {
         if(updateAnnotation){
             this.updateAnnotation(this.diagram.selectedItems);
         }
+        // 920132: Node Interactions Cause Previously Deleted Nodes to Reappear
+        this.previousElement = null;
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter();// end the corresponding tool
     }
     //To check whether the node is child of swimlane or not.
@@ -2047,10 +2049,32 @@ export class DiagramEventHandler {
         this.diagram.updateScrollOffset();
         //Removed isBlazor code
     }
-
+    private isMobileOrIPadDevice(): string {
+        const userAgent: string = navigator.userAgent || navigator.vendor || (window as any).opera;
+        // Check for iOS devices (iPhone, iPad, iPod)
+        if (/iPhone|iPad|iPod/.test(userAgent) && !(window as any).MSStream) {
+            return 'iOS';
+        }
+        // Check for Android devices
+        if (/android/i.test(userAgent)) {
+            return 'Android';
+        }
+        // Check for other mobile devices (general fallback)
+        if (/Mobile|Tablet/.test(userAgent)) {
+            return 'Mobile';
+        }
+        return 'Desktop';
+    }
     /** @private */
     public doubleClick(evt: PointerEvent): void {
         if (canUserInteract(this.diagram)) {
+            //Bug 916653: Issue with drawing Polyline in iPad.
+            //Added below code to check for mobile and ipad device.
+            const isMobileOrIPad: string = this.isMobileOrIPadDevice();
+            const curTool: number = this.diagram.tool;
+            if ((isMobileOrIPad !== 'Desktop') && (this.tool && (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool))) {
+                this.diagram.tool = 0;
+            }
             let annotation: DiagramElement;
             const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             const obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
@@ -2062,6 +2086,7 @@ export class DiagramEventHandler {
                         source: cloneBlazorObject(obj) ,
                         position: this.currentPosition, count: evt.detail
                     };
+                    this.diagram.tool = curTool;
                     this.tool.mouseUp(this.eventArgs);
                     this.isMouseDown = false;
                     this.eventArgs = {};
@@ -2392,24 +2417,26 @@ export class DiagramEventHandler {
 
     private updateContainerBounds(isAfterMouseUp?: boolean): boolean {
         let isGroupAction: boolean = false;
-        // Reverting Pull Request 1465
-        if (this.diagram.selectedObject.helperObject && this.diagram.selectedObject.actualObject instanceof Node) {
+        if (this.diagram.selectedObject.helperObject && this.diagram.selectedObject.actualObject) {
+            const obj: any = this.diagram.selectedObject.actualObject;
+            const nodes: NodeModel[] = this.diagram.selectedObject.actualObject instanceof Selector ? obj.nodes : [obj];
+            for (let i: number = 0; i < nodes.length; i++) {
+                const node: Node = nodes[parseInt(i.toString(), 10)] as Node;
+                const boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
+                const parentNode: Node = this.diagram.nameTable[node.parentId];
 
-            const boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
-            const obj: NodeModel = this.diagram.selectedObject.actualObject;
-            const parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
-
-            if (isAfterMouseUp) {
-                removeChildInContainer(this.diagram, obj, this.currentPosition, boundsUpdate);
-            } else {
-                if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                    this.diagram.updateDiagramObject(obj);
-                }
-                isGroupAction = updateCanvasBounds(this.diagram, obj, this.currentPosition, boundsUpdate);
-                this.diagram.updateSelector();
-                if ((obj as Node).isLane || (obj as Node).isPhase) {
-                    this.diagram.clearSelection();
-                    this.commandHandler.selectObjects([obj]);
+                if (isAfterMouseUp) {
+                    removeChildInContainer(this.diagram, node, this.currentPosition, boundsUpdate);
+                } else {
+                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                        this.diagram.updateDiagramObject(node);
+                    }
+                    isGroupAction = updateCanvasBounds(this.diagram, node, this.currentPosition, boundsUpdate);
+                    this.diagram.updateSelector();
+                    if (node.isLane || node.isPhase) {
+                        this.diagram.clearSelection();
+                        this.commandHandler.selectObjects([node]);
+                    }
                 }
             }
         }
@@ -2478,8 +2505,7 @@ export class DiagramEventHandler {
                                     (obj as Node).height = helperObject.height;
                                 }
                                 (obj as Node).rotateAngle = helperObject.rotateAngle;
-                            } else if (this.diagram.selectedItems.nodes.length > 1
-                                && !(this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))) {
+                            } else if (this.diagram.selectedItems.nodes.length > 1) {
                                 // Multi selected node move with helper
                                 const offsetX: number = (helperObject.offsetX - this.diagram.selectedItems.offsetX);
                                 const offsetY: number = (helperObject.offsetY - this.diagram.selectedItems.offsetY);
@@ -2572,6 +2598,29 @@ export class DiagramEventHandler {
                 }
                 updateConnectorsProperties(connectors, this.diagram);
                 history.hasStack = hasGroup;
+            }
+            // Bug:914714 Drag Drop Multi selected nodes between lanes.
+            else if (obj instanceof Selector) {
+                const offsetX: number = (helperObject.offsetX - (obj as Selector).offsetX);
+                const offsetY: number = (helperObject.offsetY - (obj as Selector).offsetY);
+                const rotateAngle: number = (helperObject.rotateAngle - (obj as Selector).rotateAngle);
+                const width: number = (helperObject.width - (obj as Selector).width);
+                const height: number = (helperObject.height - (obj as Selector).height);
+                for (let i: number = 0; i < (obj as Selector).nodes.length; i++) {
+                    const node: Node = (obj as Selector).nodes[parseInt(i.toString(), 10)] as Node;
+                    const parentNode: NodeModel = this.diagram.nameTable[node.parentId];
+                    if (parentNode && parentNode.shape.type !== 'SwimLane' && checkParentAsContainer(this.diagram, node, true)
+                        && parentNode.container.type === 'Canvas') {
+                        node.offsetX += offsetX;
+                        node.offsetY += offsetY;
+                        if (node && node.shape && node.shape.type !== 'UmlClassifier') {
+                            node.width += width;
+                            node.height += height;
+                        }
+                        node.rotateAngle += rotateAngle;
+                        checkChildNodeInContainer(this.diagram, node);
+                    }
+                }
             }
         }
         if (obj && ((obj as SwimLane).isPhase || (obj as SwimLane).isLane ||

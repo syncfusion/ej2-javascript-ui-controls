@@ -85,7 +85,39 @@ describe('905285 - List Creation Misplacement When Pressing 1. + Space in Rich T
         destroy(rteObj);
     });
 });
+describe('919006 - Unordered list created while selecting the mentioned item from dropdown and after pressing - and space.', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = true;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px'
+        });
+        done();
+    });
 
+    it('Unordered list created while selecting the mentioned item from dropdown and after pressing - and space.', function (): void {
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        new NodeSelection().setSelectionText(document, nodetext, nodetext, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br><br></p>');
+        rteObj.inputElement.innerHTML = '<p><span contenteditable="false" class="e-mention-chip">Selma Rose</span>-</p>';
+        let node: any = document.getElementsByTagName('p')[0];
+        let targetTextNode: any = node.childNodes[1];
+        new NodeSelection().setSelectionText(document, targetTextNode, targetTextNode, targetTextNode.length, targetTextNode.length);
+        let keyboardEventArgsSpace = { ...keyboardEventArgs };
+        keyboardEventArgsSpace.shiftKey = false;
+        keyboardEventArgsSpace.keyCode = 32;
+        keyboardEventArgsSpace.which = 32;
+        keyboardEventArgsSpace.code = 'Space';
+        keyboardEventArgsSpace.action = 'space';
+        (<any>rteObj).keyDown(keyboardEventArgsSpace);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">Selma Rose</span>-</p>');
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
 describe('Shift Enter key support - When `P` is configured', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = true;

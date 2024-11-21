@@ -873,6 +873,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private matchedContent: { [key: string]: Object } | undefined;
     private isDataFiltered: boolean;
     private isInitialRender: boolean;
+    private remoteDataLength: number;
 
     /**
      * *Constructor for creating the component
@@ -975,19 +976,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             dataBound: () => { this.onDataBound(); },
             actionFailure: (args: FailureEventArgs) => { this.onActionFailure(args); },
             actionBegin: (args: { [key: string]: Object }) => { this.trigger('actionBegin', args); },
-            actionComplete: (args: { [key: string]: Object }) => {
-                this.trigger('actionComplete', args);
-                if (args.requestType === 'sorting') {
-                    this.updateRowSelection(args);
-                }
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const dataRows: any = args.rows;
-                if (this.isDataFiltered && dataRows.length > 0 && this.inputEle.value !== '' && args.requestType !== 'sorting') {
-                    const firstRowEle: Element = this.gridObj.getRows()[0];
-                    firstRowEle.classList.add('e-row-focus');
-                }
-                this.popupObj.refreshPosition();
-            },
+            actionComplete: this.handleActionComplete.bind(this),
             keyPressed: (args: KeyboardEventArgs) => {
                 if (args.key === 'Enter') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1008,13 +997,24 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.gridEle = this.createElement('div', { id: getUniqueID('grid'), className: MULTICOLUMNGRID });
         this.updateGroupByField();
         const sortOrder: string = this.sortOrder.toString().toLowerCase();
-        // Set first column as primary key to avoid PRIMARY KEY MISSING warning.
-        (this.gridObj.columns[0] as GridColumnModel).isPrimaryKey = true;
+        if (gridColumns.length > 0) {
+            // Set first column as primary key to avoid PRIMARY KEY MISSING warning.
+            (this.gridObj.columns[0] as GridColumnModel).isPrimaryKey = true;
+        }
         if (sortOrder !== 'none') {
             this.gridObj.sortSettings = { columns: [{ field: this.fields.text, direction: sortOrder === 'ascending' ?
                 SortOrder.Ascending : SortOrder.Descending }] };
         }
         this.gridObj.appendTo(this.gridEle);
+    }
+
+    private handleActionComplete(args: { [key: string]: Object }): void {
+        this.trigger('actionComplete', args);
+        if (args.requestType === 'sorting') {
+            this.updateRowSelection(args);
+        }
+        this.popupObj.refreshPosition();
+        this.gridObj.element.querySelector('.e-content').scrollTop = 0;
     }
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1115,6 +1115,11 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             this.popupObj.hide();
             this.popupEle.style.visibility = 'unset';
             this.isInitialRender = false;
+        }
+        const rowElements: NodeListOf<Element> = this.gridObj.element.querySelectorAll('.e-row');
+        if (this.isDataFiltered && rowElements.length > 0 && this.inputEle.value !== '') {
+            const firstRowEle: Element = rowElements[0];
+            firstRowEle.classList.add('e-row-focus');
         }
     }
 
@@ -1908,18 +1913,24 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
 
     private updateSelectedItem(e: KeyboardEventArgs, isUpdateIndex: boolean = true, isInputTarget?: boolean): void {
         if (this.isPopupOpen) {
-            let index: number = !this.fields.groupBy ? this.gridObj.selectedRowIndex
-                : this.gridObj.selectedRowIndex ? this.gridObj.selectedRowIndex : 0;
+            let index: number = this.fields.groupBy ? (this.gridObj.selectedRowIndex || 0) : this.gridObj.selectedRowIndex;
+            const dataLength: number = this.dataSource instanceof DataManager ? this.remoteDataLength :
+                (this.dataSource as { [key: string]: Object }[]).length;
             if ((index === -1 && (e.action === 'moveDown' || e.action === 'moveUp')) || (e.action === 'home')) { index = 0; }
-            else if ((index >= this.gridObj.getRows().length && e.action === 'moveDown') || (e.action === 'end')) { index = this.gridObj.getRows().length - 1; }
-            else if (e.action === 'moveDown' && (index >= 0 && index <= this.gridObj.getRows().length) && (this.fields.groupBy || isInputTarget)) { index += 1; }
+            else if ((index >= (dataLength - 1) && e.action === 'moveDown') || (e.action === 'end')) { index = dataLength - 1; }
+            else if (e.action === 'moveDown' && (index >= 0 && index <= (dataLength - 1)) && (this.fields.groupBy || isInputTarget)) { index += 1; }
             else if (e.action === 'moveUp' && index > 0 && (this.fields.groupBy) || isInputTarget) { index -= 1; }
-            this.gridObj.selectRow(index);
-            this.gridObj.selectedRowIndex = index;
-            const focusedEle: HTMLElement = this.gridEle.querySelector('.e-row-focus');
-            if (focusedEle) { focusedEle.classList.remove('e-row-focus'); }
-            if (isUpdateIndex) { this.selectedGridRow(this.gridObj.getRows()[parseInt(index.toString(), 10)], e, true); }
+            if (!this.enableVirtualization) { this.selectRow(e, isUpdateIndex, index); }
+            else { setTimeout((): void => { this.selectRow(e, isUpdateIndex, index); }); }
         }
+    }
+
+    private selectRow(e: KeyboardEventArgs, isUpdateIndex: boolean = true, index: number): void {
+        this.gridObj.selectRow(index);
+        this.gridObj.selectedRowIndex = index;
+        const focusedEle: HTMLElement = this.gridEle.querySelector('.e-row-focus');
+        if (focusedEle) { focusedEle.classList.remove('e-row-focus'); }
+        if (isUpdateIndex) { this.selectedGridRow(this.gridObj.getRows()[parseInt(index.toString(), 10)], e, true); }
     }
 
     private updateClearIconState(): void {
@@ -1999,6 +2010,12 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     const activeRow: HTMLElement = contentEle.querySelector('.e-rowcell.e-active');
                     if (activeRow) { this.inputEle.setAttribute('aria-activedescendant', activeRow.parentElement.getAttribute('data-uid')); }
                     else if (contentEle.querySelector('.e-row')) { this.inputEle.setAttribute('aria-activedescendant', contentEle.querySelector('.e-row').getAttribute('data-uid')); }
+                }
+                if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager) {
+                    (this.dataSource as DataManager).executeQuery(new Query).then((e: Object) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        this.remoteDataLength = (e as any).result.length;
+                    });
                 }
                 this.popupObj.show(new Animation(eventArgs.animation), this.popupEle);
             }

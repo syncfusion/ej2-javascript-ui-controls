@@ -395,7 +395,8 @@ export class WorkbookFindAndReplace {
             if (requestAnimationFrame) {
                 requestAnimationFrame(() => {
                     if (!eventArgs.cancel && eventArgs.addressCollection[index as number]) {
-                        const indexes: number[] = getCellIndexes(eventArgs.addressCollection[index as number].split('!')[1]);
+                        const indexes: number[] = getCellIndexes(eventArgs.addressCollection[index as number].substring(
+                            eventArgs.addressCollection[index as number].lastIndexOf('!') + 1));
                         const sheetIndex: number = getSheetIndexFromAddress(this.parent, eventArgs.addressCollection[index as number]);
                         updateCell(
                             this.parent, this.parent.sheets[sheetIndex as number], { cell: { value: cellValue }, rowIdx: indexes[0],

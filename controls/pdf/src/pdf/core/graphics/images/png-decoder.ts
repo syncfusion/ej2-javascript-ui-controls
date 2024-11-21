@@ -355,13 +355,19 @@ export class _PngDecoder extends _ImageDecoder {
         }
     }
     _decompressAverage(data: number[], pData: number[], count: number, bitsPerPixel: number): void {
+        let val: number;
+        let pp: number;
+        let pr: number;
         for (let i: number = 0; i < bitsPerPixel; i++) {
-            data[Number.parseInt(i.toString(), 10)] = _toUnsigned((Math.floor(((data[Number.parseInt(i.toString(), 10)] & 0xff)
-                + (pData[Number.parseInt(i.toString(), 10)] & 0xff)) / 2)), 8);
+            val = data[Number.parseInt(i.toString(), 10)] & 0xff;
+            pr = pData[Number.parseInt(i.toString(), 10)] & 0xff;
+            data[Number.parseInt(i.toString(), 10)] = _toUnsigned(Math.floor((val) + pr / 2), 8);
         }
         for (let i: number = bitsPerPixel; i < count; i++) {
-            data[Number.parseInt(i.toString(), 10)] = _toUnsigned(Math.floor((data[Number.parseInt(i.toString(), 10)] & 0xff)
-                + ((data[i - bitsPerPixel] & 0xff) + (pData[Number.parseInt(i.toString(), 10)] & 0xff)) / 2), 8);
+            val = data[Number.parseInt(i.toString(), 10)] & 0xff;
+            pp = data[i - bitsPerPixel] & 0xff;
+            pr = pData[Number.parseInt(i.toString(), 10)] & 0xff;
+            data[Number.parseInt(i.toString(), 10)] = _toUnsigned(Math.floor((val + Math.floor((pp + pr) / 2))), 8);
         }
     }
     _decompressPaeth(data: number[], pData: number[], count: number, bitsPerPixel: number): void {

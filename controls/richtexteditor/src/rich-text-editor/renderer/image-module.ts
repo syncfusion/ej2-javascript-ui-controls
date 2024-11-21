@@ -1886,9 +1886,16 @@ export class Image {
                                     }
                                 };
                                 proxy.inputUrl.setAttribute('disabled', 'true');
-                                if (isNOU(proxy.parent.insertImageSettings.saveUrl) && this.isAllowedTypes
-                                    && !isNOU(this.dialogObj) && selectArgs.filesData[0].size <= this.uploadObj.maxFileSize) {
-                                    (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
+                                if (!isNOU(this.dialogObj)) {
+                                    const button: Button = this.dialogObj.getButtons(0) as Button;
+                                    if (!isNOU(button)) {
+                                        if (isNOU(proxy.parent.insertImageSettings.saveUrl) && this.isAllowedTypes
+                                            && selectArgs.filesData[0].size <= this.uploadObj.maxFileSize) {
+                                            button.element.removeAttribute('disabled');
+                                        } else {
+                                            button.element.setAttribute('disabled', 'true');
+                                        }
+                                    }
                                 }
                             });
                             reader.readAsDataURL(selectArgs.filesData[0].rawFile as Blob);

@@ -9252,8 +9252,22 @@ export class PdfTextMarkupAnnotation extends PdfComment {
     private _boundsCollection: Array<number[]> = [];
     /**
      * Initializes a new instance of the `PdfTextMarkupAnnotation` class.
-     *
-     * @private
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new text markup annotation
+     * const annotation: PdfTextMarkupAnnotation = new PdfTextMarkupAnnotation();
+     * // Sets the bounds of the annotation.
+     * annotation.bounds = {x: 50, y: 100, width: 100, height: 100};
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
      */
     constructor()
     /**
@@ -9289,9 +9303,70 @@ export class PdfTextMarkupAnnotation extends PdfComment {
         }
         if (typeof x !== 'undefined' && typeof y !== 'undefined' && typeof width !== 'undefined' && typeof height !== 'undefined') {
             this.bounds = {x, y, width, height};
-            this._boundsCollection.push([this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height]);
         }
         this._type = _PdfAnnotationType.textMarkupAnnotation;
+    }
+    /**
+     * Gets the bounds of the text markup annotation.
+     *
+     * @returns {{x: number, y: number, width: number, height: number}} Bounds.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfTextMarkupAnnotation = page.annotations.at(0) as PdfTextMarkupAnnotation;
+     * // Gets the bounds of the annotation.
+     * let bounds: {x: number, y: number, width: number, height: number} = annotation.bounds;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get bounds(): {x: number, y: number, width: number, height: number} {
+        if (this._isLoaded) {
+            this._bounds = _calculateBounds(this._dictionary, this._page);
+        }
+        return this._bounds;
+    }
+    /**
+     * Sets the bounds of the text markup annotation.
+     *
+     * @param {{x: number, y: number, width: number, height: number}} value bounds.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfTextMarkupAnnotation = page.annotations.at(0) as PdfTextMarkupAnnotation;
+     * // Sets the bounds of the annotation.
+     * annotation.bounds = {x: 10, y: 10, width: 150, height: 5};
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set bounds(value: {x: number, y: number, width: number, height: number}) {
+        if (value) {
+            if (this._isLoaded) {
+                if ((value.x !== this.bounds.x) || (value.y !== this.bounds.y) ||
+                    (value.width !== this.bounds.width) || (value.height !== this.bounds.height)) {
+                    const size: number[] = this._page.size;
+                    if (size) {
+                        const y: number = size[1] - (value.y + value.height);
+                        const height: number = y + value.height;
+                        this._dictionary.update('Rect', [value.x, y, value.x + value.width, height]);
+                        this._bounds = value;
+                        this._isChanged = true;
+                    }
+                }
+            } else {
+                this._bounds = value;
+                const nativeRectangle: number[] = this._obtainNativeRectangle();
+                this._dictionary.update('Rect', _fromRectangle({x: nativeRectangle[0], y: nativeRectangle[1], width: nativeRectangle[2], height: nativeRectangle[3]}));
+                this._isChanged = true;
+            }
+        }
     }
     /**
      * Gets the text markup color of the annotation.
@@ -9459,8 +9534,8 @@ export class PdfTextMarkupAnnotation extends PdfComment {
      */
     set boundsCollection(value: Array<number[]>) {
         if (!this._isLoaded && typeof value !== 'undefined') {
-            if (this._boundsCollection.length > 0) {
-                this._quadPoints = new Array<number>(8 + (value.length * 8));
+            if (value.length > 0) {
+                this._quadPoints = new Array<number>((value.length * 8));
                 for (let i: number = 0; i < value.length; i++) {
                     this._boundsCollection.push(value[Number.parseInt(i.toString(), 10)]);
                 }
@@ -9516,6 +9591,32 @@ export class PdfTextMarkupAnnotation extends PdfComment {
         annot._isLoaded = true;
         annot._initialize(page, dictionary);
         return annot;
+    }
+    _obtainNativeRectangle(): number[] {
+        const nativeRectangle: number[] = [this._bounds.x, this._bounds.y + this._bounds.height, this._bounds.width, this._bounds.height];
+        let cropOrMediaBox: number[];
+        if (this._page) {
+            const size: number[] = this._page.size;
+            nativeRectangle[1] = size[1] - nativeRectangle[1];
+            cropOrMediaBox = this._getCropOrMediaBox();
+        }
+        if (cropOrMediaBox) {
+            if (cropOrMediaBox[3] < 0) {
+                const yCrop: number = cropOrMediaBox[1];
+                const heightCrop: number = cropOrMediaBox[3];
+                cropOrMediaBox[1] = heightCrop;
+                cropOrMediaBox[3] = yCrop;
+            }
+            if (cropOrMediaBox.length > 2 && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
+                nativeRectangle[0] += cropOrMediaBox[0];
+                if (this._page && this._page._pageDictionary.has('MediaBox') && !this._page._pageDictionary.has('CropBox') && cropOrMediaBox[1] > 0 && cropOrMediaBox[3] === 0) {
+                    nativeRectangle[1] += cropOrMediaBox[3];
+                } else {
+                    nativeRectangle[1] += cropOrMediaBox[1];
+                }
+            }
+        }
+        return nativeRectangle;
     }
     _initialize(page: PdfPage, dictionary?: _PdfDictionary): void {
         super._initialize(page, dictionary);
@@ -9647,7 +9748,7 @@ export class PdfTextMarkupAnnotation extends PdfComment {
         }
     }
     _createMarkupAppearance(): PdfTemplate {
-        let width: number;
+        let width: number = 0;
         let height: number = 0;
         let rectangle: {x: number, y: number, width: number, height: number};
         if (this.boundsCollection.length > 1) {
@@ -9798,7 +9899,9 @@ export class PdfTextMarkupAnnotation extends PdfComment {
         } else {
             margins = {left: 0, top: 0, right: 0, bottom: 0};
         }
-        this._boundsCollection[0] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
+        if (this.bounds.x !== 0 && this.bounds.y !== 0 && this.bounds.width !== 0 && this.bounds.height !== 0) {
+            this._boundsCollection[0] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
+        }
         const noofRect: number = this._quadPoints.length / 8;
         const cropOrMediaBox: number[] = this._getMediaOrCropBox(this._page);
         let isContainscropOrMediaBox: boolean = false;
@@ -12447,7 +12550,7 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
             if (this._isLoaded) {
                 this._textAlignment = this.textAlignment;
             }
-            const format: PdfStringFormat = new PdfStringFormat(this._textAlignment, PdfVerticalAlignment.middle);
+            const format: PdfStringFormat = new PdfStringFormat(this._textAlignment, PdfVerticalAlignment.top);
             const textsize: number[] = this.font.measureString(this.overlayText, [0, 0], format, 0, 0);
             if (this._isLoaded && typeof this._repeat === 'undefined') {
                 this._repeat = this.repeatText;
@@ -12482,8 +12585,8 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
                 if (this._textAlignment === PdfTextAlignment.right) {
                     x = diff;
                 }
-                rectangle = [x, 0, 0, 0];
-                graphics.drawString(this.overlayText, this.font, rectangle, null, textcolor, null);
+                rectangle = [x, 0, this.bounds.width - this.border.width, this.bounds.height - this.border.width];
+                graphics.drawString(this.overlayText, this.font, rectangle, null, textcolor, format);
             }
         }
         return template;
@@ -13607,7 +13710,7 @@ export class PdfStateItem extends PdfWidgetAnnotation {
     _setCheckedStatus(value: boolean): void {
         const check: boolean = value;
         let fieldValue: string = this._getItemValue(this._dictionary);
-        this._uncheckOthers(this, fieldValue, value);
+        this._unCheckOthers(this, fieldValue, value);
         if (check) {
             if (!fieldValue) {
                 fieldValue = 'Yes';
@@ -13625,7 +13728,7 @@ export class PdfStateItem extends PdfWidgetAnnotation {
             this._field._dictionary.update('AS', _PdfName.get('Off'));
         }
     }
-    _uncheckOthers(child: PdfStateItem, value: string, isChecked: boolean): void {
+    _unCheckOthers(child: PdfStateItem, value: string, isChecked: boolean): void {
         if (!this._field._isUpdating) {
             this._field._isUpdating = true;
             const count: number = this._field.itemsCount;

@@ -1,7 +1,7 @@
 /* eslint-disable no-constant-condition */
 import { EventHandler, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CurrentObject, ImageEditor, Point, SelectionPoint, CropSelectionSettings, ShapeChangeEventArgs, ShapeSettings, ShapeType,
-    StrokeSettings, TextSettings, RedactType, RedactSettings, ArrowheadType, ActivePoint } from '../index';
+    StrokeSettings, TextSettings, RedactType, RedactSettings, ArrowheadType, ActivePoint, TransformationCollection } from '../index';
 
 export class Shape {
     private parent: ImageEditor;
@@ -65,7 +65,8 @@ export class Shape {
         case 'drawText':
             this.drawText(args.value['x'], args.value['y'], args.value['text'], args.value['fontFamily'],
                           args.value['fontSize'], args.value['bold'], args.value['italic'], args.value['color'],
-                          args.value['isSelected'], args.value['degree'], args.value['fillColor'], args.value['outlineColor'], args.value['outlineWidth']);
+                          args.value['isSelected'], args.value['degree'], args.value['fillColor'], args.value['outlineColor'],
+                          args.value['outlineWidth'], args.value['transformCollection']);
             break;
         case 'redrawActObj':
             this.redrawActObj(args.value['x'], args.value['y'], args.value['isMouseDown']);
@@ -378,9 +379,9 @@ export class Shape {
 
     private drawText(x?: number, y?: number, text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
                      color?: string, isSelected?: boolean, degree?: number, fillColor?: string, outlineColor?: string,
-                     outlineWidth?: number): void {
+                     outlineWidth?: number, transformCollection?: TransformationCollection[]): void {
         this.drawShapeText(text, fontFamily, fontSize, bold, italic, color, x, y, isSelected, degree, fillColor, outlineColor,
-                           outlineWidth);
+                           outlineWidth, transformCollection);
     }
 
     private initializeShape(type: string): void {
@@ -565,7 +566,8 @@ export class Shape {
 
     private drawShapeText(text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
                           strokeColor?: string, x?: number, y?: number, isSelected?: boolean, degree?: number,
-                          fillColor?: string, outlineColor?: string, outlineWidth?: number): void {
+                          fillColor?: string, outlineColor?: string, outlineWidth?: number,
+                          transformCollection?: TransformationCollection[]): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
             if (parent.currObjType.shape === 'freehanddraw') {
@@ -593,15 +595,47 @@ export class Shape {
             parent.activeObj.shapeFlip = parent.transform.currFlipState;
             parent.activeObj.flipObjColl = []; this.updateFontStyles();
             parent.activeObj.order = this.getNewOrder();
-            const width: number = this.upperContext.measureText(parent.activeObj.textSettings.text).width +
+            let width: number = this.upperContext.measureText(parent.activeObj.textSettings.text).width +
             parent.activeObj.textSettings.fontSize * 0.5;
-            const height: number = parent.activeObj.textSettings.fontSize;
+            let height: number = parent.activeObj.textSettings.fontSize;
+            if (text) {
+                parent.activeObj.keyHistory = text;
+                let maxText: string = this.getMaxText();
+                maxText = maxText ? maxText : parent.activeObj.textSettings.text;
+                width = this.upperContext.measureText(maxText).width + parent.activeObj.textSettings.fontSize * 0.5;
+                const rows: string[] = text.split('\n');
+                if (rows.length > 1) {
+                    height = rows.length * parent.activeObj.textSettings.fontSize;
+                    height += (fontSize * 0.25);
+                }
+            }
             if (!isNullOrUndefined(x) && !isNullOrUndefined(y)) {
                 parent.activeObj.activePoint.startX = x; parent.activeObj.activePoint.startY = y;
                 parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + width;
                 parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + height;
             } else {
                 this.setCenterPoints(true, width, height);
+            }
+            if (transformCollection) {
+                parent.notify('selection', { prop: 'setTransformedShape', onPropertyChange: false, value: {bool: true}});
+                this.setTransformColl(transformCollection);
+                const actObj: SelectionPoint = parent.activeObj;
+                actObj.shapeDegree = 0;
+                actObj.shapeFlip = '';
+                let tempDegree: number = 0;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const coll: any = actObj.rotateFlipColl;
+                for (let i: number = 0; i < coll.length; i++) {
+                    if (typeof(coll[i as number]) === 'number') {
+                        tempDegree += coll[i as number];
+                    }
+                }
+                if (tempDegree % 90 === 0 && Math.abs(tempDegree) % 180 === 90) {
+                    actObj.activePoint.endX = actObj.activePoint.startX + height;
+                    actObj.activePoint.endY = actObj.activePoint.startY + width;
+                    actObj.activePoint.width = actObj.activePoint.endX - actObj.activePoint.startX;
+                    actObj.activePoint.height = actObj.activePoint.endY - actObj.activePoint.startY;
+                }
             }
             const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
             parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
@@ -635,6 +669,20 @@ export class Shape {
                 parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
             }
             parent.isPublicMethod = false;
+        }
+    }
+
+    private setTransformColl(transformCollection: TransformationCollection[]): void {
+        const parent: ImageEditor = this.parent;
+        parent.activeObj.rotateFlipColl = [];
+        if (transformCollection) {
+            for (let i: number = 0; i < transformCollection.length; i++) {
+                if (transformCollection[i as number].degree) {
+                    parent.activeObj.rotateFlipColl.push(transformCollection[i as number].degree);
+                } else {
+                    parent.activeObj.rotateFlipColl.push(transformCollection[i as number].flip.toLowerCase());
+                }
+            }
         }
     }
 
@@ -816,9 +864,11 @@ export class Shape {
                 parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
                 parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
             }
-            parent.activeObj.strokeSettings.strokeColor = shapeSettings.strokeColor;
+            if (parent.activeObj.shape !== 'text') {
+                parent.activeObj.strokeSettings.strokeColor = shapeSettings.strokeColor;
+                parent.activeObj.strokeSettings.strokeWidth = shapeSettings.strokeWidth;
+            }
             parent.activeObj.strokeSettings.fillColor = shapeSettings.fillColor;
-            parent.activeObj.strokeSettings.strokeWidth = shapeSettings.strokeWidth;
             parent.activeObj.opacity = shapeSettings.opacity;
             parent.activeObj.order = shapeSettings.index;
             parent.activeObj.preventShapeDragOut = !allowShapeOverflow;
@@ -849,7 +899,11 @@ export class Shape {
                 parent.activeObj.keyHistory = parent.activeObj.textSettings.text = shapeSettings.text;
                 parent.activeObj.textSettings.fontSize = shapeSettings.fontSize;
                 parent.activeObj.strokeSettings.strokeColor = shapeSettings.color;
+                parent.activeObj.strokeSettings.outlineColor = shapeSettings.strokeColor;
+                parent.activeObj.strokeSettings.outlineWidth = shapeSettings.strokeWidth;
+                parent.activeObj.strokeSettings.fillColor = shapeSettings.fillColor;
                 parent.activeObj.textSettings.fontFamily = shapeSettings.fontFamily;
+                this.setTransformColl(shapeSettings.transformCollection);
                 if (shapeSettings.degree) {
                     parent.activeObj.rotatedAngle = shapeSettings.degree * (Math.PI / 180);
                 }
@@ -1583,11 +1637,22 @@ export class Shape {
         }
     }
 
-    private getRotDegOfShape(obj: SelectionPoint): number {
+    private getRotDegOfShape(obj: SelectionPoint, value?: boolean): number {
+        const parent: ImageEditor = this.parent;
         let degree: number;
         if (obj.shapeDegree === 0) {degree = this.parent.transform.degree; }
         else {degree = this.parent.transform.degree - obj.shapeDegree; }
         if (degree < 0) {degree = 360 + degree; }
+        const transformObj: Object = {bool: false };
+        parent.notify('selection', { prop: 'getTransformedShape', onPropertyChange: false, value: {obj: transformObj}});
+        if (transformObj['bool'] && !value && parent.activeObj.rotateFlipColl) {
+            degree = 0;
+            for (let i: number = 0; i < parent.activeObj.rotateFlipColl.length; i++) {
+                if (typeof(parent.activeObj.rotateFlipColl[i as number]) === 'number') {
+                    degree += (parent.activeObj.rotateFlipColl[i as number]);
+                }
+            }
+        }
         return degree;
     }
 
@@ -2482,12 +2547,18 @@ export class Shape {
                 obj.textSettings.fontRatio = height / obj.textSettings.fontSize;
             }
         } else if (isTextArea) {
-            obj.textSettings.fontRatio = width / parseFloat(parent.textArea.style.fontSize);
+            const transformObj: Object = {bool: false };
+            parent.notify('selection', { prop: 'getTransformedShape', onPropertyChange: false, value: {obj: transformObj}});
+            if (!transformObj['bool'] || degree === 0 || Math.abs(degree) === 180) {
+                obj.textSettings.fontRatio = width / parseFloat(parent.textArea.style.fontSize);
+            } else {
+                obj.textSettings.fontRatio = height / parseFloat(parent.textArea.style.fontSize);
+            }
         }
     }
 
     private updateFontSize(obj: SelectionPoint): void {
-        const degree: number = this.getRotDegOfShape(obj);
+        const degree: number = this.getRotDegOfShape(obj, true);
         if (degree === 0 || Math.abs(degree) === 180) {
             obj.textSettings.fontSize = (obj.activePoint.width / obj.textSettings.fontRatio);
         } else {
@@ -2763,6 +2834,7 @@ export class Shape {
         shapeDetails.type = parent.toPascalCase(obj.shape) as ShapeType;
         shapeDetails.startX = obj.activePoint.startX; shapeDetails.startY = obj.activePoint.startY;
         shapeDetails.index = obj.order;
+        const transformObj: Object = {coll: null };
         switch (obj.shape) {
         case 'rectangle':
             shapeDetails.width = obj.activePoint.width;
@@ -2801,10 +2873,15 @@ export class Shape {
             shapeDetails.fontSize = obj.textSettings.fontSize;
             shapeDetails.fontFamily = obj.textSettings.fontFamily;
             shapeDetails.color = obj.strokeSettings.strokeColor;
+            shapeDetails.strokeColor = obj.strokeSettings.outlineColor;
+            shapeDetails.fillColor = obj.strokeSettings.fillColor;
+            shapeDetails.strokeWidth = obj.strokeSettings.outlineWidth;
             shapeDetails.fontStyle = [];
             if (obj.textSettings.bold) {shapeDetails.fontStyle.push('bold'); }
             if (obj.textSettings.italic) {shapeDetails.fontStyle.push('italic'); }
             shapeDetails.degree = obj.rotatedAngle * (180 / Math.PI);
+            parent.notify('selection', {prop: 'updateTransColl', onPropertyChange: false, value: {obj: transformObj, object: obj}});
+            shapeDetails.transformCollection = transformObj['coll'];
             break;
         case 'path':
             shapeDetails.strokeColor = obj.strokeSettings.strokeColor;
@@ -3070,6 +3147,7 @@ export class Shape {
     private getMaxText(isTextBox?: boolean, text?: string, obj?: Object): string {
         if (isNullOrUndefined(text)) {
             text = isTextBox ? this.parent.textArea.value : this.parent.activeObj.keyHistory;
+            if (!text) {return text; }
         }
         let maxi: number; const rows: string[] = text.split('\n'); let maxStr: number = rows[0].length;
         let maxText: string = rows[0];

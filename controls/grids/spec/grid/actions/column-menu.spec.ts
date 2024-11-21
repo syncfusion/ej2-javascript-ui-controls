@@ -816,4 +816,38 @@ describe('column menu module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2: 922435 => Clear the filter while the column menu dialog is still open. => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    showColumnMenu: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }
+                    ]
+                }, done);
+        });
+
+        it('Click the columnmenu', (done: Function) => {
+            (gridObj as any).element.querySelector('.e-columnmenu').click();
+            done();
+        });
+        it('Clear the filter', (done: Function) => {
+            (document.querySelector('.e-filter-item') as HTMLElement).click();
+            (document.querySelectorAll('.e-btn')[1] as HTMLElement).click();
+            expect((document.querySelector('.e-colmenu') as HTMLElement).style.display).toBe('none');
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

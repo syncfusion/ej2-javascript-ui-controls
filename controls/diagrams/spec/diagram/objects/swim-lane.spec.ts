@@ -9073,3 +9073,171 @@ describe('Bug 905527- Multiselecting and dragging Swimlane updates incorrectly.'
         done();
     });
 });
+describe('Bug:914714-Swimlane child nodes dimension changes when LineRouting constraints are set', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram914714' });
+        document.body.appendChild(ele);
+
+        let pathData: string = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+
+        let darkColor: string = '#C7D4DF';
+        let lightColor: string = '#f5f5f5';
+        let nodes: NodeModel[] = [
+            {
+                //creating the swimlane and set its type as swimlane
+                id: 'swimlane',
+                shape: {
+                    orientation: 'Horizontal',
+                    type: 'SwimLane',
+                    //initialize swimlane header
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fill: darkColor, fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fill: darkColor, fontSize: 11 }
+                            },
+                            style: { fill: lightColor },
+                            height: 120,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    constraints: NodeConstraints.Default | NodeConstraints.AllowMovingOutsideLane,
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'ONLINE' }, width: 50,
+                                style: { fill: darkColor, fontSize: 11 }
+                            },
+                            style: { fill: lightColor }, height: 120,
+                            children: [
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 210, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'paymentondebitcreditcard',
+                                    annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 200,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                        {
+                            id: 'phase2', offset: 500,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 350, offsetY: 290,
+                height: 360, width: 650
+            },
+        ];
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting });
+        diagram.appendTo('#diagram914714');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 10, 10);
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Multiselected child nodes drag drop with LineRouting enabled', (done: Function) => {
+        let node1: NodeModel = diagram.nameTable['selectItemaddcart'];
+        let node2: NodeModel = diagram.nameTable['paymentondebitcreditcard'];
+        let dragnode = document.getElementById('paymentondebitcreditcard');
+        let bounds1 = dragnode.getBoundingClientRect();
+        let x = bounds1.left + bounds1.width / 2;
+        let y = bounds1.top + bounds1.height / 2;
+        
+        let id = (diagram.nodes[0].wrapper.children[0] as GridPanel).rows[2].cells[1].children[0].id
+        let target = document.getElementById(id);
+        let lanebounds = target.getBoundingClientRect();
+        let x1 = lanebounds.left + lanebounds.width / 2;
+        let y1 = lanebounds.top + lanebounds.height / 2;
+        diagram.select([node1,node2]);
+        mouseEvents.mouseDownEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+        mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 30, y + diagram.element.offsetTop - 30);
+        mouseEvents.mouseMoveEvent(diagramCanvas, x1 + diagram.element.offsetLeft + 50, y1 + diagram.element.offsetTop);
+        mouseEvents.mouseUpEvent(diagramCanvas, x1 + diagram.element.offsetLeft + 50, y1 + diagram.element.offsetTop+10);
+        diagram.unSelect(node1);
+        diagram.unSelect(node2);
+        expect((node1 as Node).parentId == "swimlanestackCanvas11").toBe(true);
+        expect((node2 as Node).parentId == "swimlanestackCanvas11").toBe(true);
+        done();
+    });
+    it('Drop AllowMovingOutsideLane enabled node outside swimlane', (done: Function) => {
+        let node = document.getElementById('Order');
+        let bounds = node.getBoundingClientRect();
+        let orderNode: NodeModel = diagram.nameTable['Order'];
+        let oldOffset: PointModel = {x: orderNode.offsetX, y: orderNode.offsetY};
+        let x = bounds.left + bounds.width / 2;
+        let y = bounds.top + bounds.height / 2;
+
+        let swimlaneElement = document.getElementById('swimlane');
+        let bounds1 = swimlaneElement.getBoundingClientRect();
+        mouseEvents.clickEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+        mouseEvents.mouseDownEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+        mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 30, y + diagram.element.offsetTop + 20);
+        mouseEvents.mouseMoveEvent(diagramCanvas, diagram.element.offsetLeft + (bounds1.left + bounds1.width + 70), diagram.element.offsetTop + bounds1.top + 40);
+        mouseEvents.mouseUpEvent(diagramCanvas, diagram.element.offsetLeft + (bounds1.left + bounds1.width + 70), diagram.element.offsetTop + bounds1.top + 40);
+        expect(orderNode.offsetX == oldOffset.x && orderNode.offsetY == oldOffset.y).toBe(true);
+        expect((orderNode as Node).parentId == "swimlanestackCanvas10").toBe(true);
+        done();
+    });
+    it('Drop AllowMovingOutsideLane enabled node in different lane', (done: Function) => {
+        let node = document.getElementById('Order');
+        let bounds = node.getBoundingClientRect();
+        let orderNode: NodeModel = diagram.nameTable['Order'];
+        let oldOffset: PointModel = {x: orderNode.offsetX, y: orderNode.offsetY};
+        let x = bounds.left + bounds.width / 2;
+        let y = bounds.top + bounds.height / 2;
+
+        let id = (diagram.nodes[0].wrapper.children[0] as GridPanel).rows[3].cells[1].children[0].id
+        let target = document.getElementById(id);
+        let lanebounds = target.getBoundingClientRect();
+        let x1 = lanebounds.left + lanebounds.width / 2;
+        let y1 = lanebounds.top + lanebounds.height / 2;
+        mouseEvents.mouseDownEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+        mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 30, y + diagram.element.offsetTop );
+        mouseEvents.mouseMoveEvent(diagramCanvas, x1 + diagram.element.offsetLeft + 20, y1 + diagram.element.offsetTop);
+        mouseEvents.mouseUpEvent(diagramCanvas, x1 + diagram.element.offsetLeft + 30, y1 + diagram.element.offsetTop+10);
+        expect(orderNode.offsetX != oldOffset.x && orderNode.offsetY != oldOffset.y).toBe(true);
+        expect((orderNode as Node).parentId == "swimlanestackCanvas21").toBe(true);
+        done();
+    });
+});

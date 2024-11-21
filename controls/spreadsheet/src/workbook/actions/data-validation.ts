@@ -54,9 +54,10 @@ export class WorkbookDataValidation {
         args: { range: string, rules?: ValidationModel, isRemoveValidation?: boolean, cancel?: boolean, viewport: object }): void {
         let onlyRange: string = args.range;
         let sheetName: string = '';
-        if (args.range.indexOf('!') > -1) {
-            onlyRange = args.range.split('!')[1];
-            sheetName = args.range.split('!')[0];
+        if (args.range.lastIndexOf('!') > -1) {
+            const lastIndex: number = args.range.lastIndexOf('!');
+            onlyRange = args.range.substring(lastIndex + 1);
+            sheetName = args.range.substring(0, lastIndex);
         }
         let sheet: SheetModel; let isActiveSheet: boolean;
         if (sheetName) {

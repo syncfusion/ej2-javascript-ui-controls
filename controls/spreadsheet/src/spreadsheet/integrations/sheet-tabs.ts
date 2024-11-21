@@ -417,10 +417,12 @@ export class SheetTabs {
         }
         this.parent.notify(workbookFormulaOperation, { action: 'renameUpdation', value: args.value, pName: pName });
         if (this.parent.allowChart) {
-            let range: string[];
+            const range: string[] = []; let lastIndex: number;
             this.parent.chartColl.forEach((chart: { range: string }): void => {
                 if (chart.range.includes('!')) {
-                    range = chart.range.split('!');
+                    lastIndex = chart.range.lastIndexOf('!');
+                    range[0] = chart.range.substring(0, lastIndex);
+                    range[1] = chart.range.substring(lastIndex + 1);
                     if (range[0].toLowerCase() === pName.toLowerCase()) {
                         range[0] = args.value;
                         chart.range = range.join('!');
@@ -593,8 +595,11 @@ export class SheetTabs {
         this.parent.notify(protectSheet, null);
     }
 
-    private showAggregate(): void {
-        if (isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) { return; }
+    private showAggregate(args?: { remove?: boolean }): void {
+        if (isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange)) || (args && args.remove)) {
+            this.removeAggregate();
+            return;
+        }
         const eventArgs: AggregateArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0', countOnly: true };
         this.parent.notify(aggregateComputation, eventArgs);
         if (eventArgs.Count > 1) {

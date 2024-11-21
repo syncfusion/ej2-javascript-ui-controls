@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I650885` - Now, the subtitle will align properly without cut off.
+- `#I651405` - Legends with paging now render correctly when toggling in canvas mode.
+
+### Stock Chart
+
+#### Bug Fixes
+
+- `#I652007` - The tick mark now remains consistent for the selected indicator after refresh or resize.
+
 ## 27.2.2 (2024-11-15)
 
 ### Chart

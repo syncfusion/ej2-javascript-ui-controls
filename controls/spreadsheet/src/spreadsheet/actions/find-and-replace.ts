@@ -535,7 +535,7 @@ export class FindAndReplace {
             }
             let addr: string = gotoAddress;
             if (gotoAddress.includes('!')) {
-                addr = gotoAddress.split('!')[1];
+                addr = gotoAddress.substring(gotoAddress.lastIndexOf('!') + 1);
             }
             addr = addr.split('$').join('');
             if (addr.includes(':')) {

@@ -1038,18 +1038,18 @@ describe('Command Column ', () => {
             }, done);
         });
 
-        it('Delete the cell', (done : Function) => {
-            (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[1].click();  
-            done();         
+        it('Delete the cell', (done: Function) => {
+            (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[1].click();
+            done();
         });
-        
-        it('Check the deleted record', (done : Function) => {
+
+        it('Check the deleted record', (done: Function) => {
             actionBegin = (args?: any): void => {
                 if (args.requestType === 'delete') {
                     expect(args.data.length).toBe(1);
                     done();
                 }
-            };            
+            };
             gridObj.actionBegin = actionBegin;
             select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
         });

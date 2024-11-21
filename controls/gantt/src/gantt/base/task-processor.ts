@@ -804,6 +804,9 @@ export class TaskProcessor extends DateProcessor {
      * @returns {void} .
      */
     public updateWorkWithDuration(ganttData: IGanttData): void {
+        if (this.parent['triggeredColumnName'] === this.parent.taskFields.work) {
+            return;
+        }
         const resources: Object[] = (this.parent.editModule && this.parent.editModule.dialogModule &&
             this.parent.editModule.dialogModule['currentResources']) ? this.parent.editModule.dialogModule['currentResources']
             : ganttData.ganttProperties.resourceInfo;
@@ -1171,7 +1174,7 @@ export class TaskProcessor extends DateProcessor {
     public updateUnitWithWork(ganttData: IGanttData): void {
         const ganttProperties: ITaskData = ganttData.ganttProperties;
         let resources: Object[] = (!this.parent.isLoad && !isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.dialogModule) && !this.parent.editModule.dialogModule['isEdit'] &&
-            !this.parent.editModule.cellEditModule.isCellEdit)
+            (!isNullOrUndefined(this.parent.editModule.cellEditModule) && !this.parent.editModule.cellEditModule.isCellEdit))
             ? this.parent.editModule.dialogModule.ganttResources : ganttProperties.resourceInfo;
         if (this.parent.editModule && this.parent.editModule.taskbarEditModule &&
             (this.parent.editModule.taskbarEditModule.taskBarEditAction === 'LeftResizing' || this.parent.editModule.taskbarEditModule.taskBarEditAction === 'RightResizing')) {
@@ -1200,6 +1203,14 @@ export class TaskProcessor extends DateProcessor {
         }
         for (let index: number = 0; index < resourcesLength; index++) {
             resources[index as number][this.parent.resourceFields.unit] = individualUnit;
+            if (!this.parent.isLoad && !isNullOrUndefined(this.parent.editModule) &&
+                !isNullOrUndefined(this.parent.editModule.dialogModule) &&
+                !this.parent.editModule.dialogModule['isEdit'] &&
+                (!isNullOrUndefined(this.parent.editModule.cellEditModule) && !this.parent.editModule.cellEditModule.isCellEdit)) {
+                if (ganttProperties.resourceInfo) {
+                    ganttProperties.resourceInfo[index as number][this.parent.resourceFields.unit] = individualUnit;
+                }
+            }
         }
         //To update the unit value in data source
         this.updateResourceName(ganttData);

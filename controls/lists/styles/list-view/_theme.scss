@@ -29,7 +29,9 @@
       }
 
       & .e-icons:not(.e-primary .e-btn-icon, .e-check) {
-        color: $listview-icon-color;
+        @if ($skin-name != 'bootstrap5.3') {
+          color: $listview-icon-color;
+        }
 
         @if ($skin-name == 'tailwind') {
           &.e-back-button,

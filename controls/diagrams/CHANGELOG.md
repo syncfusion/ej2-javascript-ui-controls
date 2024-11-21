@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I647572` - Image node opacity is now applied in exported images.
+- `#I644133` - Resolved the issue with drawing Polyline connector on iPad.
+- `#I644139` - Improved touch interactions for selecting and editing nodes.
+- `#I642023` - Multiple selected child nodes of a Swimlane can be moved to a different lane smoothly.
+- `#I651070` - Deleted nodes now no longer reappear after interacting with nodes
+- `#I652278` - The `elementDraw` event is now triggered for `freehand` connectors, `polyline` connectors, and `polygon` shapes.
+
 ## 27.2.2 (2024-11-15)
 
 ### Diagram
@@ -9,6 +22,9 @@
 #### Bug Fixes
 
 - `#I644056` - The style property now applies correctly to polygon objects during runtime drawing.
+- `#I647667` - Nodes now resize correctly when the `AspectRatio` constraint is enabled.
+- `#I647584` - Group nodes now rotate properly after being flipped.
+- `#I651496` - Leaf nodes are now aligned correctly for Tree Alignment Center.
 
 ## 27.1.58 (2024-11-05)
 

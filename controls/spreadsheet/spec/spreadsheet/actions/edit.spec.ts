@@ -1693,7 +1693,7 @@ describe('Editing ->', () => {
             helper.edit('I1', '=IF(B3="", True, SUM(B3,H2))');
             expect(helper.invoke('getCell', [0, 8]).textContent).toBe('45358');
             helper.edit('B3', '25-02-2024');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('45357');
             done();
         });
         it('Checking the values of formula dependent cells', (done: Function) => {

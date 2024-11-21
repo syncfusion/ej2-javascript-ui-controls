@@ -1007,9 +1007,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     private renderItemsBySelect(): void {
         const element: Element = this.element;
-        const fields: FieldSettingsModel = { value: 'value', text: 'text' };
-        const jsonElement: { [key: string]: Object }[] = [];
         const group: HTMLElement[] = <HTMLElement[] & NodeListOf<HTMLElement>>element.querySelectorAll('select>optgroup');
+        let fields: FieldSettingsModel;
+        const isSelectGroupCheck : boolean = this.getModuleName() === 'multiselect' && this.isGroupChecking && group.length > 0;
+        fields = isSelectGroupCheck ? { value: 'value', text: 'text', groupBy: 'categeory' } : fields = { value: 'value', text: 'text' };
+        const jsonElement: { [key: string]: Object }[] = [];
         const option: HTMLOptionElement[] = <HTMLOptionElement[] & NodeListOf<HTMLOptionElement>>element.querySelectorAll('select>option');
         this.getJSONfromOption(jsonElement, option, fields);
         if (group.length) {
@@ -1019,13 +1021,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 optionGroup[fields.text] = item.label;
                 optionGroup.isHeader = true;
                 const child: HTMLOptionElement[] = <HTMLOptionElement[] & NodeListOf<HTMLOptionElement>>item.querySelectorAll('option');
-                jsonElement.push(optionGroup);
-                this.getJSONfromOption(jsonElement, child, fields);
+                if (isSelectGroupCheck) {
+                    this.getJSONfromOption(jsonElement, child, fields, item.label);
+                } else {
+                    jsonElement.push(optionGroup);
+                    this.getJSONfromOption(jsonElement, child, fields);
+                }
             }
             element.querySelectorAll('select>option');
         }
-        this.updateFields(
-            fields.text, fields.value, this.fields.groupBy, this.fields.htmlAttributes, this.fields.iconCss, this.fields.disabled);
+        this.updateFields(fields.text, fields.value, isSelectGroupCheck ? fields.groupBy : this.fields.groupBy,
+                          this.fields.htmlAttributes, this.fields.iconCss, this.fields.disabled);
         this.resetList(jsonElement, fields);
     }
 
@@ -1051,12 +1057,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private getJSONfromOption(
         items: { [key: string]: Object }[],
         options: HTMLOptionElement[],
-        fields: FieldSettingsModel): void {
+        fields: FieldSettingsModel, category: string = null): void {
         for (const option of options) {
             const json: { [key: string]: {} } = {};
             json[fields.text] = option.innerText;
             json[fields.value] = !isNullOrUndefined(option.getAttribute(fields.value)) ?
                 option.getAttribute(fields.value) : option.innerText;
+            if (!isNullOrUndefined(category)) {
+                json[fields.groupBy] = category;
+            }
             items.push(json);
         }
     }
@@ -1541,8 +1550,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     if (this.sortOrder !== 'None') {
                         dataSource = this.getSortedDataSource(dataSource);
                     }
-                    dataSource = ListBase.groupDataSource(
-                        dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
+                    if (this.element.querySelector('optgroup') && this.isGroupChecking && this.getModuleName() === 'multiselect') {
+                        dataSource = ListBase.groupDataSource(
+                            dataSource, (fields as FieldSettingsModel & { properties: Object }), this.sortOrder);
+                    } else {
+                        dataSource = ListBase.groupDataSource(
+                            dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
+                    }
                 }
                 addClass([this.list], dropDownBaseClasses.grouping);
             } else if (this.getModuleName() !== 'listbox' || (this.getModuleName() === 'listbox' && !this.preventDefActionFilter)) {

@@ -175,7 +175,9 @@ export class InlineEditRender {
     private appendChildren(form: Element, data: Object, isFrozen: boolean): void {
         const dummyData: Object = extend({}, data, {isAdd: !this.isEdit, isFrozen: isFrozen}, true);
         const editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
-        if (this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string') {
+        if (this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string' &&
+            !((this.parent.editSettings.template as Function).prototype &&
+            (this.parent.editSettings.template as Function).prototype.CSPTemplate)) {
             this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
             this.parent.renderTemplates();
         } else {

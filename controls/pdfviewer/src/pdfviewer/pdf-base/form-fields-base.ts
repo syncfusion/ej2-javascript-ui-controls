@@ -290,7 +290,7 @@ export class FormFieldsBase {
                                 }else if (!isNullOrUndefined(currentField.itemAt(j))){
                                     text = currentField.itemAt(j).text;
                                 }
-                                if (text === fieldName) {
+                                if (text === fieldName || (text && text.length > 0 && text[1] === fieldName)) {
                                     currentField.selectedIndex = j;
                                     isExists = true;
                                 }
@@ -1475,6 +1475,12 @@ export class FormFieldsBase {
         }
         formFields.ActualFieldName = comboBoxField.name;
         formFields.SelectedValue = comboBoxField.selectedValue as string;
+        if (comboBoxField._options.length > 0 && (typeof comboBoxField._options[0] !== 'string')){
+            const selectedValue: string[][] = comboBoxField._options.filter((option: string[]) => option[0] === formFields.SelectedValue);
+            if (selectedValue && selectedValue[0]) {
+                formFields.SelectedValue = selectedValue[0][1];
+            }
+        }
         formFields.selectedIndex = comboBoxField.selectedIndex as number;
         formFields.LineBounds = { X: comboBoxField.bounds.x, Y: comboBoxField.bounds.y, Width: comboBoxField.bounds.width,
             Height: comboBoxField.bounds.height };
@@ -1508,7 +1514,9 @@ export class FormFieldsBase {
         if (comboBoxField._dictionary.has('Opt')) {
             const options: string[] = comboBoxField._dictionary.get('Opt');
             if (options.length > 0){
-                formFields.TextList = options.map((item: any) => (typeof item === 'string' ? item : (typeof item === 'object' ? item[0] : '')));
+                formFields.ComboBoxList = options.map((item: string | [string, string]) => { return (typeof item === 'string' ?
+                    {itemName: item, itemValue: item} : (typeof item === 'object' ?
+                        {itemName: item[1], itemValue: item[0] }  : {itemName: '', itemValue: ''})); });
             }
         }
         if (formFields.TextList.length === 0 ){
@@ -2160,6 +2168,7 @@ export class PdfRenderedFields {
     public Name: string;
     public FieldName: string;
     public CheckBoxIndex: string;
+    public ComboBoxList: object[];
     public ActualFieldName: string;
     public CheckBoxGroupName: string;
     public GroupName: string;
@@ -2209,6 +2218,7 @@ export class PdfRenderedFields {
         this.BorderWidth = 0;
         this.CheckBoxGroupName = null;
         this.CheckBoxIndex = null;
+        this.ComboBoxList = [];
         this.FieldName = null;
         this.Font = null;
         this.FontFamily = null;

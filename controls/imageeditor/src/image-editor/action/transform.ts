@@ -1889,6 +1889,7 @@ export class Transform {
 
     private resize(width: number, height: number, isAspectRatio?: boolean): void {
         const parent: ImageEditor = this.parent;
+        let aspectHeight: string;
         parent.isResize = true;
         if (isNullOrUndefined(parent.prevCropObj) && isNullOrUndefined(parent.prevObj)) {
             parent.notify('transform', { prop: 'updateResize', value: {bool: false }});
@@ -1902,7 +1903,11 @@ export class Transform {
             }
         }
         const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
-        const aspectHeight: string = aspectRatioHeight.value === '' ? aspectRatioHeight.placeholder : aspectRatioHeight.value;
+        if (aspectRatioHeight) {
+            aspectHeight = aspectRatioHeight.value === '' ? aspectRatioHeight.placeholder : aspectRatioHeight.value;
+        } else {
+            aspectHeight = height + 'px';
+        }
         const resizeEventArgs: ResizeEventArgs = {cancel: false, previousWidth: Math.ceil(parent.img.destWidth),
             previousHeight: Math.ceil(parent.img.destHeight), width: Math.ceil(width), height: height && height !== 0 ? Math.ceil(height) :
                 (isAspectRatio ? Math.ceil(parseFloat(aspectHeight)) : Math.ceil(parent.img.destHeight)),
@@ -1930,8 +1935,8 @@ export class Transform {
                 const originalWidth: number = parent.img.destWidth;
                 const originalHeight: number = parent.img.destHeight;
                 let aspectRatioWidthValue: number;
-                aspectRatioWidthValue = parseFloat(aspectRatioWidth.value === '' ? aspectRatioWidth.placeholder : aspectRatioWidth.value);
                 if (aspectRatioHeight) {
+                    aspectRatioWidthValue = parseFloat(aspectRatioWidth.value === '' ? aspectRatioWidth.placeholder : aspectRatioWidth.value);
                     let value: number = aspectRatioWidthValue / (originalWidth / originalHeight);
                     // eslint-disable-next-line max-len
                     const height: number = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);

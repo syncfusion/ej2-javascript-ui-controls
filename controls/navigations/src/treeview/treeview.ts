@@ -1192,6 +1192,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Event()
     public nodeSelecting: EmitType<NodeSelectEventArgs>;
+    isFilter: boolean;
 
     constructor(options?: TreeViewModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -2057,10 +2058,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const childElement: Element = select('.' + PARENTITEM, element);
             let checkBoxes: HTMLElement[];
             if (!isNOU(childElement)) {
+                let childCheck: HTMLElement[] = Array.from(childElement.querySelectorAll('li') as NodeListOf<HTMLElement>);
                 checkBoxes = selectAll('.' + CHECKBOXWRAP, childElement);
+                if (this.isFilter) {
+                    checkBoxes = Array.from(checkBoxes).filter((checkbox: Element) => {
+                        const dataUID: string | null = checkbox.closest('li').getAttribute('data-uid');
+                        return dataUID !== null && this.checkedNodes.indexOf(dataUID) !== -1;
+                    });
+
+                    childCheck = Array.from(childCheck).filter((li: HTMLElement) => {
+                        const childIds: string | null = li.getAttribute('data-uid');
+                        return childIds !== null && this.checkedNodes.indexOf(childIds) !== -1;
+                    });
+
+                    if (checkBoxes.length === 0) {
+                        checkBoxes = selectAll('.' + CHECKBOXWRAP, childElement);
+                        childCheck = Array.from(childElement.querySelectorAll('li') as NodeListOf<HTMLElement>);
+                    }
+                }
                 const isChecked: boolean = element.getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(CHECK);
                 const parentCheck: boolean = element.getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(INDETERMINATE);
-                const childCheck: NodeListOf<HTMLElement> = childElement.querySelectorAll('li');
                 let checkedState: string;
                 for (let index: number = 0; index < checkBoxes.length; index++) {
                     const childId: string = childCheck[parseInt(index.toString(), 10)].getAttribute('data-uid');
@@ -2118,7 +2135,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                             ? nodes[parseInt(len.toString(), 10)].toString()
                             : null;
                     if (node !== '' && doCheck && node) {
-                        this.setValidCheckedNode(node);
+                        this.setValidCheckedNode(node, nodes as string[]);
                         this.dynamicCheckState(node, doCheck);
                     } else if (this.checkedNodes.indexOf(node) !== -1 && node !== '' && !doCheck) {
                         this.checkedNodes.splice(this.checkedNodes.indexOf(node), 1);
@@ -3577,8 +3594,18 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         const parentIndex: string = li.getAttribute('data-uid');
         const mapper: FieldsSettingsModel = this.fields;
         if (this.dataType === 1 && this.autoCheck) {
-            const resultData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).executeLocal(
+            let resultData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).executeLocal(
                 new Query().where(mapper.parentID, 'equal', parentIndex, true));
+
+            const childMatchesCheckedNodes: { [key: string]: Object }[] = resultData.filter((item: { [key: string]: any }) => {
+                return this.checkedNodes.indexOf(item[mapper.id].toString()) !== -1;
+            }, this);
+
+            if (this.checkedNodes.indexOf(parentIndex) !== -1 && childMatchesCheckedNodes.length !== resultData.length && this.isFilter) {
+                if (childMatchesCheckedNodes.length > 0) {
+                    resultData = childMatchesCheckedNodes;
+                }
+            }
             for (let i: number = 0; i < resultData.length; i++) {
                 const resultId: string = resultData[parseInt(i.toString(), 10)][this.fields.id]
                     ? resultData[parseInt(i.toString(), 10)][this.fields.id].toString()
@@ -3638,8 +3665,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         } else {
-            const childItems: { [key: string]: Object }[] = this.getChildNodes(this.treeData, parentIndex);
+            let childItems: { [key: string]: any }[] = this.getChildNodes(this.treeData, parentIndex);
             if (childItems) {
+                const filteredChildItems: { [key: string]: any }[] = childItems.filter((item: { [key: string]: any }) => {
+                    const itemValue: string = String(item[Object.keys(item)[0]]);
+                    return this.checkedNodes.indexOf(itemValue) !== -1;
+                });
+                if (filteredChildItems.length > 0 && childItems.length && this.isFilter) {
+                    childItems = filteredChildItems;
+                }
                 this.childStateChange(childItems, parentIndex, childElement, doCheck);
             }
         }
@@ -3831,6 +3865,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private getFocusedNode(): Element {
         let selectedItem: Element;
         const fNode: Element = select('.' + LISTITEM + '[tabindex="0"]', this.element);
+        if (!isNOU(fNode)) {
+            const ariaChecked: string = fNode.getAttribute('aria-checked');
+            if (ariaChecked === 'mixed' || ariaChecked === 'false') {
+                this.isFilter = false;
+            }
+        }
         if (isNOU(fNode)) { selectedItem = select('.' + LISTITEM, this.element); }
         return isNOU(fNode) ? (isNOU(selectedItem) ? this.element.firstElementChild : selectedItem) : fNode;
     }
@@ -4717,7 +4757,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private expandParent(dropLi: Element): Element {
-        const dropIcon: Element = select('div.' + ICON, dropLi);
+        const dropIcon: Element = select('div.' + EXPANDABLE + ', div.' + COLLAPSIBLE, dropLi);
         if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && this.preventExpand !== true) {
             this.expandAction(dropLi, dropIcon, null);
         }
@@ -4770,6 +4810,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             dropLi.appendChild(dropUl);
             this.addExpand(dropLi);
             this.trigger('nodeExpanded', this.getExpandEvent(dropLi, null));
+        }
+        const collapseIcon: Element = select('div.' + COLLAPSIBLE, dropLi);
+        if (!isNOU(dropUl) && collapseIcon && this.preventExpand) {
+            removeClass([collapseIcon], COLLAPSIBLE);
+            dropLi.setAttribute('aria-expanded', 'false');
+            addClass([collapseIcon], EXPANDABLE);
         }
         return dropUl;
     }
@@ -5111,7 +5157,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNullOrUndefined(dropLi)) {
             dropIcon1 = select('div.' + ICON, dropLi);
         }
-        if (this.dataType === 1 && dropIcon1 && dropIcon1.classList.contains(EXPANDABLE) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) { this.preventExpand = true; }
+        if (this.dataType === 1 && dropIcon1 && dropIcon1.classList.contains(EXPANDABLE) && this.preventExpand && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) { this.preventExpand = true; }
         if (this.dataType !== 1) {
             this.addChildData(this.treeData, this.fields, id, nodes, index);
             this.isFirstRender = false;
@@ -5129,7 +5175,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 for (let i: number = 0; i < li.length; i++) {
                     dropUl.insertBefore(li[parseInt(i.toString(), 10)], refNode);
                 }
-                if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
+                if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !this.preventExpand && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                     this.preventExpand = false;
                     const dropIcon: Element = select('div.' + ICON, dropLi);
                     if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && (isNOU(args) || args.name !== 'nodeExpanding')) {
@@ -5142,7 +5188,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     for (let i: number = 0; i < li.length; i++) {
                         dropUl.insertBefore(li[parseInt(i.toString(), 10)], refNode);
                     }
-                    if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
+                    if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !this.preventExpand && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                         this.preventExpand = false;
                         const dropIcon: Element = select('div.' + ICON, dropLi);
                         if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && (isNOU(args) || args.name !== 'nodeExpanding')) {
@@ -5648,6 +5694,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setCheckedNodes(nodes: string[]): void {
         nodes = JSON.parse(JSON.stringify(nodes));
+        if (nodes.length > 1 && typeof this.nodeChecked === 'function' && this.nodeChecked.length > 0 ) {
+            this.isFilter = true;
+        }
         this.uncheckAll(this.checkedNodes);
         this.setIndeterminate(nodes);
         if (nodes.length > 0) {
@@ -5658,16 +5707,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Checks whether the checkedNodes entered are valid and sets the valid checkedNodes while changing via setmodel
      *
      * @param {string} node - The unique identifier of the node.
+     * @param {string[]} [nodes=[]] - The list of node IDs to check.
      * @returns {void}
      * @private
      */
-    private setValidCheckedNode(node: string): void {
+    private setValidCheckedNode(node: string, nodes: string[] = []): void {
         if (this.dataType === 1) {
             const mapper: FieldsSettingsModel = this.fields;
             const resultData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).executeLocal(
                 new Query().where(mapper.id, 'equal', node, true));
             if (resultData[0]) {
-                this.setChildCheckState(resultData, node, resultData[0]);
+                this.setChildCheckState(resultData, node, resultData[0], nodes);
                 if (this.autoCheck) {
                     const parent: string = resultData[0][this.fields.parentID] ? resultData[0][this.fields.parentID].toString() : null;
                     const childNodes: { [key: string]: Object }[] = this.getChildNodes(this.treeData, parent);
@@ -5695,7 +5745,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.treeData[parseInt(a.toString(), 10)]
                 );
                 if (childItems) {
-                    this.setChildCheckState(childItems, node, this.treeData[parseInt(a.toString(), 10)]);
+                    this.setChildCheckState(childItems, node, this.treeData[parseInt(a.toString(), 10)], nodes);
                 }
             }
         }
@@ -5709,7 +5759,18 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      * @private
      */
-    private setChildCheckState(childItems: { [key: string]: Object }[], node: string, treeData?: { [key: string]: Object }): void {
+    /**
+     * Checks whether the checkedNodes entered are valid and sets the valid checkedNodes while changing via setmodel(for hierarchical DS)
+     *
+     * @param {Object[]} childItems - The child items to check.
+     * @param {string} node - The node to set the check state for.
+     * @param {Object} [treeData] - The optional tree data.
+     * @param {string[]} [nodes=[]] - The list of node IDs to check.
+     * @returns {void}
+     * @private
+     */
+    private setChildCheckState(childItems: { [key: string]: Object; }[], node: string, treeData?: { [key: string]: Object; },
+                               nodes: string[] = []): void {
         let checkedParent: string;
         let count: number = 0;
         if (this.dataType === 1) {
@@ -5729,7 +5790,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.checkDisabledState(node);
                 }
                 const subChildItems: { [key: string]: Object }[] = this.getChildNodes(this.treeData, checkNode);
-                if (subChildItems) {
+                const isParentNodeCheck: boolean = (nodes.length === 1 && nodes[0] === checkNode);
+
+                if (subChildItems.length === node.length || isParentNodeCheck) {
                     this.setChildCheckState(subChildItems, node, treeData);
                 }
             }
@@ -5739,8 +5802,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             for (let index: number = 0; index < childItems.length; index++) {
                 const checkedChild: string = childItems[parseInt(index.toString(), 10)][this.fields.id] ? childItems[parseInt(index.toString(), 10)][this.fields.id].toString() : '';
+                const isParentNodeCheck: boolean = ([node].length === 1 && nodes.length === 0);
                 if (treeData && checkedParent && this.autoCheck) {
-                    if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1) {
+                    if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1
+                        && (checkedChild === node || isParentNodeCheck)) {
                         this.checkDisabledState(checkedChild, childItems[index as number]);
                     }
                 }
@@ -5765,7 +5830,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
     private setIndeterminate(nodes: string[]): void {
         for (let i: number = 0; i < nodes.length; i++) {
-            this.setValidCheckedNode(nodes[parseInt(i.toString(), 10)]);
+            this.setValidCheckedNode(nodes[parseInt(i.toString(), 10)], nodes);
         }
     }
 

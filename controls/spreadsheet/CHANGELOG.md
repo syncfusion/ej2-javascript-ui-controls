@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I646465` - Issue with "script error occurring when importing an Excel file that contains an exclamation mark (!) in the sheet name" has been resolved.
+
 ## 27.2.2 (2024-11-15)
 
 ### Spreadsheet

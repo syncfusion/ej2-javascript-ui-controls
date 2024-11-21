@@ -10,7 +10,7 @@ describe('Cell Format ->', () => {
 
     describe('API ->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ cells:[{ style: { fontSize: '9pt', fontFamily: 'Georgia', fontWeight: 'normal', fontStyle: 'normal', textAlign: 'left' } }] }] }], cellStyle: { fontSize: '14pt', fontFamily: 'Courier', fontWeight: 'bold', fontStyle: 'italic', textAlign: 'center' } }, done);
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ cells:[{ style: { fontSize: '9pt', fontFamily: 'Georgia', fontWeight: 'normal', fontStyle: 'normal', textAlign: 'left' } }] }], selectedRange: 'B1:B1' }], cellStyle: { fontSize: '14pt', fontFamily: 'Courier', fontWeight: 'bold', fontStyle: 'italic', textAlign: 'center' } }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
@@ -29,6 +29,34 @@ describe('Cell Format ->', () => {
             expect(td.style.fontWeight).toBe('bold');
             expect(td.style.fontStyle).toBe('italic');
             expect(td.style.textAlign).toBe('center');
+            done();
+        });
+        it('Checking property change', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.allowCellFormatting).toBeTruthy();
+            const boldBtn: HTMLElement = helper.getElement(`#${helper.id}_bold`);
+            expect(boldBtn.classList).toContain('e-active');
+            expect(boldBtn.parentElement.classList).not.toContain('e-overlay');
+            spreadsheet.allowCellFormatting = false;
+            spreadsheet.dataBind();
+            expect(spreadsheet.allowCellFormatting).toBeFalsy();
+            expect(boldBtn.classList).not.toContain('e-active');
+            expect(boldBtn.parentElement.classList).toContain('e-overlay');
+            let tdEle: HTMLElement = helper.invoke('getCell', [0, 1]);
+            expect(tdEle.style.fontWeight).toBe('');
+            helper.invoke('selectRange', ['A1']);
+            expect(boldBtn.classList).not.toContain('e-active');
+            helper.invoke('selectRange', ['B1']);
+            expect(boldBtn.classList).not.toContain('e-active');
+            spreadsheet.allowCellFormatting = true;
+            spreadsheet.dataBind();
+            expect(boldBtn.classList).toContain('e-active');
+            expect(boldBtn.parentElement.classList).not.toContain('e-overlay');
+            expect(tdEle.style.fontWeight).toContain('bold');
+            helper.invoke('selectRange', ['A1']);
+            expect(boldBtn.classList).not.toContain('e-active');
+            helper.invoke('selectRange', ['B1']);
+            expect(boldBtn.classList).toContain('e-active');
             done();
         });
     });

@@ -3222,6 +3222,13 @@ export class ToolbarModule {
             parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: { canvas: 'duplicate', obj: activeObj,
                 isCropRatio: null, points: null, isPreventDrag: true } });
         }
+        const panMoveObj: Object = {panMove: null };
+        parent.notify('transform', { prop: 'getPanMove', onPropertyChange: false,
+            value: {obj: panMoveObj }});
+        if (panMoveObj['panMove']) {
+            parent.notify('transform', { prop: 'drawPannedImage', onPropertyChange: false,
+                value: { xDiff: null, yDiff: null } });
+        }
     }
 
     private updateKBDNavigation(type: string): void {
@@ -5868,6 +5875,15 @@ export class ToolbarModule {
                         if (parseInt(parent.fontSizeColl[i as number].text, 10) >= Math.round(parent.activeObj.textSettings.fontSize)) {
                             fontSizeElem.textContent = (i + 1).toString();
                             break;
+                        } else {
+                            if (Math.round(parent.activeObj.textSettings.fontSize) < parseInt(parent.fontSizeColl[0].text, 10)) {
+                                fontSizeElem.textContent = '1';
+                                break;
+                            } else if (Math.round(parent.activeObj.textSettings.fontSize) >
+                                parseInt(parent.fontSizeColl[parent.fontSizeColl.length - 1].text, 10)) {
+                                fontSizeElem.textContent = ((parent.fontSizeColl.length - 1) + 1).toString();
+                                break;
+                            }
                         }
                     }
                 }

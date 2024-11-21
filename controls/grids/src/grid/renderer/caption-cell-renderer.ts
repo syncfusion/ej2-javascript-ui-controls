@@ -90,7 +90,9 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             }
         }
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
-            const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string' &&
+                !((gObj.groupSettings.captionTemplate as Function).prototype &&
+                (gObj.groupSettings.captionTemplate as Function).prototype.CSPTemplate);
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             if (isReactCompiler || isReactChild) {

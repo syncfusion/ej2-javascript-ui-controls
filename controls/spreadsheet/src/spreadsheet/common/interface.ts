@@ -33,7 +33,7 @@ export interface IRenderer {
     updateColContent(args: SheetRenderArgs): void;
     updateCol(sheet: SheetModel, idx: number, appendTo?: Node): Element;
     showHideHeaders(): void;
-    getRowHeaderWidth(sheet: SheetModel, skipFreezeCheck?: boolean): number;
+    getRowHeaderWidth(sheet: SheetModel, skipFreezeCheck?: boolean, addScaling?: boolean): number;
     getColHeaderHeight(sheet: SheetModel, skipHeader?: boolean): number
     setPanelWidth(sheet: SheetModel, rowHdr: HTMLElement, isRtlChange?: boolean): void;
     getScrollSize(addOffset?: boolean): number;
@@ -105,6 +105,8 @@ export interface IViewport {
     width: number;
     beforeFreezeWidth: number;
     beforeFreezeHeight: number;
+    scaleX: number;
+    scaleY: number;
 }
 
 /**
@@ -663,4 +665,5 @@ export interface ExtendedPredicateModel extends PredicateModel {
  */
 export interface ExtendedSpreadsheet extends Spreadsheet {
     renderTemplates?: (callback: Function) => void;
+    filterModule?: { filterRange: Map<number, { range: number[] }>; };
 }

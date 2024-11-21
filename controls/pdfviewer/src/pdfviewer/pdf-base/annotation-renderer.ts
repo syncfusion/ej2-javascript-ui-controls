@@ -1,7 +1,8 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
-import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, _PdfDictionary, _PdfName, PdfBorderEffectStyle, PdfBorderEffect, PdfAnnotationState, PdfAnnotationStateModel, PdfCircleAnnotation, PdfPopupAnnotation, PdfLineAnnotation, PdfLineEndingStyle, PdfFont, PdfFontStyle, PdfFontFamily, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfRubberStampAnnotation, PdfPen, PdfBrush, PdfGraphics, PdfVerticalAlignment, PdfGraphicsState, PdfPath, PdfRubberStampAnnotationIcon, PdfBitmap, PdfImage, PdfPolyLineAnnotation, PdfCircleMeasurementType, PdfPopupIcon, PdfFreeTextAnnotation, PdfBorderStyle, PdfAnnotationCollection, PdfRectangleAnnotation, PdfPolygonAnnotation, PdfEllipseAnnotation, PdfTextMarkupAnnotation, PdfAnnotation, PdfInkAnnotation, PdfLineIntent, PdfAppearance, PdfTemplate, PdfTextMarkupAnnotationType, PdfLineCaptionType, PdfMeasurementUnit, PdfAnnotationIntent, PdfTrueTypeFont, _decode, _PdfBaseStream, _annotationFlagsToString} from '@syncfusion/ej2-pdf';
+import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, _PdfDictionary, _PdfName, PdfBorderEffectStyle, PdfBorderEffect, PdfAnnotationState, PdfAnnotationStateModel, PdfCircleAnnotation, PdfPopupAnnotation, PdfLineAnnotation, PdfLineEndingStyle, PdfFont, PdfFontStyle, PdfFontFamily, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfRubberStampAnnotation, PdfPen, PdfBrush, PdfGraphics, PdfVerticalAlignment, PdfGraphicsState, PdfPath, PdfRubberStampAnnotationIcon, PdfBitmap, PdfImage, PdfPolyLineAnnotation, PdfCircleMeasurementType, PdfPopupIcon, PdfFreeTextAnnotation, PdfBorderStyle, PdfAnnotationCollection, PdfRectangleAnnotation, PdfPolygonAnnotation, PdfEllipseAnnotation, PdfTextMarkupAnnotation, PdfAnnotation, PdfInkAnnotation, PdfLineIntent, PdfAppearance, PdfTemplate, PdfTextMarkupAnnotationType, PdfLineCaptionType, PdfMeasurementUnit, PdfAnnotationIntent, PdfTrueTypeFont, _decode, _PdfBaseStream, _annotationFlagsToString, _RtlRenderer, _UnicodeLine, _TrueTypeReader, _UnicodeTrueTypeFont, _TrueTypeGlyph} from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase, SizeBase, PageRenderer } from '../index';
+import { PdfViewerUtils } from '../base/pdfviewer-utlis';
 
 /**
  * AnnotationRenderer
@@ -389,7 +390,14 @@ export class AnnotationRenderer {
         else if (!isNullOrUndefined(shapeAnnotation.shapeAnnotationType) && shapeAnnotation.shapeAnnotationType === 'Polyline') {
             const points: any = JSON.parse(shapeAnnotation.vertexPoints);
             const linePoints: number[] = this.getSaveVertexPoints(points, page);
+            const bounds: Rect = JSON.parse(shapeAnnotation.bounds);
             const polylineAnnotation: PdfPolyLineAnnotation = new PdfPolyLineAnnotation(linePoints);
+            polylineAnnotation.bounds = new Rect(
+                this.convertPixelToPoint(bounds.left ? bounds.left : 0),
+                this.convertPixelToPoint(bounds.top ? bounds.top : 0),
+                this.convertPixelToPoint(bounds.width ? bounds.width : 0),
+                this.convertPixelToPoint(bounds.height ? bounds.height : 0)
+            );
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 polylineAnnotation.text = shapeAnnotation.note.toString();
             }
@@ -851,6 +859,10 @@ export class AnnotationRenderer {
             boundsCollection = combinedRectangles;
         }
         const annotation: PdfTextMarkupAnnotation = new PdfTextMarkupAnnotation(null, 0, 0, 0, 0);
+        if (boundsCollection.length > 0) {
+            annotation.bounds = { x: boundsCollection[0].x, y: boundsCollection[0].y,
+                width: boundsCollection[0].width, height: boundsCollection[0].height };
+        }
         annotation.textMarkupType = annotationtypes.textMarkupType;
         const isLock: boolean = this.checkAnnotationLock(markupAnnotation);
         if (isNullOrUndefined(markupAnnotation.author) || (isNullOrUndefined(markupAnnotation.author) && markupAnnotation.author === '')) {
@@ -1553,6 +1565,25 @@ export class AnnotationRenderer {
         page.annotations.add(annotation);
     }
 
+    private static hasDynamicText(freeTextAnnotation: any): boolean {
+        return Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'dynamicText') &&
+               !isNullOrUndefined(freeTextAnnotation.dynamicText.toString());
+    }
+
+    private static setFontFromKeys(freeTextAnnotation: any, annotation: PdfFreeTextAnnotation,
+                                   textFont: { [key: string]: any }, fontSize: number): void {
+        const font: PdfTrueTypeFont = PdfViewerUtils.tryGetFontFromKeys(textFont,
+                                                                        freeTextAnnotation.dynamicText.toString(), fontSize);
+        if (!isNullOrUndefined(font)) {
+            annotation.font = font;
+            annotation.setAppearance(true);
+        }
+        else {
+            annotation.setAppearance(false);
+        }
+    }
+
+
     /**
      * @param {any} details - details
      * @param {PdfPage} page - page
@@ -1606,21 +1637,32 @@ export class AnnotationRenderer {
         }
         const fontStyle: PdfFontStyle = this.getFontStyle(fontJson);
         annotation.font = new PdfStandardFont(fontFamily, this.convertPixelToPoint(fontSize), fontStyle);
-        if (!isNullOrUndefined(textFont) && textFont.length > 0) {
-            textFont.Keys.forEach((key: string) => {
-                // Need to implement font stream
-                const fontStream: any = textFont[`${key}`];
-                if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'dynamicText') && !isNullOrUndefined(freeTextAnnotation.dynamicText.toString())) {
-                    const fontAnnotation: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize),
-                                                                                PdfFontStyle.regular);
-                    const format: PdfStringFormat = new PdfStringFormat();
-                    fontAnnotation.measureString(freeTextAnnotation.dynamicText.toString(), format);
-                    const glyphPresent: boolean = fontAnnotation._dictionary.has('IsContainsFont') ? fontAnnotation._dictionary.get('IsContainsFont') : false;
+        if (AnnotationRenderer.hasDynamicText(freeTextAnnotation)) {
+            if (!isNullOrUndefined(textFont) && Object.keys(textFont).length > 0) {
+                const fontKey: any = PdfViewerUtils.getFontKey(textFont, freeTextAnnotation.fontFamily.toLowerCase());
+                if (!isNullOrUndefined(fontKey)) {
+                    let fontStream: any = textFont[`${fontKey}`];
+                    fontStream = PdfViewerUtils.processFontStream(fontStream);
+                    const font: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize));
+                    const glyphPresent: boolean = PdfViewerUtils.isSupportedFont(freeTextAnnotation.dynamicText.toString(), font);
+                    annotation.setAppearance(glyphPresent);
                     if (glyphPresent) {
-                        annotation.font = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize));
+                        annotation.font = font;
+                    } else {
+                        AnnotationRenderer.setFontFromKeys(freeTextAnnotation, annotation, textFont, fontSize);
                     }
+                } else {
+                    AnnotationRenderer.setFontFromKeys(freeTextAnnotation, annotation, textFont, fontSize);
                 }
-            });
+            }
+            else {
+                try {
+                    annotation.font.measureString(freeTextAnnotation.dynamicText.toString());
+                }
+                catch (e) {
+                    annotation.setAppearance(false);
+                }
+            }
         }
         if (freeTextAnnotation['subject'] != null) {
             annotation.subject = freeTextAnnotation['subject'].toString();

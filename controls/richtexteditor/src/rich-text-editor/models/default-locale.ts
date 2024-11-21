@@ -368,11 +368,11 @@ export let formatsLocale : { [ket: string]: string }[] = [
 export let numberFormatListLocale: { [ket: string]: string }[] = [
     { locale: 'numberFormatListNone', value: 'none' },
     { locale: 'numberFormatListNumber', value: 'decimal' },
-    { locale: 'numberFormatListLowerAlpha', value: 'lower-alpha' },
-    { locale: 'numberFormatListUpperAlpha', value: 'upper-alpha' },
-    { locale: 'numberFormatListLowerRoman', value: 'lower-roman' },
-    { locale: 'numberFormatListUpperRoman', value: 'upper-roman' },
-    { locale: 'numberFormatListLowerGreek', value: 'lower-greek' }
+    { locale: 'numberFormatListLowerAlpha', value: 'lowerAlpha' },
+    { locale: 'numberFormatListUpperAlpha', value: 'upperAlpha' },
+    { locale: 'numberFormatListLowerRoman', value: 'lowerRoman' },
+    { locale: 'numberFormatListUpperRoman', value: 'upperRoman' },
+    { locale: 'numberFormatListLowerGreek', value: 'lowerGreek' }
 ];
 
 export let bulletFormatListLocale: { [ket: string]: string }[] = [

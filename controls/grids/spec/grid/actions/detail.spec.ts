@@ -1,7 +1,7 @@
 /**
  * Grid detail template spec document
  */
-import { EmitType } from '@syncfusion/ej2-base';
+import { EmitType, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Sort } from '../../../src/grid/actions/sort';
@@ -1174,6 +1174,35 @@ describe('Detail template module', () => {
 
         afterAll(() => {
             (gridObj.detailRowModule as any).destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('EJ2-916181 - All template is not rendering in React when using the CSPTemplate function', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    detailTemplate: initializeCSPTemplate(function() { return '<span>detailTemplate</span>' }),
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 125 },
+                        { field: 'Freight', width: 120, format: 'C', textAlign: 'Right' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 150 }
+                    ]
+                }, done);
+        });
+
+        it('Coverage the expand row', (done: Function) => {
+            gridObj.isReact = true;
+            gridObj.detailRowModule.expand(gridObj.getDataRows()[1].querySelector('.e-detailrowcollapse'));
+            done();
+        });
+
+        afterAll(() => {
             destroy(gridObj);
             gridObj = null;
         });

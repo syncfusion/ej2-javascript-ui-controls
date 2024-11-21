@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### Grid
+
+#### Bug fixes
+
+- `#I652520` - Resolved an issue where a script error was thrown when hovering over the stacked header column.
+- `#I647846` - Fixed a script error that occurred when calling the `updateRow` method with an invalid row index.
+- `#I650873` - Resolved an issue where the paste action could not be performed on a template cell in the Grid.
+- `#I649529` - Fixed a script error that occurred while searching for unavailable data with the checkbox and `persistSelection` options enabled, and at least one column grouped.
+
 ## 27.2.2 (2024-11-15)
 
 ### Grid

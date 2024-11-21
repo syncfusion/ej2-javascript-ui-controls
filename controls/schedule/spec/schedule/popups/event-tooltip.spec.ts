@@ -2,11 +2,15 @@
 /**
  * Schedule event tooltip spec
  */
-import { isVisible } from '@syncfusion/ej2-base';
+import { EmitType, isVisible, remove } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, TimelineViews } from '../../../src/schedule/index';
 import { defaultData, tooltipData, resourceData } from '../base/datasource.spec';
 import * as util from '../util.spec';
+import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
+import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
+import { PopupOpenEventArgs } from '../../../src/schedule/base/interface';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews);
 
@@ -507,6 +511,114 @@ describe('Schedule event tooltip module', () => {
             expect(isWithinViewport).toBe(true);
             util.triggerMouseEvent(target, 'mouseleave');
             expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+        });
+    });
+
+    describe('916963- Script error occur while editing an existing event in Scheduler component', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const template: string = '<table class="custom-event-editor" width="100%" cellpadding="5"><tbody>' +
+                '<tr><td class="e-textlabel">Summary</td><td colspan="4"><input id="Subject" class="e-field e-input"' +
+                'type="text" value="" name="Subject" style="width: 100%" /></td> </tr><tr><td class="e-textlabel">From</td>' +
+                '<td colspan="4"><input id="StartTime" class="e-field" type="text" name="StartTime" /></td></tr>' +
+                '<tr><td class="e-textlabel">To</td><td colspan="4"><input id="EndTime" class="e-field" type="text"' +
+                'name="EndTime" /></td></tr><tr><td colspan="4"><div id="recurrenceEditor"></div></td></tr>' +
+                '<tr><td class="e-textlabel">Reason</td><td colspan="4"><textarea id="Description" class="e-field e-input"' +
+                'name="Description" rows="3" cols="50"style="width: 100%; height: 60px !important; resize: vertical"></textarea>' +
+                '</td></tr></tbody></table>';
+            const scriptEle: HTMLScriptElement = document.createElement('script');
+            scriptEle.type = 'text/x-template';
+            scriptEle.id = 'EditorTemplate';
+            scriptEle.appendChild(document.createTextNode(template));
+            document.getElementsByTagName('head')[0].appendChild(scriptEle);
+            const eventData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Paris',
+                StartTime: new Date(2024, 8, 4, 15, 0),
+                EndTime: new Date(2024, 8, 4, 16, 30)
+            },
+            {
+                Id: 2,
+                Subject: 'Meeting',
+                StartTime: new Date(2024, 8, 5, 16, 0),
+                EndTime: new Date(2024, 8, 5, 16, 30),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            }];
+            const onPopupOpen: EmitType<PopupOpenEventArgs> = (args: PopupOpenEventArgs) => {
+                if (args.type === 'Editor') {
+                    let startElement: HTMLInputElement = args.element.querySelector('#StartTime') as HTMLInputElement;
+                    if (!startElement.classList.contains('e-datetimepicker')) {
+                        new DateTimePicker({ value: new Date(startElement.value) || new Date() }, startElement);
+                    }
+                    let endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
+                    if (!endElement.classList.contains('e-datetimepicker')) {
+                        new DateTimePicker({ value: new Date(endElement.value) || new Date() }, endElement);
+                    }
+                    const recurrenceEditor: HTMLElement = args.element.querySelector('#recurrenceEditor') as HTMLElement;
+                    if (!recurrenceEditor.classList.contains('e-recurrenceeditor')) {
+                        const recurrenceObj: RecurrenceEditor = new RecurrenceEditor({
+                        });
+                        recurrenceObj.appendTo(recurrenceEditor);
+                        schObj.setRecurrenceEditor(recurrenceObj);
+                    }
+                }
+            };
+            const model: ScheduleModel = {
+                height: '500px', width: '500px',
+                selectedDate: new Date(2024, 8, 4),
+                editorTemplate: '#EditorTemplate',
+                popupOpen: onPopupOpen,
+                eventSettings: {
+                    enableTooltip: true,
+                    tooltipTemplate: '<div class="tooltip-wrap">' +
+                        '<div class="content-area"><div class="name">${Subject}</></div>' +
+                        '${if(City !== null && City !== undefined)}<div class="city">${City}</div>${/if}' +
+                        '<div class="time">From : ${StartTime.toLocaleString()} </div>' +
+                        '<div class="time">To   : ${EndTime.toLocaleString()} </div></div></div>'
+                }
+            };
+            schObj = util.createSchedule(model, eventData, done);
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+            (schObj as any).isReact = true;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(document.getElementById('EditorTemplate'));
+        });
+        it('Checking script error while using tooltip and editor template', () => {
+            const target: HTMLElement = schObj.element.querySelector('.e-appointment');
+            expect(target.querySelector('.e-subject').innerHTML).toBe('Paris');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            target.click();
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-event-edit')).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+        });
+        it('Checking script error while using tooltip and editor template in reccurence dialog', () => {
+            const target: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]');
+            expect(target.querySelector('.e-subject').innerHTML).toBe('Meeting');
+            util.triggerMouseEvent(target, 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            target.click();
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-event-edit')).click();
+            const quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            const eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-cancel'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
         });
     });
 

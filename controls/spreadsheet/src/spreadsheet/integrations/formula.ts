@@ -389,15 +389,17 @@ export class Formula {
 
     private getNameFromRange(range: string): DefineNameModel {
         const singleRange: string = range.slice(0, range.indexOf(':'));
-        const sRange: string[] = range.slice(range.indexOf('!') + 1).split(':');
+        const sRange: string[] = range.substring(range.lastIndexOf('!') + 1).split(':');
         const isSingleCell: boolean = sRange.length > 1 && sRange[0] === sRange[1];
+        let sheetName: string; let referRange: string;
         const name: DefineNameModel[] = this.parent.definedNames.filter(
             (name: DefineNameModel) => {
-                const splitSheetName: string[] = name.refersTo.split('!');
-                if (splitSheetName[0].includes('\'') && splitSheetName[0].match(/^='.*'$/)) {
-                    splitSheetName[0] = '=' + splitSheetName[0].slice(2, -1);
+                sheetName = name.refersTo.substring(0, name.refersTo.lastIndexOf('!'));
+                referRange = name.refersTo.substring(name.refersTo.lastIndexOf('!') + 1);
+                if (sheetName.includes('\'') && sheetName.match(/^='.*'$/)) {
+                    sheetName = '=' + sheetName.slice(2, -1);
                 }
-                const referValue: string = splitSheetName[0] + '!' + splitSheetName[1].split('$').join('');
+                const referValue: string = sheetName + '!' + referRange.split('$').join('');
                 if (isSingleCell && referValue === '=' + singleRange) {
                     return true;
                 }

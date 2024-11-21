@@ -4567,3 +4567,31 @@ describe('Update rowindex', () => {
         }
     });
 });
+describe('update grid line without datasource', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    child: 'subtasks'
+                },
+                gridLines:'Both'
+            }, done);
+    });
+    it('update grid line without datasource', () => {
+        ganttObj.gridLines = 'Vertical'
+        expect(ganttObj.currentViewData.length).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

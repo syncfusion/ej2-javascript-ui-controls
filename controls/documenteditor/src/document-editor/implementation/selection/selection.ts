@@ -84,6 +84,10 @@ export class Selection {
     /**
      * @private
      */
+    public isSelectCurrentWord: boolean = false;
+    /**
+     * @private
+     */
     public isSelectionisInCC: boolean = false;
     /**
      * @private
@@ -1583,10 +1587,12 @@ export class Selection {
      * @returns {void}
      */
     public selectCurrentWord(excludeSpace?: boolean): void {
+        this.isSelectCurrentWord = true;
         const startPosition: TextPosition = this.start.clone();
         const endPosition: TextPosition = this.end.clone();
         this.selectCurrentWordRange(startPosition, endPosition, excludeSpace ? excludeSpace : false);
         this.selectRange(startPosition, endPosition);
+        this.isSelectCurrentWord = false;
     }
     /**
      * Selects the current paragraph.
@@ -5274,7 +5280,9 @@ export class Selection {
                 }
                 this.highlight(start.paragraph, start, end);
                 if (this.isHighlightNext) {
-                    this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    if (this.hightLightNextParagraph === start.paragraph) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    }
                     this.isHighlightNext = false;
                     this.hightLightNextParagraph = undefined;
                 }

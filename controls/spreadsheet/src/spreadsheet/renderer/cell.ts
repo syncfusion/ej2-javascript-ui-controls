@@ -162,7 +162,7 @@ export class CellRenderer implements ICellRenderer {
                     detach(noteIndicator);
                 }
             }
-            if (!args.cell && args.td.classList.contains('e-wraptext')) {
+            if ((!args.cell || !this.parent.allowWrap) && args.td.classList.contains('e-wraptext')) {
                 args.td.classList.remove('e-wraptext');
             }
         }

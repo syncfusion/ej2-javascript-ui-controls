@@ -2334,3 +2334,115 @@ describe('Rendering critical task for SF connection', () => {
         }
     });
 });
+describe('update critical property', () => {
+    let ganttObj: Gantt;
+    let projectNewData: Object[] = [
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5",Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                    ]
+                },
+                { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8" ,Progress: 30},
+                { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+                { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+            allowSorting: true,
+            enableCriticalPath: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+        
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Checking for critical task in querytaskbar event', () => {
+        ganttObj.queryTaskbarInfo = (args: any): void => {
+            expect(ganttObj.currentViewData[6].ganttProperties.isCritical).toBe(true);
+            if (
+                args.data && args.data.cssClas && args.data.cssClas.indexOf("e-gantt-critical") > -1
+            ) {
+              args.taskbarBgColor = "#EDCED2";
+              args.progressBarBgColor = "#B8394C";
+              args.milestoneColor = "#B8394C";
+              args.taskbarBorderColor = "#B8394C";
+      
+              args.data.isCritical = true;
+            } else if (args.data.isCritical) {
+              args.taskbarBgColor = "#EDCED2";
+              args.progressBarBgColor = "#B8394C";
+              args.milestoneColor = "#B8394C";
+              args.taskbarBorderColor = "transparent";
+      
+              args.data.isCritical = true;
+            } else {
+              args.taskbarBgColor = "#DFEAEB";
+              args.progressBarBgColor = "#00778B";
+              args.milestoneColor = "#3D3935";
+              args.taskbarBorderColor = "#00778B";
+              args.data.isCritical = false;
+            }
+        };
+        let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(7) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(startDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
+        input.value = new Date('04/17/2019');
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});

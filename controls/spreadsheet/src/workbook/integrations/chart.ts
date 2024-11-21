@@ -66,7 +66,7 @@ export class WorkbookChart {
                 const rangeIdx: number[] = getSwapRange(getRangeIndexes(chartModel.range));
                 const rangeAddress: string = getRangeAddress(rangeIdx);
                 if (chartModel.range.indexOf('!') > 0) {
-                    chartModel.range = chartModel.range.split('!')[0] + '!' + rangeAddress;
+                    chartModel.range = chartModel.range.substring(0, chartModel.range.lastIndexOf('!')) + '!' + rangeAddress;
                 }
                 else {
                     chartModel.range = this.parent.getActiveSheet().name + '!' + rangeAddress;
@@ -90,8 +90,8 @@ export class WorkbookChart {
                 });
                 this.parent.chartColl.push(chartModel);
                 if (!args.isInitCell || args.isPaste) {
-                    const sheetIdx: number = args.sheetId === undefined ? ((chartModel.range && chartModel.range.indexOf('!') > 0) ?
-                        getSheetIndex(this.parent, chartModel.range.split('!')[0]) : this.parent.activeSheetIndex) :
+                    const sheetIdx: number = args.sheetId === undefined ? ((chartModel.range && chartModel.range.lastIndexOf('!') > 0) ?
+                        getSheetIndex(this.parent, chartModel.range.substring(0, chartModel.range.lastIndexOf('!'))) : this.parent.activeSheetIndex) :
                         getSheetIndexFromId(this.parent, args.sheetId);
                     const chartRowIdx: { clientY: number, isImage?: boolean } = { clientY: chartModel.top, isImage: true };
                     const chartColIdx: { clientX: number, isImage?: boolean } = { clientX: chartModel.left, isImage: true };

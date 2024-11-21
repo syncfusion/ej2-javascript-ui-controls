@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I651756` - Field searching will now work properly within the field list UI when searching for grouped child fields.
+
 ## 27.2.2 (2024-11-15)
 
 ### Pivot Table

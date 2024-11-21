@@ -1,7 +1,7 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
-import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange } from '../common/event';
-import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress } from '../common/index';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange, getFormattedCellObject, checkNumberFormat } from '../common/event';
+import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress, isNumber, NumberFormatArgs, LocaleNumericSettings } from '../common/index';
+import { defaultCurrencyCode, getNumberDependable, getNumericObject, Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { checkIsFormula, DateFormatCheckArgs } from '../../workbook/common/index';
 import { getFormatFromType, getTypeFromFormat } from '../integrations/index';
 
@@ -120,11 +120,33 @@ export class WorkbookEdit {
                 };
                 if (!isFormula) {
                     this.parent.notify(checkDateFormat, dateEventArgs);
-                } else if (value.toLowerCase().includes('unique(')) {
-                    dateEventArgs.updatedVal = value;
-                }
-                if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
-                    cell.value = <string>dateEventArgs.updatedVal;
+                    if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
+                        cell.value = <string>dateEventArgs.updatedVal;
+                    } else if (this.parent.isEdit && value && !isNumber(value)) {
+                        if (cell.format) {
+                            const evtArgs: NumberFormatArgs = {
+                                value: cell.value, format: cell.format, formattedText: cell.value,
+                                type: 'General', cell: cell, rowIndex: range[0], colIndex: range[1], refresh: true, isEdit: true
+                            };
+                            this.parent.notify(getFormattedCellObject, evtArgs);
+                        } else {
+                            const curSymbol: string = getNumberDependable(this.parent.locale, defaultCurrencyCode);
+                            if (value.includes(curSymbol) || value.includes('%') ||
+                                value.includes((<LocaleNumericSettings>getNumericObject(this.parent.locale)).group)) {
+                                const intl: Internationalization = new Internationalization();
+                                const eventArgs: DateFormatCheckArgs = {
+                                    intl: intl, updateValue: true, value: '', curSymbol: curSymbol,
+                                    cell: cell
+                                };
+                                this.parent.notify(checkNumberFormat, {
+                                    args: eventArgs, intl: intl, fResult: value,
+                                    cell: cell
+                                });
+                            }
+                        }
+                    }
+                } else if (!isNullOrUndefined(value) && value.toLowerCase().includes('unique(') && (value as string).length > 0) {
+                    cell.value = <string>value;
                 }
             }
             if (value === '#SPILL!') {

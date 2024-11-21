@@ -972,6 +972,9 @@ export class MaskedDateTime {
 
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = false;
         this.updateValue();
+        if (this.parent.inputElement && this.parent.inputElement.value === this.parent.maskedDateValue && this.parent.inputWrapper && this.parent.inputWrapper.clearButton && !this.parent.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')) {
+            this.parent.inputWrapper.clearButton.classList.add('e-clear-icon-hide');
+        }
     }
 
     private updateValue(): void {

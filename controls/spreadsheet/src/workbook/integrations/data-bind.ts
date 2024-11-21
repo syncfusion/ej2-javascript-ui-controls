@@ -537,9 +537,10 @@ export class DataBind {
                         }
                     }
                 } else {
+                    const argsAddress: string = args.address || args.range || args.fillRange;
                     cellIndices = getRangeIndexes(
-                        args.requestType && args.requestType.toLowerCase().includes('paste') ? args.pastedRange.split('!')[1] :
-                            args.sheetIdx > -1 ? args.address : (args.address || args.range || args.fillRange).split('!')[1]);
+                        args.requestType && args.requestType.toLowerCase().includes('paste') ? args.pastedRange.substring(args.pastedRange.lastIndexOf('!') + 1) :
+                            args.sheetIdx > -1 ? args.address : argsAddress.substring(argsAddress.lastIndexOf('!') + 1));
                     const dataRangeIndices: number[] =
                         [...[range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]], ...dataRange.slice(1, 4)];
                     if (range.showFieldAsHeader && cellIndices[0] === startCell[0]) {

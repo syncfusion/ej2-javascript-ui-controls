@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### Schedule
+
+#### Bug fixes
+
+- `#F194681` - An issue where a script error occurred while editing an existing event in the scheduler component has been resolved.
+
 ## 27.2.2 (2024-11-15)
 
 ### Schedule

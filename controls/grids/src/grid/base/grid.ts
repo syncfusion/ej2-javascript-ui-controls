@@ -7190,7 +7190,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (element && e.type !== 'mouseout' && !(Browser.isDevice && elemNames.indexOf(tagName) !== -1)) {
                 if (this.getTooltipStatus(element)) {
                     const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.dataColIndex), 10)] as Column;
-                    const domSetter: string = col.disableHtmlEncode ? 'innerText' : 'innerHTML';
+                    const domSetter: string = col && col.disableHtmlEncode ? 'innerText' : 'innerHTML';
                     const contentDiv: HTMLDivElement = this.createElement('div');
                     if (element.getElementsByClassName('e-headertext').length) {
                         const innerElement: HTMLElement = element.getElementsByClassName('e-headertext')[0] as HTMLElement;
@@ -7204,7 +7204,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     if (this.enableHtmlSanitizer) {
                         this.toolTipObj.enableHtmlSanitizer = true;
                     }
-                    if (col.disableHtmlEncode) {
+                    if (col && col.disableHtmlEncode) {
                         (<{ enableHtmlParse?: boolean }>this.toolTipObj).enableHtmlParse = false;
                     }
                     this.toolTipObj['open'](element);
@@ -7596,9 +7596,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private keyActionHandler(e: KeyArg): void {
         if (this.isChildGrid(e) ||
-            ((this.isEdit && (!this.editSettings.showAddNewRow || (this.editSettings.showAddNewRow &&
-                this.element.querySelector(literals.editedRow)))) && e.action !== 'escape' && e.action !== 'enter'
-                && e.action !== 'shiftEnter' && e.action !== 'tab' && e.action !== 'shiftTab')) {
+            (this.editModule && ((this.editModule.alertDObj && this.editModule.alertDObj.visible) ||
+                (this.editModule.dialogObj && this.editModule.dialogObj.visible))) ||
+                    ((this.isEdit && (!this.editSettings.showAddNewRow || (this.editSettings.showAddNewRow &&
+                        this.element.querySelector(literals.editedRow)))) && e.action !== 'escape' && e.action !== 'enter'
+                            && e.action !== 'shiftEnter' && e.action !== 'tab' && e.action !== 'shiftTab')) {
             return;
         } else {
             this.keyPress = true;

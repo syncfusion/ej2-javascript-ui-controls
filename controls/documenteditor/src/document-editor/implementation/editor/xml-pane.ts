@@ -25,6 +25,10 @@ export class XmlPane {
     /**
      * @private
      */
+    public isAddedDocumentXml: boolean = false;
+    /**
+     * @private
+     */
     public treeviewObject: TreeView;
     private alertDialog: Dialog;
     public ulelement: HTMLUListElement;
@@ -486,14 +490,25 @@ export class XmlPane {
         const reader = new FileReader();
         reader.onload = () => {
             const xmlString = reader.result as string;
-            this.documentHelper.owner.editor.getPrefixMapping(xmlString);
-            const parsedXml = this.documentHelper.owner.editor.parseXml(xmlString);
-            const arr = this.documentHelper.owner.editor.objectToArray(parsedXml);
-            this.documentHelper.owner.editor.setXmlData(parsedXml, arr);
-            this.addingNewFileToDropDownList();
+            this.adddataFromCustomXMl(xmlString);
         };
         reader.readAsText(file);
     }
+    /**
+     * data from xml to the xml pane.
+     *
+     * @private
+     * @param {string} xmlString - Specifies the custom xmlpart xml.
+     * @returns {void}
+     */
+    public adddataFromCustomXMl(xmlString: string): void {
+        this.documentHelper.owner.editor.getPrefixMapping(xmlString);
+        const parsedXml = this.documentHelper.owner.editor.parseXml(xmlString);
+        const arr = this.documentHelper.owner.editor.objectToArray(parsedXml);
+        this.documentHelper.owner.editor.setXmlData(parsedXml, arr);
+        this.addingNewFileToDropDownList();
+    }
+
     /**
     * To add New File To Drop Down List.
     * @param {File} file.
@@ -514,7 +529,7 @@ export class XmlPane {
         }
         this.dropDownListObject.dataSource = this.DropDownListData;
         this.dropDownListObject.refresh();
-        this.dropDownListObject.value = null;
+        this.dropDownListObject.value = this.DropDownListData[0].ID as string;
         this.dropDownListObject.text = this.DropDownListData[0].Value as string;
         this.documentHelper.owner.editor.XMLFilesCount++;
     }
@@ -559,6 +574,17 @@ export class XmlPane {
             if (show && !this.contextMenuInstance) {
                 this.initializeContextMenu();
                 this.intializeDropDownList();
+                // To check whether the xml Mapping were newly added or the existing one for closing/opening xml pane.
+                if (!this.isAddedDocumentXml) {
+                    this.isAddedDocumentXml = true;
+                    for (let i: number = 0; i < this.documentHelper.customXmlData.length; i++) {
+                        const key: string = this.documentHelper.customXmlData.keys[i];
+                        const xmlValue: string = this.documentHelper.customXmlData.get(key);
+                        if (!isNullOrUndefined(xmlValue)) {
+                            this.adddataFromCustomXMl(xmlValue);
+                        }
+                    }
+                }
             }
             this.documentHelper.updateViewerSize();
         } else {
@@ -572,6 +598,22 @@ export class XmlPane {
             this.documentHelper.owner.isXmlPaneTool = false;
             this.documentHelper.owner.triggerResize();
         }
+    }
+    /**
+    * @private
+    * @returns {void}
+    */
+    public clear(): void {
+        if (this.DropDownListData.length > 2) {
+            for (let i: number = 0; i < this.DropDownListData.length; i++) {
+                const id: string = this.DropDownListData[i].ID as string;
+                if (id !== "Choose" && id !== 'Add') {
+                    this.DropDownListData.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+        this.isAddedDocumentXml = false;
     }
     /**
      * Dispose the internal objects which are maintained.

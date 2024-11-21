@@ -37,12 +37,12 @@ export class WorkbookNumberFormat {
         let sheetIdx: number = this.parent.activeSheetIndex;
         let activeSheet: boolean = true;
         if (args.range && args.range.indexOf('!') > -1) {
-            sheetIdx = getSheetIndex(this.parent, args.range.split('!')[0]);
+            sheetIdx = getSheetIndex(this.parent, args.range.substring(0, args.range.lastIndexOf('!')));
             activeSheet = sheetIdx === this.parent.activeSheetIndex;
         }
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
-        const formatRange: string = args.range ? ((args.range.indexOf('!') > -1) ?
-            args.range.split('!')[1] : args.range) : sheet.selectedRange;
+        const formatRange: string = args.range ? ((args.range.lastIndexOf('!') > -1) ?
+            args.range.substring(args.range.lastIndexOf('!') + 1) : args.range) : sheet.selectedRange;
         const selectedRange: number[] = getSwapRange(getRangeIndexes(formatRange));
         args.curSym = getNumberDependable(this.parent.locale, defaultCurrencyCode);
         let fArgs: NumberFormatArgs; let cell: CellModel; let prevFormat: string; let row: RowModel; let isVisibleRow: boolean;

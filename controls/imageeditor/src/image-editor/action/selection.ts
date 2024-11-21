@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 import { Browser, EventHandler, extend, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ActivePoint, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { ArrowheadType, BeforeSaveEventArgs, CurrentObject, ImageEditor, ImageEditorClickEventArgs, Point, SelectionChangeEventArgs, SelectionPoint, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings, TextSettings, ZoomTrigger } from '../index';
+import { ArrowheadType, BeforeSaveEventArgs, CurrentObject, Direction, ImageEditor, ImageEditorClickEventArgs, Point, SelectionChangeEventArgs, SelectionPoint, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings, TextSettings, TransformationCollection, ZoomTrigger } from '../index';
 export class Selection {
     private parent: ImageEditor;
     private lowerContext: CanvasRenderingContext2D;
@@ -57,6 +57,7 @@ export class Selection {
     private isMouseDown: boolean = false;
     private isMouseUp: boolean = false;
     private mouseWheel: number = 0;
+    private isTransformedShape: boolean = false;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -340,6 +341,15 @@ export class Selection {
         case 'redact':
             this.currentDrawingShape = args.value['shape'];
             break;
+        case 'updateTransColl':
+            args.value['obj']['coll'] = this.updateTransColl(args.value['object']);
+            break;
+        case 'getTransformedShape':
+            args.value['obj']['bool'] = this.isTransformedShape;
+            break;
+        case 'setTransformedShape':
+            this.isTransformedShape = args.value['bool'];
+            break;
         }
     }
 
@@ -368,7 +378,7 @@ export class Selection {
         this.isFhdEditing = false; this.pathAdjustedIndex = null; this.touchTime = 0; this.isImageClarity = true;
         this.currentDrawingShape = ''; this.initialPrevObj = {} as CurrentObject; this.resizedElement = '';
         this.mouseDown = ''; this.isSliderActive = false; this.arrowShape = [ArrowheadType.None, ArrowheadType.SolidArrow];
-        this.isMouseDown = this.isMouseUp = false;
+        this.isMouseDown = this.isMouseUp = this.isTransformedShape = false;
     }
 
     private performTabAction(): void {
@@ -2718,6 +2728,16 @@ export class Selection {
         let degree: number = parent.transform.degree;
         if (parent.activeObj.shapeDegree === 0) {degree = parent.transform.degree; }
         else {degree =  parent.transform.degree - parent.activeObj.shapeDegree; }
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const coll: any = parent.activeObj.rotateFlipColl;
+        if (this.isTransformedShape && coll) {
+            degree = 0;
+            for (let i: number = 0; i < coll.length; i++) {
+                if (typeof(coll[i as number]) === 'number') {
+                    degree += (coll[i as number]);
+                }
+            }
+        }
         if (degree < 0) {degree = 360 + degree; }
         for (let i: number = 0, len: number = parent.activeObj.flipObjColl.length; i < len; i++) {
             const flip: string = parent.activeObj.flipObjColl[i as number].toLowerCase();
@@ -4980,8 +5000,8 @@ export class Selection {
             id: !isNullOrUndefined(currIndex) ? currIndex : null,
             type: parent.toPascalCase(shape) as ShapeType,
             startX: startX, startY: startY, width: width, height: height,
-            strokeColor: strokeSettings ? strokeSettings.strokeColor : null,
-            strokeWidth: strokeSettings ? strokeSettings.strokeWidth : null,
+            strokeColor: strokeSettings ? (shape === 'text' ? strokeSettings.outlineColor :  strokeSettings.strokeColor) : null,
+            strokeWidth: strokeSettings ? (shape === 'text' ? strokeSettings.outlineWidth :  strokeSettings.strokeWidth) : null,
             fillColor: strokeSettings ? strokeSettings.fillColor : null,
             radius: shape === 'ellipse' ? width / 2 : null,
             length: shape === 'line' || shape === 'arrow' ? width : null,
@@ -5000,10 +5020,30 @@ export class Selection {
             arrowHead: shape === 'arrow' ? this.getArrowType(parent.activeObj.start) : null,
             arrowTail: shape === 'arrow' ? this.getArrowType(parent.activeObj.end) : null,
             points: shape === 'path' ? parent.activeObj.pointColl : null,
-            index: parent.activeObj.order
+            index: parent.activeObj.order,
+            transformCollection: shape === 'text' ? this.updateTransColl(parent.activeObj) : null
         };
         if (obj) { obj['shapeSettingsObj'] = shapeSettingsObj; }
         return shapeSettingsObj;
+    }
+
+    private updateTransColl(object: SelectionPoint): TransformationCollection[] {
+        const parent: ImageEditor = this.parent;
+        let coll: TransformationCollection[];
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const tempColl: any = object.rotateFlipColl;
+        if (tempColl && tempColl.length > 0) {
+            let value: string | number; coll = [];
+            for (let i: number = 0; i < tempColl.length; i++) {
+                value = tempColl[i as number];
+                if (typeof(value) === 'number') {
+                    coll.push({degree: value as number});
+                } else {
+                    coll.push({flip: parent.toPascalCase(value) as Direction});
+                }
+            }
+        }
+        return coll;
     }
 
     private getArrowType(type: string): ArrowheadType {

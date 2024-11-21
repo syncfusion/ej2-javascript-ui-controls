@@ -47,11 +47,16 @@ export class _PdfMergeHelper {
         }
         this._copier = new _PdfCopier(this._crossReference, this._sourceDocument._crossReference);
     }
-    _importPages(page: PdfPage, index: number, layers: boolean, isCopiedPage: boolean): void {
+    _importPages(page: PdfPage, index: number, layers: boolean, isCopiedPage: boolean, options?: PdfPageImportOptions): void {
         let template: PdfTemplate;
         let  newPage: PdfPage;
         const pageDictionary: _PdfDictionary = page._pageDictionary;
         this._isDuplicatePage = isCopiedPage;
+        if (!options) {
+            this._options.rotation = page.rotation;
+        } else {
+            this._options.rotation = options.rotation;
+        }
         if (typeof index === 'number') {
             newPage = this._insertNewPage(page, index);
         } else if (this._isDuplicatePage) {

@@ -106,7 +106,7 @@ export class ContextMenu {
                 }
             }
             this.parent.pathId.push(parentKey[parentKey.length - 1]);
-            this.parent.navigationpaneModule.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
+            this.parent.navigationpaneModule.treeObj.setProperties({selectedNodes: [this.parent.pathId[this.parent.pathId.length - 1]]});
         }
         this.isMenuItemClicked = false;
     }
@@ -163,7 +163,7 @@ export class ContextMenu {
             } else if (closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
                 uid = closest(target, 'li').getAttribute('data-uid');
                 if (!isNOU(uid)) {
-                    this.parent.navigationpaneModule.treeObj.selectedNodes = [uid];
+                    this.parent.navigationpaneModule.treeObj.setProperties({selectedNodes: [uid]});
                 }
                 treeFolder = true;
             }

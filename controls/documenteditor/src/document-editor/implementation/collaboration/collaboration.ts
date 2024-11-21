@@ -1421,7 +1421,7 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.enableTrackChanges = operation.enableTrackChanges;
                 break;
             case 'protection':
-                this.documentEditor.documentHelper.restrictEditingPane.showHideRestrictPane(true);
+                this.documentEditor.documentHelper.restrictEditingPane.showHideRestrictPane(this.documentEditor.documentHelper.restrictEditingPane.isShowRestrictPane);
                 if (!isNullOrUndefined(operation.protectionData.saltValue)) {
                     if (operation.protectionData.hashValue === '' && operation.protectionData.saltValue === '') {
                         this.documentEditor.editorModule.protectDocument(operation.protectionData.protectionType);

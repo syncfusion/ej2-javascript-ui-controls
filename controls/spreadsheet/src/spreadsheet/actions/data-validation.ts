@@ -108,7 +108,7 @@ export class DataValidation {
         const args: { range?: string, cancel: boolean, isColSelected?: boolean } = { cancel: false, isColSelected: eventArgs.isCol };
         if (eventArgs.range && eventArgs.range.includes('!')) {
             range = eventArgs.range;
-            sheet = getSheet(this.parent, getSheetIndex(this.parent, range.split('!')[0]));
+            sheet = getSheet(this.parent, getSheetIndex(this.parent, range.substring(0, range.lastIndexOf('!'))));
             if (!sheet) {
                 return;
             }
@@ -357,14 +357,15 @@ export class DataValidation {
             }
         }
         if (isRange) {
-            let sheet: SheetModel; let address: string;
-            if (value.indexOf('!') > -1) {
-                const rangeArr: string[] = value.substring(1).split('!');
-                if (rangeArr[0].startsWith('\'') && rangeArr[0].endsWith('\'')) {
-                    rangeArr[0] = rangeArr[0].substring(1, rangeArr[0].length - 1);
+            let sheet: SheetModel; let address: string; let sheetName: string;
+            const lastIndex: number = value.lastIndexOf('!');
+            if (lastIndex > -1) {
+                sheetName = value.substring(1, lastIndex);
+                address = value.substring(lastIndex + 1);
+                if (sheetName.startsWith('\'') && sheetName.endsWith('\'')) {
+                    sheetName = sheetName.substring(1, sheetName.length - 1);
                 }
-                sheet = getSheet(this.parent, getSheetIndex(this.parent, rangeArr[0]));
-                address = rangeArr[1];
+                sheet = getSheet(this.parent, getSheetIndex(this.parent, sheetName));
             } else {
                 sheet = this.parent.getActiveSheet();
                 address = value.substring(1);
@@ -1094,13 +1095,13 @@ export class DataValidation {
                 if (address.includes(':')) {
                     let isSheetNameValid: boolean;
                     if (valueArr[0].includes('!')) {
-                        const refArr: string[] = address.split('!');
-                        address = refArr[1];
-                        if (refArr[0].startsWith('\'') && refArr[0].endsWith('\'')) {
-                            refArr[0] = refArr[0].substring(1, refArr[0].length - 1);
+                        let sheetName: string = address.substring(0, address.lastIndexOf('!'));
+                        address = address.substring(address.lastIndexOf('!') + 1);
+                        if (sheetName.startsWith('\'') && sheetName.endsWith('\'')) {
+                            sheetName = sheetName.substring(1, sheetName.length - 1);
                         }
-                        isSheetNameValid = getSheetIndex(this.parent, refArr[0]) > -1;
-                        valArr[0] = `=${refArr.join('!')}`;
+                        isSheetNameValid = getSheetIndex(this.parent, sheetName) > -1;
+                        valArr[0] = '=' + sheetName + '!' + address;
                     } else {
                         isSheetNameValid = true;
                     }

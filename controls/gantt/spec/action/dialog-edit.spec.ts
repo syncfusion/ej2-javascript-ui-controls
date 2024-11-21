@@ -13083,3 +13083,173 @@ describe('Expand collapse not working properly after adding', () => {
         }
     });
 });
+
+describe('Dialog editing - Resource Tab with unit mapping', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'duration',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                work: 'Work',
+                child: 'subtasks',
+                type: 'taskType',
+                milestone: 'isMilestone',
+              },
+              editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+              },
+              resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer' }],
+              resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'Unit',
+              },
+              workUnit: 'Hour',
+              taskType: 'FixedWork',
+              toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+              ],
+              allowSelection: true,
+              height: '450px',
+              treeColumnIndex: 1,
+              columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'resources', headerText: 'Resources', width: '160' },
+                { field: 'Work', width: '110' },
+                { field: 'duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' },
+              ],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);
+        ganttObj.openAddDialog();
+    });
+    it('Resource unit editing with unit mapping', () => {
+        let durationField: any = document.querySelector('#' + ganttObj.element.id + 'duration') as HTMLInputElement;
+        if (durationField) {
+            let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'duration')).ej2_instances[0];
+            inputObj.value = 0;
+            inputObj.dataBind();
+        };
+        let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+        tab.selectedItem = 1;
+        tab.dataBind();
+        let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        triggerMouseEvent(checkbox, 'click');
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo[0]['Unit']).toBe(0)
+    });
+});
+
+describe('CR:919158-Work calculation is not functioning correctly when adding a record- Cell edit action', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [ 
+                {
+                    TaskID: 1,
+                    TaskName: 'Identify site location',
+                    StartDate: new Date('03/29/2019'),
+                    Duration: 1,
+                    Progress: 30,
+                    Work: 12,
+                    type: 'FixedUnit',
+                    resources: [{ resourceId: 1, Unit: 100 },{ resourceId: 2, Unit: 50 }],
+                }
+            ],
+            resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer' },
+                { resourceId: 2, resourceName: 'Rose Fuller' }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                work: 'Work',
+                child: 'subtasks',
+                type: 'taskType',
+                milestone: 'isMilestone',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'Unit',
+            },
+            workUnit: 'Hour',
+            taskType: 'FixedWork',
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'resources', headerText: 'Resources', width: '160' },
+                { field: 'Work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' },
+            ],
+        }, done);
+    });
+	beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('Checking the work value when having 2-resource(100,50) fixedUnit- cell edit',() => {
+        let work: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)')
+        triggerMouseEvent(work, 'dblclick');
+        let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolWork')).ej2_instances[0];
+        input.value = 16;
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1.33);
+        expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(16);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});

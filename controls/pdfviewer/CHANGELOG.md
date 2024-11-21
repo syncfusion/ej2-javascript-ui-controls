@@ -2,16 +2,31 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I652381` - Now, the signature with custom font is visible properly in downloaded PDF document.
+- `#I645218` - Now, the memory out-of-bounds exception no longer occurs in `Vue 2`.
+- `#I651818` - Now, the dropdown values are correctly preserved when opening the PDF document, with different item names and values for the dropdown options.
+- `#I645714` - Now, the added text markup annotation bounds and the exported annotation bounds are the same.
+- `#I645043` - Now, the radio button field data is not lost when scrolling through the provided document.
+- `#I646730` - Now, the Text Selection and Pan keyboard shortcuts are disabled when the corresponding options are not available in the toolbar.
+- `#I635071` - Now, the checkbox form fields are properly checked in the downloaded document.
+
+#### New Features
+
+- `#I593597` - Added support for preserving `unicode` text in free text annotations within the `standalone` PDF Viewer.
+
 ## 27.2.2 (2024-11-15)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
-- `#I645043` - Now, the radio button field data is not lost when scrolling through the provided document.
 - `#I648250` - Now, the form field drag element is active when moving form fields.
-- `#I646730` - Now, the Text Selection and Pan keyboard shortcuts are disabled when the corresponding options are not available in the toolbar.
-- `#I635071` - Now, the checkbox form fields are properly checked in the downloaded document.
 
 ## 27.1.58 (2024-11-05)
 

@@ -46,9 +46,9 @@ export class WorkbookHyperlink {
         let cellAddr: string = args.cell;
         let sheet: SheetModel;
         if (cellAddr && cellAddr.indexOf('!') !== -1) {
-            const addrArr: string[] = cellAddr.split('!');
-            sheet = getSheet(this.parent, getSheetIndex(this.parent, addrArr[0]));
-            cellAddr = addrArr[1];
+            const lastIndex: number = cellAddr.lastIndexOf('!');
+            sheet = getSheet(this.parent, getSheetIndex(this.parent, cellAddr.substring(0, lastIndex)));
+            cellAddr = cellAddr.substring(lastIndex + 1);
             if (!sheet) {
                 return;
             }

@@ -430,7 +430,10 @@ export class HtmlEditor {
             const editorValue: string = currentRange.startContainer.textContent.slice(0, currentRange.startOffset);
             const orderedList: boolean = this.isOrderedList(editorValue);
             const unOrderedList: boolean =  this.isUnOrderedList(editorValue);
-            const hasSplitedText: boolean = this.hasMultipleTextNode(currentRange);
+            let hasSplitedText: boolean = false;
+            if (orderedList || unOrderedList) {
+                hasSplitedText = this.hasMultipleTextNode(currentRange);
+            }
             if (!hasSplitedText && (orderedList && !unOrderedList || unOrderedList && !orderedList)) {
                 const eventArgs: IHtmlKeyboardEvent = {
                     callBack: null,
@@ -500,6 +503,11 @@ export class HtmlEditor {
     private hasMultipleTextNode(range: Range): boolean {
         if (range && range.startContainer && range.startContainer.parentNode) {
             const parentNode: Node = range.startContainer.parentNode as Node;
+            if ((range.startContainer as HTMLElement).previousElementSibling &&
+                (range.startContainer as HTMLElement).previousElementSibling.classList.contains('e-mention-chip')
+                && !((range.startContainer as HTMLElement).previousElementSibling as HTMLElement).isContentEditable) {
+                return true;
+            }
             if (this.parent.enterKey === 'BR' || closest(parentNode, 'table')) {
                 return false;
             }

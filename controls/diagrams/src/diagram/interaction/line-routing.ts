@@ -5,7 +5,7 @@ import { PointModel } from '../primitives/point-model';
 import { NodeModel } from '../objects/node-model';
 import { Node } from '../objects/node';
 import { Rect } from '../primitives/rect';
-import { getPortDirection } from '../utility/connector';
+import { findPoint, getIntersection, getOppositeDirection, getPortDirection } from '../utility/connector';
 import { Direction } from '../enum/enum';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { canEnableRouting } from '../utility/constraints-util';
@@ -278,6 +278,7 @@ export class LineRouting {
                         if (startGridNode) {
                             if (startGridNode.gridX === target.gridX && startGridNode.gridY === target.gridY) {
                                 this.getIntermediatePoints(startGridNode);
+                                this.optimizeIntermediatePoints();
                                 if (startGridNode.nodeId && startGridNode.nodeId.length > 1) {
                                     connector.segments = [];
                                 }
@@ -528,6 +529,102 @@ export class LineRouting {
         }
     }
 
+    private optimizeIntermediatePoints(): void {
+        this.intermediatePoints = this.removePointsInSameLine(this.intermediatePoints);
+        this.intermediatePoints = this.getValidPoints(this.intermediatePoints);
+    }
+
+    private removePointsInSameLine(points: PointModel[]): PointModel[] {
+        if (points.length < 3) {
+            return points;
+        }
+        const result: PointModel[] = [points[0]];
+        for (let i: number = 1; i < points.length - 1; i++) {
+            const prevPoint: PointModel = result[result.length - 1];
+            const currentPoint: PointModel = points[parseInt(i.toString(), 10)];
+            const nextPoint: PointModel = points[i + 1];
+            if (!this.arePointsInSameLine(prevPoint, currentPoint, nextPoint)) {
+                result.push(currentPoint);
+            }
+        }
+        result.push(points[points.length - 1]);
+        return result;
+    }
+
+    private arePointsInSameLine(point1: PointModel, point2: PointModel, point3: PointModel): boolean {
+        return (point2.x - point1.x) * (point3.y - point1.y) === (point3.x - point1.x) * (point2.y - point1.y);
+    }
+
+    private getValidPoints(points: PointModel[]): PointModel[] {
+        if (points.length < 4) {
+            return points;
+        }
+        let i: number = 1;
+        while (i < points.length - 3) {
+            const lineStart1: PointModel = points[parseInt(i.toString(), 10)];
+            const lineEnd1: PointModel = points[i + 1];
+            const lineStart2: PointModel = points[i + 2];
+            const lineEnd2: PointModel = points[i + 3];
+            if (lineStart1.x === lineEnd1.x) {
+                if ((lineEnd1.y < lineStart1.y && lineEnd2.y < lineStart2.y)
+                    || (lineEnd1.y > lineStart1.y && lineEnd2.y > lineStart2.y)) {
+                    const dx: number = lineStart1.x < lineStart2.x ? 1 : -1;
+                    const dy: number = lineEnd1.y < lineStart1.y ? -1 : 1;
+                    let neigbourGridX: number = lineStart1.x + dx;
+                    let neigbourGridY: number = lineStart1.y;
+                    let isValid: boolean = false;
+                    while (neigbourGridX !== lineEnd2.x || neigbourGridY !== lineEnd2.y) {
+                        if (!this.isWalkable(neigbourGridX, neigbourGridY)) {
+                            isValid = false;
+                            break;
+                        } else {
+                            isValid = true;
+                        }
+                        if (neigbourGridX !== lineStart2.x) {
+                            neigbourGridX += dx;
+                        } else {
+                            neigbourGridY += dy;
+                        }
+                    }
+                    if (isValid) {
+                        lineStart1.x = lineStart2.x;
+                        points.splice(i + 1, 2);
+                        continue;
+                    }
+                }
+            } else if (lineStart1.y === lineEnd1.y) {
+                if ((lineEnd1.x < lineStart1.x && lineEnd2.x < lineStart2.x)
+                    || (lineEnd1.x > lineStart1.x && lineEnd2.x > lineStart2.x)) {
+                    const dy1: number = lineStart1.y < lineStart2.y ? 1 : -1;
+                    const dx1: number = lineEnd1.x < lineStart1.x ? -1 : 1;
+                    let neigbourGridY1: number = lineStart1.y + dy1;
+                    let neigbourGridX1: number = lineStart1.x;
+                    let isValid1: boolean = false;
+                    while (neigbourGridX1 !== lineEnd2.x || neigbourGridY1 !== lineEnd2.y) {
+                        if (!this.isWalkable(neigbourGridX1, neigbourGridY1)) {
+                            isValid1 = false;
+                            break;
+                        } else {
+                            isValid1 = true;
+                        }
+                        if (neigbourGridY1 !== lineStart2.y) {
+                            neigbourGridY1 += dy1;
+                        } else {
+                            neigbourGridX1 += dx1;
+                        }
+                    }
+                    if (isValid1) {
+                        lineStart1.y = lineStart2.y;
+                        points.splice(i + 1, 2);
+                        continue;
+                    }
+                }
+            }
+            i++;
+        }
+        return points;
+    }
+
     // Connector rendering
     /* tslint:disable */
     private updateConnectorSegments(
@@ -580,6 +677,10 @@ export class LineRouting {
                     if (j === 0 && sourcePoint) {
                         currentPoint.x = sourcePoint.x;
                         currentPoint.y = nextPoint.y = sourcePoint.y;
+                        const newDirection: string = currentPoint.x > nextPoint.x ? 'Left' : 'Right';
+                        const refPoint: PointModel = findPoint(sourceWrapper.bounds, getOppositeDirection(newDirection));
+                        sourcePoint = getIntersection(connector, sourceWrapper, sourcePoint, refPoint, false);
+                        currentPoint.x = sourcePoint.x;
                     }
                     if (j === points.length - 2 && targetPoint) {
                         if (j > 0 && connector.targetDecorator &&
@@ -608,6 +709,10 @@ export class LineRouting {
                     if (j === 0 && sourcePoint) {
                         currentPoint.y = sourcePoint.y;
                         currentPoint.x = nextPoint.x = sourcePoint.x;
+                        const newDirection1: string = currentPoint.y > nextPoint.y ? 'Top' : 'Bottom';
+                        const refPoint: PointModel = findPoint(sourceWrapper.bounds, getOppositeDirection(newDirection1));
+                        sourcePoint = getIntersection(connector, sourceWrapper, sourcePoint, refPoint, false);
+                        currentPoint.y = sourcePoint.y;
                     }
                     if (j === points.length - 2 && targetPoint) {
                         if (j > 0 && connector.targetDecorator &&
@@ -684,8 +789,13 @@ export class LineRouting {
                 startGrid.gridX, startGrid.gridY, this.targetGrid.gridX, this.targetGrid.gridY);
             if (intermediatePoint !== null) {
                 const grid: VirtualBoundaries = this.gridCollection[intermediatePoint.x][intermediatePoint.y];
-                const h: number = this.octile(
+                let h: number = this.octile(
                     Math.abs(intermediatePoint.x - startGrid.gridX), Math.abs(intermediatePoint.y - startGrid.gridY));
+                if (startGrid.parent && startGrid.parent.parent) {
+                    if (grid.gridX !== startGrid.parent.gridX && grid.gridY !== startGrid.parent.gridY) {
+                        h += 0.1;
+                    }
+                }
                 const l: number = startGrid.previousDistance + h;
                 if ((!grid.previousDistance || grid.previousDistance > l) &&
                     (!(intermediatePoint.x === startGrid.gridX && intermediatePoint.y === startGrid.gridY))) {

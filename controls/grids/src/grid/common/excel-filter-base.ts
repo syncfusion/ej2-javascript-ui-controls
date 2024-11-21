@@ -496,7 +496,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 if (this.options.column.filterTemplate) {
                     const templateField: string = isComplexField(this.options.column.field) ?
                         getComplexFieldID(this.options.column.field) : this.options.column.field;
-                    const isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
+                    const isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string' &&
+                        !(this.options.column.filterTemplate.prototype && this.options.column.filterTemplate.prototype.CSPTemplate);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const isReactChild: boolean = (this.parent as any).parentDetails && (this.parent as any).parentDetails.parentInstObj &&
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -920,7 +921,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             if (isFilteredCol && elementId) {
                 data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
-            const isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string' &&
+                !(this.options.column.filterTemplate.prototype && this.options.column.filterTemplate.prototype.CSPTemplate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const isReactChild: boolean = (this.parent as any).parentDetails && (this.parent as any).parentDetails.parentInstObj &&
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

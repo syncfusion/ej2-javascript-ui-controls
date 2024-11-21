@@ -28,7 +28,7 @@ import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { insertDesignChart, removeDesignChart } from '../common/index';
-import { LocalizedFormatActionArgs, refreshRibbonIcons, ChartTheme, beginAction, setCFRule } from '../../workbook/common/index';
+import { LocalizedFormatActionArgs, refreshRibbonIcons, ChartTheme, beginAction, setCFRule, updateView } from '../../workbook/common/index';
 import { findToolDlg, localizedFormatAction, convertToDefaultFormat, isImported } from '../../workbook/index';
 
 /**
@@ -99,12 +99,10 @@ export class Ribbon {
                         { text: l10n.getConstant('CSV'), id: `${id}_Csv`, iconCss: 'e-csv e-icons' },
                         { text: l10n.getConstant('PDF'), id: `${id}_Pdf`, iconCss: 'e-pdf e-icons' }
                     ]
-                }
+                },
+                { text: l10n.getConstant('Print'), id: `${id}_Print`, iconCss: 'e-print e-icons' }
             ]
         }];
-        if (this.parent.allowPrint) {
-            menuItems[0].items.push({ text: l10n.getConstant('Print'), id: `${id}_Print`, iconCss: 'e-print e-icons' });
-        }
         return menuItems;
     }
 
@@ -448,6 +446,9 @@ export class Ribbon {
             args.element.classList.add('e-disabled');
         }
         if (args.item.text === l10n.getConstant('SaveAs') && (!this.parent.saveUrl || !this.parent.allowSave)) {
+            args.element.classList.add('e-disabled');
+        }
+        if (args.item.text === l10n.getConstant('Print') && !this.parent.allowPrint) {
             args.element.classList.add('e-disabled');
         }
     }
@@ -2259,13 +2260,14 @@ export class Ribbon {
         ['bold', 'italic', 'line-through', 'underline', 'wrap'].forEach((name: string, index: number): void => {
             btn = document.getElementById(`${id}_${name}`);
             if (btn) {
-                if (sheet.isProtected && !sheet.protectSettings.formatCells) {
-                    btn.classList.remove('e-active');
-                } else if (name === 'wrap') {
-                    isActive = cell && cell.wrap;
-                } else {
-                    value = this.getCellStyleValue(fontProps[index as number], indexes).toLowerCase();
-                    isActive = value.indexOf(name) > -1;
+                isActive = false;
+                if (!sheet.isProtected || sheet.protectSettings.formatCells) {
+                    if (name === 'wrap') {
+                        isActive = this.parent.allowWrap && cell && cell.wrap;
+                    } else if (this.parent.allowCellFormatting) {
+                        value = this.getCellStyleValue(fontProps[index as number], indexes).toLowerCase();
+                        isActive = value.indexOf(name) > -1;
+                    }
                 }
                 if (isActive) {
                     btn.classList.add('e-active');
@@ -2816,7 +2818,7 @@ export class Ribbon {
             });
         }
         this.parent.trigger('fileMenuBeforeOpen', args);
-        args.element.setAttribute('aria-label', (this.parent.serviceLocator.getService(locale) as L10n).getConstant('File'));
+        args.element.setAttribute('aria-label', l10n.getConstant('File'));
     }
     private enableRibbonTabs(args: { tabs: string[], enable: boolean }): void {
         this.ribbon.enableTabs(args.tabs, args.enable);
@@ -2857,7 +2859,7 @@ export class Ribbon {
             if (this.parent.allowCellFormatting) {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId, enable: true }]);
             } else {
-                this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(2, 14), enable: false }]);
+                this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(3, 14), enable: false }]);
             }
             if (!this.parent.allowWrap) {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(14, 15), enable: false }]);
@@ -2866,7 +2868,6 @@ export class Ribbon {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(2, 3), enable: false }]);
             }
             this.parent.notify(setUndoRedo, null);
-
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.disableHomeBtnId, enable: false }]);
         }
@@ -2938,6 +2939,7 @@ export class Ribbon {
     private onPropertyChanged(prop: string): void {
         const l10: L10n = this.parent.serviceLocator.getService(locale);
         const id: string = this.parent.element.id;
+        const sheet: SheetModel = this.parent.getActiveSheet();
         switch (prop) {
         case 'allowFreezePane':
             this.ribbon.enableItems(
@@ -2959,6 +2961,25 @@ export class Ribbon {
                 l10.getConstant('Insert'), [`${id}_chart`], this.parent.allowChart);
             if (!this.parent.allowChart) {
                 this.removeDesignChart();
+            }
+            break;
+        case 'allowWrap':
+        case 'allowCellFormatting':
+            this.refreshToggleBtn(getCellIndexes(sheet.activeCell));
+            if (!sheet.isProtected || sheet.protectSettings.formatCells) {
+                if (prop === 'allowWrap') {
+                    this.ribbon.enableItems(l10.getConstant('Home'), [`${id}_wrap`], this.parent.allowWrap);
+                } else {
+                    const formatIds: string[] = [`${id}_font_name`, `${id}_font_size`, `${id}_bold`, `${id}_italic`, `${id}_line-through`,
+                        `${id}_underline`, `${id}_font_color_picker`, `${id}_fill_color_picker`, `${id}_borders`, `${id}_merge_cells`,
+                        `${id}_text_align`, `${id}_vertical_align`];
+                    this.enableToolbarItems([{ tab: l10.getConstant('Home'), items: formatIds, enable: this.parent.allowCellFormatting }]);
+                }
+            }
+            break;
+        case 'allowNumberFormatting':
+            if (!sheet.isProtected || sheet.protectSettings.formatCells) {
+                this.ribbon.enableItems(l10.getConstant('Home'), [`${id}_number_format`], this.parent.allowNumberFormatting);
             }
             break;
         }

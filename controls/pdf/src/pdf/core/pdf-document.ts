@@ -1704,7 +1704,7 @@ export class PdfDocument {
                     page.annotations._clear();
                 }
             }
-            helper._importPages(page, this._targetIndex, isLayersPresent, this._isDuplicatePage);
+            helper._importPages(page, this._targetIndex, isLayersPresent, this._isDuplicatePage, options);
             correspondancePagecount++;
             if (typeof this._targetIndex === 'number') {
                 ++this._targetIndex;

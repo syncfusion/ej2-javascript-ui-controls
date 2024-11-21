@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I643179` - Keyboard selection with up and down key scroll actions now working properly when virtualization is enabled.
+
 ## 27.2.2 (2024-11-15)
 
 ### Tree Grid

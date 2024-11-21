@@ -1,7 +1,7 @@
 /**
  * Grid Filtering spec document
  */
-import { ChildProperty, EventHandler, L10n } from '@syncfusion/ej2-base';
+import { ChildProperty, EventHandler, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { getValue } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
@@ -1626,8 +1626,48 @@ describe('code coverage for excel filter file - 1 => ', () => {
         (gridObj.filterModule as any).filterModule.excelFilterBase.clickExHandler({target: document.querySelector('.e-excl-filter-icon')});
     });
 
+    it('Excel filter acActionComplete coverage', (done: Function) => {
+        var autoCompleteAction = (gridObj.filterModule.filterModule.excelFilterBase as any).acActionComplete({}, null);
+        var autoCompleteActionCall = autoCompleteAction({ result: [] });
+        done();
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = preventDefault = null;
+    });
+});
+
+describe('EJ2: 916181 => All template is not rendering in React when using the CSPTemplate function. => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                allowPaging: true,
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'CustomerID', width: 120, headerText: 'Customer ID', filterTemplate: initializeCSPTemplate(function() {
+                        return '<input type="text" id="ShipCountry" name="ShipCountry" />' }) },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }
+                ]
+            }, done);
+    });
+
+    it('Coverage for renderFilterUI', (done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterchoicerequest') {
+                (gridObj.filterModule as any).filterModule.excelFilterBase.renderFilterUI((gridObj.columns[0] as any).field, args.filterModel.dlg);
+            }
+            done();
+        };
+        gridObj.isReact = true;
+        (gridObj.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

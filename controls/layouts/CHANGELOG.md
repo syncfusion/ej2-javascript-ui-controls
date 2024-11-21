@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### DashboardLayout
+
+#### Bug Fixes
+
+- `#I650290` - Enhanced the transition effect when performing drag and drop between panels in the Dashboard component.
+
 ## 27.1.53 (2024-10-15)
 
 ### DashboardLayout

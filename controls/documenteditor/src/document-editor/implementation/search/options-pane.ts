@@ -243,6 +243,7 @@ export class OptionsPane {
                 fields: { dataSource: this.data, id: 'id', text: 'name', parentID: 'pid', hasChildren: 'hasChild', tooltip: 'tooltipText' },
                 nodeClicked: this.nodeClick.bind(this),
                 cssClass: 'e-de-custom-treeview',
+                nodeTemplate: this.customTemplate.bind(this),
             });
             if (!isNullOrUndefined(this.treeviewDiv)) {
                 this.treeviewDiv.innerHTML = "";
@@ -259,6 +260,11 @@ export class OptionsPane {
             }
         }
 
+    }
+    private customTemplate(data: any) {
+        var s = document.createElement('span');
+        s.innerText = data.name;
+        return s.outerHTML;
     }
     private nodeClick(args: NodeClickEventArgs): void {
         let targetNodeId: any = this.treeviewObject.selectedNodes[0];

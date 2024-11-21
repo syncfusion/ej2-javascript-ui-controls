@@ -429,7 +429,7 @@ export class DetailsView {
                 this.element.querySelector('.e-content').scrollTop === 0))) {
             this.selectRecords(this.parent.selectedItems);
         }
-        if (this.isPasteOperation === true) {
+        if (this.isPasteOperation === true && (!isNullOrUndefined(this.gridObj.getDataRows()) && this.gridObj.getDataRows().length > 0)) {
             if (!this.isColumnRefresh) {
                 this.selectRecords(this.parent.pasteNodes);
                 this.isPasteOperation = false;

@@ -920,13 +920,14 @@ export class SheetRender implements IRenderer {
         }
     }
 
-    public getRowHeaderWidth(sheet: SheetModel, skipFreezeCheck?: boolean): number {
+    public getRowHeaderWidth(sheet: SheetModel, skipFreezeCheck?: boolean, addScaling?: boolean): number {
         let width: number = 0;
+        const scaleX: number = addScaling ? this.parent.viewport.scaleX : 1;
         if (!skipFreezeCheck && sheet.frozenColumns) {
             const leftIdx: number = getCellIndexes(sheet.topLeftCell)[1];
-            width = getColumnsWidth(sheet, leftIdx, leftIdx + sheet.frozenColumns - 1, true);
+            width = getColumnsWidth(sheet, leftIdx, leftIdx + sheet.frozenColumns - 1, true) / scaleX;
         }
-        width += sheet.showHeaders ? getDPRValue(this.colGroupWidth) : 0;
+        width += (sheet.showHeaders ? getDPRValue(this.colGroupWidth) / scaleX : 0);
         return width;
     }
 

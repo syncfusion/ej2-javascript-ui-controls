@@ -188,20 +188,8 @@ describe('FileManager control Grid view', () => {
                                 responseText: JSON.stringify(data1)
                             });
                             setTimeout(function () {
-                               this.request = jasmine.Ajax.requests.mostRecent();
-                                this.request.respondWith({
-                                    status: 200,
-                                    responseText: JSON.stringify(data1)
-                                });
-                                this.request = jasmine.Ajax.requests.mostRecent();
-                                this.request.respondWith({
-                                    status: 200,
-                                    responseText: JSON.stringify(data1)
-                                });
-                                setTimeout(function () {
-                                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
-                                    done();
-                                }, 500);
+                                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                                done();
                             }, 500);
                         }, 500);
                     }, 500);

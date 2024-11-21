@@ -4530,6 +4530,8 @@ describe('Masked date time backspace with minute ', () => {
         datetimepicker.element.selectionStart = 0;
         mouseEventArgs.e.key = 'Backspace';
         (<any>mask).maskKeydownHandler(mouseEventArgs);
+        datetimepicker.focusIn();
+        (<any>mask).clearHandler();
         datetimepicker.destroy();
     });
     

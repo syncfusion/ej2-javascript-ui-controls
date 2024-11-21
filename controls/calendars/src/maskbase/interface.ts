@@ -1,5 +1,6 @@
 import { Component, Internationalization } from '@syncfusion/ej2-base';
 import { CalendarType } from '../calendar/calendar';
+import { InputObject } from '@syncfusion/ej2-inputs';
 
 /**
  * Specifies mulitselct interfaces.
@@ -14,6 +15,7 @@ export interface IMaskedDateTime extends Component<HTMLElement> {
     maskedDateValue: string;
     locale: string;
     inputElement: HTMLInputElement;
+    inputWrapper: InputObject;
     value: Date;
     updateInputValue(value?: string): void
     dateTimeFormat: string

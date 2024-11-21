@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 27.2.2 (2024-11-15)
+## 27.2.3 (2024-11-21)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I650922` - Now, the Kanban cards are updated properly without any errors while having the `CustomDataAdaptor` configuration.
+
+## 27.1.53 (2024-10-15)
 
 ### Kanban
 

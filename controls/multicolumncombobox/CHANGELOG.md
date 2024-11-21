@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### MultiColumn ComboBox
+
+#### Bug Fixes
+
+- `#I654237` - Now the issue with virtualization data loading when selecting a value using mouse scroll and performing filtering has been resolved.
+
 ## 27.1.48 (2024-09-18)
 
 ### MultiColumn ComboBox

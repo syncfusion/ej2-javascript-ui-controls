@@ -1417,12 +1417,16 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             const cellEle: HTMLElement = helper.invoke('getCell', [1, 1]);
             expect(cellEle.textContent).toBe('2/14/2014');
+            const numFormatBtn: HTMLElement = helper.getElement(`#${helper.id}_number_format`);
+            expect(numFormatBtn.parentElement.classList).not.toContain('e-overlay');
             spreadsheet.allowNumberFormatting = false;
             spreadsheet.dataBind();
             expect(cellEle.textContent).toBe('41684');
+            expect(numFormatBtn.parentElement.classList).toContain('e-overlay');
             spreadsheet.allowNumberFormatting = true;
             spreadsheet.dataBind();
             expect(cellEle.textContent).toBe('2/14/2014');
+            expect(numFormatBtn.parentElement.classList).not.toContain('e-overlay');
             done();
         });
     });

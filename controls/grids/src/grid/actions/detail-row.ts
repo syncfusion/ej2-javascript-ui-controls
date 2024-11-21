@@ -126,7 +126,8 @@ export class DetailRow {
                 let isReactCompiler: boolean;
                 let isReactChild: boolean;
                 if (gObj.detailTemplate) {
-                    isReactCompiler = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
+                    isReactCompiler = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string' &&
+                        !(gObj.detailTemplate.prototype && gObj.detailTemplate.prototype.CSPTemplate);
                     isReactChild = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                         this.parent.parentDetails.parentInstObj.isReact;
                     const detailTemplateID: string = gObj.element.id + 'detailTemplate';

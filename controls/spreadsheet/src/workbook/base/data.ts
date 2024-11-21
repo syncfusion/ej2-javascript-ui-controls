@@ -30,9 +30,10 @@ export function getData(
     return new Promise((resolve: Function) => {
         resolve((() => {
             let sheetIdx: number;
-            if (address.indexOf('!') > -1) {
-                sheetIdx = getSheetIndex(context, address.split('!')[0]);
-                address = address.slice(address.indexOf('!') + 1, address.length);
+            const lastIndex: number = address.lastIndexOf('!');
+            if (lastIndex > -1) {
+                sheetIdx = getSheetIndex(context, address.substring(0, lastIndex));
+                address = address.substring(lastIndex + 1);
             } else {
                 sheetIdx = context.activeSheetIndex;
             }

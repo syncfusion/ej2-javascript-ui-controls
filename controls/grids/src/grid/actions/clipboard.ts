@@ -1,4 +1,4 @@
-import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList, L10n } from '@syncfusion/ej2-base';
+import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, BeforeCopyEventArgs, BeforePasteEventArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { parentsUntil, isGroupAdaptive } from '../base/util';
@@ -184,7 +184,7 @@ export class Clipboard implements IAction {
             this.clipBoardTextArea.value = this.copyContent = '';
             const rows: Element[] = this.parent.getDataRows();
             if (this.parent.selectionSettings.mode !== 'Cell') {
-                const selectedIndexes: Object[] = this.parent.getSelectedRowIndexes().sort((a: number, b: number) => { return a - b; });
+                let selectedIndexes: Object[] = this.parent.getSelectedRowIndexes().sort((a: number, b: number) => { return a - b; });
                 if (withHeader) {
                     const headerTextArray: string[] = [];
                     for (let i: number = 0; i < this.parent.getVisibleColumns().length; i++) {
@@ -193,6 +193,15 @@ export class Clipboard implements IAction {
                     }
                     this.getCopyData(headerTextArray, false, '\t', withHeader);
                     this.copyContent += '\n';
+                }
+                if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) && selectedIndexes.length > rows.length) {
+                    selectedIndexes = [];
+                    for (let i: number = 0; i < rows.length; i++) {
+                        const row: Element = rows[parseInt(i.toString(), 10)] as HTMLTableRowElement;
+                        if (row.getAttribute('aria-selected') === 'true') {
+                            selectedIndexes.push(parseInt(row.getAttribute('data-rowindex'), 10));
+                        }
+                    }
                 }
                 for (let i: number = 0; i < selectedIndexes.length; i++) {
                     if (i > 0) {
@@ -206,8 +215,11 @@ export class Clipboard implements IAction {
                         idx = rows.map((m: Element) => m.getAttribute('data-rowindex')).indexOf(
                             selectedIndexes[parseInt(i.toString(), 10)].toString());
                     }
-                    leftCols.push(...[].slice.call(rows[parseInt(idx.toString(), 10)].querySelectorAll('.e-rowcell:not(.e-hide)')));
-                    this.getCopyData(leftCols, false, '\t', withHeader);
+                    const currentRow: Element = rows[parseInt(idx.toString(), 10)];
+                    if (!(isNullOrUndefined(currentRow))) {
+                        leftCols.push(...[].slice.call(currentRow.querySelectorAll('.e-rowcell:not(.e-hide)')));
+                        this.getCopyData(leftCols, false, '\t', withHeader);
+                    }
                 }
             } else {
                 const obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = this.checkBoxSelection();

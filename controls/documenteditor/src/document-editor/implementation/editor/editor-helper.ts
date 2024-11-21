@@ -914,12 +914,18 @@ export class HelperMethods {
             let block: any = {};
             block[inlinesProperty[keywordIndex]] = [];
             if (text !== "" && text !== "<br>") {
-                // Replace &nbsp; with a space
-                text = text.replace(/&nbsp;/g, " ");
                 // Extracting parts into an array
                 let parts = text.match(/(<[^>]+>[^<]*<\/[^>]+>|[^<]+)/g);
                 // Iterate through the parts array
                 parts.forEach((content) => {
+                    // Replace &nbsp; &lt; &gt; &amp; with a space,"<",">" and "&" respectively
+                    const replacements: any = {
+                        "&nbsp;": " ",
+                        "&lt;": "<",
+                        "&gt;": ">",
+                        "&amp;": "&"
+                    };
+                    content = content.replace(/&nbsp;|&lt;|&gt;|&amp;/g, (match) => replacements[match]);
                     if (content.indexOf("<span") === 0) {
                         // Regular expression to match the content inside the span tag
                         const regex = /<span[^>]*>([^<]*)<\/span>/;

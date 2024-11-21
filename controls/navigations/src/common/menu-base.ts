@@ -2418,8 +2418,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (!isNullOrUndefined(idx) && navIdx.length < uls.length) {
                 idx = isAfter ? idx + 1 : idx;
                 li = this.createItems(iitems).children[idx as number];
-                const ul: Element = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
+                const ul: HTMLElement = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
                 ul.insertBefore(li, ul.children[idx as number]);
+                if (i === items.length - 1 && !this.isMenu && ul.style.display === 'block') {
+                    this.setPosition(null, ul, parseFloat(ul.style.top), parseFloat(ul.style.left));
+                    ul.style.display = 'block';
+                }
             }
         }
     }

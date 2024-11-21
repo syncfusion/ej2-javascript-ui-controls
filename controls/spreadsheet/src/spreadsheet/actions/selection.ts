@@ -216,7 +216,7 @@ export class Selection {
         let sheetIdx: number = this.parent.activeSheetIndex;
         if (address.indexOf('!') > -1) {
             sheetIdx = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(address));
-            address = address.split('!')[1];
+            address = address.substring(address.lastIndexOf('!') + 1);
         }
         if (this.parent.activeSheetIndex === sheetIdx) {
             address.split(' ').forEach((rng: string, idx: number) => {
@@ -429,7 +429,7 @@ export class Selection {
         const verticalContent: Element = this.parent.getMainContent().parentElement;
         const horizontalContent: Element = this.parent.element.getElementsByClassName('e-scroller')[0];
         const clientRect: ClientRect = verticalContent.getBoundingClientRect(); const frozenCol: number = this.parent.frozenColCount(sheet);
-        let left: number = clientRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet);
+        let left: number = clientRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet, false, true);
         let right: number = clientRect.right - getScrollBarWidth();
         const top: number = clientRect.top; const bottom: number = clientRect.bottom;
         const clientX: number = getClientX(e); const clientY: number = getClientY(e);
@@ -656,24 +656,23 @@ export class Selection {
         } else {
             const cliRect: ClientRect = document.getElementById(this.parent.element.id + '_sheet').getBoundingClientRect();
             if (this.parent.enableRtl) {
-                left = (cliRect.right - this.parent.sheetModule.getRowHeaderWidth(sheet, true) - 1) - e.clientX;
+                left = (cliRect.right - this.parent.sheetModule.getRowHeaderWidth(sheet, true, true) - 1) - e.clientX;
             } else {
-                left = e.clientX - (cliRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet, true) + 1);
+                left = e.clientX - (cliRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet, true, true) + 1);
             }
             left += this.parent.viewport.beforeFreezeWidth;
-            if (!e.target || (!closest(e.target, '.e-row-header') && !closest(e.target, '.e-selectall-container')) ||
-                this.isScrollableArea(e.clientX, e.target, true)) {
-                if (this.parent.frozenColCount(sheet)) {
-                    const frozenColumn: HTMLElement = this.parent.element.querySelector('.e-frozen-column');
-                    left = parseInt(frozenColumn.style.left, 10) > left ? left : (left + this.getScrollLeft());
-                } else {
-                    left += this.getScrollLeft();
-                }
+            const frozenColPosition: Function = (): number => {
+                const frozenCol: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-frozen-column');
+                return parseInt(frozenCol.style[this.parent.enableRtl ? 'right' : 'left'], 10) / this.parent.viewport.scaleX;
+            };
+            if ((!e.target || (!closest(e.target, '.e-row-header') && !closest(e.target, '.e-selectall-container')) ||
+                this.isScrollableArea(e.clientX, e.target, true)) && (!this.parent.frozenColCount(sheet) || left > frozenColPosition())) {
+                left += (this.getScrollLeft() / this.parent.viewport.scaleX);
             }
         }
         let size: number;
         for (let i: number = 0; ; i++) {
-            size = width += getColumnWidth(sheet, i, null, !e.isImage);
+            size = width += getColumnWidth(sheet, i, null, !e.isImage) / this.parent.viewport.scaleX;
             if (left < (e.isImage ? Number(addDPRValue(size).toFixed(2)) : size) ||
                 (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
                 if (!e.isImage) { e.size = left; }
@@ -701,14 +700,14 @@ export class Selection {
         } else {
             const sheetEle: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
             top = args.clientY + this.parent.viewport.beforeFreezeHeight -
-                (sheetEle.getBoundingClientRect().top + (sheet.showHeaders ? 31 : 0));
+                (sheetEle.getBoundingClientRect().top + (sheet.showHeaders ? 31 / this.parent.viewport.scaleY : 0));
             if (!args.target || !closest(args.target, '.e-header-panel') || this.isScrollableArea(args.clientY, args.target)) {
-                top += this.parent.getMainContent().parentElement.scrollTop;
+                top += (this.parent.getMainContent().parentElement.scrollTop / this.parent.viewport.scaleY);
             }
         }
         let size: number;
         for (let i: number = 0; ; i++) {
-            size = height += getRowHeight(sheet, i, !args.isImage);
+            size = height += getRowHeight(sheet, i, !args.isImage) / this.parent.viewport.scaleY;
             if (top < (args.isImage ? Number(addDPRValue(size).toFixed(2)) : size) ||
                 (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
                 if (!args.isImage) { args.size = top; }
@@ -1199,9 +1198,9 @@ export class Selection {
             if (isCellReference(str.toUpperCase())) {
                 str = str.replace(/\$/g, '');
                 if (i > 0) {
-                    if (parsedVal[i - 1].indexOf('!') === parsedVal[i - 1].length - 1) {
-                        const splitStr: string[] = parsedVal[i - 1].split('!');
-                        formulaSheetIdx = getSheetIndex(this.parent as Workbook, splitStr[0].substring(1, splitStr[0].length - 1));
+                    if (parsedVal[i - 1].lastIndexOf('!') === parsedVal[i - 1].length - 1) {
+                        const sheetName: string = parsedVal[i - 1].substring(1, parsedVal[i - 1].lastIndexOf('!') - 1);
+                        formulaSheetIdx = getSheetIndex(this.parent as Workbook, sheetName);
                     }
                 }
                 if (parsedVal[i + 1] === ':') {

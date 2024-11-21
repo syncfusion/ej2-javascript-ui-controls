@@ -1935,11 +1935,13 @@ export class ListBox extends DropDownBase {
         if (fListBox.value.length === 1 && fListBox.getSelectedItems().length) {
             fListBox.value[0] = fListBox.getFormattedValue(fListBox.getSelectedItems()[0].getAttribute('data-value'));
         }
-        if (fListBox.liCollections.length === fListBox.ulElement.querySelectorAll('.e-disabled').length) {
+        if (fListBox.liCollections.length === fListBox.ulElement.querySelectorAll('.e-disabled').length && this.toolbarAction) {
             const wrap: Element = this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
             const toolbarAction: string = this.toolbarAction === 'moveFrom' ? 'moveAllFrom' : 'moveAllTo';
-            const btn: HTMLButtonElement = wrap.querySelector('[data-value="' + toolbarAction + '"]');
-            btn.disabled = true;
+            if (wrap) {
+                const btn: HTMLButtonElement = wrap.querySelector('[data-value="' + toolbarAction + '"]');
+                btn.disabled = true;
+            }
         }
     }
 

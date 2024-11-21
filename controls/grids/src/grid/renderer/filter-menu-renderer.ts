@@ -271,7 +271,8 @@ export class FilterMenuRenderer {
             }
             const col: string = 'column';
             fltrData[`${col}`] = column;
-            const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string' &&
+                !(column.filterTemplate.prototype && column.filterTemplate.prototype.CSPTemplate);
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             const tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
@@ -387,6 +388,9 @@ export class FilterMenuRenderer {
     private clearBtnClick(column: Column): void {
         this.filterObj.removeFilteredColsByField(column.field);
         this.closeDialog();
+        if (this.parent.showColumnMenu) {
+            this.parent.notify(events.afterFilterColumnMenuClose, {});
+        }
     }
 
     public destroy(): void {

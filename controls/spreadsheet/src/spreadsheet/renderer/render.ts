@@ -399,21 +399,35 @@ export class Render {
         const panel: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_panel');
         const offset: ClientRect = this.parent.element.getBoundingClientRect();
         let height: number;
+        this.parent.viewport.scaleY = this.parent.viewport.scaleX = 1;
+        if (this.parent.enableScaling) {
+            const offsetHeight: number = this.parent.element.offsetHeight;
+            const scaleY: number = offsetHeight / offset.height;
+            if (scaleY !== 1 && Math.abs(offsetHeight - offset.height) >= offsetHeight * 0.1) {
+                this.parent.viewport.scaleY = scaleY;
+            }
+            const offsetWidth: number = this.parent.element.offsetWidth;
+            const scaleX: number = offsetWidth / offset.width;
+            if (scaleX !== 1 && Math.abs(offsetWidth - offset.width) >= offsetWidth * 0.1) {
+                this.parent.viewport.scaleX = scaleX;
+            }
+        }
         if (this.parent.height === 'auto') {
             panel.style.height = '260px';
             height = 230;
         } else {
-            height = offset.height - getSiblingsHeight(panel);
+            height = (offset.height * this.parent.viewport.scaleY) - getSiblingsHeight(panel, null, this.parent.viewport.scaleY);
             panel.style.height = `${height}px`;
-            height -= 32;
+            height -= (32 / this.parent.viewport.scaleY);
         }
         if (colMinWidth !== undefined) {
             this.colMinWidth = colMinWidth;
         }
         this.parent.viewport.height = height;
-        this.parent.viewport.width = offset.width - 32;
+        const width: number = offset.width * this.parent.viewport.scaleX;
+        this.parent.viewport.width = width - (32 / this.parent.viewport.scaleX);
         this.parent.viewport.rowCount = this.roundValue(height, 20);
-        this.parent.viewport.colCount = this.roundValue(offset.width, this.colMinWidth || 64);
+        this.parent.viewport.colCount = this.roundValue(width, this.colMinWidth || 64);
     }
 
     private roundValue(size: number, threshold: number): number {

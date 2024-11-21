@@ -142,7 +142,9 @@ export class EventTooltip {
             removeClass([args.element], cls.POPUP_OPEN);
             addClass([args.element], cls.POPUP_CLOSE);
         }
-        this.parent.resetTemplates(['tooltipTemplate', 'headerTooltipTemplate']);
+        if (!(this.parent.isReact && this.parent.eventWindow.dialogObject && this.parent.eventWindow.dialogObject.visible)) {
+            this.parent.resetTemplates(['tooltipTemplate', 'headerTooltipTemplate']);
+        }
     }
 
     private setContent(content: string | HTMLElement | Function): void {

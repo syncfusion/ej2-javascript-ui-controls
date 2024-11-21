@@ -301,10 +301,10 @@ export class Data {
         this.eventPromise(actionArgs, this.query, index);
         this.parent.trigger(events.actionComplete, actionArgs, (offlineArgs: ActionEventArgs) => {
             if (!offlineArgs.cancel) {
-                this.syncDataSource(this.dataManager, promise, updateType, params, data, isDropped, dataDropIndexKeyFieldValue);
+                promise = this.syncDataSource(this.dataManager, updateType, params, data, isDropped, dataDropIndexKeyFieldValue);
                 if (this.dataManager.dataSource.offline) {
                     if (!this.isObservable) {
-                        this.syncDataSource(this.kanbanData, promise, updateType, params, data, isDropped, dataDropIndexKeyFieldValue);
+                        this.syncDataSource(this.kanbanData, updateType, params, data, isDropped, dataDropIndexKeyFieldValue);
                         index = draggedKey === droppedKey && isMultipleDrag ? index - 1 : index;
                         this.refreshUI(offlineArgs, index, isDropped);
                         if (this.parent.enableVirtualization) {
@@ -352,12 +352,13 @@ export class Data {
         });
     }
 
-    private syncDataSource(dataManager: DataManager, promise: Promise<Object> | Object, updateType: string,
-                           params: SaveChanges, data: Record<string, any>, isDropped?: boolean, dataDropIndexKeyFieldValue?: string): void {
+    private syncDataSource(dataManager: DataManager, updateType: string,
+                           params: SaveChanges, data: Record<string, any>, isDropped?: boolean, dataDropIndexKeyFieldValue?: string):
+        Promise<Object> | Object {
+        let promise: Promise<Object> | Object;
         switch (updateType) {
         case 'insert':
-            promise = dataManager.insert(data, this.getTable(), this.getQuery());
-            break;
+            return dataManager.insert(data, this.getTable(), this.getQuery());
         case 'update':
             if (this.parent.enableVirtualization && !this.parent.dataModule.isRemote() && isDropped) {
                 promise = dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
@@ -365,13 +366,12 @@ export class Data {
                     data, this.getTable(), this.getQuery(),
                     dataManager.dataSource.json.findIndex((data: Record<string, any>) =>
                         data[this.parent.cardSettings.headerField] === dataDropIndexKeyFieldValue));
+                return promise;
             } else {
-                promise = dataManager.update(this.keyField, data, this.getTable(), this.getQuery());
+                return dataManager.update(this.keyField, data, this.getTable(), this.getQuery());
             }
-            break;
         case 'delete':
-            promise = dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
-            break;
+            return dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
         case 'batch':
             if (!this.parent.dataModule.isRemote() && isDropped && this.parent.enableVirtualization && data) {
                 for (let i: number = 0; i < data.length; i++) {
@@ -385,10 +385,12 @@ export class Data {
                     promise = dataManager.insert(
                         data[i as number], this.getTable(), this.getQuery(), currentIndex);
                 }
+                return promise;
             } else {
-                promise = dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery());
+                return dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery());
             }
-            break;
+        default:
+            return promise;
         }
     }
 
@@ -400,7 +402,6 @@ export class Data {
         }
         return onLineData;
     }
-
 
     /**
      * The function is used to refresh the UI once the data manager action is completed

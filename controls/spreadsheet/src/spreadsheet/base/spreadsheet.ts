@@ -40,7 +40,7 @@ import { Sort, Filter, SpreadsheetImage, SpreadsheetChart } from '../integration
 import { isNumber, getColumn, getRow, WorkbookFilter, refreshInsertDelete, InsertDeleteEventArgs, RangeModel } from '../../workbook/index';
 import { PredicateModel, fltrPrevent } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
-import { DataValidation, spreadsheetCreated } from './../index';
+import { DataValidation, spreadsheetCreated, showAggregate } from './../index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace, WorkbookAutoFill } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel, getFormattedCellObject } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
@@ -759,8 +759,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /** @hidden */
     public viewport: IViewport = {
         rowCount: 0, colCount: 0, height: 0, topIndex: 0, leftIndex: 0, width: 0,
-        bottomIndex: 0, rightIndex: 0, beforeFreezeHeight: 0, beforeFreezeWidth: 0
+        bottomIndex: 0, rightIndex: 0, beforeFreezeHeight: 0, beforeFreezeWidth: 0, scaleX: 1, scaleY: 1
     };
+
+    /** @hidden */
+    public enableScaling: boolean;
 
     protected needsID: boolean = true;
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -1105,7 +1108,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             const idx: number = getSheetIndex(this, getSheetNameFromAddress(address));
             if (idx === undefined) { return; }
             if (idx !== this.activeSheetIndex) {
-                const selectRange: string = address.split('!')[1];
+                const selectRange: string = address.substring(address.lastIndexOf('!') + 1);
                 const activeCell: string = selectRange.split(':')[0];
                 const sheet: SheetModel = this.sheets[idx as number];
                 this.setSheetPropertyOnMute(sheet, 'activeCell', activeCell);
@@ -1527,12 +1530,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     private setSize(width: number, ranges: string[], getIndex: Function, updateSize: Function, skipCustomRows?: boolean): void {
-        let sheetIdx: number; let rangeArr: string[]; let startIdx: number; let endIdx: number;
+        let sheetIdx: number; let rangeArr: string[]; let sheetName: string; let startIdx: number; let endIdx: number;
         ranges.forEach((range: string): void => {
             if (range.includes('!')) {
-                rangeArr = range.split('!');
-                sheetIdx = getSheetIndex(this, rangeArr[0]);
-                range = rangeArr[1];
+                sheetName = range.substring(0, range.lastIndexOf('!'));
+                sheetIdx = getSheetIndex(this, sheetName);
+                range = range.substring(range.lastIndexOf('!') + 1);
             } else {
                 sheetIdx = this.activeSheetIndex;
             }
@@ -1673,7 +1676,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public insertHyperlink(hyperlink: string | HyperlinkModel, address: string, displayText: string, isMethod: boolean): void {
         if (this.allowHyperlink) {
-            let addrRange: string[];
+            let sheetName: string;
             let sheetIdx: number;
             let cellIdx: number[];
             let sheet: SheetModel = this.getActiveSheet();
@@ -1700,16 +1703,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 const args: { hyperlink: string | HyperlinkModel, cell: string, displayText: string, triggerEvt: boolean } = {
                     hyperlink: hyperlink, cell: address, displayText: displayText, triggerEvt: !isMethod };
                 this.notify(setLinkModel, args);
-                if (address && address.indexOf('!') !== -1) {
-                    addrRange = address.split('!');
+                if (address && address.lastIndexOf('!') !== -1) {
+                    const lastIndex: number = address.lastIndexOf('!');
+                    sheetName = address.substring(0, lastIndex);
                     const sheets: SheetModel[] = this.sheets;
                     for (let idx: number = 0; idx < sheets.length; idx++) {
-                        if (sheets[idx as number].name === addrRange[0]) {
+                        if (sheets[idx as number].name === sheetName) {
                             sheetIdx = idx;
                         }
                     }
                     sheet = this.sheets[sheetIdx as number];
-                    address = addrRange[1];
+                    address = address.substring(lastIndex + 1);
                 }
                 if (!sheet) {
                     return;
@@ -1772,8 +1776,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (ranges.indexOf(',') > - 1) {
             let sheetName: string = '';
             if (ranges.includes('!')) {
-                sheetName = ranges.split('!')[0] + '!';
-                ranges = ranges.split('!')[1];
+                sheetName = ranges.substring(0, ranges.lastIndexOf('!')) + '!';
+                ranges = ranges.substring(ranges.lastIndexOf('!') + 1);
             }
             const splitRange: string[] = ranges.split(',');
             for (let i: number = 0; i < splitRange.length - 1; i++) {
@@ -1797,8 +1801,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (address.indexOf(',') > - 1) {
             let sheetName: string = '';
             if (address.includes('!')) {
-                sheetName = address.split('!')[0] + '!';
-                address = address.split('!')[1];
+                sheetName = address.substring(0, address.lastIndexOf('!')) + '!';
+                address = address.substring(address.lastIndexOf('!') + 1);
             }
             const splitRange: string[] = address.split(',');
             for (let i: number = 0; i < splitRange.length - 1; i++) {
@@ -1841,7 +1845,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public setPanelSize(): void {
         if (this.height !== 'auto') {
             const panel: HTMLElement = document.getElementById(this.element.id + '_sheet_panel');
-            panel.style.height = `${this.element.getBoundingClientRect().height - getSiblingsHeight(panel)}px`;
+            panel.style.height = `${(this.element.getBoundingClientRect().height * this.viewport.scaleY) -
+                getSiblingsHeight(panel, null, this.viewport.scaleY)}px`;
         }
     }
 
@@ -1927,8 +1932,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.notify(refreshSheetTabs, null);
             this.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
             this.renderModule.refreshSheet();
-            this.openModule.isImportedFile = false;
-            this.openModule.unProtectSheetIdx = [];
         } else {
             if (this.createdHandler) {
                 const refreshFn: Function = (): void => {
@@ -3200,7 +3203,13 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 break;
             case 'allowNumberFormatting':
+            case 'allowWrap':
+            case 'allowCellFormatting':
+                this.notify(ribbon, { prop: prop, onPropertyChange: true });
                 this.notify(updateView, {});
+                break;
+            case 'showAggregate':
+                this.notify(showAggregate, { remove: !this.showAggregate });
                 break;
             }
         }

@@ -12,7 +12,7 @@ import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hie
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, localData12, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
 import { updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7} from '../../spec/treeview/datasource.spec';
-import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData, hierarchicalData7, localDataSource, hierarchicalDataSource} from '../../spec/treeview/datasource.spec';
+import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData, hierarchicalData7, localDataSource, hierarchicalDataSource, hierarchicalDataSource1} from '../../spec/treeview/datasource.spec';
 import { remoteData4, remoteData4_1, remoteData4_2, remoteData4_3 } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
@@ -17221,6 +17221,229 @@ describe('The iconCss field property with the e-icons class in local data bindin
             expect(li[6].querySelector('.e-text-content').children[0].classList.contains('e-checkbox-wrapper')).toBe(true); // Checkbox wrapper
             expect(li[6].querySelector('.e-text-content').children[1].classList.contains('e-list-icon')).toBe(true); // Folder icon
             expect(li[6].querySelector('.e-text-content').children[2].classList.contains('e-list-text')).toBe(true); // Node text
+            done();
+        }, 500);
+        
+    });
+});
+
+describe('The addNodes method with preventTargetExpand parameter testing in hierarchical data binding.', () => {
+    let treeObj: any;
+    let ele: HTMLElement;
+    beforeEach(() => {
+        ele = createElement('div', { id: 'tree1' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (treeObj)
+            treeObj.destroy();
+        document.body.innerHTML = '';
+    });
+
+    it('preventTargetExpand parameter value as false', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: hierarchicalDataSource, id: "code", text: "name", child:"countries" },
+            showCheckBox: true,
+        });
+        treeObj.appendTo(ele);
+        const newCountryNode = { code: 'IN', name: 'India', isChecked: true };
+        treeObj.addNodes([newCountryNode], 'AS', undefined, false); // Adds node to Asia
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(7);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[4].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-collapsible')).toBe(true); // Icon wrapper (collapsible icon)
+            done();
+        }, 500);
+    });
+
+    it('preventTargetExpand parameter value as true', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: hierarchicalDataSource, id: "code", text: "name", child:"countries" },
+            showCheckBox: true,
+        });
+        treeObj.appendTo(ele);
+        const newCountryNode = { code: 'IN', name: 'India', isChecked: true };
+        treeObj.addNodes([newCountryNode], 'AS', undefined, true); // Adds node to Asia
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(7);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[4].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-expandable')).toBe(true); // Icon wrapper (expandable icon)
+            done();
+        }, 500);
+    });
+
+    it('preventTargetExpand parameter value as true and addNodes multiple times for testing expand/collapse icons', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: hierarchicalDataSource, id: "code", text: "name", child:"countries" },
+            showCheckBox: true,
+        });
+        treeObj.appendTo(ele);
+        const newCountryNode = { code: 'IN', name: 'India', isChecked: true };
+        treeObj.addNodes([newCountryNode], 'AS', undefined, true); // Adds node to Asia
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(7);
+            expect(li[4].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-expandable')).toBe(true); // Icon wrapper (expandable icon)
+	    treeObj.expandAll();
+	    expect(li[4].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-collapsible')).toBe(true); // Icon wrapper (collapsible icon)
+	    const newCountryNode2 = { code: 'JPN', name: 'Japan' };
+	    treeObj.addNodes([newCountryNode2], 'AS', undefined, true); // Adds node to Asia
+	    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+	    setTimeout(function() {
+	        expect(treeObj.liList.length).toBe(8);
+	        expect(li[4].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-expandable')).toBe(true); // Icon wrapper (expandable icon)
+	        done();
+	   }, 500);
+        }, 500);
+    });
+
+    it('preventTargetExpand parameter value as false with index value and sortOrder as Ascending', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: hierarchicalDataSource1, id: "code", text: "name", child:"countries" },
+            showCheckBox: true,
+            sortOrder: 'Ascending'
+        });
+        treeObj.appendTo(ele);
+        const newCountryNode = { code: 'IN', name: 'India', isChecked: true };
+        treeObj.addNodes([newCountryNode], 'AS', 0, false); // Adds node to Asia
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(6);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[4].querySelector('.e-text-content').children[0].classList.contains('e-icon-collapsible')).toBe(true); // Icon wrapper (collapsible icon)
+            done();
+        }, 500);
+    });
+
+    it('preventTargetExpand parameter value as true with index value and sortOrder as Ascending', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: hierarchicalDataSource1, id: "code", text: "name", child:"countries" },
+            showCheckBox: true,
+            sortOrder: 'Ascending'
+        });
+        treeObj.appendTo(ele);
+        const newCountryNode = { code: 'IN', name: 'India', isChecked: true };
+        treeObj.addNodes([newCountryNode], 'AS', 0, true); // Adds node to Asia
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(6);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[4].querySelector('.e-text-content').children[0].classList.contains('e-icon-expandable')).toBe(true); // Icon wrapper (expandable icon)
+            done();
+        }, 500);
+    });
+});
+
+describe('The addNodes method with preventTargetExpand parameter testing in local data binding.', () => {
+    let treeObj: any;
+    let ele: HTMLElement;
+    beforeEach(() => {
+        ele = createElement('div', { id: 'tree1' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (treeObj)
+            treeObj.destroy();
+        document.body.innerHTML = '';
+    });
+
+    it('preventTargetExpand parameter value as false', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: localDataSource, id: "id", parentID:"pid", hasChildren:"hasChild", text: "name", iconCss: "icon" },
+            showCheckBox: true,
+        });
+        treeObj.appendTo(ele);
+        const node = { id: 8, name: '100 Albums - $5 Each', pid: 7, isChecked: true, icon:'e-icons e-folder' };
+        treeObj.addNodes([node], undefined, undefined, false);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(7);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[5].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-collapsible')).toBe(true); // Icon wrapper (collapsible icon)
+            done();
+        }, 500);
+    });
+
+    it('preventTargetExpand parameter value as true', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: localDataSource, id: "id", parentID:"pid", hasChildren:"hasChild", text: "name", iconCss: "icon" },
+            showCheckBox: true,
+        });
+        treeObj.appendTo(ele);
+        const node = { id: 8, name: '100 Albums - $5 Each', pid: 7, isChecked: true, icon:'e-icons e-folder' };
+        treeObj.addNodes([node], undefined, undefined, true);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(7);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[5].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-expandable')).toBe(true); // Icon wrapper (expandable icon)
+            done();
+        }, 500);
+        
+    });
+
+    it('preventTargetExpand parameter value as true and addNodes multiple times for testing expand/collapse icon', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: localDataSource, id: "id", parentID:"pid", hasChildren:"hasChild", text: "name", iconCss: "icon" },
+            showCheckBox: true,
+        });
+        treeObj.appendTo(ele);
+        const node = { id: 8, name: '100 Albums - $5 Each', pid: 7, isChecked: true, icon:'e-icons e-folder' };
+        treeObj.addNodes([node], undefined, undefined, true);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(7);
+            expect(li[5].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-expandable')).toBe(true); // Icon wrapper (expandable icon)
+	    treeObj.expandAll();
+	    expect(li[5].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-collapsible')).toBe(true); // Icon wrapper (collapsible icon)
+	    const node2 = { id: 11, name: 'child item', pid: 7, isChecked: true, icon:'e-icons e-folder' };
+	    treeObj.addNodes([node2], undefined, undefined, true);
+	    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+	    setTimeout(function() {
+	        expect(treeObj.liList.length).toBe(8);
+	        expect(li[5].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-expandable')).toBe(true); // Icon wrapper (expandable icon)
+	        done();
+	    }, 500);
+        }, 500);
+    });
+
+    it('preventTargetExpand parameter value as false with index value and sortOrder as Ascending', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: localDataSource, id: "id", parentID:"pid", hasChildren:"hasChild", text: "name", iconCss: "icon" },
+            showCheckBox: true,
+            sortOrder: 'Ascending'
+        });
+        treeObj.appendTo(ele);
+        const node = { id: 8, name: '100 Albums - $5 Each', pid: 7, isChecked: true, icon:'e-icons e-folder' };
+        treeObj.addNodes([node], undefined, 0, false);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(7);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[5].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-collapsible')).toBe(true); // Icon wrapper (expandable icon)
+            done();
+        }, 500);
+        
+    });
+
+    it('preventTargetExpand parameter value as true with index value and sortOrder as Ascending', (done: Function) => {
+        treeObj = new TreeView({ 
+            fields: { dataSource: localDataSource, id: "id", parentID:"pid", hasChildren:"hasChild", text: "name", iconCss: "icon" },
+            showCheckBox: true,
+            sortOrder: 'Ascending'
+        });
+        treeObj.appendTo(ele);
+        const node = { id: 8, name: '100 Albums - $5 Each', pid: 7, isChecked: true, icon:'e-icons e-folder' };
+        treeObj.addNodes([node], undefined, 0, true);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function() {
+            expect(treeObj.liList.length).toBe(7);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[5].querySelector('.e-text-content.e-icon-wrapper').children[0].classList.contains('e-icon-expandable')).toBe(true); // Icon wrapper (expandable icon)
             done();
         }, 500);
         

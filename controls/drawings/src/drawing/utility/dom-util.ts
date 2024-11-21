@@ -216,7 +216,7 @@ function wordWrapping(text: TextAttributes, textValue?: string): SubTextElement[
                 if (Math.floor(width) > text.width - 2 && txtValue.length > 0) {
                     textValue = txtValue;
                     childNodes[childNodes.length] = {
-                        text: (txtValue.indexOf('\n') === -1) ? txtValue + ' ' : textValue, x: 0, dy: 0,
+                        text: (txtValue.indexOf('\n') === -1 && i !== words.length - 1) ? txtValue + ' ' : textValue, x: 0, dy: 0,
                         width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
                     };
                     txtValue = '';

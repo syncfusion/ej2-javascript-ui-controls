@@ -74,17 +74,17 @@ export function getScrollBarWidth(): number {
     return scrollAreaWidth = result;
 }
 
-const classes: string[] = ['e-ribbon', 'e-formula-bar-panel', 'e-sheet-tab-panel', 'e-header-toolbar'];
-
 /**
  * @hidden
  * @param {HTMLElement} element - Specify the element.
- * @param {string[]} classList - Specify the classList.
+ * @param {string[]} classList - Specify the classList
+ * @param {number} scaleY - Specify the scaleY value.
  * @returns {number} - get Siblings Height
  */
-export function getSiblingsHeight(element: HTMLElement, classList: string[] = classes): number {
-    const previous: number = getHeightFromDirection(element, 'previous', classList);
-    const next: number = getHeightFromDirection(element, 'next', classList);
+export function getSiblingsHeight(element: HTMLElement, classList?: string[], scaleY: number = 1): number {
+    classList = classList || ['e-ribbon', 'e-formula-bar-panel', 'e-sheet-tab-panel', 'e-header-toolbar'];
+    const previous: number = getHeightFromDirection(element, 'previous', classList, scaleY);
+    const next: number = getHeightFromDirection(element, 'next', classList, scaleY);
     return previous + next;
 }
 
@@ -92,14 +92,15 @@ export function getSiblingsHeight(element: HTMLElement, classList: string[] = cl
  * @param {HTMLElement} element - Specify the element.
  * @param {string} direction - Specify the direction.
  * @param {string[]} classList - Specify the classList.
+ * @param {number} scaleY - Specify the scaleY value.
  * @returns {number} - get Height FromDirection
  */
-function getHeightFromDirection(element: HTMLElement, direction: string, classList: string[]): number {
+function getHeightFromDirection(element: HTMLElement, direction: string, classList: string[], scaleY: number): number {
     let sibling: HTMLElement = (element)[direction + 'ElementSibling'];
     let result: number = 0;
     while (sibling) {
         if (classList.some((value: string) => sibling.classList.contains(value))) {
-            result += sibling.offsetHeight;
+            result += (sibling.getBoundingClientRect().height * scaleY);
         }
         sibling = (sibling)[direction + 'ElementSibling'];
     }

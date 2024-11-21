@@ -52,10 +52,12 @@ export class Edit implements IAction {
     protected parent: IGrid;
     protected serviceLocator: ServiceLocator;
     protected l10n: L10n;
-    private dialogObj: Dialog;
+    /* @hidden */
+    public dialogObj: Dialog;
     private fieldname: string = '';
     private data: Object = {};
-    private alertDObj: Dialog;
+    /* @hidden */
+    public alertDObj: Dialog;
     private actionBeginFunction: Function;
     private actionCompleteFunction: Function;
     private onDataBoundFunction: Function;
@@ -952,10 +954,12 @@ export class Edit implements IAction {
                         rowIndex = 0;
                     }
                     if (e.action === 'escape') {
+                        this.parent.isFocusFirstCell = true;
                         this.closeEdit();
                     } else {
                         this.isShowAddedRowValidate = true;
                         this.parent.selectionModule.preventFocus = false;
+                        this.parent.isFocusFirstCell = true;
                         this.endEdit();
                         this.isShowAddedRowValidate = false;
                     }

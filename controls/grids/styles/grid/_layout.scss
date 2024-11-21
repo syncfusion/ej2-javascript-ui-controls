@@ -407,6 +407,43 @@
         padding-left: $grid-columnchooser-input-padding-left;
       }
     }
+
+    & .e-mask {
+
+      &.e-skeleton {
+        display: inline-block;
+        height: 10px;
+        width: 80%;
+      }
+
+      &.e-mask-group-intent {
+        margin-left: 7px;
+        width: 16px;
+      }
+
+      &.e-mask-detail-intent {
+        width: 16px;
+      }
+
+      &.e-mask-checkbox-intent {
+        margin-left: 3px;
+        margin-right: 16px;
+        width: 20px;
+      }
+
+      &.e-mask-checkbox-filter-intent {
+        width: 13px;
+      }
+
+      &.e-mask-checkbox-filter-span-intent {
+        margin-left: 8px;
+      }
+      
+      &.e-mask-drag-intent {
+        margin-left: 12px;
+        width: 12px;
+      }
+    }
   }
 
   #{&}.e-grid {
@@ -1290,7 +1327,7 @@
 
     &:not(.e-grid-min-height) .e-gridcontent {
       tr td:not(.e-indentcell):first-child:empty,
-      .e-gridcontent tr.e-row .e-rowcell:empty {
+      tr.e-row .e-rowcell:empty {
         height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
       }
     }
@@ -2187,7 +2224,7 @@
 
     &.e-default .e-gridheader {
       th.e-firstcell,
-      th.e-laststackcell {
+      th.e-laststackcell:not(:has(.e-rhandler.e-rcursor)) {
         @include grid-border-width-styles;
       }
     }
@@ -3490,46 +3527,17 @@
       }
     }
 
-    &:not(.sf-grid).e-resize-lines.e-rtl {
-      &.e-default table th[rowspan] {
+    &.e-resize-lines {
+      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor,
+      & tr.e-columnheader th.e-lastcell .e-rhandler.e-rcursor,
+      & tr.e-columnheader th.e-laststackcell .e-rhandler.e-rcursor {
         border-right: 0;
       }
     }
 
-    & .e-mask {
-
-      &.e-skeleton {
-        display: inline-block;
-        height: 10px;
-        width: 80%;
-      }
-
-      &.e-mask-group-intent {
-        margin-left: 7px;
-        width: 16px;
-      }
-
-      &.e-mask-detail-intent {
-        width: 16px;
-      }
-
-      &.e-mask-checkbox-intent {
-        margin-left: 3px;
-        margin-right: 16px;
-        width: 20px;
-      }
-
-      &.e-mask-checkbox-filter-intent {
-        width: 13px;
-      }
-
-      &.e-mask-checkbox-filter-span-intent {
-        margin-left: 8px;
-      }
-      
-      &.e-mask-drag-intent {
-        margin-left: 12px;
-        width: 12px;
+    &:not(.sf-grid).e-resize-lines.e-rtl {
+      &.e-default table th[rowspan] {
+        border-right: 0;
       }
     }
 

@@ -424,7 +424,7 @@ export class SfdtReader {
                         text = text + '<span contenteditable="false" class="e-mention-chip">' + textValue + '</span>';
                         isFieldDisplayText = false;
                     } else {
-                        text = text + textValue;
+                        text = text + textValue.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     }
                 }
             } else {

@@ -20,7 +20,7 @@ import * as events from '../../../src/grid/base/constant';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { DataManager, ODataV4Adaptor, DataUtil } from "@syncfusion/ej2-data";
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 
 Grid.Inject(Filter, Page, Selection, Group, Reorder, ColumnMenu, ForeignKey, Toolbar, VirtualScroll);
@@ -3562,5 +3562,33 @@ describe('Custom binding filter Menu Code Coverage => ', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = dataStateChange = null;
+    });
+});
+
+describe('EJ2: 916181 => All template is not rendering in React when using the CSPTemplate function. => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                allowPaging: true,
+                columns: [
+                    { field: 'CustomerID', width: 120, headerText: 'Customer ID', filterTemplate: initializeCSPTemplate(function() {
+                        return '<input type="text" id="ShipCountry" name="ShipCountry" />' }) },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }
+                ]
+            }, done);
+    });
+
+    it('Coverage the filter render', (done: Function) => {
+        gridObj.isReact = true;
+        gridObj.filterModule.render((gridObj as any).headerModule.rows[0].cells[0]);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

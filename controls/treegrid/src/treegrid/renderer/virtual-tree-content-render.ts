@@ -461,9 +461,15 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 firsttdinx = +attr; // this.parent.getContent().querySelector('.e-content tr').getAttribute('data-rowindex');
             }
             if (firsttdinx === 0) {
-                this.translateY = !isNullOrUndefined(this.endIndex) ?
-                    (this.endIndex - this.parent.pageSettings.pageSize) * (this.parent.rowHeight ?
-                        this.parent.rowHeight : this.parent.getRowHeight()) : 0;
+                if (this.endIndex - this.startIndex < this.parent.pageSettings.pageSize) {
+                    this.translateY = !isNullOrUndefined(this.endIndex) ?
+                        (this.endIndex - this.parent.pageSettings.pageSize) * (this.parent.rowHeight ?
+                            this.parent.rowHeight : this.parent.getRowHeight()) : 0;
+                }
+                else {
+                    this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
+                        scrollArgs.offset.top - (outBuffer * rowHeight) + rowHeight : 0;
+                }
             }
             else if (this.parent.getFrozenColumns() > 0) {
                 scrollArgs.offset.top = scrollArgs.offset.top + 80;
@@ -496,6 +502,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 ((this.startIndex - currentViewData[0][`${indexValue}`]) < (this.parent.pageSettings.pageSize / 2)) && this.parent.selectionModule.isRowSelected) {
                 this.startIndex = currentViewData[0][`${indexValue}`] + (this.parent.pageSettings.pageSize / 2);
             }
+            const selectedIndex: number = this.parent.root.selectedRowIndex;
+            this.startIndex = selectedIndex !== -1 && selectedIndex !== this.startIndex ? this.startIndex - 1 : this.startIndex;
             if (scrollArgs.offset.top > (rowHeight * this.totalRecords)) {
                 this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
             } else {
@@ -505,10 +513,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 }
                 else
                 {
-                    if (this.parent.allowRowDragAndDrop) {
-                        this.translateY = scrollArgs.offset.top -  rowHeight * 2;
-                    }
-                    else if (this.parent.getFrozenColumns() > 0) {
+                    if (this.parent.getFrozenColumns() > 0) {
                         this.translateY = scrollArgs.offset.top - ((rowHeight * 2) + this.parent.pageSettings.pageSize);
                     }
                     else {

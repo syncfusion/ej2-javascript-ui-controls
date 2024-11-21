@@ -2090,8 +2090,11 @@ export class TableWidget extends BlockWidget {
      */
     public getOwnerWidth(isBasedOnViewer: boolean): number {
         let width: number = this.getContainerWidth();
-        // Left and right indents should be neglected.
-        width = width - this.leftIndent - this.rightIndent;
+        // As per the Microsoft Word behavior, left and right indent should be considered for the auto preferred width type table
+        // and not to be considered for the point and percent preferred width type table.
+        if (this.tableFormat.preferredWidthType === 'Auto') {
+            width = width - this.leftIndent - this.rightIndent;
+        }
         return width >= 0 ? width : 0;
     }
     /**
@@ -2647,11 +2650,11 @@ export class TableWidget extends BlockWidget {
         return value < 100 ? value : 100; // The value should be lesser than or equal to 100%;
     }
 
-    public updateChildWidgetLeft(left: number, updateLeftIndent?: boolean): void {
+    public updateChildWidgetLeft(left: number): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let rowWidget: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             rowWidget.x = left;
-            rowWidget.updateChildWidgetLeft(left, updateLeftIndent);
+            rowWidget.updateChildWidgetLeft(left);
         }
     }
 
@@ -2790,10 +2793,16 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    public insertTableRowsInternal(tableRows: TableRowWidget[], startIndex: number, isInsertRow?: boolean): void {
+    public insertTableRowsInternal(tableRows: TableRowWidget[], startIndex: number, isInsertRow?: boolean, initilizeCellBorder?: boolean): void {
         for (let i: number = tableRows.length - 1; i >= 0; i--) {
             let row: TableRowWidget = tableRows.splice(i, 1)[0] as TableRowWidget;
             row.containerWidget = this;
+            if (initilizeCellBorder) {
+                for (let j: number = 0; j < row.childWidgets.length; j++) {
+                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    cell.cellFormat.initializeCellBorders();
+                }
+            }
             this.childWidgets.splice(startIndex, 0, row);
         }
         this.updateRowIndex(startIndex);
@@ -3374,7 +3383,7 @@ export class TableRowWidget extends BlockWidget {
             let cellWidget: TableCellWidget = this.childWidgets[i] as TableCellWidget;
             left += spacing + cellWidget.margin.left;
             cellWidget.x = left;
-            cellWidget.updateChildWidgetLeft(cellWidget.x, updateLeftIndent);
+            cellWidget.updateChildWidgetLeft(cellWidget.x);
             left += cellWidget.width + cellWidget.margin.right;
         }
     }
@@ -4292,16 +4301,18 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
-    public updateChildWidgetLeft(left: number, updateLeftIndent?: boolean): void {
+    public updateChildWidgetLeft(left: number): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let widget: Widget = this.childWidgets[i] as Widget;
             widget.x = left;
-            if (updateLeftIndent && widget instanceof ParagraphWidget) {
-                widget.x = left + HelperMethods.convertPointToPixel(widget.leftIndent);
+            if (widget instanceof ParagraphWidget) {
+                const leftIndent = HelperMethods.convertPointToPixel(widget.leftIndent);
+                const rightIndent = HelperMethods.convertPointToPixel(widget.rightIndent);
+                widget.x = left + (widget.bidi ? rightIndent : leftIndent);
             }
             if (widget instanceof TableWidget) {
                 let tableWidget: TableWidget = widget as TableWidget;
-                tableWidget.updateChildWidgetLeft(left, updateLeftIndent);
+                tableWidget.updateChildWidgetLeft(left);
                 if (tableWidget.isBidiTable) {
                     let clientArea: Rect = new Rect(tableWidget.x, tableWidget.y, tableWidget.width, tableWidget.height);
                     tableWidget.shiftWidgetsForRtlTable(clientArea, tableWidget);

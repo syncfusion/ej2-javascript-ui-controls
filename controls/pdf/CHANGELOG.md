@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
+## 27.2.3 (2024-11-21)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with the bounds property during the creation and JSON export of text markup annotations.
+- Resolved the issue with preserving the PNG image while drawing in page graphics.
+- Resolved the issue of page rotation being incorrectly preserved when importing pages multiple times.
+- Resolved an issue with preserving redaction annotation appearance when using justified text alignment.
+
 ## 27.2.2 (2024-11-15)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the issue with preserving the justified text alignment of free text annotations.
+
+## 27.1.58 (2024-11-05)
 
 ### PDF Parser
 

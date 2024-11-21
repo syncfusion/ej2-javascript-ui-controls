@@ -752,7 +752,7 @@ export class PdfRenderer {
                     if (Object.prototype.hasOwnProperty.call(details, 'calibrate') && (details['shapeAnnotationType'] === 'Circle' || details['shapeAnnotationType'] === 'Line' || details['shapeAnnotationType'] === 'Polygon' || details['shapeAnnotationType'] === 'Polyline')) {
                         annotationType = 'measureShapes';
                     }
-                    else if (!(Object.prototype.hasOwnProperty.call(details, 'calibrate')) && (details['shapeAnnotationType'] === 'Line' || details['shapeAnnotationType'] === 'Circle' || details['shapeAnnotationType'] === 'Polygon' || details['shapeAnnotationType'] === 'Square')) {
+                    else if (!(Object.prototype.hasOwnProperty.call(details, 'calibrate')) && (details['shapeAnnotationType'] === 'Line' || details['shapeAnnotationType'] === 'Circle' || details['shapeAnnotationType'] === 'Polygon' || details['shapeAnnotationType'] === 'Square' || details['shapeAnnotationType'] === 'Polyline')) {
                         annotationType = 'shapeAnnotation';
                     }
                     switch (annotationType) {
@@ -849,7 +849,8 @@ export class PdfRenderer {
                             const freeText: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
                             if (!isNullOrUndefined(freeText)) {
                                 details = freeText;
-                                if (!isNullOrUndefined(this.FallbackFontCollection) && this.FallbackFontCollection.length !== 0) {
+                                if (!isNullOrUndefined(this.FallbackFontCollection) &&
+                                    Object.keys(this.FallbackFontCollection).length !== 0) {
                                     annotationRenderer.addFreeText(details, page, this.FallbackFontCollection);
                                 }
                                 else {

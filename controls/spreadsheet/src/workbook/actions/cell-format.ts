@@ -16,8 +16,10 @@ export class WorkbookCellFormat {
     }
     private format(args: SetCellFormatArgs): void {
         let sheet: SheetModel; let rng: string | number[] = args.range;
-        if (rng && typeof rng === 'string' && rng.indexOf('!') > -1) {
-            rng = rng.split('!')[1]; sheet = this.parent.sheets[getSheetIndex(this.parent, (args.range as string).split('!')[0])];
+        if (rng && typeof rng === 'string' && rng.lastIndexOf('!') > -1) {
+            const lastIndex: number = rng.lastIndexOf('!');
+            rng = rng.substring(lastIndex + 1);
+            sheet = this.parent.sheets[getSheetIndex(this.parent, (args.range as string).substring(0, lastIndex))];
         } else {
             sheet = this.parent.getActiveSheet();
         }
@@ -464,10 +466,11 @@ export class WorkbookCellFormat {
     }
 
     private clearCellObj(options: ClearOptions): void {
-        const clrRange: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
+        const lastIndex: number = options.range ? options.range.lastIndexOf('!') : 0;
+        const clrRange: string = options.range ? (lastIndex > 0) ? options.range.substring(lastIndex + 1) : options.range
             : this.parent.getActiveSheet().selectedRange;
-        const sheetIdx: number = (options.range && options.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent, options.range.split('!')[0]) : this.parent.activeSheetIndex;
+        const sheetIdx: number = (options.range && lastIndex > 0) ?
+            getSheetIndex(this.parent, options.range.substring(0, lastIndex)) : this.parent.activeSheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         const range: number[] = getSwapRange(getIndexesFromAddress(clrRange));
         let sRowIdx: number = range[0];

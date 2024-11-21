@@ -479,3 +479,33 @@ describe('EJ2-920590- Paste action does not working template column => ', () => 
         gridObj = null;
     });
 });
+
+describe('EJ2-900673 - Script error occurs while perform Control+A and Control+C => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                enableVirtualization: true,
+                height:400,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID', width: 120},
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd'},
+                    { field: 'Freight', width: 120}
+                ],
+            }, done);
+    });
+
+    it('Select All in Grid and copy action', () => {
+        gridObj.selectionModule.ctrlPlusA();
+        gridObj.copy();
+        expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value).toBeTruthy();
+    });
+
+    afterAll(() => {
+       destroy(gridObj);
+       gridObj = null;
+    });
+});

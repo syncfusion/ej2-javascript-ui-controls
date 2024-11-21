@@ -1659,8 +1659,7 @@ export class PdfGraphics {
     _drawUnicodeLine(lineInfo: _LineInfo, width: number, font: PdfFont, format: PdfStringFormat): void {
         const line: string = lineInfo._text;
         const rtl: boolean = (format !== null && typeof format !== 'undefined' && format.rightToLeft);
-        const useWordSpace: boolean = (format !== null && typeof format !== 'undefined' && (format.wordSpacing !== 0 ||
-                                    format.alignment === PdfTextAlignment.justify));
+        const useWordSpace: boolean = (format !== null && typeof format !== 'undefined' && format.wordSpacing > 0);
         const ttfFont: PdfTrueTypeFont = font as PdfTrueTypeFont;
         const wordSpacing: number = this._justifyLine(lineInfo, width, format, ttfFont);
         const rtlRender: _RtlRenderer = new _RtlRenderer();
@@ -1849,7 +1848,7 @@ export class PdfGraphics {
         const whitespacesCount: number = font._getCharacterCount(line,  [' ', '\t']);
         const hasSpaces: boolean = (whitespacesCount > 0 && line[0] !== ' ');
         const goodLineBreakStyle: boolean = ((lineInfo._lineType & _LineType.layoutBreak) > 0);
-        return (justifyStyle && goodWidth && hasSpaces && (goodLineBreakStyle || format.alignment === PdfTextAlignment.justify));
+        return (justifyStyle && goodWidth && hasSpaces && goodLineBreakStyle);
     }
     _underlineStrikeoutText(brush: PdfBrush,
                             result: _PdfStringLayoutResult,

@@ -424,7 +424,8 @@ export function getSheetIndexFromId(context: Workbook, id: number): number {
  * @returns {address} - To get Sheet Name From Address.
  */
 export function getSheetNameFromAddress(address: string): string {
-    return address.split('!')[0].replace(/'/gi, '');
+    const sheetRefIndex: number = address.lastIndexOf('!');
+    return sheetRefIndex > -1 ? address.substring(0, sheetRefIndex).replace(/'/gi, '') : address.replace(/'/gi, '');
 }
 
 /**

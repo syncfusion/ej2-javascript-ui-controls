@@ -1,4 +1,4 @@
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { getCell, getRowHeight, SheetModel, Spreadsheet } from '../../../src/index';
 
@@ -27,6 +27,58 @@ describe('Wrap ->', () => {
             // expect(td.parentElement.style.height).toBe('128px'); - This case failed only in jenkin CI machine
             helper.invoke('cellFormat', [{ fontSize: '11pt' }, 'C2']); // After decreasing font size
             // expect(td.parentElement.style.height).toBe('22px'); - This case need to be fixed
+            done();
+        });
+        it('Checking property change', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.allowWrap).toBeTruthy();
+            const wrapBtn: HTMLElement = helper.getElement(`#${helper.id}_wrap`);
+            expect(wrapBtn.classList).toContain('e-active');
+            expect(wrapBtn.parentElement.classList).not.toContain('e-overlay');
+            spreadsheet.allowWrap = false;
+            spreadsheet.dataBind();
+            expect(spreadsheet.allowWrap).toBeFalsy();
+            expect(wrapBtn.classList).not.toContain('e-active');
+            expect(wrapBtn.parentElement.classList).toContain('e-overlay');
+            let tdEle: Element = helper.invoke('getCell', [1, 2]);
+            expect(tdEle.classList).not.toContain('e-wraptext');
+            helper.invoke('selectRange', ['A1']);
+            expect(wrapBtn.classList).not.toContain('e-active');
+            helper.invoke('selectRange', ['C2']);
+            expect(wrapBtn.classList).not.toContain('e-active');
+            spreadsheet.allowWrap = true;
+            spreadsheet.dataBind();
+            expect(wrapBtn.classList).toContain('e-active');
+            expect(wrapBtn.parentElement.classList).not.toContain('e-overlay');
+            expect(tdEle.classList).toContain('e-wraptext');
+            helper.invoke('selectRange', ['A1']);
+            expect(wrapBtn.classList).not.toContain('e-active');
+            helper.invoke('selectRange', ['C2']);
+            expect(wrapBtn.classList).toContain('e-active');
+            done();
+        });
+        it('Adding filter in the wrap cells', (done: Function) => {
+            helper.invoke('wrap', ['A1']);
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 0]);
+            expect(cellEle.classList).toContain('e-wraptext');
+            expect(cellEle.querySelector('.e-wrap-content')).toBeNull();
+            helper.invoke('applyFilter');
+            expect(cellEle.classList).toContain('e-wraptext');
+            expect(cellEle.querySelector('.e-wrap-content')).not.toBeNull();
+            expect(cellEle.querySelector('.e-filter-btn')).not.toBeNull();
+            helper.invoke('applyFilter');
+            expect(cellEle.querySelector('.e-filter-btn')).toBeNull();
+            helper.invoke('wrap', ['A1', false]);
+            expect(cellEle.classList.contains('e-wraptext')).toBeFalsy();
+            expect(cellEle.querySelector('.e-wrap-content')).not.toBeNull();
+            // Need to remove below line if the wrap content element is removed by wrap handler when wrap set to false.
+            cellEle.removeChild(cellEle.querySelector('.e-wrap-content'));
+            helper.invoke('applyFilter');
+            expect(cellEle.querySelector('.e-filter-btn')).not.toBeNull();
+            helper.invoke('wrap', ['A1']);
+            expect(cellEle.classList).toContain('e-wraptext');
+            expect(cellEle.querySelector('.e-wrap-content')).not.toBeNull();
+            expect(cellEle.querySelector('.e-filter-btn')).not.toBeNull();
             done();
         });
     });

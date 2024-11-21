@@ -2132,13 +2132,13 @@
             }
 
             li {
-              @if $grid-skin != 'bootstrap5.3' {
+              @if $grid-skin != 'bootstrap5.3' and $grid-skin != 'fluent2' and $grid-skin != 'highcontrast' {
                 color: $grid-rowcell-color;
               }
             }
  
             & .e-submenu.e-selected {
-              @if $grid-skin != 'bootstrap5.3' {
+              @if $grid-skin != 'bootstrap5.3' and $grid-skin != 'fluent2' and $grid-skin != 'highcontrast' {
                 background-color: $grid-responsive-header-background;
               }
             }

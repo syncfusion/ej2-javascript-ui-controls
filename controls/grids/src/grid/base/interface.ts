@@ -947,7 +947,7 @@ export interface IEditCell {
     write?: void | Function | string;
     params?: DatePickerModel | NumericTextBoxModel | DropDownListModel |
     CheckBoxModel | MultiSelectModel | AutoCompleteModel | ComboBoxModel | SwitchModel |
-    TimePickerModel | MaskedTextBoxModel | TextBoxModel;
+    TimePickerModel | MaskedTextBoxModel | TextBoxModel | DateTimePickerModel;
     destroy?: Function | string;
 }
 /**

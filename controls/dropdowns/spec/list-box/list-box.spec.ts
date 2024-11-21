@@ -1830,5 +1830,13 @@ describe('ListBox', () => {
             listObj1.enableItems(['Cabbage'], false);
             listObj1.moveAllTo();
         });
+        it('ListBox With Move Items with disabled items', function () {
+            listObj1.allowFiltering = false;
+            listObj1.dataBind();
+            listObj1.enableItems(['Cabbage'], false);
+            listObj1.moveAllTo();
+            listObj1.toolbarAction = "moveAllTo";
+            listObj1.moveTo();
+        });
     });
 });

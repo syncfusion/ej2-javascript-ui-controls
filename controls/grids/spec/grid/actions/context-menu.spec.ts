@@ -1162,4 +1162,94 @@ describe('context menu module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-913989-First cell focus on after save and cancel using context menu.', () => {
+        let gridObj: Grid;
+        let rowSelected: (args: any) => void;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: data.slice(0, 10),
+                allowPaging: true,
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true },
+                contextMenuItems: ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending',
+                    'Copy', 'Edit', 'Delete', 'Save', 'Cancel',
+                    'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+                    'LastPage', 'NextPage'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                    { field: 'CustomerName', headerText: 'Customer Name', width: 160 },
+                ]
+            }
+            gridObj = createGrid(options, done);
+        });
+
+        it('Select a row', (done: Function) => {
+            gridObj.selectRow(2);
+            done();
+        });
+
+        it('Edit the row', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType === 'beginEdit') {
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            gridObj.startEdit();
+        });
+
+        it('Expected as first cell focused for cancel action', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType === 'cancel') {
+                    expect(args.row.cells[0].classList.contains('e-focused')).toBeTruthy();
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            let cancelItem: any = (gridObj.contextMenuModule as any).defaultItems['Cancel'];
+            (gridObj.contextMenuModule as any).contextMenuItemClick({ item: cancelItem });
+        });
+
+        it('Action Complete event binds for editing', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType === 'beginEdit') {
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            gridObj.startEdit();
+        });
+
+        it('Checks the first cell focused on save action', (done: Function) => {
+            rowSelected = (args: any) => {
+                expect(args.row.cells[0].classList.contains('e-focused')).toBeTruthy();
+                gridObj.rowSelected = null;
+                done();
+            }
+            gridObj.rowSelected = rowSelected;
+            let saveItem: any = (gridObj.contextMenuModule as any).defaultItems['Save'];
+            (gridObj.contextMenuModule as any).contextMenuItemClick({ item: saveItem });
+        });
+
+        it('Checks the first cell focused on next row for delete action', (done: Function) => {
+            rowSelected = (args: any) => {
+                expect(args.row.cells[0].classList.contains('e-focused')).toBeTruthy();
+                gridObj.rowSelected = null;
+                done();
+            }
+            gridObj.rowSelected = rowSelected;
+            let deleteItem: any = (gridObj.contextMenuModule as any).defaultItems['Delete'];
+            (gridObj.contextMenuModule as any).row = gridObj.getSelectedRows()[0];
+            (gridObj.contextMenuModule as any).contextMenuItemClick({ item: deleteItem });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

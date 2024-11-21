@@ -3797,7 +3797,7 @@ export class Layout {
             elementBox.characterFormat = paragraph.characterFormat;
             elementBox.width = this.documentHelper.textHelper.getTextSize(elementBox, elementBox.characterFormat);
             this.adjustPosition(elementBox, paragraph.bodyWidget);
-            paragraph.x += elementBox.padding.left;
+            // paragraph.x += elementBox.padding.left;
             if (isEmptyLine) {
                 this.checkInbetweenShapeOverlap(lineWidget);
             }
@@ -4662,7 +4662,7 @@ export class Layout {
                     for (let i: number = 0; i < elementBox.textFrame.childWidgets.length; i++) {
                         let widget: BlockWidget = elementBox.textFrame.childWidgets[i] as BlockWidget;
                         if (widget instanceof TableWidget) {
-                            widget.updateChildWidgetLeft(widget.x + elementLeftMargin, true);
+                            widget.updateChildWidgetLeft(widget.x + elementLeftMargin);
                         } else {
                             (widget as Widget).x += elementLeftMargin;
                         }
@@ -6631,7 +6631,6 @@ export class Layout {
         let totalSpaceCount: number = lineText.length - HelperMethods.removeSpace(lineText).length;
         lineText = lineText.trim();
         spaceCount = lineText.length - HelperMethods.removeSpace(lineText).length;
-        
         let subWidth: number = (this.viewer.clientArea.width - firstLineIndent - width);
         let totalSubWidth: number = (this.viewer.clientArea.width - firstLineIndent - (width + trimmedSpaceWidth));
         if (isBidi && justify) {

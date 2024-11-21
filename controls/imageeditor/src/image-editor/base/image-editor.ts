@@ -5,7 +5,7 @@ import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations'
 import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';
 import { ImageEditorModel, FinetuneSettingsModel, ZoomSettingsModel, SelectionSettingsModel, FontFamilyModel } from './image-editor-model';
-import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings, ShapeType, ImageSettings, RedactType } from './../index';
+import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings, ShapeType, ImageSettings, RedactType, TransformationCollection } from './../index';
 import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';
 import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs, RedactSettings } from './../index';
 import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';
@@ -2105,19 +2105,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @param {fillColor} fillColor - Specifies the background Color of the text.
      * @param {string} strokeColor - Specifies the outline color of the text annotation.
      * @param {number} strokeWidth - Specifies the outline stroke width of the text annotation.
+     * @param {TransformationCollection[]} transformCollection - Specifies the transform collection of the text annotation.
      * @returns {boolean}.
      *
      */
     public drawText(x?: number, y?: number, text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
                     color?: string, isSelected?: boolean, degree?: number, fillColor?: string, strokeColor?: string,
-                    strokeWidth?: number): boolean {
+                    strokeWidth?: number, transformCollection?: TransformationCollection[]): boolean {
         let isText: boolean = false;
         const isPointsInRange: boolean = this.allowShape(x, y);
         if (!this.disabled && this.isImageLoaded && (isPointsInRange || (isNullOrUndefined(x) && isNullOrUndefined(y)))) {
             isText = true;
             this.notify('shape', { prop: 'drawText', onPropertyChange: false, value: {x: x, y: y, text: text, fontFamily: fontFamily,
                 fontSize: fontSize, bold: bold, italic: italic, color: color, isSelected: isSelected, degree: degree, fillColor: fillColor,
-                outlineColor: strokeColor, outlineWidth: strokeWidth }});
+                outlineColor: strokeColor, outlineWidth: strokeWidth, transformCollection: transformCollection }});
             this.editCompleted();
         }
         return isText;

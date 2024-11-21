@@ -152,7 +152,7 @@ export class TreeViewRenderer implements IAction {
             showCheckBox: true,
             allowDragAndDrop: true,
             sortOrder: 'None',
-            loadOnDemand: this.parent.dataType === 'olap' ? false : true,
+            loadOnDemand: this.parent.dataType === 'olap' ? false : (this.parent.enableFieldSearching ? false : true),
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,

@@ -353,3 +353,5 @@ export const renderInsertDlg: string = 'renderInsertDlg';
 export const toggleProtect: string = 'toggleProtect';
 /** @hidden */
 export const propertyChange: string = 'propertyChange';
+/** @hidden */
+export const updateWrapCell: string = 'updateWrapCell';

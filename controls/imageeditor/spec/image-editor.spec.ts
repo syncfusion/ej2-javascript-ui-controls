@@ -1,7 +1,7 @@
 /**
  *  ImageEditor spec document
  */
-import { CurrentObject, FrameType, ImageEditor, Point, SelectionPoint, StrokeSettings, TextSettings } from '../src/image-editor/index';
+import { CurrentObject, FrameType, ImageEditor, Point, SelectionPoint, ShapeSettings, StrokeSettings, TextSettings } from '../src/image-editor/index';
 import { createElement, remove, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 
 async function urlToFile(url: ImageData, filename: string, mimeType: string) {
@@ -9543,6 +9543,77 @@ describe('ImageEditor', () => {
                 imageEditor.drawRedact('pixelate', dimension.x, dimension.y, 200, 300);
                 expect(imageEditor.objColl[0].redactType).toEqual('pixelate');
                 imageEditor.straightenImage(9);
+                done();
+            },100);
+        });
+
+        it('917914-Script error thrown while calling resize public method of image editor when toolbar property was empty', (done) => {
+            imageEditor = new ImageEditor({
+                height : '450px',
+                toolbar: [],
+                resizing: (args) =>{
+                    expect(args.width).toEqual(300);
+                },
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.resize(300, 400, true);
+                done();
+            },100);
+        });
+
+        it('Transform Collection in drawText method', (done) => {	
+            imageEditor = new ImageEditor({
+                height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 70, true, true, '#40e040');
+                expect(imageEditor.objColl[imageEditor.objColl.length - 1].shape).toEqual('text');
+                imageEditor.select('custom');
+                imageEditor.rotate(90);
+                imageEditor.crop();
+                const shapeSettings: ShapeSettings = imageEditor.getShapeSetting('shape_1');
+                imageEditor.deleteShape('shape_1');
+                const imageData: ImageData = imageEditor.getImageData();
+                const canvas: HTMLCanvasElement = document.createElement('canvas');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
+                let maskUrl = canvas.toDataURL();
+                imageEditor.open(maskUrl);
+                setTimeout(() => {
+                    imageEditor.drawText(shapeSettings.startX, shapeSettings.startY, shapeSettings.text, shapeSettings.fontFamily, shapeSettings.fontSize, false, false, shapeSettings.color, false, shapeSettings.degree, shapeSettings.fillColor, shapeSettings.strokeColor, shapeSettings.strokeWidth, shapeSettings.transformCollection);
+                    expect(imageEditor.objColl[imageEditor.objColl.length - 1].shape).toEqual('text');
+                }, 100);
+                done();
+            }, 100);
+        });
+
+        it('Shape module coverage improvement', (done) => {
+            imageEditor = new ImageEditor({
+                height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                let points = [
+                    {x: 710.0539748224719, y: 25.105363438047213, ratioX: 0.8839387453519381, ratioY: 0.05938697025693696, time: 1674043575063},
+                    {x: 713.9229403397133, y: 25.105363438047213, ratioX: 0.8993233607365535, ratioY: 0.05938697025693696, time: 1674043575090},
+                    {x: 719.0815610293685, y: 25.105363438047213, ratioX: 0.919836181249374, ratioY: 0.05938697025693696, time: 1674043575106},
+                    {x: 723.380411604081, y: 25.105363438047213, ratioX: 0.9369301983433911, ratioY: 0.05938697025693696, time: 1674043575123},
+                    {x: 729.3988024086788, y: 24.675478380575946, ratioX: 0.960861822275015, ratioY: 0.05708811968222432, time: 1674043575139},
+                    {x: 733.6976529833914, y: 24.675478380575946, ratioX: 0.9779558393690321, ratioY: 0.05708811968222432, time: 1674043575156}
+                ];
+                imageEditor.activeObj.strokeSettings.strokeColor = "black";
+                imageEditor.penStrokeWidth = 5;
+                imageEditor.transform.currFlipState = "";
+                setTimeout(function () { });
+                (<HTMLCanvasElement>document.getElementById(imageEditor.element.id + '_upperCanvas')).dispatchEvent(mouseupEvent);
+                imageEditor.freehandDraw(true);
+                imageEditor.notify('freehand-draw', {prop:'freehandRedraw', value: {context: imageEditor.lowerCanvas.getContext('2d'), points: points }});
+                const shapeSettings: ShapeSettings = imageEditor.getShapeSetting('pen_1');
+                imageEditor.notify('shape', {prop:'updateShapeChangeEventArgs', value: {shapeSettings: shapeSettings, allowShapeOverflow: null }});
                 done();
             },100);
         });

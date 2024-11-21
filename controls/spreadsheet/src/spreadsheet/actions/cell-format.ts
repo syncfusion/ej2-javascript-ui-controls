@@ -296,10 +296,11 @@ export class CellFormat {
 
     private clearObj(args: { options: ClearOptions, isAction?: boolean, isFromUpdateAction?: boolean }): void {
         const options: ClearOptions = args.options;
-        const range: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
-            : this.parent.getActiveSheet().selectedRange;
+        const range: string = options.range ? (options.range.indexOf('!') > 0) ?
+            options.range.substring(options.range.lastIndexOf('!') + 1) : options.range : this.parent.getActiveSheet().selectedRange;
         const sheetIndex: number = (options.range && options.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent as Workbook, options.range.split('!')[0]) : this.parent.activeSheetIndex;
+            getSheetIndex(this.parent as Workbook, options.range.substring(0, options.range.lastIndexOf('!'))) :
+            this.parent.activeSheetIndex;
         const rangeIdx: number[] = getSwapRange(getRangeIndexes(range));
         const sheet: SheetModel = this.parent.sheets[sheetIndex as number];
         let sRIdx: number = rangeIdx[0];

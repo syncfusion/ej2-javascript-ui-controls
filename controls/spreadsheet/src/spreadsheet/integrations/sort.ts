@@ -586,10 +586,10 @@ export class Sort {
         let range: number[];
         let sheetIdx: number = this.parent.activeSheetIndex;
         if (args.range.includes('!')) {
-            const rangeArr: string[] = args.range.split('!');
-            sheetIdx = getSheetIndex(this.parent, rangeArr[0]);
+            const lastIndex: number = args.range.lastIndexOf('!');
+            sheetIdx = getSheetIndex(this.parent, args.range.substring(0, lastIndex));
             sheet = getSheet(this.parent, sheetIdx);
-            range = getRangeIndexes(rangeArr[1]);
+            range = getRangeIndexes(args.range.substring(lastIndex + 1));
         } else {
             sheet = this.parent.getActiveSheet();
             range = getRangeIndexes(args.range);

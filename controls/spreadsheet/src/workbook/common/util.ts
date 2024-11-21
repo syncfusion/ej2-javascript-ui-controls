@@ -352,12 +352,13 @@ export function getUpdatedFormula(
         }
         splitArray = value.split(context.listSeparator);
         const newAddress: { [key: string]: string }[] = []; let newRef: string; let refObj: { [key: string]: string };
-        let isSheetRef: boolean; let cellRefArr: string[]; let cellRef: string;
+        let isSheetRef: boolean; let cellRefSheet: string; let cellRef: string;
         for (let j: number = 0; j < splitArray.length; j++) {
             isSheetRef = splitArray[j as number].includes('!');
             if (isSheetRef) {
-                cellRefArr = splitArray[j as number].split('!');
-                cellRef = cellRefArr[1].toUpperCase();
+                const lastIndex: number = splitArray[j as number].lastIndexOf('!');
+                cellRefSheet = splitArray[j as number].substring(0, lastIndex);
+                cellRef = splitArray[j as number].substring(lastIndex + 1).toUpperCase();
             } else {
                 cellRef = splitArray[j as number].toUpperCase();
             }
@@ -381,7 +382,7 @@ export function getUpdatedFormula(
                 }
                 refObj = {};
                 if (isSheetRef) {
-                    newRef = `${cellRefArr[0]}!${newRef}`;
+                    newRef = `${cellRefSheet}!${newRef}`;
                 }
                 refObj[splitArray[j as number]] = `${leadingSpaces}${newRef}${trailingSpaces}`;
                 if (splitArray[j as number].includes(':')) {

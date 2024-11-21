@@ -1,7 +1,7 @@
 /**
  * Data spec
  */
-import { createElement, selectAll, select } from '@syncfusion/ej2-base';
+import { createElement, selectAll, select, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { EmitType } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
@@ -2130,6 +2130,46 @@ describe('Aggregates Functionality testing', () => {
         it('Check the aggregate data', () => {
             expect((grid as any).getFooterContentTable().querySelector('.e-templatecell').innerText).toBe('Sum: $3.00, Min:$1.00, Max:$2.00');
         });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
+    describe('EJ2-916181: All template is not rendering in React when using the CSPTemplate function', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid({
+                dataSource: data,
+                allowGrouping: true,
+                groupSettings: { columns: ['CustomerID'] },
+                columns: [
+                    { field: 'OrderID', headerText: 'OrderID', width: 150 },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
+                ],
+                aggregates: ([{
+                    columns: [
+                        {
+                            types: 'Max',
+                            field: 'Freight',
+                            format: 'C2',
+                            groupCaptionTemplate: initializeCSPTemplate(function() { return 'Max: ${Max}'; }),
+                        },
+                        {
+                            type: 'Min',
+                            field: 'OrderID',
+                            groupFooterTemplate: initializeCSPTemplate(function () { return 'Min: ${Min}'; })
+                        }
+                    ],   
+                }] as any),
+            }, done);
+        });
+        it('Coverage the evaluate', (done: Function) => {
+            (grid as any).refreshColumns();
+            done();
+        });
+
         afterAll(() => {
             destroy(grid);
             grid = null;
