@@ -34,6 +34,7 @@ import { RowDragDropRenderer } from './row-drag-drop-renderer';
 import { RowDragDropHeaderRenderer } from '../renderer/row-drag-header-indent-render';
 import * as literals from '../base/string-literals';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
+import { Grid } from '../base/grid';
 
 /**
  * Content module is used to render grid content
@@ -137,6 +138,9 @@ export class Render {
                     }
                 }
                 return;
+            }
+            if ((this.parent as Grid).groupModule && args.preventFocusOnGroup) {
+                (this.parent as Grid).groupModule.preventFocusOnGroup = args.preventFocusOnGroup;
             }
             if (gObj.allowSelection && (args.action === 'clearFilter' || args.action === 'clear-filter' ||
                 (args.requestType === 'searching' && args.searchString === '') || args.action === 'add')) {

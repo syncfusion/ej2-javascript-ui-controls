@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### Grid
+
+#### Bug fixes
+
+- `#I655170` - The issue where the checkbox in `showAddNewRow` was not disabled in edit mode has been resolved.
+- `#I652910` - The issue where focus was not applied to the first cell after exiting edit mode using the Escape or Tab key has been resolved.
+- `#I652753` - Resolved an issue where the `Excel` filter in the grid did not display the provided filter values when there was no data within the specified filtered range.
+- `#I644788` - The issue with server-side Excel export not working in `ASP.NET Core Razor Pages` has been resolved.
+
 ## 27.2.3 (2024-11-21)
 
 ### Grid

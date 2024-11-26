@@ -10,8 +10,118 @@ import { ExcelExport } from '../../src/pivotview/actions/excel-export';
 import { VirtualScroll } from '../../src/pivotview/actions/virtualscroll';
 import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
 import { PivotCommon } from '../../src/common/base/pivot-common';
+import { Dialog } from '@syncfusion/ej2-popups';
 
 describe('Server side pivot engine ', () => {
+
+    describe('- CalculatedField Server-side', () => {
+        let originalTimeout: number;
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:400px;width:60%' });
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    url: 'https://ej2services.syncfusion.com/js/development/api/pivot/post',
+                    mode: 'Server',
+                    expandAll: false,
+                    enableSorting: true,
+                    columns: [{ name: 'Year', caption: 'Production Year' },
+                    ],
+                    values: [
+                        { name: 'Sold', caption: 'Units Sold' },
+                        { name: 'Price', caption: 'Sold Amount' }
+                    ],
+                    rows: [{ name: 'ProductID', caption: 'Product ID' }],
+                    formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
+                    filters: []
+                },
+                width: '100%',
+                height: 450,
+                showFieldList: true,
+                showGroupingBar: true,
+                allowCalculatedField: true,
+                allowDeferLayoutUpdate: true,
+                enableVirtualization: true,
+                allowDataCompression: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('Intial rendering - pivot table', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+                (pivotGridObj.element.querySelectorAll('.e-select-table')[0] as HTMLElement).click();
+                done();
+            }, 3000);
+        });
+        it('Initial rendering', (done: Function) => {
+            setTimeout(() => {
+                (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                done();
+            }, 3000);
+        });
+        it('Open calculated popup - 0', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-pivotfieldlist').length).toBe(1);
+                (document.querySelector('.e-calculated-field') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('Open calculated popup - 1', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'New';
+                (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
+                done();
+            }, 1000);
+        });
+        it('Open calculated popup - 2', function (done) {
+            setTimeout(function () {
+                let calcField: any = document.querySelector('#' + pivotGridObj.element.id + '_PivotFieldListcalculateddialog');
+                calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+                calcField.buttons[0].click();
+                done();
+            }, 2000);
+        });
+        it('Open calculated popup - 3', function (done) {
+            setTimeout(function () {
+                (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('Initial rendering', (done: Function) => {
+            setTimeout(() => {
+                (pivotGridObj.element.querySelectorAll('.e-select-table')[0] as HTMLElement).click();
+                done();
+            }, 3000);
+        });
+        
+    });
 
     describe('- Initial Rendering and Basic Operations', () => {
         let originalTimeout: number;

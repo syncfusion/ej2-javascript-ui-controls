@@ -35,6 +35,7 @@ export class Timeline {
     public wholeTimelineWidth: number;
     public restrictRender: boolean = true;
     public weekendEndDate: Date;
+    private clientWidthDifference: number;
     private performedTimeSpanAction: boolean = false;
     public isZoomedToFit: boolean = false;
     constructor(ganttObj?: Gantt) {
@@ -259,9 +260,19 @@ export class Timeline {
             if (this.wholeTimelineWidth <= this.totalTimelineWidth) {
                 this.wholeTimelineWidth = this.totalTimelineWidth;
             }
-            this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
-            if (!isNullOrUndefined(this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack'))) {
-                this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
+            // Handled zoomtofit horizontal scrollbar hide while performing different zooming levels in browser at virtualtimeline mode-Task(919516)
+            if (this.isZoomToFit) {
+                this.clientWidthDifference = Math.abs(this.wholeTimelineWidth - this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0].clientWidth) + 1;
+                this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack')['style'].width = (this.wholeTimelineWidth - this.clientWidthDifference) + 'px';
+                if (!isNullOrUndefined(this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack'))) {
+                    this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack')['style'].width = (this.wholeTimelineWidth - this.clientWidthDifference) + 'px';
+                }
+            }
+            else {
+                this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
+                if (!isNullOrUndefined(this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack'))) {
+                    this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
+                }
             }
             this.parent.ganttChartModule.updateWidthAndHeight();
         }

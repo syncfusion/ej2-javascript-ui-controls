@@ -162,7 +162,7 @@ export class VirtualScroll {
             this.component = (component as any).component;
         }
         let endIndex: number = this.parent.viewPortInfo.endIndex;
-        if (this.component === 'multiselect' && this.parent.mode === 'CheckBox' && this.parent.value && Array.isArray(this.parent.value) && this.parent.value.length > 0 && this.parent.enableSelectionOrder) {
+        if (this.component === 'multiselect' && this.parent.mode === 'CheckBox' && this.parent.value && Array.isArray(this.parent.value) && this.parent.value.length > 0 && this.parent.enableSelectionOrder && this.parent.targetElement().trim() === '') {
             if (this.parent.viewPortInfo.startIndex < this.parent.value.length) {
                 endIndex = this.parent.viewPortInfo.endIndex - this.parent.value.length;
                 if (this.parent.viewPortInfo.startIndex === 0){
@@ -263,7 +263,8 @@ export class VirtualScroll {
                     if (index === endIndex - 1) {
                         if (currentData.length !== this.parent.itemCount) {
                             if (this.parent.hideSelectedItem) {
-                                let query: Query = this.parent.getForQuery(this.parent.value as any).clone();
+                                let query: Query = this.parent.value && (this.parent.value as any).length > 0 ?
+                                    this.parent.getForQuery(this.parent.value as any).clone() :  new Query;
                                 if (
                                     this.parent.viewPortInfo.endIndex === this.parent.totalItemCount + (this.parent.value as any).length &&
                                     this.parent.hideSelectedItem

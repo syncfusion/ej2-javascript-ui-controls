@@ -48,8 +48,11 @@ export class SplineSeries extends SplineBase {
                         startPoint = 'L';
                     }
                     this.storePointLocation(point, series, isInverted, getCoordinate);
-                    if (direction === '') {
+                    if (direction === '' && points.length === 1) {
                         direction = 'M ' + point.symbolLocations[0].x + ' ' + point.symbolLocations[0].y;
+                    }
+                    if (firstPoint === null && direction !== '' && (point.index === points.length - 1 || (points[point.index + 1] && !points[point.index + 1].visible))) {
+                        direction += 'M ' + point.symbolLocations[0].x + ' ' + point.symbolLocations[0].y + ' ';
                     }
                 }
                 firstPoint = point;
@@ -142,10 +145,17 @@ export class SplineSeries extends SplineBase {
             const endPathCommands: string[] = (options.d).match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/g);
             const maxLength: number = Math.max(startPathCommands.length, endPathCommands.length);
             const minLength: number = Math.min(startPathCommands.length, endPathCommands.length);
+            if (series.removedPointIndex === 0 && startPathCommands.length > endPathCommands.length && startPathCommands[2] && startPathCommands[2].indexOf('M') === 0) {
+                startPathCommands.splice(0, startPathCommands.length - endPathCommands.length);
+                points.previousDirection = startPathCommands.join('');
+            }
             if (startPathCommands.length < endPathCommands.length) {
                 for (let i: number = startPathCommands.length; i < endPathCommands.length; i++) {
                     if (endPathCommands.length !== startPathCommands.length) {
-                        if (startPathCommands[startPathCommands.length - 1].indexOf('C') === 0) {
+                        if (endPathCommands.length === startPathCommands.length + 1 && endPathCommands[endPathCommands.length - 1].indexOf('M') === 0) {
+                            startPathCommands.push(endPathCommands[endPathCommands.length - 1]);
+                        }
+                        else if (startPathCommands[startPathCommands.length - 1].indexOf('C') === 0) {
                             startPathCommands.push('L ' + ((startPathCommands[startPathCommands.length - 1]).split(' ').slice(-3)).join(' '));
                         }
                         else if (startPathCommands[startPathCommands.length - 1].indexOf('L') === 0) {

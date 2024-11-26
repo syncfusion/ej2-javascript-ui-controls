@@ -1116,7 +1116,7 @@ export class MultiSelect extends DropDownBase implements IInput {
 
     private getForQuery(valuecheck: string[] | number[] | boolean[] | object[], isCheckbox?: boolean): Query {
         let predicate: Predicate;
-        const field: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+        const field: string = this.isPrimitiveData ? '' : this.fields.value;
         if (this.enableVirtualization && valuecheck) {
             if (isCheckbox){
                 for (let i: number = 0; i < valuecheck.length; i++) {
@@ -1571,32 +1571,48 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.targetElement().trim() === '') {
             const list: HTMLElement = this.enableVirtualization ? <HTMLElement>this.list.cloneNode(true) : this.mainList.cloneNode ?
             <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
-            if (this.backCommand) {
+            if (this.backCommand || (this.enableVirtualization && this.mode === 'CheckBox' && this.value && this.value.length > 0)) {
                 this.remoteCustomValue = false;
+                let isReordered: boolean = false;
                 if (this.allowCustomValue && list.querySelectorAll('li').length === 0 && this.mainData.length > 0) {
                     this.mainData = [];
                 }
                 if (this.enableVirtualization) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    this.totalItemCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
-                    this.resetList(dataSource, fields, query);
-                    if (this.mode !== 'CheckBox') {
-                        this.totalItemCount = this.value && this.value.length ? this.totalItemCount - this.value.length :
-                            this.totalItemCount;
+                    if (this.allowFiltering) {
+                        this.isPreventScrollAction = true;
+                        this.list.scrollTop = 0;
+                        this.previousStartIndex = 0;
+                        this.virtualListInfo = null;
                     }
-                    this.UpdateSkeleton();
-                    if ((isNoData || this.allowCustomValue) && !this.list.classList.contains(dropDownBaseClasses.noData)) {
-                        if (!this.list.querySelector('.e-virtual-ddl-content')) {
-                            this.list.appendChild(this.createElement('div', {
-                                className: 'e-virtual-ddl-content',
-                                styles: this.getTransformValues()
-                            })).appendChild(this.list.querySelector('.e-list-parent'));
+                    if (this.value && this.value.length > 0 && this.mode === 'CheckBox') {
+                        this.notify('setCurrentViewDataAsync', {
+                            component: this.getModuleName(),
+                            module: 'VirtualScroll'
+                        });
+                        isReordered = true;
+                    }
+                    else {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        this.totalItemCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
+                        this.resetList(dataSource, fields, query);
+                        if (this.mode !== 'CheckBox') {
+                            this.totalItemCount = this.value && this.value.length ? this.totalItemCount - this.value.length :
+                                this.totalItemCount;
                         }
-                        if (!this.list.querySelector('.e-virtual-ddl')) {
-                            const virualElement: any = this.createElement('div', {
-                                id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
-                            });
-                            document.getElementsByClassName('e-multi-select-list-wrapper')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
+                        this.UpdateSkeleton();
+                        if ((isNoData || this.allowCustomValue) && !this.list.classList.contains(dropDownBaseClasses.noData)) {
+                            if (!this.list.querySelector('.e-virtual-ddl-content')) {
+                                this.list.appendChild(this.createElement('div', {
+                                    className: 'e-virtual-ddl-content',
+                                    styles: this.getTransformValues()
+                                })).appendChild(this.list.querySelector('.e-list-parent'));
+                            }
+                            if (!this.list.querySelector('.e-virtual-ddl')) {
+                                const virualElement: any = this.createElement('div', {
+                                    id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                                });
+                                document.getElementsByClassName('e-multi-select-list-wrapper')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
+                            }
                         }
                     }
                 }
@@ -1607,7 +1623,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.keyCode !== 8) {
                     this.focusAtFirstListItem();
                 }
-                this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+                if (!isReordered) {
+                    this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', e: this });
+                }
             }
         } else {
             if (this.enableVirtualization && this.allowFiltering) {
@@ -1615,6 +1633,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.list.scrollTop = 0;
                 this.previousStartIndex = 0;
                 this.virtualListInfo = null;
+                if (this.list.querySelector('.e-list-parent' + '.e-reorder')) {
+                    this.list.querySelector('.e-list-parent' + '.e-reorder').remove();
+                }
             }
             this.resetList(dataSource, fields, query);
             if (this.enableVirtualization && (isNoData || this.allowCustomValue) &&
@@ -4171,7 +4192,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         };
     }
 
-    private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs): void {
+    private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs, isInitialVirtualData?: boolean): void {
         let data: string = '';
         const delim: boolean = this.mode === 'Delimiter' || this.mode === 'CheckBox';
         let text: string[] = <string[]>[];
@@ -4222,8 +4243,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 data = this.text.replace(/,/g, delimiterChar + ' ') + delimiterChar + ' ';
                                 text = this.text.split(delimiterChar);
                             } else {
-                                temp = this.getTextByValue(value);
-                                const textValues: string = this.text != null && this.text !== '' ? this.text + ',' + temp : temp;
+                                temp = isInitialVirtualData && delim ? this.text : this.getTextByValue(value);
+                                const textValues: string = isInitialVirtualData ? this.text : (this.text && this.text !== '' ? this.text + ',' + temp : temp);
                                 data += temp + delimiterChar + ' ';
                                 text.push(textValues);
                                 hiddenElementContent = this.hiddenElement.innerHTML;
@@ -4343,8 +4364,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                         text = null;
                         if (listItems != null && listItems.length > 0){
                             for (let i: number = 0; i < listItems.length; i++){
-                                if (getValue((this.fields.value ? this.fields.value : 'value'), listItems[i as number]) === value){
-                                    text = getValue(this.fields.text, listItems[i as number]);
+                                if ((this.isPrimitiveData && listItems[i as number] === value) || (!this.isPrimitiveData
+                                    && getValue((this.fields.value ? this.fields.value :
+                                        'value'), listItems[i as number]) === value)) {
+                                    text = this.isPrimitiveData ? listItems[i as number] :
+                                        getValue(this.fields.text, listItems[i as number]);
                                     if (this.enableVirtualization) {
                                         if (isNullOrUndefined(this.selectedListData)) {
                                             this.selectedListData = [listItems[i as number]];
@@ -4436,7 +4460,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.updateDelimeter(this.delimiterChar);
                 this.refreshInputHight();
             } else {
-                this.updateDelimeter(this.delimiterChar);
+                this.updateDelimeter(this.delimiterChar, null, isInitialVirtualData);
             }
             if (this.mode === 'CheckBox' && this.showSelectAll && (isNullOrUndefined(this.value) || !this.value.length)) {
                 this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
@@ -4645,8 +4669,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.selectedElementID = element.id;
         }
     }
-    private updateDelimeter(delimChar: string, e?: MouseEvent | KeyboardEventArgs): void {
-        this.updateData(delimChar, e);
+    private updateDelimeter(delimChar: string, e?: MouseEvent | KeyboardEventArgs, isInitialVirtualData?: boolean): void {
+        this.updateData(delimChar, e, isInitialVirtualData);
     }
     private onMouseClick(e: MouseEvent): void {
         if (!this.isClearAllItem) {
@@ -6409,7 +6433,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let listItems: any;
             if (this.enableVirtualization) {
-                const fields: string = (this.fields.value) ? this.fields.value : '';
+                const fields: string = !this.isPrimitiveData ? this.fields.value : '';
                 let predicate: Predicate;
                 for (let i: number = 0; i < this.value.length; i++) {
                     const value: string | number | boolean = this.allowObjectBinding ?
@@ -6441,7 +6465,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
             if (!(this.dataSource instanceof DataManager)) {
-                this.initialValueUpdate(listItems);
+                this.initialValueUpdate(listItems, true);
                 this.initialUpdate();
             } else {
                 this.setInitialValue = () => {

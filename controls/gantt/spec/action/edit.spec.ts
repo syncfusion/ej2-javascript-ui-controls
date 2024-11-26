@@ -5071,3 +5071,75 @@ describe('CR:916492-When adding a record, the validation for taskType as FixedDu
         destroyGantt(ganttObj);       
     });
 });
+describe('Check time for 24 hrs working time', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [ 
+                {
+                    TaskID: 1,
+                    TaskName: 'Identify site location',
+                    StartDate: '2019-03-29T09:26:00.000Z',
+                    Duration: 0.2,
+                    Progress: 30
+                }
+            ],
+            dayWorkingTime:[{from:0, to:24}],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                work: 'Work',
+                child: 'subtasks',
+                type: 'taskType',
+                milestone: 'isMilestone',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'resources', headerText: 'Resources', width: '160' },
+                { field: 'Work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' },
+            ],
+        }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);
+        ganttObj.openEditDialog(1);
+    });
+    it('Check the milliseconds',()=>{
+        let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+        SD.value = new Date('04/01/2019');
+        SD.dataBind();
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        expect(ganttObj.currentViewData[0].ganttProperties.startDate.getMilliseconds()).toBe(0);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});

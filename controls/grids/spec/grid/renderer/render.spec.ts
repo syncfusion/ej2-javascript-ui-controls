@@ -161,6 +161,50 @@ describe('Render module', () => {
         destroy(gridObj);
     });
 });
+
+describe('EJ2-920242 : Excel Filter Not Displaying Given Filter Values When No Data Exists Between the Filtered Range', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowFiltering: true,
+                allowPaging: true,
+                filterSettings: {
+                  type: 'Excel',
+                  columns: [
+                    {
+                      field: 'ShipName',
+                      matchCase: false,
+                      operator: 'startswith',
+                      predicate: 'and',
+                      value: 'John',
+                    },
+                  ],
+                },
+                columns: [
+                  {
+                    field: 'OrderID',
+                    headerText: 'Order ID',
+                    textAlign: 'Right',
+                    width: 100,
+                  },
+                  { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                  { field: 'ShipName', headerText: 'Ship Name', width: 100 },
+                ],
+            }, done);
+    });
+
+    it('Filter Column testing', (done: Function) => {
+        expect((gridObj.filterModule as any).actualPredicate.ShipName.length).toBe(1);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
 });
 interface Customer {
     CustomerID: string;

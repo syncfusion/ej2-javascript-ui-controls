@@ -2048,7 +2048,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             .filter((childNode: object | null | undefined): boolean => {
                 if (childNode && typeof childNode === 'object' && 'pid' in childNode) {
                     const childNodePid: string = (childNode as { pid: string }).pid;
-                    return childNodePid.toString() === dataUid;
+                    if (!isNOU(childNodePid)) {
+                        return childNodePid.toString() === dataUid;
+                    }
                 }
                 return false;
             });

@@ -97,5 +97,6 @@ export interface IDropdownlist extends Component<HTMLElement> {
         fields?: FieldSettingsModel, query?: Query, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void
     findListElement(list: HTMLElement, findNode: string, attribute: string, value: string | boolean | number): HTMLElement;
     scrollStop(e?: Event): void;
+    targetElement(): string;
 }
 

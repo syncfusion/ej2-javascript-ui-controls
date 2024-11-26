@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I654525` - Now, the error bar is displayed properly for the larger value.
+- `#I653358` - Now, the text render event’s text argument contains the datetime for the y-axis.
+- `#I654788` - Now, the chart zooms properly while scrolling after it is destroyed and re-rendered.
+- `#I653576` - The data label position is now set correctly for the labelIntersectAction as Hide.
+- `#I653442` - The selection rectangle now renders properly in canvas mode.
+- `#I654149` - Now the spline series animation is proper when adding null values.
+
 ## 27.2.3 (2024-11-21)
 
 ### Chart

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I655109` - The calculated field option will now work properly with the 'Defer Layout Update' option enabled in the pivot table when using the server-side engine.
+
 ## 27.2.3 (2024-11-21)
 
 ### Pivot Table

@@ -11373,7 +11373,10 @@ export class Selection {
                     if(this.documentHelper.contentControlCollection[i].paragraph.isInHeaderFooter && this.documentHelper.owner.layoutType === "Continuous"){
                         continue;
                     }
-                    this.highlightContentControlEditRegionInternal(this.documentHelper.contentControlCollection[i] as ContentControl);
+                    if (this.documentHelper.contentControlCollection[i].line.paragraph.bodyWidget.page
+                        && this.documentHelper.contentControlCollection[i].line.paragraph.bodyWidget.page.documentHelper) {
+                        this.highlightContentControlEditRegionInternal(this.documentHelper.contentControlCollection[i] as ContentControl);
+                    }
                 }
             }
         }

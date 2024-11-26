@@ -43,6 +43,8 @@ export class Group implements IAction {
     public groupTextFocus: boolean = false;
     /** @hidden */
     public groupCancelFocus: boolean = false;
+    /** @hidden */
+    public preventFocusOnGroup: boolean = false;
     private colName: string;
     private column: Column;
     private isAppliedGroup: boolean = false;
@@ -1062,7 +1064,7 @@ export class Group implements IAction {
         focusModule.active.matrix.current = firstContentCellIndex;
         if (this.parent.editSettings.showAddNewRow) {
             this.parent.notify(events.showAddNewRowFocus, {});
-        } else if (this.parent.isInitialLoad) {
+        } else if (this.parent.isInitialLoad && !this.preventFocusOnGroup) {
             focusModule.focus();
         }
         //Todo:  rtl
@@ -1149,7 +1151,7 @@ export class Group implements IAction {
                         }
                         args = {
                             columnName: this.colName, requestType: e.properties[`${prop}`].length ? 'grouping' : 'ungrouping',
-                            type: events.actionBegin
+                            type: events.actionBegin, preventFocusOnGroup: false
                         };
                     } else {
                         args = { columnName: this.colName, requestType: 'ungrouping', type: events.actionBegin };

@@ -4595,3 +4595,73 @@ describe('update grid line without datasource', () => {
         }
     });
 });
+describe('Hiding column in Data Bound', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: editingData3,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    child: 'subtasks'
+                },
+                resources:editingResources3,
+                resourceFields:{
+                    id: 'resourceId',
+                    name: 'resourceName',
+                  },
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                dataBound:function() {
+                    ganttObj.hideColumn('Duration')
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('Checking content height', () => {
+        const gridContent = ganttObj.element.querySelector('.e-gridcontent');
+        if (gridContent) {
+            const contentElement = gridContent.querySelector('.e-content') as HTMLElement;
+            if (contentElement) {
+                const contentHeight = contentElement.style.height;
+                expect(contentHeight).toBe('100%')
+            }
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

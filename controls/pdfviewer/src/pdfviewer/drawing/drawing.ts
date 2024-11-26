@@ -2682,7 +2682,9 @@ export class Drawing {
             updateConnector = true;
         }
         if (node.textAlign !== undefined) {
-            const currentAnnotation: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
+            const currentAnnotation: PdfAnnotationBaseModel =
+            (!isNullOrUndefined(this.pdfViewer.selectedItems.annotations) && this.pdfViewer.selectedItems.annotations.length > 0) ?
+                this.pdfViewer.selectedItems.annotations[0] : actualObject;
             const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
             const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
             if (actualObject.textAlign !== node.textAlign) {

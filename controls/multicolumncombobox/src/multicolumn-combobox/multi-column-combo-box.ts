@@ -4,7 +4,7 @@ import { formatUnit, addClass, removeClass, NumberFormatOptions, DateFormatOptio
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
 import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { Popup } from '@syncfusion/ej2-popups';
-import { Grid, FailureEventArgs, VirtualScroll, Group as GridGroup, Edit, Sort, GridColumnModel } from '@syncfusion/ej2-grids';
+import { Grid, Resize, FailureEventArgs, VirtualScroll, Group as GridGroup, Edit, Sort, GridColumnModel } from '@syncfusion/ej2-grids';
 import { MultiColumnComboBoxModel } from './multi-column-combo-box-model';
 import { ColumnModel, FieldSettingsModel, GridSettingsModel } from './multi-column-combo-box-model';
 
@@ -25,7 +25,7 @@ export class MultiColumnGrid {
      * @private
      */
     public InjectModules(): void {
-        Grid.Inject(VirtualScroll, GridGroup, Edit, Sort);
+        Grid.Inject(VirtualScroll, GridGroup, Edit, Sort, Resize);
     }
 }
 
@@ -298,6 +298,38 @@ export class GridSettings extends ChildProperty<GridSettings> {
      */
     @Property(WrapMode.Both)
     public textWrapMode: WrapMode | string;
+
+    /**
+     * Specifies whether resizing of columns is enabled in the popup grid content.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowResizing: boolean;
+
+    /**
+     * Triggers during the column resizing.
+     *
+     * @event resizing
+     */
+    @Event()
+    public resizing: EmitType<ResizeArgs>;
+
+    /**
+     * Triggers when the column resizing begins.
+     *
+     * @event resizeStart
+     */
+    @Event()
+    public resizeStart: EmitType<ResizeArgs>;
+
+    /**
+     * Triggers when the column resizing ends.
+     *
+     * @event resizeStop
+     */
+    @Event()
+    public resizeStop: EmitType<ResizeArgs>;
 }
 
 export interface PopupEventArgs {
@@ -418,6 +450,20 @@ export interface ChangeEventArgs {
      * Returns the selected row data.
      */
     item: Object
+}
+
+export interface ResizeArgs {
+    /**
+     * Defines the details about the column that is currently being resized.
+     */
+    column: ColumnModel
+
+    /**
+     * Specifies whether to cancel the resizing operation of the columns.
+     *
+     * @default false
+     */
+    cancel: boolean
 }
 
 /**
@@ -971,6 +1017,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             allowTextWrap: this.gridSettings.allowTextWrap,
             textWrapSettings: { wrapMode: this.gridSettings.textWrapMode as WrapMode },
             height: this.popupHeight,
+            allowResizing: this.gridSettings.allowResizing,
             allowMultiSorting: this.sortType.toString().toLowerCase() === 'multiplecolumns' && this.allowSorting,
             rowTemplate: this.itemTemplate,
             dataBound: () => { this.onDataBound(); },
@@ -992,7 +1039,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     (args as any).cancel = true;
                     this.gridKeyActionHandler(args, true);
                 }
-            }
+            },
+            resizing: (args: ResizeArgs) => { this.gridSettings.resizing(args); },
+            resizeStart: (args: ResizeArgs) => { this.gridSettings.resizeStart(args); },
+            resizeStop: (args: ResizeArgs) => { this.gridSettings.resizeStop(args); }
         });
         this.gridEle = this.createElement('div', { id: getUniqueID('grid'), className: MULTICOLUMNGRID });
         this.updateGroupByField();
@@ -2258,6 +2308,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     this.gridObj.gridLines = newProp.gridSettings.gridLines;
                     this.gridObj.rowHeight = newProp.gridSettings.rowHeight;
                     this.gridObj.enableAltRow = newProp.gridSettings.enableAltRow;
+                    this.gridObj.allowResizing = newProp.gridSettings.allowResizing;
                     if (!(isNOU(newProp.gridSettings.allowTextWrap))) {
                         this.gridObj.allowTextWrap = newProp.gridSettings.allowTextWrap;
                     }

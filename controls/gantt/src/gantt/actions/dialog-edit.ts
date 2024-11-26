@@ -3296,7 +3296,8 @@ export class DialogEdit {
         const parentRecord: IGanttData[] = [];
         for (let i: number = 0; i < dataSource.length; i++) {
             const preData: IPreData = dataSource[i as number];
-            const splitString: string[] = preData.name.split('-');
+            const lastIndex: number = preData.name.lastIndexOf('-');
+            const splitString: string[] = [preData.name.substring(0, lastIndex)];
             if (isNullOrUndefined(preData.id) || preData.id !== splitString[0]) {
                 preData.id = splitString[0];
             }

@@ -276,39 +276,10 @@ export class FreeTextAnnotation {
              || this.pdfViewer.freeTextSettings.isReadonly) {
             this.isReadonly = true;
         }
-        if (this.pdfViewer.freeTextSettings.fontStyle === FontStyle.Bold) {
-            this.isBold = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === FontStyle.Italic) {
-            this.isItalic = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === FontStyle.Underline) {
-            this.isUnderline = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === FontStyle.Strikethrough) {
-            this.isStrikethrough = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === (FontStyle.Bold | FontStyle.Italic)) {
-            this.isBold = true;
-            this.isItalic = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === (FontStyle.Bold | FontStyle.Underline)) {
-            this.isBold = true;
-            this.isUnderline = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === (FontStyle.Bold | FontStyle.Strikethrough)) {
-            this.isBold = true;
-            this.isStrikethrough = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === (FontStyle.Bold | FontStyle.Italic | FontStyle.Underline)) {
-            this.isBold = true;
-            this.isItalic = true;
-            this.isUnderline = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === (FontStyle.Bold | FontStyle.Italic | FontStyle.Strikethrough)) {
-            this.isBold = true;
-            this.isItalic = true;
-            this.isStrikethrough = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === (FontStyle.Bold | FontStyle.Underline | FontStyle.Strikethrough)) {
-            this.isBold = true;
-            this.isUnderline = true;
-            this.isStrikethrough = true;
-        } else if (this.pdfViewer.freeTextSettings.fontStyle === (FontStyle.Italic | FontStyle.Underline)) {
-            this.isUnderline = true;
-            this.isItalic = true;
-        }
+        this.isBold = (this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Bold) === FontStyle.Bold;
+        this.isItalic = (this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Italic) === FontStyle.Italic;
+        this.isUnderline = (this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Underline) === FontStyle.Underline;
+        this.isStrikethrough = (this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Strikethrough) === FontStyle.Strikethrough;
     }
 
     /**
@@ -1522,10 +1493,10 @@ export class FreeTextAnnotation {
             FillColor: annotationObject.fillColor ? annotationObject.fillColor : '#ffffff00',
             Flatten: false,
             FlattenPopups: false,
-            Font: { Bold: fontStyle === FontStyle.Bold ? true : false,
-                Italic: fontStyle === FontStyle.Italic ? true : false,
-                Strikeout: fontStyle === FontStyle.Strikethrough ? true : false,
-                Underline: fontStyle === FontStyle.Underline ? true : false },
+            Font: { Bold: (fontStyle & FontStyle.Bold) === FontStyle.Bold,
+                Italic: (fontStyle & FontStyle.Italic) === FontStyle.Italic,
+                Strikeout: (fontStyle & FontStyle.Strikethrough) === FontStyle.Strikethrough,
+                Underline: (fontStyle & FontStyle.Underline) === FontStyle.Underline },
             FontColor: annotationObject.fontColor ? annotationObject.fontColor : '#000',
             FontFamily: annotationObject.fontFamily ? annotationObject.fontFamily : 'Helvetica',
             FontSize: annotationObject.fontSize ? annotationObject.fontSize : 16,

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#I656269` - Fixed an exception that occurred in the `NumericTextBox` when the `PDF viewer` was destroyed.
+
 ## 27.2.2 (2024-11-15)
 
 ### Uploader

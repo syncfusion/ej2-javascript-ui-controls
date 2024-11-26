@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### MultiColumn ComboBox
+
+#### Features
+
+- `#I645254` - Now we have provided support for resizing columns in the Multicolumn ComboBox.
+
 ## 27.2.3 (2024-11-21)
 
 ### MultiColumn ComboBox

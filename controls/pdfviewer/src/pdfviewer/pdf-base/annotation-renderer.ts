@@ -1052,7 +1052,7 @@ export class AnnotationRenderer {
             if (isTemplate) {
                 const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
                 const dictionary: _PdfDictionary = new _PdfDictionary(page._crossReference);
-                const state: PdfGraphicsState = graphics.save();
+                const state: PdfGraphicsState = appearance.graphics.save();
                 const template: PdfTemplate = new PdfTemplate(stampAnnotation.template, dictionary._crossReference);
                 template._isExported = true;
                 template._appearance = stampAnnotation.template;
@@ -1070,7 +1070,7 @@ export class AnnotationRenderer {
                      bytes[2] === 78 && bytes[3] === 71 && bytes[4] === 13 && bytes[5] === 10  && bytes[6] === 26 && bytes[7] === 10 ) )) {
                     bitmap = new PdfBitmap(bytes);
                     const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
-                    const state: PdfGraphicsState = graphics.save();
+                    const state: PdfGraphicsState = appearance.graphics.save();
                     appearance.graphics.drawImage(bitmap, 0, 0, width, height);
                     appearance.graphics.restore(state);
                 }
@@ -1571,9 +1571,9 @@ export class AnnotationRenderer {
     }
 
     private static setFontFromKeys(freeTextAnnotation: any, annotation: PdfFreeTextAnnotation,
-                                   textFont: { [key: string]: any }, fontSize: number): void {
+                                   textFont: { [key: string]: any }, fontSize: number, fontStyle: PdfFontStyle): void {
         const font: PdfTrueTypeFont = PdfViewerUtils.tryGetFontFromKeys(textFont,
-                                                                        freeTextAnnotation.dynamicText.toString(), fontSize);
+                                                                        freeTextAnnotation.dynamicText.toString(), fontSize, fontStyle);
         if (!isNullOrUndefined(font)) {
             annotation.font = font;
             annotation.setAppearance(true);
@@ -1643,16 +1643,16 @@ export class AnnotationRenderer {
                 if (!isNullOrUndefined(fontKey)) {
                     let fontStream: any = textFont[`${fontKey}`];
                     fontStream = PdfViewerUtils.processFontStream(fontStream);
-                    const font: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize));
+                    const font: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize), fontStyle);
                     const glyphPresent: boolean = PdfViewerUtils.isSupportedFont(freeTextAnnotation.dynamicText.toString(), font);
                     annotation.setAppearance(glyphPresent);
                     if (glyphPresent) {
                         annotation.font = font;
                     } else {
-                        AnnotationRenderer.setFontFromKeys(freeTextAnnotation, annotation, textFont, fontSize);
+                        AnnotationRenderer.setFontFromKeys(freeTextAnnotation, annotation, textFont, fontSize, fontStyle);
                     }
                 } else {
-                    AnnotationRenderer.setFontFromKeys(freeTextAnnotation, annotation, textFont, fontSize);
+                    AnnotationRenderer.setFontFromKeys(freeTextAnnotation, annotation, textFont, fontSize, fontStyle);
                 }
             }
             else {

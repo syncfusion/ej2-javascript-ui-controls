@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I652901` - Incorrect date calculation when `dayWorkingTime` is defined as 24 hrs issue has been fixed.
+- `#I649832` - Negative offset getting removed when duration is in decimal issue has been fixed.
+- `#I650300` - Offset value for unscheduled task not updated issue has been fixed.
+- `#I656842` - Misalignment between grid and chart side issue has been fixed.
+
 ## 27.2.3 (2024-11-21)
 
 ### GanttChart
@@ -14,6 +25,7 @@
 - `#I653638` - unit is not updated properly while setting task type as `FixedWork` issue has been fixed.
 - `#I645586` - Last 3 rows of the taskbar are not exported when performing PDF export with the `pageOrientation` set Portrait issue has been fixed.
 - `#I650238` - Work calculation is not functioning correctly when adding a record issue has been fixed.
+- `#I650892` - Horizontal scrollbar not disappeared after performing `ZoomToFit` with below 90 percent browser issue has been fixed.
 
 ## 27.2.2 (2024-11-15)
 

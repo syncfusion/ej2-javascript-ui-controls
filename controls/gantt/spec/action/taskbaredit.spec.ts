@@ -7845,3 +7845,61 @@ describe('Checking date formate', () => {
         }
     });
 });	    
+describe('Unschedule task offset', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{ TaskID: 2, TaskName: 'Task 2', EndDate: new Date('04/02/2019') },
+                    { TaskID: 3, TaskName: 'task 3', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 , Predecessor:'2'}
+                ],
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                dateFormat: 'dd MMM, y',
+                highlightWeekends: true,
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('Moving Taskbar date formate', () => {
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container ') as HTMLElement;
+        if (dragElement) {
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', -100, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset != 0).toBe(true)
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

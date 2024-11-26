@@ -1088,6 +1088,8 @@ export interface NotifyArgs {
     action?: string;
     /** Defines the searched value. */
     searchString?: string;
+    /** Defines the focus on Group. */
+    preventFocusOnGroup?: boolean;
 }
 
 export interface LoadEventArgs {
@@ -3098,6 +3100,13 @@ export interface ExportHelperArgs extends PdfQueryCellInfoEventArgs {
  */
 export interface ForeignKeyFormat {
     [key: string]: Object[]
+}
+
+/**
+ * @hidden
+ */
+export interface ExportHeaders {
+    headers?: { [key: string]: string }[];
 }
 
 /**

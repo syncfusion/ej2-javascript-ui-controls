@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I655493` - Fixed the issue where the item was not displayed in the popup while filtering with virtualization.
+
 ## 27.2.3 (2024-11-21)
 
 ### ListBox

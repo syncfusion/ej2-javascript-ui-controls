@@ -8958,11 +8958,13 @@ export class Editor {
                     resolve();
                     return;
                 }
-                if (isNullOrUndefined(width) && isNullOrUndefined(height)) {
+                if (isNullOrUndefined(width) || isNullOrUndefined(height)) {
                     const image: HTMLImageElement = document.createElement('img');
                     let editor: Editor = this;
                     image.addEventListener('load', function (): void {
-                        editor.insertPicture(imageString, this.width, this.height,this.alt,true);
+                        this.width = isNullOrUndefined(width) ? this.width : width;
+                        this.height = isNullOrUndefined(height) ? this.height : height;
+                        editor.insertPicture(imageString, this.width, this.height, this.alt, true);
                         resolve();
                     });
                     image.src = imageString;

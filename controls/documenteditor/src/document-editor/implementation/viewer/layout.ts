@@ -2172,7 +2172,8 @@ export class Layout {
             (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline')) {
                 if (!this.isInitialLoad && element instanceof ContentControl && element.type === 0 && element.contentControlWidgetType === 'Block') {
                     if (!isNullOrUndefined(element.paragraph) && (element.paragraph.firstChild as LineWidget).children[0] === element && !isNullOrUndefined(element.reference)
-                         && (element.reference.paragraph.lastChild as LineWidget).children[(element.reference.paragraph.lastChild as LineWidget).children.length - 1] !== element.reference) {
+                        && !isNullOrUndefined(element.reference.paragraph)
+                        && (element.reference.paragraph.lastChild as LineWidget).children[(element.reference.paragraph.lastChild as LineWidget).children.length - 1] !== element.reference) {
                             element.contentControlWidgetType = 'Inline';
                             element.reference.contentControlWidgetType = 'Inline';
                             let block: BlockWidget = element.paragraph;

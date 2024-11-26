@@ -322,6 +322,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected firstItem: string | number | boolean | object;
     protected preventDefActionFilter: boolean;
     protected isDynamicData: boolean = false;
+    protected isPrimitiveData: boolean = false;
     protected virtualListInfo: VirtualInfo = {
         currentPageNumber: null,
         direction: null,
@@ -1936,6 +1937,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         } else if (!this.fields.value && this.fields.text) {
             this.updateFields(this.fields.text, this.fields.text);
         } else if (!this.fields.value && !this.fields.text) {
+            this.isPrimitiveData = true;
             this.updateFields('text', 'text');
         }
     }
@@ -1987,6 +1989,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected setUpdateInitial(props: string[], newProp: { [key: string]: string }, oldProp?: { [key: string]: string }): void {
         this.isDataFetched = false;
+        this.isPrimitiveData = false;
         const updateData: { [key: string]: string | { [key: string]: Object }[] } = {};
         for (let j: number = 0; props.length > j; j++) {
             if ((newProp as { [key: string]: string })[props[j as number]] && props[j as number] === 'fields') {

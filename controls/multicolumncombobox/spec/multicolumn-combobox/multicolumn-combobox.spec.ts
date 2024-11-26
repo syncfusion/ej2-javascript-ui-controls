@@ -1253,38 +1253,6 @@ describe('MultiColumnComboBox control', () => {
     describe('Additional Properties with initial rendering and dynamic change for enableVirtualization', () => {
         let multiColObj: any;
         let element: HTMLInputElement;
-        beforeEach((): void => {
-            element = <HTMLInputElement>createElement('input', { id: 'multicolumn-combobox' });
-            document.body.appendChild(element);
-        });
-        afterEach(() => {
-            if (multiColObj) {
-                multiColObj.destroy();
-                multiColObj = undefined;
-            }
-            remove(element);
-        });
-        it(' Enable Virtualization property  ', (done) => {
-            multiColObj = new MultiColumnComboBox({
-                dataSource: languageData,
-                enableVirtualization: true,
-                fields: { text: 'text', value: 'id' },
-                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
-            });
-            multiColObj.appendTo(element);
-            expect(multiColObj.gridObj.enableVirtualization).toBe(true);
-            multiColObj.enableVirtualization = false;
-            multiColObj.dataBind();
-            setTimeout(() => {
-                expect(multiColObj.gridObj.enableVirtualization).toBe(false);
-                done();
-            }, 1200);
-        });
-    });
-
-    describe('Additional Properties with initial rendering and dynamic change for enableVirtualization', () => {
-        let multiColObj: any;
-        let element: HTMLInputElement;
         let isPopupClose: boolean = false;
         let isPopupOpen: boolean = false;
         let eventDetails: any;
@@ -1637,6 +1605,39 @@ describe('MultiColumnComboBox control', () => {
             (multiColObj as any).gridObj.trigger('actionComplete', { requestType: 'filtering' });
             expect(actionComplete).toBe(true);
             done();
+        });
+        it('Column Resizing property rendering', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                gridSettings: { allowResizing: false }
+            });
+            multiColObj.appendTo(element);
+            expect((multiColObj as any).gridObj.allowResizing).toBe(false);
+        });
+        it('Column Resizing property with different value rendering', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                gridSettings: { allowResizing: true }
+            });
+            multiColObj.appendTo(element);
+            expect((multiColObj as any).gridObj.allowResizing).toBe(true);
+        });
+        it('Column Resizing property Dynamic rendering', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                gridSettings: { allowResizing: false }
+            });
+            multiColObj.appendTo(element);
+            expect((multiColObj as any).gridObj.allowResizing).toBe(false);
+            multiColObj.gridSettings.allowResizing = true;
+            multiColObj.dataBind();
+            expect((multiColObj as any).gridObj.allowResizing).toBe(true);
         });
     });
 

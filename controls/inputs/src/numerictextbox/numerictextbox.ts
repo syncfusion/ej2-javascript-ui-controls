@@ -1070,8 +1070,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             this.setElementValue(elementValue);
             attributes(this.element, { 'aria-valuenow': value });
             this.hiddenInput.value = this.value.toString();
-            if (this.value !== null && this.serverDecimalSeparator) {
-                this.hiddenInput.value = this.hiddenInput.value.replace('.', this.serverDecimalSeparator);
+            if (!isNullOrUndefined(this.hiddenInput)) {
+                if (this.value !== null && this.serverDecimalSeparator) {
+                    this.hiddenInput.value = this.hiddenInput.value.replace('.', this.serverDecimalSeparator);
+                }
             }
         } else {
             this.setElementValue('');

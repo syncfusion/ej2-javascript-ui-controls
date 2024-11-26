@@ -1883,7 +1883,7 @@ export class DropDownList extends DropDownBase implements IInput {
         } else {
             this.setSelectOptions(li, e);
             if (this.enableVirtualization && this.value) {
-                const fields: string = (this.fields.value) ? this.fields.value : '';
+                const fields: string = !this.isPrimitiveData ? this.fields.value : '';
                 const currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ?
                     getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
                 if (this.dataSource instanceof DataManager) {

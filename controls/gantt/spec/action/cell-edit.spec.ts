@@ -880,7 +880,7 @@ describe('Gantt editing action', () => {
         triggerMouseEvent(update, 'click');
         expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe('');
         expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe('2FF+3 days');
-        expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('3SF');
+        expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('3SF+5 hours');
         expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe('4SS-480 minutes');
     });
     it('Editing task name with dialog close arguments', () => {

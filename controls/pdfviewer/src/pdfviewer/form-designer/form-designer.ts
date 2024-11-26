@@ -84,7 +84,7 @@ export class FormDesigner {
     private defaultZoomValue: number = 1;
     private defaultFontSize: number = 10;
     private signIndicatorPadding: number = 3;
-    private signIndicatorMinimunFontSize: number = 4;
+    private signIndicatorMinimunFontSize: number = 1;
     private signatureFieldPropertyChanged: any =
     {
         isReadOnlyChanged: false,

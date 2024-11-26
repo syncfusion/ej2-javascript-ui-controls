@@ -180,15 +180,16 @@ export class Dependency {
             if (el.includes('-')) {
                 const lastIndex: number = el.lastIndexOf('-');
                 const lastPart: string = el.substring(lastIndex + 1);
-                let lengthToSlice: number;
-                if (el.includes(this.parent.localeObj.getConstant('days'))) {
-                    lengthToSlice = lastPart.includes('.') ? 11 : 9;
-                } else if (el.includes(this.parent.localeObj.getConstant('day'))) {
-                    lengthToSlice = lastPart.includes('.') ? 10 : 8;
-                } else {
-                    lengthToSlice = 2;
+                const baseString: string = el.replace(lastPart, '').trim();
+                const match: RegExpMatchArray | null = baseString.match(/(FS|SS|SF|FF)-$/);
+                let processedResult: string = (match ? match[0] : '') + lastPart;
+                if (!/^(FS|SS|SF|FF)/.test(processedResult)) {
+                    const prefixMatch: RegExpMatchArray | null = processedResult.match(/(FS|SS|SF|FF)/);
+                    processedResult = prefixMatch
+                        ? prefixMatch[0] + processedResult.slice(processedResult.indexOf(prefixMatch[0]) + prefixMatch[0].length)
+                        : el;
                 }
-                predecessorName = el.slice(-lengthToSlice).toString();
+                predecessorName = processedResult;
                 if (el.includes('-') && /[A-Za-z]/.test(predecessorName)) {
                     const indexFS: number = el.indexOf(predecessorName);
                     if (indexFS !== -1) {

@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PdfTrueTypeFont } from '@syncfusion/ej2-pdf';
+import { PdfFontStyle, PdfTrueTypeFont } from '@syncfusion/ej2-pdf';
 
 /**
  *
@@ -85,15 +85,17 @@ export class PdfViewerUtils {
      * @param {any} fontCollection - Get the custom fonts collection.
      * @param {string} text - Get the font family.
      * @param {number} fontSize - Get the font size.
+     * @param {PdfFontStyle} fontStyle - Get the font style.
      * @returns {any} - It's return fontCollection
      * @private
      */
     public static tryGetFontFromKeys(fontCollection: { [key: string]: any; }, text: string,
-                                     fontSize: number): (PdfTrueTypeFont | null) {
+                                     fontSize: number, fontStyle: PdfFontStyle): (PdfTrueTypeFont | null) {
         const keys: any = Object.keys(fontCollection);
         for (const key of keys) {
             let fontStream: any = this.processFontStream(fontCollection[`${key}`]);
-            let font: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize));
+            let font: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize),
+                                                            fontStyle ? fontStyle : PdfFontStyle.regular);
             const glyphPresent: boolean = this.isSupportedFont(text, font);
             if (glyphPresent) {
                 return font;

@@ -1003,6 +1003,15 @@ export class TextSearch {
                 break;
             }
             matchIndex = pageText.indexOf(searchText, matchIndex + queryLength);
+            let unicodeLength: number = 0;
+            // eslint-disable-next-line
+            if (!this.isMatchCase && (/[^\u0000-\u007F]/.test(pageString)) && matchIndex !== -1) {
+                const textLength: number = pageText.substring(0, matchIndex + queryLength).length;
+                const unicodeSplitLength: number = pageText.substring(0, matchIndex + queryLength).
+                    replace(/[\u0300-\u036f]/g, '').length;
+                unicodeLength = textLength - unicodeSplitLength;
+                matchIndex = matchIndex - unicodeLength;
+            }
             if (searchText.indexOf(' ') !== -1) {
                 const newString: string = searchString.replace(' ', '\r\n');
                 newIndex = pageText.indexOf(newString, newIndex + queryLength);
@@ -1021,6 +1030,9 @@ export class TextSearch {
             }
             if (newIndex > matchIndex && !(newIndex <= -1)) {
                 matches.push(newIndex);
+            }
+            if (unicodeLength > 0) {
+                matchIndex = matchIndex + unicodeLength;
             }
         }
         if (matches.length === 0) {

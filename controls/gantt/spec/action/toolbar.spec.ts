@@ -1684,7 +1684,7 @@ describe('CR:890397-When adding a record via dialog, if the startDate is set to 
         let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
         triggerMouseEvent(save, 'click');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/05/2019');
-        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/05/2019');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/06/2019');
         expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1);
     });
     it('enable toolbar items', () => {

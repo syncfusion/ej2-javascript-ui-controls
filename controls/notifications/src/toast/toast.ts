@@ -1085,12 +1085,14 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
 
     private delayedToastProgress(id: number): void {
         const progress: Progressbar = this.progressObj[id as number];
-        const toastEle: HTEle = progress.element;
-        progress.timeOutId = window.setTimeout(this.destroyToast.bind(this, toastEle), this.extendedTimeout);
-        progress.maxHideTime = parseFloat(this.extendedTimeout + '');
-        progress.hideEta = new Date().getTime() + progress.maxHideTime;
-        if (!isNOU(toastEle.querySelector('.' + PROGRESS))) {
-            progress.intervalId = setInterval(this.updateProgressBar.bind(this, progress), 10);
+        if (!isNOU(progress)) {
+            const toastEle: HTEle = progress.element;
+            progress.timeOutId = window.setTimeout(this.destroyToast.bind(this, toastEle), this.extendedTimeout);
+            progress.maxHideTime = parseFloat(this.extendedTimeout + '');
+            progress.hideEta = new Date().getTime() + progress.maxHideTime;
+            if (!isNOU(toastEle.querySelector('.' + PROGRESS))) {
+                progress.intervalId = setInterval(this.updateProgressBar.bind(this, progress), 10);
+            }
         }
     }
 

@@ -3288,7 +3288,7 @@ export class Gantt extends Component<HTMLElement>
                     removeClass(this.treeGrid.element.querySelectorAll('.e-headercell'), cls.timelineSingleHeaderOuterDiv);
                     removeClass(this.treeGrid.element.querySelectorAll('.e-columnheader'), cls.timelineSingleHeaderOuterDiv);
                 }
-                this.treeGrid.height = '100%';
+                this.treeGrid.setProperties({ height: '100%' }, false);
                 this.notify('tree-grid-created', {});
                 this.createGanttPopUpElement();
                 if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === 'Shimmer') {
@@ -4480,7 +4480,23 @@ export class Gantt extends Component<HTMLElement>
              this.pdfExportModule.helper.exportProps.fitToWidthSettings &&
                 !this.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
             this.timelineModule.updateChartByNewTimeline();
-            this.ganttChartModule.chartBodyContent.style.width = formatUnit(this.timelineModule.totalTimelineWidth);
+            const browserZoomLevel: number = (window.outerWidth / window.innerWidth);
+            // Handled zoomtofit horizontal scrollbar hide while performing different zooming levels in browser-Task(919516)
+            if (this.timelineModule.isZoomToFit && !this.enableTimelineVirtualization && browserZoomLevel < 1) {
+                let clientWidthDifference: number;
+                if (this.enableVirtualization) {
+                    clientWidthDifference = Math.abs(this.timelineModule.totalTimelineWidth - this.element.getElementsByClassName('e-chart-scroll-container e-content')[0].clientWidth) + 1;
+                }
+                else {
+                    clientWidthDifference = Math.abs(this.timelineModule.totalTimelineWidth -
+                                                                        this.ganttChartModule.chartBodyContent.parentElement.clientWidth);
+                }
+                this.ganttChartModule.chartBodyContent.style.width =
+                                                                formatUnit(this.timelineModule.totalTimelineWidth - clientWidthDifference);
+            }
+            else {
+                this.ganttChartModule.chartBodyContent.style.width = formatUnit(this.timelineModule.totalTimelineWidth);
+            }
             this.ganttChartModule.updateLastRowBottomWidth();
 
             if (this.taskFields.dependency) {

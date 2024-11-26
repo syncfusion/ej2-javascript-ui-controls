@@ -822,11 +822,7 @@ export class CalculatedField implements IAction {
     private addFormula(report: IDataOptions, field: string): void {
         this.isFormula = true;
         this.field = field;
-        if (this.parent.dataSourceSettings.mode === 'Server') {
-            PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings(report));
-        } else {
-            this.parent.setProperties({ dataSourceSettings: report }, true);
-        }
+        this.parent.setProperties({ dataSourceSettings: report }, true);
         if (this.parent.getModuleName() === 'pivotfieldlist' && ((this.parent as PivotFieldList).isDeferLayoutUpdate ||
             ((this.parent as PivotFieldList).pivotGridModule && (this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate))) {
             (this.parent as PivotFieldList).isRequiredUpdate = false;

@@ -332,10 +332,26 @@ export class GanttChart {
                 this.chartBodyContent.style.height = contentElement['offsetHeight'] + 'px';
             }
         }        //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
-        this.chartBodyContent.style.width = (this.parent.enableTimelineVirtualization
-            && (this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) ?
-            formatUnit(this.parent.element.offsetWidth * 3)
-            : formatUnit(this.parent.timelineModule.totalTimelineWidth);
+        // Handled zoomtofit horizontal scrollbar hide while performing different zooming levels in browser at virtualtimeline mode-Task(919516)
+        if (this.parent.timelineModule.isZoomToFit && this.parent.enableTimelineVirtualization) {
+            this.chartBodyContent.style.width = (this.parent.enableTimelineVirtualization
+                && (this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) ?
+                formatUnit(this.parent.element.offsetWidth * 3)
+                : formatUnit(this.parent.timelineModule.totalTimelineWidth - this.parent.timelineModule['clientWidthDifference']);
+        }
+        else {
+            this.chartBodyContent.style.width = (this.parent.enableTimelineVirtualization
+                && (this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) ?
+                formatUnit(this.parent.element.offsetWidth * 3)
+                : formatUnit(this.parent.timelineModule.totalTimelineWidth);
+        }
+        // To handle the width of chartbody element after zoomtofit action followed by vertical scroll actions
+        if (this.parent.timelineModule.isZoomedToFit && this.parent.enableVirtualization) {
+            const clientWidth: number = Math.abs(this.parent.timelineModule.totalTimelineWidth -
+                this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0].clientWidth);
+            this.parent.ganttChartModule.chartBodyContent.style.width =
+                formatUnit(this.parent.timelineModule.totalTimelineWidth - clientWidth);
+        }
         this.setVirtualHeight();
         this.parent.notify('updateHeight', {});
         this.parent.updateGridLineContainerHeight();

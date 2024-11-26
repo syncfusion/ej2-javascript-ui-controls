@@ -142,7 +142,17 @@ export class Zoom {
             if (chart.crosshairModule) {
                 chart.crosshairModule.removeCrosshair(0);
             }
-            const svg: Element = chart.enableCanvas ? document.getElementById(this.elementId + '_tooltip_svg') : chart.svgObject;
+            let svg: Element = chart.svgObject;
+            if (this.chart.enableCanvas) {
+                const secondaryElement: HTMLElement = document.getElementById(this.chart.element.id + '_Secondary_Element');
+                svg = this.chart.svgRenderer.createSvg({
+                    id: this.chart.element.id + '_zoomRect_svg',
+                    width: this.chart.availableSize.width,
+                    height: this.chart.availableSize.height
+                });
+                (svg as SVGElement).style.cssText = 'position: absolute; display:block; pointer-events: none';
+                secondaryElement.appendChild(svg);
+            }
             svg.appendChild(chart.svgRenderer.drawRectangle(new RectOption(
                 this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill,
                 { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')
@@ -887,7 +897,7 @@ export class Zoom {
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
-        EventHandler.add(this.chart.element, this.wheelEvent, this.chartMouseWheel, this);
+        this.chart.on('mousewheel', this.chartMouseWheel, this);
         this.chart.on(Browser.touchMoveEvent, this.mouseMoveHandler, this);
         this.chart.on(Browser.touchStartEvent, this.mouseDownHandler, this);
         this.chart.on(Browser.touchEndEvent, this.mouseUpHandler, this);
@@ -901,7 +911,7 @@ export class Zoom {
      */
     public removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
-        EventHandler.remove(this.chart.element, this.wheelEvent, this.chartMouseWheel);
+        this.chart.off('mousewheel', this.chartMouseWheel);
         this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
         this.chart.off(Browser.touchStartEvent, this.mouseDownHandler);
         this.chart.off(Browser.touchEndEvent, this.mouseUpHandler);

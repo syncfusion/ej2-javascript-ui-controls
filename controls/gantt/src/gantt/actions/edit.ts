@@ -3269,7 +3269,9 @@ export class Edit {
         this.parent.addDeleteRecord = true;
         this.parent.treeGrid['isAddedFromGantt'] = true;
         this.isAdded = true;
-        this.parent.treeGrid.editModule['isOnBatch'] = false;
+        if (this.parent.treeGrid.editModule) {
+            this.parent.treeGrid.editModule['isOnBatch'] = false;
+        }
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.parent.modifiedRecords = args.modifiedRecords;

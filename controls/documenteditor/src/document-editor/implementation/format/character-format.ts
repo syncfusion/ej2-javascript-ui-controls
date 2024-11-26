@@ -278,7 +278,8 @@ export class WCharacterFormat {
             if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph) && !isNullOrUndefined((this.ownerBase as TextElementBox).paragraph.bodyWidget) && !isNullOrUndefined((this.ownerBase as TextElementBox).paragraph.bodyWidget.page)) {
                 docCharacterFormat = (this.ownerBase as TextElementBox).paragraph.bodyWidget.page.documentHelper.characterFormat;
             } else {
-                if (!isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)) {
+                if (!isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page)
+                    && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper)) {
                     docCharacterFormat = (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.characterFormat;
                 }
             }

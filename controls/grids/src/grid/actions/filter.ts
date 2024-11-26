@@ -413,7 +413,7 @@ export class Filter implements IAction {
         if (!isNullOrUndefined((this.parent as any).modelObserver.boundedEvents)) {
             this.parent.removeEventListener(events.beforeDataBound, this.refreshFilterValueFn);
         }
-        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.columns.length &&
+        if ((this.filterSettings.type === 'FilterBar' || this.filterSettings.type === 'Excel') && this.filterSettings.columns.length &&
             !this.parent.getCurrentViewRecords().length) {
             this.initialEnd();
         }

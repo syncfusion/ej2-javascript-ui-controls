@@ -12,7 +12,7 @@ import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberForma
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, NotifyArgs } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, NotifyArgs, ExportHeaders } from './interface';
 import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
@@ -8281,42 +8281,49 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {string} url - Pass Url for server side excel export action.
      *
+     * @param  {ExportHeaders} headers - The headers to include in the export request.
+     *
      * @returns {void}
      */
-    public serverExcelExport(url: string): void {
+    public serverExcelExport(url: string, headers?: ExportHeaders): void {
         this.isExcel = true;
-        this.exportGrid(url);
+        this.exportGrid(url, headers);
     }
     /**
      * Sends a Post request to export Grid to Pdf file in server side.
      *
      * @param  {string} url - Pass Url for server side pdf export action.
      *
+     * @param  {ExportHeaders} headers - The headers to include in the export request.
+     *
      * @returns {void}
      */
-    public serverPdfExport(url: string): void {
+    public serverPdfExport(url: string, headers?: ExportHeaders): void {
         this.isExcel = false;
-        this.exportGrid(url);
+        this.exportGrid(url, headers);
     }
 
     /**
      * Sends a Post request to export Grid to CSV file in server side.
      *
-     * @param  {string} url - Pass Url for server side pdf export action.
+     * @param  {string} url - Pass Url for server side csv export action.
+     *
+     * @param  {ExportHeaders} headers - The headers to include in the export request.
      *
      * @returns {void}
      */
-    public serverCsvExport(url: string): void {
+    public serverCsvExport(url: string, headers?: ExportHeaders): void {
         this.isExcel = true;
-        this.exportGrid(url);
+        this.exportGrid(url, headers);
     }
 
     /**
      * @param {string} url - Defines exporting url
+     * @param {ExportHeaders} headers - The optional headers for the export request.
      * @returns {void}
      * @hidden
      */
-    public exportGrid(url: string): void {
+    public exportGrid(url: string, headers?: ExportHeaders): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const grid: IGrid = this;
         const query: Query = grid.getDataModule().generateQuery(true);
@@ -8337,6 +8344,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         form.method = 'POST';
         form.action = url;
         form.appendChild(gridInput);
+        if (headers && headers.headers && Array.isArray(headers.headers)) {
+            headers.headers.forEach((header: { [key: string]: string }) => {
+                Object.keys(header).forEach((key: string) => {
+                    const value: string = typeof header[`${key}`] === 'string' ? header[`${key}`] : JSON.stringify(header[`${key}`]);
+                    const headerInput: HTMLInputElement = this.createElement('input', { attrs: { name: key, value: value, type: 'hidden' }});
+                    form.appendChild(headerInput);
+                });
+            });
+        }
         document.body.appendChild(form);
         form.submit();
         form.remove();

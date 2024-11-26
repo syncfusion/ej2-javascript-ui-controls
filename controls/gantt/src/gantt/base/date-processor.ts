@@ -816,7 +816,7 @@ export class DateProcessor {
             startDate.setTime(startDate.getTime() + (currentRange.from * 3600000));
             const startHour: Date = new Date(startDate.getTime());
             if (currentRange.to === 24) {
-                const currentRangeTo: number = 23 * 60 * 60 * 1000 + 59 * 60 * 1000 + 59 * 1000;
+                const currentRangeTo: number = 24 * 60 * 60 * 1000;
                 tempDate.setTime(tempDate.getTime() + (currentRangeTo));
             }
             else {

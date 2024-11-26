@@ -332,7 +332,10 @@ export class CheckBoxSelection {
         this.parent.refreshPopup();
         (this.clearIconElement as HTMLElement).style.visibility = 'hidden';
         this.filterInput.focus();
-        this.setReorder(e);
+        if (!this.parent.enableVirtualization || (this.parent.enableVirtualization && (isNullOrUndefined(this.parent.value)
+            || (this.parent.value && (this.parent.value as number[] | string[] | boolean[] | object[]).length === 0)))) {
+            this.setReorder(e);
+        }
         this.boundPreventListSelection = this.preventListSelection.bind(this);
         this.parent.popupWrapper.addEventListener('mouseup', this.boundPreventListSelection, true);
         e.preventDefault();

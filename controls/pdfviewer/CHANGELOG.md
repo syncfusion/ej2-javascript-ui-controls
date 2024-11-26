@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I633354` - Now, the text search highlight is displayed correctly when the searched page contains Unicode text.
+- `#I653415` - Now, saving PDF as blob with programmatically aligned Free Text annotations works properly.
+- `#I651412` - Now, the signature and initial field indicator text is displayed correctly during minimum zoom.
+
 ## 27.2.3 (2024-11-21)
 
 ### PDF Viewer

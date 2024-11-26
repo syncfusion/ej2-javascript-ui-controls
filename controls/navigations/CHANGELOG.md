@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 27.2.4 (2024-11-26)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I658444` -  Resolved console error when clicking Select All after adding a new item to the DropdownTree component using the search functionality.
+
 ## 27.2.3 (2024-11-21)
 
 ### ContextMenu

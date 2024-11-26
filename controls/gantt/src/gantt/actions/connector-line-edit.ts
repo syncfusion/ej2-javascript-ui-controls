@@ -783,27 +783,32 @@ export class ConnectorLineEdit {
                         }
                     }
                     let offset: number;
-                    if (isScheduledTask(parentTask.ganttProperties) && isScheduledTask(record.ganttProperties)) {
+                    if ((parentTask.ganttProperties.startDate || parentTask.ganttProperties.endDate) &&
+                        (record.ganttProperties.startDate || record.ganttProperties.endDate)) {
                         let tempStartDate: Date;
                         let tempEndDate: Date;
                         let tempDuration: number;
                         let isNegativeOffset: boolean;
                         switch (predecessor.type) {
                         case 'FS':
-                            tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
-                            tempEndDate = new Date(record.ganttProperties.startDate.getTime());
+                            tempStartDate = new Date((parentTask.ganttProperties.endDate ||
+                                parentTask.ganttProperties.startDate).getTime());
+                            tempEndDate = new Date((record.ganttProperties.startDate || record.ganttProperties.endDate).getTime());
                             break;
                         case 'SS':
-                            tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
-                            tempEndDate = new Date(record.ganttProperties.startDate.getTime());
+                            tempStartDate = new Date((parentTask.ganttProperties.startDate ||
+                                parentTask.ganttProperties.endDate).getTime());
+                            tempEndDate = new Date((record.ganttProperties.startDate || record.ganttProperties.endDate).getTime());
                             break;
                         case 'SF':
-                            tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
-                            tempEndDate = new Date(record.ganttProperties.endDate.getTime());
+                            tempStartDate = new Date((parentTask.ganttProperties.startDate ||
+                                parentTask.ganttProperties.endDate).getTime());
+                            tempEndDate = new Date((record.ganttProperties.endDate || record.ganttProperties.startDate).getTime());
                             break;
                         case 'FF':
-                            tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
-                            tempEndDate = new Date(record.ganttProperties.endDate.getTime());
+                            tempStartDate = new Date((parentTask.ganttProperties.endDate ||
+                                parentTask.ganttProperties.startDate).getTime());
+                            tempEndDate = new Date((record.ganttProperties.endDate || record.ganttProperties.startDate).getTime());
                             break;
                         }
 

@@ -3118,3 +3118,44 @@ describe('Code Coverage => ', () => {
     });
 
 });
+
+describe('EJ2-920968: The browser automatically scrolls to the grid when perform grouping programmatically. => ', () => {
+    let gridObj: Grid;
+    let actionBegin: () => void;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowGrouping: true,
+                height: 400,
+                columns: [
+                    { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                    { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                    { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                ],
+                actionBegin: actionBegin,
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('Active element testing when programatic grouping', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+            expect(gridObj.element.querySelector('.e-gdiagonaldown').classList.contains('e-focus')).not.toBeTruthy();
+        };
+        actionBegin = (args?: any): void => {
+            if (args.requestType === "grouping") {
+                args.preventFocusOnGroup = true;
+            }
+        };
+        gridObj.actionBegin = actionBegin;
+        gridObj.actionComplete = actionComplete;
+        gridObj.groupColumn('Freight');
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionBegin = actionComplete = null;
+    });
+});

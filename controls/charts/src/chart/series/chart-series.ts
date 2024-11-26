@@ -1185,6 +1185,33 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             }
         }
         this.updateSplineValue();
+        this.updateYAxisForErrorBars();
+    }
+    /**
+     * Calculates the errorbar and adds a range to axis if errorbar exeeds to the actual range.
+     *
+     * @returns {void}
+     * @private
+     */
+    private updateYAxisForErrorBars(): void {
+        if (this instanceof Series) {
+            if (this.chart.errorBarModule) {
+                let maxVerticalError: number;
+                if (this.errorBar.verticalError) {
+                    for (let i: number = 0; i < this.points.length; i++) {
+                        const verticalErrors: number[] = [];
+                        for (let i: number = 0; i < this.points.length; i++) {
+                            const point: Points = this.points[i as number];
+                            if (point.verticalError) {
+                                verticalErrors.push(point.verticalError);
+                            }
+                        }
+                        maxVerticalError = Math.max(...verticalErrors);
+                    }
+                }
+                this.yMax += isNaN(maxVerticalError) ? maxVerticalError / 2 : 0;
+            }
+        }
     }
 
     /**
@@ -2765,7 +2792,8 @@ export class Series extends SeriesBase {
         if (this.chart.enableAnimation && (!(this.isRectSeries || this.type === 'Bubble' || this.type === 'Scatter')) && (this.type.indexOf('step') === -1)) {
             if (this.marker && this.marker.visible && this.visible) {
                 for (let i: number = this.points.length - 2; i >= 0; i--) {
-                    if (this.points[i as number] && this.points[i as number].symbolLocations[0] !== undefined) {
+                    if (this.points[i as number] && !isNullOrUndefined(this.points[this.points.length - 2].y) &&
+                        this.points[i as number].symbolLocations && this.points[i as number].symbolLocations[0] !== undefined) {
                         this.chart.markerRender.renderMarker(this, this.points[this.points.length - 2],
                                                              this.points[i as number].symbolLocations[0], null, true);
                         break;

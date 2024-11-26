@@ -1005,7 +1005,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.engineModule.pivotValues = [];
             }
             if (this.currentAction !== 'fetchFieldMembers') {
-                this.initEngine();
+                this.enginePopulatedEventMethod(this, true, false);
+                if (this.calculatedFieldModule && this.currentAction === 'onCalcOperation') {
+                    this.calculatedFieldModule.endDialog();
+                }
                 if (this.calculatedFieldModule && this.calculatedFieldModule.isRequireUpdate) {
                     this.calculatedFieldModule.endDialog();
                     this.calculatedFieldModule.isRequireUpdate = false;
@@ -1532,15 +1535,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     } else {
                         if (pivot.dataSourceSettings.mode === 'Server') {
                             if (isSorted) {
-                                control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
+                                pivot.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
                             } else if (isAggChange) {
-                                control.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
+                                pivot.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
                             } else if (isCalcChange) {
-                                control.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
+                                pivot.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
                             } else if (isFiltered) {
-                                control.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
+                                pivot.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
                             } else {
-                                control.getEngine('onDrop', null, null, null, null, null, null);
+                                pivot.getEngine('onDrop', null, null, null, null, null, null);
                             }
                         } else {
                             pivot.engineModule.renderEngine(
@@ -1567,7 +1570,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 }
                 pivot.isRequiredUpdate = false;
             }
-            pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+            if (pivot.dataSourceSettings.mode !== 'Server') {
+                pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+            } else if (!pivot.isRequiredUpdate) {
+                hideSpinner(this.fieldListSpinnerElement as HTMLElement);
+                if (this.pivotGridModule) {
+                    this.pivotGridModule.hideWaitingPopup();
+                }
+            }
         });
         //});
     }
