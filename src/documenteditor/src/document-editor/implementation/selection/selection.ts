@@ -1,0 +1,12372 @@
+import { DocumentEditor } from '../../document-editor';
+import {
+    Rect, Margin, IWidget, Widget, BodyWidget, TableRowWidget, TableWidget,
+    LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
+    FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
+    EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox, CommentElementBox, CommentCharacterElementBox,
+    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, TextFrame, ContentControl, FieldTextElementBox, FootNoteWidget,
+    FootnoteElementBox, ShapeBase
+} from '../viewer/page';
+import {
+    ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
+    FirstElementInfo, HelperMethods, HyperlinkTextInfo, LineInfo, Point, ShapeInfo, FieldInfo, AbsolutePositionInfo, FieldResultInfo
+} from '../editor/editor-helper';
+import {
+    SelectionCharacterFormat, SelectionCellFormat, SelectionParagraphFormat,
+    SelectionRowFormat, SelectionSectionFormat, SelectionTableFormat, SelectionImageFormat
+} from './selection-format';
+import { TextSizeInfo } from '../viewer/text-helper';
+import { PageLayoutViewer, LayoutViewer, DocumentHelper, WebLayoutViewer, WListLevel, WList, WRowFormat, SelectionInfo } from '../index';
+import { isNullOrUndefined, createElement, L10n, Browser } from '@syncfusion/ej2-base';
+import { Dictionary } from '../../base/dictionary';
+import {
+    LineSpacingType, BaselineAlignment, HighlightColor,
+    Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs, contentControlEvent,
+    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType, HeaderFooterType,
+    ContentControlInfo,
+    ContentControlType
+} from '../../base/index';
+import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
+import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
+import { HtmlExport } from '../writer/html-export';
+import { Popup } from '@syncfusion/ej2-popups';
+import { ContextType, RequestNavigateEventArgs, TablePasteOptions, PasteOptionSwitch } from '../../index';
+import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageSizeInfo } from './selection-helper';
+import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
+import { Revision } from '../track-changes/track-changes';
+import { DocumentCanvasRenderingContext2D } from '../viewer/document-canvas';
+/* eslint-disable */
+/**
+ * Selection
+ */
+export class Selection {
+    /**
+     * @private
+     */
+    public owner: DocumentEditor;
+    /**
+     * @private
+     */
+    public upDownSelectionLength: number = 0;
+    /**
+     * @private
+     */
+    public isSkipLayouting: boolean = false;
+    /**
+    * @private
+    */
+    public isImageSelected: boolean = false;
+    /**
+    * @private
+    */
+    public isExcludeBookmarkStartEnd: boolean = false;
+    /**
+    * @private
+    */
+    public documentHelper: DocumentHelper;
+    private contextTypeInternal: ContextType = undefined;
+    /**
+     * @private
+     */
+    public caret: HTMLDivElement = undefined;
+    //Format Retrieval Field
+    /**
+     * @private
+     */
+    public isRetrieveFormatting: boolean = false;
+    private characterFormatIn: SelectionCharacterFormat;
+    private paragraphFormatIn: SelectionParagraphFormat;
+    private sectionFormatIn: SelectionSectionFormat;
+    private tableFormatIn: SelectionTableFormat;
+    private cellFormatIn: SelectionCellFormat;
+    private rowFormatIn: SelectionRowFormat;
+    private imageFormatInternal: SelectionImageFormat;
+    /**
+     * @private
+     */
+    public isSelectCurrentWord: boolean = false;
+    /**
+     * @private
+     */
+    public isSelectionisInCC: boolean = false;
+    /**
+     * @private
+     */
+    public skipFormatRetrieval: boolean = false;
+    /**
+     * @private
+     */
+    public isModifyingSelectionInternally: boolean = false;
+    private startInternal: TextPosition;
+    private endInternal: TextPosition;
+    private htmlWriterIn: HtmlExport;
+
+    private toolTipElement: HTMLElement;
+    private screenTipElement:HTMLElement
+    private toolTipTextElement: HTMLElement;
+    private toolTipObject: Popup;
+    private toolTipField: FieldElementBox | string;
+    private isMoveDownOrMoveUp: boolean = false;
+    private pasteDropDwn: DropDownButton;
+    private isSelectBookmark: boolean = false;
+    /**
+     * @private
+     * This will holds the selection html content to set data in clipboard. Avoid to use this field for other purpose.
+     */
+    private htmlContent: string = undefined;
+    /**
+     * @private
+     * This will holds the selection sfdt content to set data in clipboard. Avoid to use this field for other purpose.
+     */
+    private sfdtContent: string = undefined;
+    /**
+     * @private
+     */
+    public isEndOffset: boolean = false;
+    /**
+     * @private
+     */
+    public pasteElement: HTMLElement;
+    /**
+     * @private
+     */
+    public currentPasteAction: TablePasteOptions | PasteOptionSwitch;
+    /**
+     * @private
+     */
+    public isViewPasteOptions: boolean = false;
+    /**
+     * @private
+     */
+    public skipEditRangeRetrieval: boolean = false;
+
+    /**
+     * @private
+     */
+    public editPosition: string;
+    /**
+     * @private
+     */
+    public selectedWidgets: Dictionary<IWidget, object> = undefined;
+    /**
+     * @private
+     */
+    public isHighlightEditRegionIn: boolean = false;
+    /**
+     * @private
+     */
+    public isHighlightContentControlEditRegionIn: boolean = false;
+    /**
+     * @private
+     */
+    private isHighlightFormFields: boolean = false;
+    /**
+     * @private
+     */
+    public editRangeCollection: EditRangeStartElementBox[];
+    /**
+     * @private
+     */
+    public isHightlightEditRegionInternal: boolean = false;
+    /**
+     * @private
+     */
+    public isCurrentUser: boolean = false;
+    /**
+     * @private
+     */
+    public isHighlightNext: boolean = false;
+    /**
+     * @private
+     */
+    public hightLightNextParagraph: BlockWidget;
+    /**
+     * @private
+     */
+    public isWebLayout: boolean = false;
+    /**
+     * @private
+     */
+    public contentControlHighlighters: Dictionary<string, Dictionary<LineWidget, SelectionWidgetInfo[]>> = undefined;
+    /**
+     * @private
+     */
+    public editRegionHighlighters: Dictionary<LineWidget, SelectionWidgetInfo[]> = undefined;
+    /**
+     * @private
+     */
+    public contentControleditRegionHighlighters: Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>> = undefined;
+    /**
+     * @private
+     */
+    public formFieldHighlighters: Dictionary<LineWidget, SelectionWidgetInfo[]> = undefined;
+
+    private isSelectList: boolean = false;
+    /**
+     * @private
+     */
+    public previousSelectedFormField: FieldElementBox = undefined;
+    /**
+     * @private
+     */
+    public isFormatUpdated: boolean = false;
+    /**
+     * @private
+     */
+    public isCellPrevSelected: boolean = false;
+    /**
+     * @private
+     */
+    public currentFormField: FieldElementBox = undefined;
+    // Code for Comparing the offset calculated using old approach and optimized approach
+    // /**
+    //  * @private
+    //  */
+    // public isNewApproach: boolean;
+    /**
+     * @private
+     * @returns {boolean} - Retuens true if highlighting editing region
+     */
+    public get isHighlightEditRegion(): boolean {
+        return this.isHighlightEditRegionIn;
+    }
+    /**
+     * @private
+     */
+    public set isHighlightEditRegion(value: boolean) {
+        this.isHighlightEditRegionIn = value;
+        this.onHighlight();
+    }
+    /**
+     * @private
+     * @returns {boolean} - Retuens true if highlighting editing region
+     */
+    public get isHighlightContentControlEditRegion(): boolean {
+        return this.isHighlightContentControlEditRegionIn;
+    }
+    /**
+     * @private
+     */
+    public set isHighlightContentControlEditRegion(value: boolean) {
+        this.isHighlightContentControlEditRegionIn = value;
+        this.onHighlightContentControl();
+    }
+    /**
+     * @private
+     */
+    public get htmlWriter(): HtmlExport {
+        if (isNullOrUndefined(this.htmlWriterIn)) {
+            this.htmlWriterIn = new HtmlExport();
+        }
+        return this.htmlWriterIn;
+    }
+    /**
+     * Gets the start text position of last range in the selection
+     *
+     * @private
+     * @returns {TextPosition} - Returns selection start position.
+     */
+    public get start(): TextPosition {
+        if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.viewer)) {
+            if (isNullOrUndefined(this.startInternal)) {
+                this.startInternal = this.owner.documentStart;
+            }
+            return this.startInternal;
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public set start(value: TextPosition) {
+        this.startInternal = value;
+    }
+    //Format retrieval properties
+    /**
+     * Gets the instance of selection character format.
+     *
+     * @default undefined
+     * @aspType SelectionCharacterFormat
+     * @returns {SelectionCharacterFormat} Returns the selection character format.
+     */
+    public get characterFormat(): SelectionCharacterFormat {
+        return this.characterFormatIn;
+    }
+    /**
+     * Gets the instance of selection paragraph format.
+     *
+     * @default undefined
+     * @aspType SelectionParagraphFormat
+     * @returns {SelectionParagraphFormat} Returns the selection paragraph format.
+     */
+    public get paragraphFormat(): SelectionParagraphFormat {
+        return this.paragraphFormatIn;
+    }
+    /**
+     * Gets the instance of selection section format.
+     *
+     * @default undefined
+     * @aspType SelectionSectionFormat
+     * @returns {SelectionSectionFormat} Returns the selection section format.
+     */
+    public get sectionFormat(): SelectionSectionFormat {
+        return this.sectionFormatIn;
+    }
+    /**
+     * Gets the instance of selection table format.
+     *
+     * @default undefined
+     * @aspType SelectionTableFormat
+     * @returns {SelectionTableFormat} Returns the selection table format.
+     */
+    public get tableFormat(): SelectionTableFormat {
+        return this.tableFormatIn;
+    }
+    /**
+     * Gets the instance of selection cell format.
+     *
+     * @default undefined
+     * @aspType SelectionCellFormat
+     * @returns {SelectionCellFormat} Returns the selection cell format.
+     */
+    public get cellFormat(): SelectionCellFormat {
+        return this.cellFormatIn;
+    }
+    /**
+     * Gets the instance of selection row format.
+     *
+     * @default undefined
+     * @aspType SelectionRowFormat
+     * @returns {SelectionRowFormat} Returns selection row format.
+     */
+    public get rowFormat(): SelectionRowFormat {
+        return this.rowFormatIn;
+    }
+    /**
+     * Gets the instance of selection image format.
+     *
+     * @default undefined
+     * @aspType SelectionImageFormat
+     * @returns {SelectionImageFormat} Returns the selection image format.
+     */
+    public get imageFormat(): SelectionImageFormat {
+        return this.imageFormatInternal;
+    }
+    /**
+     * Gets the start text position of selection range.
+     *
+     * @private
+     * @returns {TextPosition} - Returns selection end position.
+     */
+    public get end(): TextPosition {
+        return this.endInternal;
+    }
+
+    /**
+     * For internal use
+     *
+     * @private
+     */
+    public set end(value: TextPosition) {
+        this.endInternal = value;
+    }
+    /**
+     * Gets the page number where the selection starts.
+     *
+     * @returns {number} Returns the selection start page number.
+     */
+    public get startPage(): number {
+        if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer)
+            || this.viewer instanceof WebLayoutViewer || isNullOrUndefined(this.documentHelper.selectionStartPage)) {
+            return 1;
+        }
+        return this.documentHelper.pages.indexOf(this.documentHelper.selectionStartPage) + 1;
+    }
+    /**
+     * Gets the page number where the selection ends.
+     *
+     * @returns {number} Returns the selection end page number.
+     */
+    public get endPage(): number {
+        if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer)
+            || this.viewer instanceof WebLayoutViewer || isNullOrUndefined(this.documentHelper.selectionEndPage)) {
+            return 1;
+        }
+        return this.documentHelper.pages.indexOf(this.documentHelper.selectionEndPage) + 1;
+    }
+
+    /**
+     * Determines whether the selection direction is forward or not.
+     *
+     * @default false
+     * @private
+     * @returns {boolean} Returns isForward
+     */
+    public get isForward(): boolean {
+        return this.start.isExistBefore(this.end);
+    }
+    /**
+     * Determines whether the selection is in footnote or not.
+     *
+     * @default false
+     * @returns {boolean} Returns true if selection is in footnote
+     * @private
+     */
+    public get isinFootnote(): boolean {
+        return this.isFootNoteParagraph(this.start.paragraph);
+    }
+    /**
+     * Determines whether the selection is in endnote or not.
+     *
+     * @default false
+     * @returns {boolean}
+     * @private
+     */
+    public get isinEndnote(): boolean {
+        return this.isEndNoteParagraph(this.start.paragraph);
+    }
+    /**
+     * Determines whether the start and end positions are same or not.
+     *
+     * @default false
+     * @returns {boolean}
+     * @private
+     */
+    public get isEmpty(): boolean {
+        if (isNullOrUndefined(this.start)) {
+            return true;
+        }
+        return this.start.isAtSamePosition(this.end);
+    }
+    /**
+     * Returns the start hierarchical index.
+     */
+    public get startOffset(): string {
+        return this.getHierarchicalIndexByPosition(this.start);
+    }
+    /**
+     * Returns the end hierarchical index.
+     */
+    public get endOffset(): string {
+        return this.getHierarchicalIndexByPosition(this.end);
+    }
+    /**
+     * @private
+     */
+    public get isInShape(): boolean {
+        let container: Widget = this.start.paragraph.containerWidget;
+        do {
+            if (container instanceof TextFrame) {
+                return true;
+            }
+            if (container) {
+                container = container.containerWidget;
+            }
+        } while (container);
+        return false;
+    }
+    /**
+     * Gets the text within selection.
+     *
+     * @default ''
+     * @aspType string
+     * @returns {string} Returns the text within selection.
+     */
+    public get text(): string {
+        return this.getText(false);
+    }
+    /**
+     * Gets the context type of the selection.
+     */
+    public get contextType(): ContextType {
+        return this.contextTypeInternal;
+    }
+
+    /**
+     * Gets bookmark name collection.
+     */
+    public get bookmarks(): string[] {
+        return this.getSelBookmarks(false);
+    }
+
+    /**
+    * Gets the selected content of the document as SFDT(Syncfusion Document Text) file format.
+    *
+    * @default undefined
+    * @returns {string}
+    */
+    public get sfdt(): string {
+        if (this.owner.editorModule && !this.isEmpty) {
+            return JSON.stringify(this.writeSfdt());
+        } else {
+            return undefined;
+        }
+    }
+
+    /**
+     * Gets the bookmark name collection in current selection.
+     *
+     * @param includeHidden - Decide whether to include hidden bookmark name in current selection or not.
+     * @returns Returns the bookmark name collection in current selection.
+     */
+    public getBookmarks(includeHidden?: boolean): string[] {
+        return this.getSelBookmarks(includeHidden);
+    }
+    /**
+     * @private
+     */
+    public get isCleared(): boolean {
+        return isNullOrUndefined(this.end);
+    }
+    /**
+     * Returns true if selection is in field.
+     * 
+     * @returns Returns true if selection is in field; Otherwise, false.
+     */
+    public get isInField(): boolean {
+        if (!isNullOrUndefined(this.getHyperlinkField(true))) {
+            return true;
+        }
+        return false;
+    }
+    /** 
+     * Gets the field information for the selected field. 
+     * 
+     * @returns { FieldInfo } Returns `FieldInfo` if selection is in field, otherwise `undefined` 
+     * > Returns `undefined` for text, image, table, shape. For nested fields, it returns combined field code and result. 
+     */
+    public getFieldInfo(): FieldInfo {
+        const field: FieldElementBox = this.getHyperlinkField(true);
+        if (!isNullOrUndefined(field)) {
+            let code: string = this.getFieldCode(field);
+            let result: string = this.owner.editorModule.getFieldResultText(field);
+            return {
+                code: code,
+                result: result
+            };
+        }
+        return undefined;
+    }
+    /**
+     * @param documentEditor
+     * @private
+     */
+    public constructor(documentEditor: DocumentEditor) {
+        this.owner = documentEditor;
+        this.documentHelper = this.owner.documentHelper;
+        this.start = new TextPosition(this.owner);
+        this.end = new TextPosition(this.owner);
+        this.selectedWidgets = new Dictionary<IWidget, object>();
+        this.characterFormatIn = new SelectionCharacterFormat(this);
+        this.paragraphFormatIn = new SelectionParagraphFormat(this, this.documentHelper);
+        this.sectionFormatIn = new SelectionSectionFormat(this);
+        this.rowFormatIn = new SelectionRowFormat(this);
+        this.cellFormatIn = new SelectionCellFormat(this);
+        this.tableFormatIn = new SelectionTableFormat(this);
+        this.imageFormatInternal = new SelectionImageFormat(this);
+        this.editRangeCollection = [];
+        this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        this.contentControleditRegionHighlighters = new Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>>();
+        this.formFieldHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        this.contentControleditRegionHighlighters = new Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>>();
+    }
+    private isFootNoteParagraph(paragraph: ParagraphWidget): boolean {
+        const container: Widget = this.getContainerWidget(paragraph);
+        if (container instanceof FootNoteWidget && container.footNoteType === 'Footnote') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    private isEndNoteParagraph(paragraph: ParagraphWidget): boolean {
+        const container: Widget = this.getContainerWidget(paragraph);
+        if (container instanceof FootNoteWidget && container.footNoteType === 'Endnote') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /**
+     * @param documentEditor
+     * @private
+     */
+    public isFootEndNoteParagraph(paragraph: ParagraphWidget): boolean {
+        if (this.isFootNoteParagraph(paragraph)) {
+            return true;
+        } else if (this.isEndNoteParagraph(paragraph)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    private getSelBookmarks(includeHidden: boolean): string[] {
+        const bookmarkCln: string[] = [];
+        const bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        let bookmrkStart: BookmarkElementBox;
+        let bookmrkEnd: BookmarkElementBox;
+        let isCellSelected: boolean = false;
+        const selectedCells: TableCellWidget[] = this.getSelectedCells();
+        for (let i: number = 0; i < bookmarks.length; i++) {
+            if (includeHidden || !includeHidden && bookmarks.keys[i].indexOf('_') !== 0) {
+                bookmrkStart = bookmarks.get(bookmarks.keys[i]);
+                bookmrkEnd = bookmrkStart.reference;
+                if (isNullOrUndefined(bookmrkEnd)) {
+                    continue;
+                }
+                const bmStartPos: TextPosition = this.getElementPosition(bookmrkStart).startPosition;
+                const bmEndPos: TextPosition = this.getElementPosition(bookmrkEnd, true).startPosition;
+                if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
+                    if (selectedCells.length > 0) {
+                        if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) >= 0
+                            || selectedCells.indexOf(bmEndPos.paragraph.associatedCell) >= 0) {
+                            isCellSelected = true;
+                        } else {
+                            isCellSelected = false;
+                            if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) < 0
+                                || selectedCells.indexOf(bmEndPos.paragraph.associatedCell) < 0) {
+                                const endCell: TableCellWidget = end.paragraph.isInsideTable && end.paragraph.associatedCell;
+                                const bmEndPosCell: TableCellWidget = bmEndPos.paragraph.associatedCell;
+                                if (endCell && bmEndPosCell && endCell.ownerTable.equals(bmEndPosCell.ownerTable) &&
+                                    !(endCell.ownerTable
+                                        && selectedCells.indexOf(this.getCellInTable(endCell.ownerTable, bmEndPosCell)) >= 0)) {
+                                    // Bug 891131: The below code is comment to resolve the bookmark is not retrieved when selecting the table cell
+                                    // continue;
+                                }
+                            }
+                        }
+                    } else {
+                        isCellSelected = false;
+                    }
+                } else {
+                    isCellSelected = false;
+                }
+                if ((start.isExistAfter(bmStartPos) || start.isAtSamePosition(bmStartPos))
+                    && (end.isExistBefore(bmEndPos) || end.isAtSamePosition(bmEndPos)) ||
+                    ((bmStartPos.isExistAfter(start) || bmStartPos.isAtSamePosition(start))
+                        && (bmEndPos.isExistBefore(end) || bmEndPos.isAtSamePosition(end))) ||
+                    (bmStartPos.isExistAfter(start) && bmStartPos.isExistBefore(end)
+                        && (end.isExistAfter(bmEndPos) || end.isExistBefore(bmEndPos))) ||
+                    (bmEndPos.isExistBefore(end) && bmEndPos.isExistAfter(start)
+                        && (start.isExistBefore(bmStartPos) || start.isExistAfter(bmStartPos))) || isCellSelected) {
+                    bookmarkCln.push(bookmrkStart.name);
+                }
+            }
+        }
+        return bookmarkCln;
+    }
+    /**
+     * 
+     * @private
+     */
+    public get viewer(): LayoutViewer {
+        return this.owner.viewer;
+    }
+
+    private getModuleName(): string {
+        return 'Selection';
+    }
+    private checkLayout(): void {
+        if (this.owner.layoutType === 'Continuous') {
+            this.isWebLayout = true;
+            this.documentHelper.isHeaderFooter = true;
+            this.owner.layoutType = 'Pages';
+            this.owner.viewer.destroy();
+            this.owner.viewer = new PageLayoutViewer(this.owner);
+            this.owner.editorModule.layoutWholeDocument();
+        }
+    }
+    //Public API
+    /**
+     * Moves the selection to the header of current page.
+     *
+     * @returns {void}
+     */
+    public goToHeader(): void {
+        this.checkLayout();
+        this.owner.enableHeaderAndFooter = true;
+        this.enableHeadersFootersRegion(this.start.paragraph.bodyWidget.page.headerWidget, this.start.paragraph.bodyWidget.page);
+        this.isWebLayout = false;
+    }
+    /**
+     * Moves the selection to the footer of current page.
+     *
+     * @returns {void}
+     */
+    public goToFooter(): void {
+        this.checkLayout();
+        this.owner.enableHeaderAndFooter = true;
+        this.enableHeadersFootersRegion(this.start.paragraph.bodyWidget.page.footerWidget, this.start.paragraph.bodyWidget.page);
+        this.isWebLayout = false;
+    }
+    /**
+     * Closes the header and footer region.
+     *
+     * @returns {void}
+     */
+    public closeHeaderFooter(): void {
+        this.disableHeaderFooter();
+        if (this.documentHelper.isHeaderFooter && this.owner.layoutType === 'Pages') {
+            this.owner.layoutType = 'Continuous';
+            this.documentHelper.isHeaderFooter = false;
+        }
+    }
+    /**
+    * Closes the xml Pane region.
+    *
+    * @returns {void}
+    */
+    public closeXmlPane(): void {
+        this.disableXml();
+        this.owner.enableXMLPane = false;
+        if (this.documentHelper.isHeaderFooter && this.owner.layoutType === 'Pages') {
+            this.owner.layoutType = 'Continuous';
+            this.documentHelper.isHeaderFooter = false;
+        }
+    }
+    /**
+     * Moves the selection to the start of specified page number.
+     *
+     * @param pageNumber Specify the page number to move selection.
+     * @returns {void}
+     */
+    public goToPage(pageNumber: number): void {
+        this.owner.scrollToPage(pageNumber);
+        if (pageNumber >= 1 && pageNumber <= this.owner.documentHelper.pages.length) {
+            const page: Page = this.owner.documentHelper.pages[pageNumber - 1];
+            this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
+        }
+    }
+    /**
+     * Selects the entire table if the context is within table.
+     *
+     * @returns {void}
+     */
+    public selectTable(): void {
+        if (!this.owner.enableSelection) {
+            return;
+        }
+        this.selectTableInternal();
+    }
+    /**
+     * Selects the entire row if the context is within table.
+     *
+     * @returns {void}
+     */
+    public selectRow(): void {
+        if (!this.owner.enableSelection) {
+            return;
+        }
+        this.selectTableRow();
+    }
+    /**
+     * Selects the entire column if the context is within table.
+     *
+     * @returns {void}
+     */
+    public selectColumn(): void {
+        if (!this.owner.enableSelection) {
+            return;
+        }
+        this.selectColumnInternal();
+    }
+    /**
+     * Selects the entire cell if the context is within table.
+     *
+     * @returns {void}
+     */
+    public selectCell(): void {
+        if (!this.owner.enableSelection) {
+            return;
+        }
+        this.selectTableCell();
+    }
+    /**
+     * Selects content based on selection settings
+     *
+     * @returns {void}
+     */
+    public select(selectionSettings: SelectionSettings): void;
+    /**
+     * Selects the content based on the specified start and end hierarchical index.
+     *
+     * @param start Specify the start hierarchical index.
+     * @param end Specify the end hierarchical index.
+     * @returns {void}
+     */
+    public select(start: string, end: string): void;
+
+    public select(selectionSettings: SelectionSettings | string, startOrEnd?: string): void {
+        if (typeof (selectionSettings) === 'string') {
+            const startPosition: TextPosition = this.getTextPosBasedOnLogicalIndex(selectionSettings);
+            const endPosition: TextPosition = this.getTextPosBasedOnLogicalIndex(startOrEnd);
+            this.selectPosition(startPosition, endPosition);
+        } else {
+            const point: Point = new Point(selectionSettings.x, selectionSettings.y);
+            const pageCoordinates: Point = this.viewer.findFocusedPage(point, true);
+            if (selectionSettings.extend) {
+                this.moveTextPosition(pageCoordinates, this.end);
+            } else {
+                this.documentHelper.updateTextPositionForSelection(pageCoordinates, 1);
+            }
+        }
+    }
+    /**
+     * Selects the content based on the specified start and end hierarchical index.
+     *
+     * @param start Specify the start index to select.
+     * @param end Specify the end index to select.
+     * @returns {void}
+     */
+    public selectByHierarchicalIndex(start: string, end: string): void {
+        const startPosition: TextPosition = this.getTextPosBasedOnLogicalIndex(start);
+        const endPosition: TextPosition = this.getTextPosBasedOnLogicalIndex(end);
+        this.selectPosition(startPosition, endPosition);
+    }
+    /**
+     * Selects the current field if selection is in field
+     *
+     * @param fieldStart Specify the field start to select.
+     * @returns {void}
+     */
+    public selectField(fieldStart?: FieldElementBox): void {
+        if (this.isInField || !isNullOrUndefined(fieldStart)) {
+            if (isNullOrUndefined(fieldStart)) {
+                fieldStart = this.getHyperlinkField(true);
+            }
+            this.selectFieldInternal(fieldStart);
+        }
+    }
+    /**
+     * @private
+     * @param fieldStart
+     * @returns {void}
+     */
+    public selectContentControlInternal(fieldStart: ContentControl): void {
+        if (fieldStart) {
+            const offset: number = fieldStart.line.getOffset(fieldStart, 1);
+            const startPosition: TextPosition = new TextPosition(this.owner);
+            let fieldEnd: ContentControl = fieldStart.reference;
+            startPosition.setPositionParagraph(fieldStart.line, offset);
+            const endoffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
+            const endPosition: TextPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(fieldEnd.line, endoffset);
+            //selects the field range
+            this.documentHelper.selection.selectRange(startPosition, endPosition);
+        }
+    }
+    /**
+     * @private
+     * @param fieldStart
+     * @returns {void}
+     */
+    public selectFieldInternal(fieldStart: FieldElementBox, isKeyBoardEvent?: boolean, isReplacingFormResult?:boolean): void {
+        if (fieldStart) {
+            const formFillingMode: boolean = this.documentHelper.isFormFillProtectedMode || isReplacingFormResult;
+            let fieldEnd: ElementBox = fieldStart.fieldEnd;
+            if (formFillingMode) {
+                fieldStart = fieldStart.fieldSeparator;
+            }
+            const offset: number = fieldStart.line.getOffset(fieldStart, formFillingMode ? 1 : 0);
+            const startPosition: TextPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(fieldStart.line, offset);
+            const isBookmark: boolean = fieldStart.nextNode instanceof BookmarkElementBox;
+            if (isBookmark && !formFillingMode && (fieldStart.nextElement as BookmarkElementBox).reference) {
+                fieldEnd = (fieldStart.nextElement as BookmarkElementBox).reference;
+            }
+            const endoffset: number = fieldEnd.line.getOffset(fieldEnd, formFillingMode ? 0 : 1);
+            const endPosition: TextPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(fieldEnd.line, endoffset);
+            //selects the field range
+            this.documentHelper.selection.selectRange(startPosition, endPosition);
+            if (!isReplacingFormResult) {
+                this.triggerFormFillEvent(isKeyBoardEvent);
+            }
+        }
+    }
+    /**
+     * @private
+     * @param contentControl
+     * @returns {void}
+     */
+    public selectContentInternal(contentControl: ContentControl): void {
+        if (contentControl) {
+            let fieldEnd: ElementBox = contentControl.reference;
+            const offset: number = contentControl.line.getOffset(contentControl, 0);
+            const startPosition: TextPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(contentControl.line, offset);
+            const endoffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
+            const endPosition: TextPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(fieldEnd.line, endoffset);
+            startPosition.offset++;
+            endPosition.offset;
+            this.documentHelper.selection.selectRange(startPosition, endPosition);
+        }
+    }
+    /**
+     * @param shape
+     * @private
+     * @returns {void}
+     */
+    public selectShape(shape: ShapeElementBox): void {
+        if (shape) {
+            const offset: number = shape.line.getOffset(shape, 0);
+            const startPosition: TextPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(shape.line, offset);
+            const endoffset: number = shape.line.getOffset(shape, 1);
+            const endPosition: TextPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(shape.line, endoffset);
+            this.documentHelper.selection.selectRange(startPosition, endPosition);
+        }
+    }
+    /**
+     * Toggles the bold property of selected contents.
+     *
+     * @private
+     * @returns {void}
+     */
+    public toggleBold(): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleBold();
+        }
+    }
+    /**
+     * Toggles the italic property of selected contents.
+     *
+     * @private
+     * @returns {void}
+     */
+    public toggleItalic(): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleItalic();
+        }
+    }
+    /**
+     * Toggles the allCaps property of selected contents.
+     *
+     * @private
+     * @returns {void}
+     */
+    public toggleAllCaps(): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleAllCaps();
+        }
+    }
+    /**
+     * Toggles the underline property of selected contents.
+     *
+     * @param {Underline} underline Default value of ‘underline’ parameter is Single.
+     * @private
+     * @returns {void}
+     */
+    public toggleUnderline(underline?: Underline): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleUnderline(underline);
+        }
+    }
+    /**
+     * Toggles the strike through property of selected contents.
+     *
+     * @param {Strikethrough} strikethrough Default value of strikethrough parameter is SingleStrike.
+     * @private
+     * @returns {void}
+     */
+    public toggleStrikethrough(strikethrough?: Strikethrough): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleStrikethrough(strikethrough);
+        }
+    }
+    /**
+     * Toggles the highlight color property of selected contents.
+     *
+     * @param {HighlightColor} highlightColor Default value of ‘underline’ parameter is Yellow.
+     * @private
+     * @returns {void}
+     */
+    public toggleHighlightColor(highlightColor?: HighlightColor): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleHighlightColor(highlightColor);
+        }
+    }
+    /**
+     * Toggles the subscript formatting of selected contents.
+     *
+     * @private
+     * @returns {void}
+     */
+    public toggleSubscript(): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleSubscript();
+        }
+    }
+    /**
+     * Toggles the superscript formatting of selected contents.
+     *
+     * @private
+     * @returns {void}
+     */
+    public toggleSuperscript(): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleSuperscript();
+        }
+    }
+    /**
+     * Toggles the text alignment property of selected contents.
+     *
+     * @param {TextAlignment} textAlignment Default value of ‘textAlignment parameter is TextAlignment.Left.
+     * @private
+     * @returns {void}
+     */
+    public toggleTextAlignment(textAlignment: TextAlignment): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.toggleTextAlignment(textAlignment);
+        }
+    }
+    /**
+     * Increases the left indent of selected paragraphs to a factor of 36 points.
+     *
+     * @private
+     * @returns {void}
+     */
+    public increaseIndent(): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.increaseIndent();
+        }
+    }
+    /**
+     * Decreases the left indent of selected paragraphs to a factor of 36 points.
+     *
+     * @private
+     * @returns {void}
+     */
+    public decreaseIndent(): void {
+        if (this.owner.editorModule) {
+            this.owner.editorModule.decreaseIndent();
+        }
+    }
+
+    /**
+     * Fires the `requestNavigate` event if current selection context is in hyperlink.
+     *
+     * @returns {void}
+     */
+    public navigateHyperlink(): void {
+        const fieldBegin: FieldElementBox = this.getHyperlinkField();
+        if (fieldBegin) {
+            this.fireRequestNavigate(fieldBegin);
+        }
+    }
+    /**
+     * Navigate Hyperlink
+     *
+     * @param fieldBegin
+     * @private
+     * @returns {void}
+     */
+    public fireRequestNavigate(fieldBegin: FieldElementBox): void {
+        const code: string = this.getFieldCode(fieldBegin);
+        if (code.toLowerCase().indexOf('ref ') === 0 && !code.match('\\h')) {
+            return;
+        }
+        const hyperlink: Hyperlink = new Hyperlink(fieldBegin, this);
+        const eventArgs: RequestNavigateEventArgs = {
+            isHandled: false,
+            navigationLink: hyperlink.navigationLink,
+            linkType: hyperlink.linkType,
+            localReference: hyperlink.localReference,
+            source: this.owner
+        };
+        this.owner.trigger(requestNavigateEvent, eventArgs);
+        if (!eventArgs.isHandled) {
+            this.documentHelper.selection.navigateBookmark(hyperlink.localReference, true);
+        }
+    }
+    /**
+     * Copies the hyperlink URL if the context is within hyperlink.
+     *
+     * @returns {void}
+     */
+    public copyHyperlink(): void {
+        const hyperLinkField: FieldElementBox = this.getHyperlinkField();
+        const linkText: string = this.getLinkText(hyperLinkField, true);
+        this.copyToClipboard(linkText);
+    }
+    private isHideSelection(paragraph: ParagraphWidget): boolean {
+        const bodyWgt: BodyWidget = paragraph.bodyWidget;
+        const sectionFormat: WSectionFormat = bodyWgt.sectionFormat;
+        const pageHt: number = sectionFormat.pageHeight - sectionFormat.footerDistance;
+        const headerFooterHt: number = bodyWgt.page.boundingRectangle.height / 100 * 40;
+        return this.contextType.indexOf('Footer') >= 0
+            && (paragraph.y + paragraph.height > HelperMethods.convertPointToPixel(pageHt))
+            || this.contextType.indexOf('Header') >= 0 && paragraph.y + paragraph.height > headerFooterHt;
+    }
+    //Selection add, Highlight, remove API starts
+    /**
+     * @private
+     * @returns {void}
+     */
+    public highlightSelection(isSelectionChanged: boolean, isBookmark?: boolean): void {
+        if (this.owner.enableImageResizerMode) {
+            this.owner.imageResizerModule.hideImageResizer();
+        }
+        if (this.isEmpty) {
+            if (!this.isInShape && this.isHideSelection(this.start.paragraph)) {
+                this.hideCaret();
+                return;
+            }
+            if (this.isInShape) {
+                this.showResizerForShape();
+            }
+            this.updateCaretPosition();
+        } else {
+            if (this.isForward) {
+                this.highlightSelectedContent(this.start, this.end);
+            } else {
+                this.highlightSelectedContent(this.end, this.start);
+            }
+            if (this.documentHelper.isComposingIME) {
+                this.updateCaretPosition();
+            }
+        }
+        this.documentHelper.updateTouchMarkPosition();
+        if (isSelectionChanged) {
+            this.documentHelper.scrollToPosition(this.start, this.end, undefined, isBookmark);
+        }
+    }
+
+    private createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number, isElementBoxHighlight: boolean, contentControl?: ContentControl): void {
+        if (width < 0) {
+            width = 0;
+        }
+        const paragraph: ParagraphWidget = lineWidget.paragraph;
+        const floatingItems: ShapeBase[] = [];
+        if (paragraph.floatingElements.length > 0) {
+            for (let k: number = 0; k < paragraph.floatingElements.length; k++) {
+                const shapeElement: ShapeBase = paragraph.floatingElements[k];
+                if (shapeElement.line === lineWidget) {
+                    let startTextPos: TextPosition = this.start;
+                    let endTextPos: TextPosition = this.end;
+                    if (!this.isForward) {
+                        startTextPos = this.end;
+                        endTextPos = this.start;
+                    }
+                    const offset: number = shapeElement.line.getOffset(shapeElement, 0);
+                    if ((startTextPos.currentWidget !== lineWidget && endTextPos.currentWidget !== lineWidget) ||
+                        (startTextPos.currentWidget === lineWidget && startTextPos.offset <= offset
+                            && (endTextPos.currentWidget === lineWidget && endTextPos.offset >= offset + 1
+                                || endTextPos.currentWidget !== lineWidget)) || (startTextPos.currentWidget !== lineWidget
+                                    && endTextPos.currentWidget === lineWidget && endTextPos.offset >= offset)) {
+                        floatingItems.push(shapeElement);
+                    }
+                }
+            }
+        }
+        const page: Page = this.getPage(lineWidget.paragraph);
+        let height: number = lineWidget.height;
+        const widgets: Dictionary<IWidget, object> = this.selectedWidgets;
+        let selectionWidget: SelectionWidgetInfo = undefined;
+        let selectionWidgetCollection: SelectionWidgetInfo[] = undefined;
+        if (this.isHighlightContentControlEditRegion && !isNullOrUndefined(contentControl)) {
+            this.addContentControlEditRegionHighlight(lineWidget, left, width, contentControl);
+            return;
+        } else if (this.isHightlightEditRegionInternal) {
+            this.addEditRegionHighlight(lineWidget, left, width);
+            return;
+        } else if (this.isHighlightFormFields) {
+            this.addFormFieldHighlight(lineWidget, left, width);
+            return;
+        } else {
+            if (widgets.containsKey(lineWidget)) {
+                if (widgets.get(lineWidget) instanceof SelectionWidgetInfo) {
+                    selectionWidget = widgets.get(lineWidget) as SelectionWidgetInfo;
+                    // if the line element has already added with SelectionWidgetInfo
+                    // now its need to be added as ElementBox highlighting them remove it from dictionary and add it collection.
+                    if (isElementBoxHighlight) {
+                        widgets.remove(lineWidget);
+                        selectionWidgetCollection = [];
+                        widgets.add(lineWidget, selectionWidgetCollection);
+                    }
+                } else {
+                    selectionWidgetCollection = widgets.get(lineWidget) as SelectionWidgetInfo[];
+                }
+            } else {
+                if (isElementBoxHighlight) {
+                    selectionWidgetCollection = [];
+                    widgets.add(lineWidget, selectionWidgetCollection);
+                } else {
+                    const wrapPosition: ClipInfo[] = this.getWrapPosition(lineWidget, paragraph);
+                    if (wrapPosition.length > 0) {
+                        let selectionWidgetInfos: SelectionWidgetInfo[] = this.splitSelectionHighlightPosition(left, width, wrapPosition);
+                        if (selectionWidgetInfos.length > 0) {
+                            selectionWidgetInfos[0].floatingItems = floatingItems;
+                            widgets.add(lineWidget, selectionWidgetInfos);
+                            this.renderHighlight(page, lineWidget, selectionWidgetInfos, top, floatingItems);
+                            return
+                        } else {
+                            selectionWidget = new SelectionWidgetInfo(left, width);
+                            selectionWidget.floatingItems = floatingItems;
+                            widgets.add(lineWidget, selectionWidget);
+                        }
+                    } else {
+                        selectionWidget = new SelectionWidgetInfo(left, width);
+                        selectionWidget.floatingItems = floatingItems;
+                        widgets.add(lineWidget, selectionWidget);
+                    }
+                }
+            }
+            if (selectionWidget === undefined) {
+                selectionWidget = new SelectionWidgetInfo(left, width);
+                selectionWidget.floatingItems = floatingItems;
+                widgets.add(lineWidget, selectionWidget);
+            }
+        }
+        this.renderHighlight(page, lineWidget, [selectionWidget], top, floatingItems);
+        if (isElementBoxHighlight) {
+            selectionWidgetCollection.push(selectionWidget);
+        }
+    }
+
+    private renderHighlight(page: Page, lineWidget: LineWidget, selectionWidget: SelectionWidgetInfo[], top: number, floatingItems: ShapeBase[]): void {
+        const documentHelper: DocumentHelper = this.owner.documentHelper;
+        const pageTop: number = this.getPageTop(page);
+        const pageLeft: number = page.boundingRectangle.x;
+        const height: number = lineWidget.height;
+        if (this.viewer.containerTop <= pageTop
+            || pageTop < this.viewer.containerTop + documentHelper.selectionCanvas.height) {
+            const zoomFactor: number = documentHelper.zoomFactor;
+            this.clipSelection(page, pageTop);
+            for (let i: number = 0; i < selectionWidget.length; i++) {
+                let selectedWidget: SelectionWidgetInfo = selectionWidget[i];
+                let left: number = selectedWidget.left;
+                let width: number = selectedWidget.width;
+                if (this.documentHelper.isComposingIME) {
+                    this.renderDashLine(documentHelper.selectionContext, page, lineWidget, (pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, top, width * zoomFactor, height);
+                } else {
+                    this.documentHelper.selectionContext.fillStyle = 'gray';
+                    documentHelper.selectionContext.globalAlpha = 0.4;
+                    documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
+                }
+            }
+            if (floatingItems.length > 0) {
+                for (let z: number = 0; z < floatingItems.length; z++) {
+                    const left: number = floatingItems[z].x;
+                    const shapeTop: number = floatingItems[z].y;
+                    const shapeWidth: number = floatingItems[z].width;
+                    const shapeHeight: number = floatingItems[z].height;
+                    documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (shapeTop * zoomFactor)) - this.viewer.containerTop, shapeWidth * zoomFactor, shapeHeight * zoomFactor);
+                }
+            }
+            documentHelper.selectionContext.restore();
+        }
+    }
+
+    private getWrapPosition(lineWidget: LineWidget, paragraph: ParagraphWidget): ClipInfo[] {
+        const bodyWidget: BlockContainer = paragraph.bodyWidget as BlockContainer;
+        if (!isNullOrUndefined(bodyWidget) && bodyWidget.floatingElements.length > 0 && lineWidget.children.length > 0) {
+            let startLeft: number = this.getLeftInternal(lineWidget, lineWidget.children[0], 0);
+            let width: number = 0;
+            const wrapPos: ClipInfo[] = [];
+            let isStarted: boolean = false;
+            for (var z = 0; z < lineWidget.children.length; z++) {
+                var element = lineWidget.children[z];
+                if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                    continue;
+                }
+                if (element.padding.left > 0) {
+                    if (wrapPos.length === 1 && wrapPos[0].end === 0) {
+                        wrapPos[0].end = wrapPos[0].start - paragraph.x;
+                        wrapPos[0].start = paragraph.x;
+                        startLeft = paragraph.x;
+                    }
+                    let clipInfo: ClipInfo = {};
+                    clipInfo.start = startLeft + width;
+                    clipInfo.end = 0;
+                    if (isStarted) {
+                        clipInfo.end = startLeft + width + element.padding.left;
+                    }
+                    wrapPos.push(clipInfo);
+                }
+                width += element.padding.left + element.width;
+                if (element instanceof TextElementBox) {
+                    isStarted = true;
+                }
+            }
+            if (wrapPos.length === 1 && wrapPos[0].end === 0) {
+                wrapPos[0].end = wrapPos[0].start - paragraph.x;
+                wrapPos[0].start = paragraph.x;
+            }
+            return wrapPos;
+        }
+        return [];
+    }
+    private splitSelectionHighlightPosition(left: number, width: number, clipInfo: ClipInfo[]): SelectionWidgetInfo[] {
+        const selectedWidget: SelectionWidgetInfo[] = [];
+        for (let m: number = 0; m < clipInfo.length; m++) {
+            const info: ClipInfo = clipInfo[m];
+            if ((left < info.start && left + width < info.end) || left > (info.end)) {
+                continue;
+            }
+            if (left < info.start && left + width > info.end) {
+                selectedWidget.push(new SelectionWidgetInfo(left, info.start - left));
+                width = (left + width) - info.end;
+                left = info.end;
+            } else if (left === info.start) {
+                if (width < info.end) {
+                    width = left + width - info.end;
+                    left = info.end;
+                } else {
+                    left += info.end;
+                    width = width - info.end
+                }
+            }
+            if (m === clipInfo.length - 1) {
+                selectedWidget.push(new SelectionWidgetInfo(left, width));
+            }
+        }
+        return selectedWidget;
+    }
+
+    private addEditRegionHighlight(lineWidget: LineWidget, left: number, width: number): SelectionWidgetInfo {
+        let highlighters: SelectionWidgetInfo[] = undefined;
+        const collection: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.editRegionHighlighters;
+        if (collection.containsKey(lineWidget)) {
+            highlighters = collection.get(lineWidget);
+        } else {
+            highlighters = [];
+            collection.add(lineWidget, highlighters);
+        }
+        const editRegionHighlight: SelectionWidgetInfo = new SelectionWidgetInfo(left, width);
+        if (this.isCurrentUser) {
+            editRegionHighlight.color = this.owner.userColor !== '' ? this.owner.userColor : '#FFFF00';
+        }
+        highlighters.push(editRegionHighlight);
+        return editRegionHighlight;
+    }
+
+    private addContentControlEditRegionHighlight(lineWidget: LineWidget, left: number, width: number, contentControl?: ContentControl): void {
+        const collection: Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>> = this.contentControleditRegionHighlighters;
+        let highlighters: SelectionWidgetInfo[] = [];
+        if (!collection.containsKey(contentControl)) {
+            collection.add(contentControl, new Dictionary<LineWidget, SelectionWidgetInfo[]>());
+        }
+        let contentInfo = collection.get(contentControl);
+        contentInfo.add(lineWidget, highlighters);
+        const editRegionHighlight: SelectionWidgetInfo = new SelectionWidgetInfo(left, width);
+        highlighters.push(editRegionHighlight);
+    }
+
+    private addFormFieldHighlight(lineWidget: LineWidget, left: number, width: number): void {
+        let highlighters: SelectionWidgetInfo[] = undefined;
+        const collection: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.formFieldHighlighters;
+        if (collection.containsKey(lineWidget)) {
+            highlighters = collection.get(lineWidget);
+        } else {
+            highlighters = [];
+            collection.add(lineWidget, highlighters);
+        }
+        const formFieldHighlight: SelectionWidgetInfo = new SelectionWidgetInfo(left, width);
+        highlighters.push(formFieldHighlight);
+    }
+
+    private createHighlightBorderInsideTable(cellWidget: TableCellWidget): void {
+        const page: Page = this.getPage(cellWidget);
+        let selectionWidget: SelectionWidgetInfo = undefined;
+        const left: number = cellWidget.x - cellWidget.margin.left + cellWidget.leftBorderWidth;
+        const width: number = cellWidget.width + cellWidget.margin.left
+            + cellWidget.margin.right - cellWidget.leftBorderWidth - cellWidget.rightBorderWidth;
+        const top: number = cellWidget.y;
+        const height: number = cellWidget.height;
+        const pageTop: number = this.getPageTop(page);
+        const pageLeft: number = page.boundingRectangle.x;
+        const isVisiblePage = this.documentHelper.isPageInVisibleBound(page, pageTop);
+        const widgets: Dictionary<IWidget, object> = this.selectedWidgets;
+        if (!this.isHightlightEditRegionInternal && !this.isHighlightFormFields) {
+            if (widgets.containsKey(cellWidget) && widgets.get(cellWidget) instanceof SelectionWidgetInfo) {
+                selectionWidget = widgets.get(cellWidget) as SelectionWidgetInfo;
+                if (isVisiblePage) {
+                    this.documentHelper.selectionContext.clearRect((pageLeft + (selectionWidget.left * this.documentHelper.zoomFactor) - this.viewer.containerLeft), (pageTop + (top * this.documentHelper.zoomFactor)) - this.viewer.containerTop, selectionWidget.width * this.documentHelper.zoomFactor, height * this.documentHelper.zoomFactor);
+                }
+            } else {
+                selectionWidget = new SelectionWidgetInfo(left, width);
+                if (widgets.containsKey(cellWidget)) {
+                    widgets.remove(widgets.get(cellWidget));
+                }
+                widgets.add(cellWidget, selectionWidget);
+            }
+        }
+        if (isVisiblePage) {
+            this.documentHelper.selectionContext.fillStyle = 'gray';
+            this.documentHelper.selectionContext.globalAlpha = 0.4;
+            const zoomFactor: number = this.documentHelper.zoomFactor;
+            this.clipSelection(page, pageTop);
+
+            this.documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
+            this.documentHelper.selectionContext.restore();
+        }
+    }
+
+    private clipSelection(page: Page, pageTop: number): void {
+        const documentHelper: DocumentHelper = this.owner.documentHelper;
+        let width: number;
+        let height: number;
+        if (this.viewer instanceof WebLayoutViewer && this.documentHelper.zoomFactor < 1) {
+            width = page.boundingRectangle.width / this.documentHelper.zoomFactor;
+            height = page.boundingRectangle.height / this.documentHelper.zoomFactor;
+        } else {
+            width = page.boundingRectangle.width * this.documentHelper.zoomFactor;
+            height = page.boundingRectangle.height * this.documentHelper.zoomFactor;
+        }
+        const left: number = page.boundingRectangle.x;
+        documentHelper.selectionContext.beginPath();
+        documentHelper.selectionContext.save();
+
+        documentHelper.selectionContext.rect(left - this.viewer.containerLeft, pageTop - this.viewer.containerTop, width, height);
+        documentHelper.selectionContext.clip();
+    }
+
+    /**
+     * Add selection highlight
+     *
+     * @private
+     * @returns {void}
+     */
+    public addSelectionHighlight(canvasContext: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, widget: LineWidget, top: number, page?: Page): void {
+        if (this.selectedWidgets.containsKey(widget)) {
+            let height: number = this.documentHelper.render.getScaledValue(widget.height);
+            const widgetInfo: object = this.selectedWidgets.get(widget);
+            let widgetInfoCollection: SelectionWidgetInfo[] = undefined;
+            if (widgetInfo instanceof SelectionWidgetInfo) {
+                widgetInfoCollection = [];
+                widgetInfoCollection.push(widgetInfo as SelectionWidgetInfo);
+            } else {
+                widgetInfoCollection = widgetInfo as SelectionWidgetInfo[];
+            }
+            if (!isNullOrUndefined(widgetInfoCollection)) {
+                for (let i: number = 0; i < widgetInfoCollection.length; i++) {
+                    const selectedWidgetInfo: SelectionWidgetInfo = widgetInfoCollection[i];
+                    let width: number = this.documentHelper.render.getScaledValue(widgetInfoCollection[i].width);
+                    let left: number = this.documentHelper.render.getScaledValue(widgetInfoCollection[i].left, 1);
+                    if (isNullOrUndefined(page)) {
+                        page = this.owner.selectionModule.getPage(widget.paragraph);
+                    }
+                    this.owner.selectionModule.clipSelection(page, this.owner.selectionModule.getPageTop(page));
+                    if (this.documentHelper.isComposingIME) {
+                        this.renderDashLine(canvasContext, page, widget, left, top, width, height);
+                    } else {
+                        canvasContext.globalAlpha = 0.4;
+                        canvasContext.fillStyle = 'gray';
+                        canvasContext.fillRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
+                        if (selectedWidgetInfo.floatingItems && selectedWidgetInfo.floatingItems.length > 0) {
+                            for (let j: number = 0; j < selectedWidgetInfo.floatingItems.length; j++) {
+                                const shape: ShapeBase = selectedWidgetInfo.floatingItems[j];
+                                width = this.documentHelper.render.getScaledValue(shape.width);
+                                left = this.documentHelper.render.getScaledValue(shape.x, 1);
+                                let shapeTop: number = this.documentHelper.render.getScaledValue(shape.y, 2);
+                                canvasContext.fillRect(left, shapeTop, width, this.documentHelper.render.getScaledValue(shape.height));
+                            }
+                        }
+                    }
+                    canvasContext.restore();
+                }
+            }
+        }
+    }
+
+
+    private renderDashLine(ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, page: Page, widget: LineWidget, left: number, top: number, width: number, height: number): void {
+        const fontColor: string = this.characterFormat.fontColor;
+        const fillColor: string = fontColor ? HelperMethods.getColor(fontColor) : '#000000';
+        ctx.globalAlpha = 1;
+        // Get character format copied from selection format
+        const format: WCharacterFormat = this.owner.editorModule.copyInsertFormat(new WCharacterFormat(), false);
+        const heightInfo: TextSizeInfo = this.documentHelper.textHelper.getHeight(format);
+        const pageTop: number = this.getPageTop(page);
+        const descent: number = heightInfo.Height - heightInfo.BaselineOffset;
+        top = this.documentHelper.render.getUnderlineYPosition(widget) + top + 4 - descent;
+
+        this.documentHelper.render.renderDashLine(ctx, left, (pageTop - this.viewer.containerTop) + (top * this.documentHelper.zoomFactor), width, fillColor, true);
+    }
+    /**
+     * Add Selection highlight inside table
+     *
+     * @private
+     * @returns {void}
+     */
+    public addSelectionHighlightTable(canvasContext: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, tableCellWidget: TableCellWidget, page?: Page): void {
+        if (this.selectedWidgets.containsKey(tableCellWidget)) {
+            const selectedWidgetInfo: object = this.selectedWidgets.get(tableCellWidget);
+            let selectedWidgetInfoCollection: SelectionWidgetInfo[] = undefined;
+            if (selectedWidgetInfo instanceof SelectionWidgetInfo) {
+                selectedWidgetInfoCollection = [];
+                selectedWidgetInfoCollection.push(selectedWidgetInfo as SelectionWidgetInfo);
+            } else {
+                selectedWidgetInfoCollection = selectedWidgetInfo as SelectionWidgetInfo[];
+            }
+            if (!isNullOrUndefined(selectedWidgetInfoCollection)) {
+                for (let i: number = 0; i < selectedWidgetInfoCollection.length; i++) {
+                    const left: number = this.documentHelper.render.getScaledValue(selectedWidgetInfoCollection[i].left, 1);
+                    const top: number = this.documentHelper.render.getScaledValue(tableCellWidget.y, 2);
+                    const width: number = this.documentHelper.render.getScaledValue(selectedWidgetInfoCollection[i].width);
+                    const height: number = this.documentHelper.render.getScaledValue(tableCellWidget.height);
+                    canvasContext.fillStyle = 'gray';
+                    if (isNullOrUndefined(page)) {
+                        page = this.owner.selectionModule.getPage(tableCellWidget);
+                    }
+                    this.owner.selectionModule.clipSelection(page, this.owner.selectionModule.getPageTop(page));
+                    canvasContext.fillRect(left, top, width, height);
+                    canvasContext.restore();
+                }
+            }
+        }
+    }
+
+    private removeSelectionHighlight(widget: IWidget): void {
+        let left: number = 0;
+        let top: number = 0;
+        let width: number = 0;
+        let height: number = 0;
+        let page: Page = undefined;
+        if (widget instanceof LineWidget) {
+            const lineWidget: LineWidget = widget as LineWidget;
+            const currentParaWidget: ParagraphWidget = lineWidget.paragraph as ParagraphWidget;
+            page = !isNullOrUndefined(currentParaWidget) ?
+                this.getPage((lineWidget.paragraph)) : undefined;
+            if (isNullOrUndefined(page)) {
+                return;
+            }
+            top = this.getTop(lineWidget);
+            height = lineWidget.height;
+        } else if (widget instanceof TableCellWidget) {
+            page = !isNullOrUndefined(widget) ?
+                this.getPage(widget) : undefined;
+            if (isNullOrUndefined(page)) {
+                return;
+            }
+            top = widget.y;
+            height = widget.height;
+        }
+        if (isNullOrUndefined(page)) {
+            return;
+        }
+        const selectedWidget: object = this.selectedWidgets.get(widget);
+        let selectedWidgetCollection: SelectionWidgetInfo[] = undefined;
+        if (selectedWidget instanceof SelectionWidgetInfo) {
+            selectedWidgetCollection = [];
+            selectedWidgetCollection.push(selectedWidget as SelectionWidgetInfo);
+        } else {
+            selectedWidgetCollection = selectedWidget as SelectionWidgetInfo[];
+        }
+        if (!isNullOrUndefined(selectedWidgetCollection)) {
+            for (let i: number = 0; i < selectedWidgetCollection.length; i++) {
+                width = selectedWidgetCollection[i].width;
+                left = selectedWidgetCollection[i].left;
+
+                const pageRect: Rect = page.boundingRectangle;
+                const pageIndex: number = this.documentHelper.pages.indexOf(page);
+                const pageGap: number = (this.viewer as PageLayoutViewer).pageGap;
+                const pageTop: number = (pageRect.y - pageGap * (pageIndex + 1)) * this.documentHelper.zoomFactor + pageGap * (pageIndex + 1);
+                const pageLeft: number = pageRect.x;
+                const zoomFactor: number = this.documentHelper.zoomFactor;
+                if (this.viewer.containerTop <= pageTop
+                    || pageTop < this.viewer.containerTop + this.documentHelper.selectionCanvas.height) {
+
+                    this.documentHelper.selectionContext.clearRect((pageLeft + (left * zoomFactor) - this.viewer.containerLeft) - 0.5, (pageTop + (top * zoomFactor)) - this.viewer.containerTop - 0.5, width * zoomFactor + 0.5, height * zoomFactor + 0.5);
+                }
+            }
+        }
+    }
+    /**
+     * Selects the current word.
+     *
+     * @param excludeSpace True if exclude white space; Otherwise, false.
+     * @returns {void}
+     */
+    public selectCurrentWord(excludeSpace?: boolean): void {
+        this.isSelectCurrentWord = true;
+        const startPosition: TextPosition = this.start.clone();
+        const endPosition: TextPosition = this.end.clone();
+        this.selectCurrentWordRange(startPosition, endPosition, excludeSpace ? excludeSpace : false);
+        this.selectRange(startPosition, endPosition);
+        this.isSelectCurrentWord = false;
+    }
+    /**
+     * Selects the current paragraph.
+     *
+     * @returns {void}
+     */
+    public selectParagraph(): void {
+        if (!isNullOrUndefined(this.start)) {
+            this.start.paragraphStartInternal(this, false);
+            this.end.moveToParagraphEndInternal(this, false);
+            this.upDownSelectionLength = this.end.location.x;
+            this.fireSelectionChanged(true);
+        }
+    }
+    /**
+     * Selects the current line.
+     *
+     * @returns {void}
+     */
+    public selectLine(): void {
+        if (!isNullOrUndefined(this.start)) {
+            this.moveToLineStart();
+            this.handleShiftEndKey();
+        }
+    }
+    /**
+     * Moves the selection to the start of the document.
+     *
+     * @returns {void}
+     */
+    public moveToDocumentStart(): void {
+        this.handleControlHomeKey();
+    }
+    /**
+     * Moves the selection to the end of the document.
+     *
+     * @returns {void}
+     */
+    public moveToDocumentEnd(): void {
+        this.handleControlEndKey();
+    }
+    /**
+     * Moves the selection to the current paragraph start.
+     *
+     * @returns {void}
+     */
+    public moveToParagraphStart(): void {
+        if (this.isForward) {
+            this.start.paragraphStartInternal(this, false);
+            this.end.setPositionInternal(this.start);
+            this.upDownSelectionLength = this.end.location.x;
+        } else {
+            this.end.paragraphStartInternal(this, false);
+            this.start.setPositionInternal(this.end);
+            this.upDownSelectionLength = this.start.location.x;
+        }
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Moves the selection to the current paragraph end.
+     *
+     * @returns {void}
+     */
+    public moveToParagraphEnd(): void {
+        if (this.isForward) {
+            this.start.moveToParagraphEndInternal(this, false);
+            this.end.setPositionInternal(this.start);
+            this.upDownSelectionLength = this.end.location.x;
+        } else {
+            this.end.moveToParagraphEndInternal(this, false);
+            this.start.setPositionInternal(this.end);
+            this.upDownSelectionLength = this.start.location.x;
+        }
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Moves the selection to the next line.
+     *
+     * @returns {void}
+     */
+    public moveToNextLine(): void {
+        this.moveDown();
+    }
+    /**
+     * Moves the selection to the previous line.
+     *
+     * @returns {void}
+     */
+    public moveToPreviousLine(): void {
+        this.moveUp();
+    }
+    /**
+     * Moves the selection to the next character.
+     *
+     * @returns {void}
+     */
+    public moveToNextCharacter(): void {
+        this.handleRightKey();
+    }
+    /**
+     * Moves the selection to the previous character.
+     *
+     * @returns {void}
+     */
+    public moveToPreviousCharacter(): void {
+        this.handleLeftKey();
+    }
+
+    private selectCurrentWordRange(startPosition: TextPosition, endPosition: TextPosition, excludeSpace: boolean): void {
+        if (!isNullOrUndefined(startPosition)) {
+            if (startPosition.offset > 0) {
+                const wordStart: TextPosition = startPosition.clone();
+                let indexInInline: number = 0;
+                const inlineObj: ElementInfo = startPosition.currentWidget.getInline(startPosition.offset, indexInInline);
+                const inline: ElementBox = inlineObj.element;
+                indexInInline = inlineObj.index;
+                if (!isNullOrUndefined(inline) && inline instanceof FieldElementBox && inline.fieldType === 1) {
+
+                    if (startPosition.offset > 2 && (!isNullOrUndefined((inline as FieldElementBox).fieldSeparator) || isNullOrUndefined((inline as FieldElementBox).fieldBegin))) {
+                        wordStart.setPositionParagraph(wordStart.currentWidget, startPosition.offset - 2);
+                        wordStart.moveToWordEndInternal(0, false);
+                        if (!(wordStart.paragraph === startPosition.paragraph && wordStart.offset === startPosition.offset - 1)) {
+                            startPosition.moveToWordStartInternal(2);
+                        }
+                    } else if (startPosition.offset > 3 && isNullOrUndefined((inline as FieldElementBox).fieldSeparator)) {
+                        wordStart.setPositionParagraph(wordStart.currentWidget, startPosition.offset - 3);
+                        wordStart.moveToWordEndInternal(0, false);
+                        if (!(wordStart.paragraph === startPosition.paragraph && wordStart.offset === startPosition.offset)) {
+                            startPosition.moveToWordStartInternal(2);
+                        }
+                    }
+                } else {
+                    wordStart.setPositionParagraph(wordStart.currentWidget, startPosition.offset - 1);
+                    wordStart.moveToWordEndInternal(0, false);
+                    if (!(wordStart.paragraph === startPosition.paragraph && wordStart.offset === startPosition.offset)) {
+                        startPosition.moveToWordStartInternal(2);
+                    }
+                }
+            }
+            endPosition.moveToWordEndInternal(2, excludeSpace);
+        }
+    }
+    /**
+     * Extends the selection to the paragraph start.
+     *
+     * @returns {void}
+     */
+    public extendToParagraphStart(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.end.paragraphStartInternal(this, true);
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Extends the selection to the paragraph end.
+     *
+     * @returns {void}
+     */
+    public extendToParagraphEnd(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.end.moveToParagraphEndInternal(this, true);
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Move to next text position
+     *
+     * @private
+     * @returns {void}
+     */
+    public moveNextPosition(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        if (this.isEmpty) {
+            this.start.moveNextPosition();
+            this.end.setPositionInternal(this.start);
+        }
+        this.updateForwardSelection();
+        this.upDownSelectionLength = this.start.location.x;
+        this.fireSelectionChanged(true);
+        if (this.documentHelper.isFormFillProtectedMode) {
+            let formField: FieldElementBox = this.getCurrentFormField();
+            if (!formField) {
+                formField = this.getFormFieldInFormFillMode();
+                this.selectPrevNextFormField(true, formField);
+            }
+        }
+    }
+    /**
+     * Move to next paragraph
+     *
+     * @private
+     * @returns {void}
+     */
+    public moveToNextParagraph(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.end.moveToNextParagraphStartInternal();
+        this.start.setPositionInternal(this.end);
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Navigates to the next footnote from the current selection.
+     *
+     * @returns {void}
+     */
+    public nextFootnote(): void {
+        if (this.isinFootnote) {
+            const footNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
+            const colLength: number = this.documentHelper.footnoteCollection.length;
+            const indexCount: number = this.documentHelper.footnoteCollection.indexOf(footNoteElement);
+            let nextFootnoteElement: ElementBox = this.documentHelper.footnoteCollection[indexCount + 1];
+            if (isNullOrUndefined(nextFootnoteElement)) {
+                nextFootnoteElement = footNoteElement;
+            }
+            const start: TextPosition = this.start.clone();
+            const end: TextPosition = this.end.clone();
+            for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+                const referenceElement: FootNoteWidget = this.documentHelper.pages[i].footnoteWidget;
+                for (let j: number = 1; j < referenceElement.bodyWidgets.length; j++) {
+                    const element: FootnoteElementBox = (referenceElement.bodyWidgets[j]).footNoteReference;
+                    if (element === nextFootnoteElement) {
+                        start.setPositionParagraph((referenceElement.bodyWidgets[j].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        end.setPositionInternal(start);
+                        this.selectRange(start, end);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Navigates to the previous footnote from the current selection.
+     *
+     * @returns {void}
+     */
+    public previousFootnote(): void {
+        if (this.isinFootnote) {
+            const footNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
+            const colLength: number = this.documentHelper.footnoteCollection.length;
+            const indexCount: number = this.documentHelper.footnoteCollection.indexOf(footNoteElement);
+            let previousFootnote: FootnoteElementBox = this.documentHelper.footnoteCollection[indexCount - 1];
+            if (isNullOrUndefined(previousFootnote)) {
+                previousFootnote = footNoteElement;
+            }
+            const startPosition: TextPosition = this.start.clone();
+            const endPosition: TextPosition = this.end.clone();
+            for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+                const footnote: FootNoteWidget = this.documentHelper.pages[i].footnoteWidget;
+                for (let j: number = 1; j < footnote.bodyWidgets.length; j++) {
+                    const element: FootnoteElementBox = (footnote.bodyWidgets[j]).footNoteReference;
+                    if (element === previousFootnote) {
+                        startPosition.setPositionParagraph((footnote.bodyWidgets[j].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        endPosition.setPositionInternal(startPosition);
+                        this.selectRange(startPosition, endPosition);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Navigates to the next endnote from the current selection
+     *
+     * @returns {void}
+     */
+    public nextEndnote(): void {
+        if (this.isinEndnote) {
+            const endNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
+            const indexCount: number = this.documentHelper.endnoteCollection.indexOf(endNoteElement);
+            let nextEndnote: ElementBox = this.documentHelper.endnoteCollection[indexCount + 1];
+            if (isNullOrUndefined(nextEndnote)) {
+                nextEndnote = endNoteElement;
+            }
+            const startPosition: TextPosition = this.start.clone();
+            const endPosition: TextPosition = this.end.clone();
+            const endnoteElement: FootNoteWidget = this.documentHelper.pages[this.endPage - 1].endnoteWidget;
+            for (let j: number = 0; j < endnoteElement.childWidgets.length; j++) {
+                const element: FootnoteElementBox = (endnoteElement.bodyWidgets[j]).footNoteReference;
+                if (element === nextEndnote) {
+                    startPosition.setPositionParagraph((endnoteElement.bodyWidgets[j].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                    endPosition.setPositionInternal(startPosition);
+                    this.selectRange(startPosition, endPosition);
+                }
+            }
+        }
+    }
+    /**
+     * Navigates to the previous endnote from the current selection.
+     *
+     * @returns {void}
+     */
+    public previousEndnote(): void {
+        if (this.isinEndnote) {
+            const endNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
+            const indexCount: number = this.documentHelper.endnoteCollection.indexOf(endNoteElement);
+            let inline: FootnoteElementBox = this.documentHelper.endnoteCollection[indexCount - 1];
+            if (isNullOrUndefined(inline)) {
+                inline = endNoteElement;
+            }
+            const startPosition: TextPosition = this.start.clone();
+            const endPosition: TextPosition = this.end.clone();
+            const referenceElement: FootNoteWidget = this.documentHelper.pages[this.endPage - 1].endnoteWidget;
+            for (let j: number = 0; j < referenceElement.childWidgets.length; j++) {
+                const element: FootnoteElementBox = (referenceElement.bodyWidgets[j]).footNoteReference;
+                if (element === inline) {
+                    startPosition.setPositionParagraph((referenceElement.bodyWidgets[j].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                    endPosition.setPositionInternal(startPosition);
+                    this.selectRange(startPosition, endPosition);
+                }
+            }
+        }
+    }
+    /**
+     * Move to previous text position
+     *
+     * @private
+     * @returns {void}
+     */
+    public movePreviousPosition(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+
+        if (this.isEmpty) {
+            this.start.movePreviousPosition();
+            this.end.setPositionInternal(this.start);
+        }
+        this.updateBackwardSelection();
+        this.upDownSelectionLength = this.start.location.x;
+        this.fireSelectionChanged(true);
+        if (this.documentHelper.isFormFillProtectedMode) {
+            let formField: FieldElementBox = this.getCurrentFormField();
+            if (!formField) {
+                formField = this.getFormFieldInFormFillMode();
+                this.selectPrevNextFormField(false, formField);
+            }
+        }
+    }
+    /**
+     * Move to previous paragraph
+     *
+     * @private
+     * @returns {void}
+     */
+    public moveToPreviousParagraph(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.end.moveToPreviousParagraph(this);
+        this.start.setPositionInternal(this.end);
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Extends the selection to previous line.
+     *
+     * @returns {void}
+     */
+    public extendToPreviousLine(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.end.moveToPreviousLine(this, this.upDownSelectionLength);
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Extends the selection to line end
+     *
+     * @returns {void}
+     */
+    public extendToLineEnd(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.end.moveToLineEndInternal(this, true);
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Extends the selection to line start.
+     *
+     * @returns {void}
+     */
+    public extendToLineStart(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.end.moveToLineStartInternal(this, true);
+        this.upDownSelectionLength = this.end.location.x;
+        // To select Paragraph mark similar to MS WORD
+        if (this.start.paragraph === this.end.paragraph && this.start.offset === this.start.currentWidget.getEndOffset()
+            && this.isParagraphLastLine(this.start.currentWidget) && this.isParagraphFirstLine(this.end.currentWidget)) {
+            this.start.setPositionParagraph(this.start.currentWidget, this.start.offset + 1);
+        }
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public moveUp(): void {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            this.selectPrevNextFormField(false);
+            return;
+        }
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        if (!this.isEmpty) {
+            if (this.isForward) {
+                this.end.setPositionInternal(this.start);
+            } else {
+                this.start.setPositionInternal(this.end);
+            }
+            this.upDownSelectionLength = this.start.location.x;
+        }
+        this.upDownSelectionLength = this.start.location.x;
+        let beforeUp = this.start.currentWidget.paragraph.bodyWidget.columnIndex;
+        let isMultiColumn: boolean = this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 ? true : false;
+        let beforeIndex: number = this.start.currentWidget.paragraph.bodyWidget.index;
+        this.start.moveUp(this, this.upDownSelectionLength);
+        isMultiColumn = this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 ? true : false;
+        let afterUp = this.start.currentWidget.paragraph.bodyWidget.columnIndex;
+        if (isMultiColumn) {
+            if (beforeUp === afterUp || beforeIndex !== this.start.currentWidget.paragraph.bodyWidget.index && this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns === 1) {
+                this.end.setPositionInternal(this.start);
+            } else {
+                do {
+                    if (isNullOrUndefined(this.start.currentWidget.paragraph.previousRenderedWidget) || (beforeIndex !== this.start.currentWidget.paragraph.bodyWidget.index && this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns === 1)) {
+                        break;
+                    }
+                    if (beforeIndex !== this.start.currentWidget.paragraph.bodyWidget.index && this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 && beforeUp > this.start.currentWidget.paragraph.bodyWidget.columnIndex) {
+                        break;
+                    }
+                    this.start.moveUp(this, this.upDownSelectionLength);
+                } while (beforeUp !== this.start.currentWidget.paragraph.bodyWidget.columnIndex);
+            }
+        }  
+        this.end.setPositionInternal(this.start);
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public moveDown(): void {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            this.selectPrevNextFormField(true);
+            return;
+        }
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        if (!this.isEmpty) {
+            if (this.isForward) {
+                this.start.setPositionInternal(this.end);
+            } else {
+                this.end.setPositionInternal(this.start);
+            }
+            this.upDownSelectionLength = this.start.location.x;
+        }
+        this.upDownSelectionLength = this.start.location.x;
+        let beforeDown = this.start.currentWidget.paragraph.bodyWidget.columnIndex;
+        let beforeIndex: number = this.start.currentWidget.paragraph.bodyWidget.index;
+        let isMultiColumn: boolean = this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 ? true : false;
+        this.start.moveDown(this, this.upDownSelectionLength);
+        let afterDown = this.start.currentWidget.paragraph.bodyWidget.columnIndex;
+        if (isMultiColumn) {
+            if (beforeDown === afterDown || beforeIndex !== this.start.currentWidget.paragraph.bodyWidget.index && this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns === 1) {
+                this.end.setPositionInternal(this.start);
+            } else {
+                do {
+                    if (isNullOrUndefined(this.start.currentWidget.paragraph.nextRenderedWidget) || (beforeIndex !== this.start.currentWidget.paragraph.bodyWidget.index && this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns === 1)) {
+                        break;
+                    }
+                    if (beforeIndex !== this.start.currentWidget.paragraph.bodyWidget.index && this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 && this.documentHelper.layout.getBodyWidget(this.start.currentWidget.paragraph.bodyWidget, false) === this.start.currentWidget.paragraph.bodyWidget) {
+                        break;
+                    }
+                    this.start.moveDown(this, this.upDownSelectionLength);
+                } while (beforeDown !== this.start.currentWidget.paragraph.bodyWidget.columnIndex);
+            }
+        }
+        this.end.setPositionInternal(this.start);
+        this.fireSelectionChanged(true);
+    }
+    private updateForwardSelection(): void {
+        if (!this.isEmpty) {
+            if (this.isForward) {
+                this.start.setPositionInternal(this.end);
+            } else {
+                this.end.setPositionInternal(this.start);
+            }
+        }
+    }
+    private updateBackwardSelection(): void {
+        if (!this.isEmpty) {
+            if (this.isForward) {
+                this.end.setPositionInternal(this.start);
+            } else {
+                this.start.setPositionInternal(this.end);
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public getFirstBlockInFirstCell(table: TableWidget): BlockWidget {
+        if (table.childWidgets.length > 0) {
+            const firstrow: TableRowWidget = table.childWidgets[0] as TableRowWidget;
+            if (firstrow.childWidgets.length > 0) {
+                const firstcell: TableCellWidget = firstrow.childWidgets[0] as TableCellWidget;
+                if (firstcell.childWidgets.length === 0) {
+                    return undefined;
+                }
+                return firstcell.childWidgets[0] as BlockWidget;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+
+    public getFirstCellInRegion(row: TableRowWidget, startCell: TableCellWidget, selectionLength: number, isMovePrevious: boolean): TableCellWidget {
+        const cellStart: number = this.getCellLeft(row, startCell);
+        const cellEnd: number = cellStart + startCell.cellFormat.cellWidth;
+        let flag: boolean = true;
+        if (cellStart <= selectionLength && selectionLength < cellEnd) {
+            for (let k: number = 0; k < row.childWidgets.length; k++) {
+                const left: number = this.getCellLeft(row, row.childWidgets[k] as TableCellWidget);
+                if (HelperMethods.round(cellStart, 2) <= HelperMethods.round(left, 2) &&
+                    HelperMethods.round(left, 2) < HelperMethods.round(cellEnd, 2)) {
+                    flag = false;
+                    return row.childWidgets[k] as TableCellWidget;
+                }
+            }
+        } else {
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                const cellLeft: number = this.getCellLeft(row, row.childWidgets[j] as TableCellWidget);
+                if (cellLeft <= selectionLength && cellLeft +
+                    (row.childWidgets[j] as TableCellWidget).cellFormat.cellWidth > selectionLength) {
+                    flag = false;
+                    return row.childWidgets[j] as TableCellWidget;
+                }
+            }
+        }
+        if (flag) {
+            if (!isNullOrUndefined(row.previousRenderedWidget) && isMovePrevious) {
+                const previousWidget: TableRowWidget = (row.previousRenderedWidget as TableRowWidget);
+                return this.getFirstCellInRegion(previousWidget, startCell, selectionLength, isMovePrevious);
+            } else if (!isNullOrUndefined(row.nextRenderedWidget) && !isMovePrevious) {
+                return this.getFirstCellInRegion((row.nextRenderedWidget as TableRowWidget), startCell, selectionLength, isMovePrevious);
+            }
+        }
+        return row.childWidgets[0] as TableCellWidget;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public getFirstParagraph(tableCell: TableCellWidget): ParagraphWidget {
+        while (tableCell.previousSplitWidget) {
+            tableCell = tableCell.previousSplitWidget as TableCellWidget;
+        }
+        const firstBlock: BlockWidget = tableCell.firstChild as BlockWidget;
+        return this.documentHelper.getFirstParagraphBlock(firstBlock);
+    }
+    /**
+     * Get last block in last cell
+     *
+     * @private
+     * @returns {void}
+     */
+    //Table
+    public getLastBlockInLastCell(table: TableWidget): BlockWidget {
+        if (table.childWidgets.length > 0) {
+            const lastRow: TableRowWidget = table.childWidgets[table.childWidgets.length - 1] as TableRowWidget;
+            let lastCell: TableCellWidget = lastRow.childWidgets[lastRow.childWidgets.length - 1] as TableCellWidget;
+            while (lastCell.childWidgets.length === 0 && !isNullOrUndefined(lastCell.previousSplitWidget)) {
+                lastCell = lastCell.previousSplitWidget as TableCellWidget;
+            }
+            return lastCell.childWidgets[lastCell.childWidgets.length - 1] as BlockWidget;
+        }
+        return undefined;
+    }
+
+    /**
+     * Moves the selection to start of the current line.
+     *
+     * @returns {void} 
+     */
+    public moveToLineStart(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.updateBackwardSelection();
+        this.start.moveToLineStartInternal(this, false);
+        this.end.setPositionInternal(this.start);
+        this.upDownSelectionLength = this.start.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Moves the selection to end of the current line.
+     *
+     * @returns {void}
+     */
+    public moveToLineEnd(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.updateForwardSelection();
+        this.start.moveToLineEndInternal(this, false);
+        this.end.setPositionInternal(this.start);
+        this.upDownSelectionLength = this.start.location.x;
+        this.fireSelectionChanged(true);
+    }
+
+    /**
+     * Get Page top
+     *
+     * @private
+     * @returns {void}
+     */
+    public getPageTop(page: Page): number {
+
+        return (page.boundingRectangle.y - (this.viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1)) * this.documentHelper.zoomFactor + (this.viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1);
+    }
+    /**
+     * Move text position to cursor point
+     *
+     * @private
+     * @returns {void}
+     */
+    public moveTextPosition(cursorPoint: Point, textPosition: TextPosition, isMouseLeave?: boolean): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+
+        //Updates the text position based on the cursor position.
+        const widget: LineWidget = this.documentHelper.getLineWidgetInternal(cursorPoint, true);
+        if (!isNullOrUndefined(widget)) {
+            this.updateTextPositionWidget(widget, cursorPoint, textPosition, true);
+        }
+        this.upDownSelectionLength = textPosition.location.x;
+        const selectionStartIndex: string = this.start.getHierarchicalIndexInternal();
+        const selectionEndIndex: string = this.end.getHierarchicalIndexInternal();
+        if (selectionStartIndex !== selectionEndIndex && !isMouseLeave) {
+            // Extends selection end to field begin or field end.
+            if (TextPosition.isForwardSelection(selectionStartIndex, selectionEndIndex)) {
+                textPosition.validateForwardFieldSelection(selectionStartIndex, selectionEndIndex);
+            } else {
+
+                textPosition.validateBackwardFieldSelection(selectionStartIndex, selectionEndIndex);
+            }
+        }
+        this.fireSelectionChanged(true);
+    }
+    //Helper Method Implementation
+    //Document
+    /**
+     * Get document start position
+     *
+     * @private
+     * @returns {TextPosition}
+     */
+    public getDocumentStart(): TextPosition {
+        const textPosition: TextPosition = undefined;
+        const block: BlockWidget = this.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as BlockWidget;
+        return this.setPositionForBlock(block, true);
+    }
+    /**
+     * Get document end position
+     *
+     * @private
+     * @returns {TextPosition}
+     */
+    public getDocumentEnd(): TextPosition {
+        let textPosition: TextPosition = undefined;
+        const documentStart: TextPosition = this.owner.documentStart;
+        let lastPage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+        // Bug 893168: If the length of the page's body widgets is 1 and the length of the child widgets is 0, then it is necessary to check the previous page.
+        while (lastPage.previousPage && lastPage.bodyWidgets.length === 1 
+            && lastPage.bodyWidgets[0].childWidgets.length === 0) {
+            lastPage = lastPage.previousPage;
+        }
+        if (!isNullOrUndefined(documentStart) && lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1].childWidgets.length > 0) {
+            let block: BlockWidget = undefined;
+            const section: BodyWidget = lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1] as BodyWidget;
+            const blocks: IWidget[] = section.childWidgets;
+            const lastBlkItem: number = blocks.length - 1;
+            const lastBlock: BlockWidget = blocks[lastBlkItem] as BlockWidget;
+            if (lastBlock instanceof BlockWidget) {
+                block = lastBlock;
+            }
+            textPosition = this.setPositionForBlock(block, false);
+        }
+        return textPosition;
+    }
+
+    //Keyboard shortcut internal API
+    /**
+     * @private
+     * @returns {void}
+     */
+    public handleControlEndKey(): void {
+        let documentEnd: TextPosition = undefined;
+        if (!isNullOrUndefined(this.owner.documentEnd)) {
+            documentEnd = this.owner.documentEnd;
+        }
+        if (!isNullOrUndefined(documentEnd)) {
+            this.owner.selectionModule.selectContent(documentEnd, true);
+        }
+        if(this.owner.enableAutoFocus){
+            this.checkForCursorVisibility();
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public handleControlHomeKey(): void {
+        let documentStart: TextPosition = undefined;
+        if (!isNullOrUndefined(this.owner.documentStart)) {
+            documentStart = this.owner.documentStart;
+        }
+        if (!isNullOrUndefined(documentStart)) {
+            this.owner.selectionModule.selectContent(documentStart, true);
+        }
+        if(this.owner.enableAutoFocus){
+            this.checkForCursorVisibility();
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public handleControlLeftKey(): void {
+        this.extendToWordStartInternal(true);
+        this.checkForCursorVisibility();
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public handleControlRightKey(): void {
+        this.extendToWordEndInternal(true);
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles control down key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleControlDownKey(): void {
+        this.moveToNextParagraph();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles control up key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleControlUpKey(): void {
+        this.moveToPreviousParagraph();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public handleShiftLeftKey(): void {
+        this.extendBackward();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles shift up key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleShiftUpKey(): void {
+        this.extendToPreviousLine();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles shift right key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleShiftRightKey(): void {
+        this.extendForward();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles shift down key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleShiftDownKey(): void {
+        this.extendToNextLine();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public handleControlShiftLeftKey(): void {
+        const isForward: boolean = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
+        if (isForward) {
+            this.extendToWordEndInternal(false);
+        } else {
+            this.extendToWordStartInternal(false);
+        }
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles control shift up key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleControlShiftUpKey(): void {
+        this.extendToParagraphStart();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles control shift right key
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleControlShiftRightKey(): void {
+        const isForward: boolean = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
+        if (isForward) {
+            this.extendToWordStartInternal(false);
+        } else {
+            this.extendToWordEndInternal(false);
+        }
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles control shift down key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleControlShiftDownKey(): void {
+        this.extendToParagraphEnd();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles left key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleLeftKey(): void {
+        if (this.end.isCurrentParaBidi) {
+            this.moveNextPosition();
+        } else {
+            this.movePreviousPosition();
+        }
+        if(this.owner.enableAutoFocus)
+        {
+            this.checkForCursorVisibility();
+        }
+        
+    }
+    /**
+     * Handles up key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleUpKey(): void {
+        this.isMoveDownOrMoveUp = true;
+        this.moveUp();
+        this.isMoveDownOrMoveUp = false;
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles right key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleRightKey(): void {
+        if (this.end.isCurrentParaBidi) {
+            this.movePreviousPosition();
+        } else {
+            this.moveNextPosition();
+        }
+        if(this.owner.enableAutoFocus)
+        {
+            this.checkForCursorVisibility();
+        }
+    }
+    /**
+     * Handles end key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleEndKey(): void {
+        this.moveToLineEnd();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles home key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleHomeKey(): void {
+        this.moveToLineStart();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles down key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleDownKey(): void {
+        this.isMoveDownOrMoveUp = true;
+        this.moveDown();
+        this.isMoveDownOrMoveUp = false;
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles shift end key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleShiftEndKey(): void {
+        this.extendToLineEnd();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles shift home key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleShiftHomeKey(): void {
+        this.extendToLineStart();
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles control shift end key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleControlShiftEndKey(): void {
+        let documentEnd: TextPosition = undefined;
+        if (!isNullOrUndefined(this.owner.documentEnd)) {
+            documentEnd = this.owner.documentEnd;
+        }
+        if (!isNullOrUndefined(documentEnd)) {
+            this.end.setPosition(documentEnd.currentWidget, false);
+            this.fireSelectionChanged(true);
+        }
+        this.checkForCursorVisibility();
+    }
+    /**
+     * Handles control shift home key.
+     *
+     * @private
+     * @returns {void}
+     */
+    public handleControlShiftHomeKey(): void {
+        let documentStart: TextPosition = undefined;
+        if (!isNullOrUndefined(this.owner.documentStart)) {
+            documentStart = this.owner.documentStart;
+        }
+        if (!isNullOrUndefined(documentStart)) {
+            this.end.setPositionInternal(documentStart);
+            this.fireSelectionChanged(true);
+        }
+        this.checkForCursorVisibility();
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public handleSpaceBarKey(): void {
+        if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly'
+            && this.getFormFieldType() === 'CheckBox') {
+            this.owner.editorModule.toggleCheckBoxFormField(this.getCurrentFormField());
+        }
+    }
+    /**
+     * Handles tab key.
+     *
+     * @param isNavigateInCell
+     * @param isShiftTab
+     * @private
+     * @returns {void}
+     */
+    public handleTabKey(isNavigateInCell: boolean, isShiftTab: boolean): void {
+        let start: TextPosition = this.start;
+        if (!this.isForward) {
+            start = this.end;
+        }
+        let isCursorAtParaStart : boolean = false;
+        let isCursorAtLineStart : boolean = false;
+        if (isNullOrUndefined(start)) {
+            return;
+        }
+        if ((start.offset === 0 || (!this.isForward && this.end.offset === 0)) && start.paragraph.paragraphFormat.listFormat.listId == -1) {
+            if (start.currentWidget.isFirstLine()) {
+                isCursorAtParaStart = true;
+            }
+            isCursorAtLineStart = true;
+        }
+        if (this.start.paragraph.isInsideTable && this.end.paragraph.isInsideTable && (isNavigateInCell || isShiftTab)) {
+            //Perform tab navigation
+            if (!this.owner.documentHelper.isDocumentProtected && !(this.documentHelper.protectionType === 'FormFieldsOnly')) {
+                if (isShiftTab) {
+                    this.selectPreviousCell();
+                } else {
+                    this.selectNextCell();
+                }
+            }
+        } else if ((isNavigateInCell || isShiftTab) && !isNullOrUndefined(start) && start.offset === this.getStartOffset(start.paragraph)
+            && !isNullOrUndefined(start.paragraph.paragraphFormat) && !isNullOrUndefined(start.paragraph.paragraphFormat.listFormat)
+            && start.paragraph.paragraphFormat.listFormat.listId !== -1 && !this.owner.isReadOnlyMode) {
+            let selection: Selection = this.documentHelper.selection;
+            let currentPara: ParagraphWidget = start.paragraph;
+            let isFirstParaForList: boolean = false;
+            if (!selection.isForward) {
+                currentPara = selection.end.paragraph;
+            }
+            isFirstParaForList = this.owner.editorModule.isFirstParaForList(selection, currentPara);
+            if (isFirstParaForList) {
+                if (isShiftTab) {
+                    this.owner.editorModule.updateListLevelIndent(-this.documentHelper.defaultTabWidth, currentPara);
+                }
+                else {
+                    this.owner.editorModule.updateListLevelIndent(this.documentHelper.defaultTabWidth, currentPara);
+                }
+            }
+            else {
+                this.owner.editorModule.updateListLevel(isShiftTab ? false : true);
+            }
+        } else if (!this.owner.isReadOnlyMode && !this.documentHelper.isFormFillProtectedMode) {
+            if (isCursorAtParaStart && start.paragraph.paragraphFormat.firstLineIndent < this.documentHelper.defaultTabWidth) {
+                this.documentHelper.owner.editorModule.onApplyParagraphFormat('firstLineIndent', this.documentHelper.defaultTabWidth, true, false);
+            }
+            else if (isCursorAtLineStart) {
+                if (isShiftTab) {
+                    this.owner.editorModule.decreaseIndent();
+                }
+                else {
+                    if (HelperMethods.convertPointToPixel(start.paragraph.paragraphFormat.firstLineIndent + start.paragraph.paragraphFormat.leftIndent) < this.documentHelper.viewer.clientArea.width) {
+                        this.owner.editorModule.increaseIndent();
+                    }
+                }
+            }
+            else {
+                this.owner.editorModule.handleTextInput('\t');
+            }
+        }
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.formFields.length > 0) {
+            this.selectPrevNextFormField(!isShiftTab);
+        }
+        this.checkForCursorVisibility();
+    }
+    /**
+    * @private
+    * @returns {void}
+    */
+    public handlePageUpPageDownKey(isPageDown: boolean, shiftKey: boolean): void {
+        let offsetX: number = this.end.location.x;
+        let offsetY: number = this.end.location.y;
+        let page: Page = this.end.paragraph.bodyWidget.page;
+        let pageTop: number = this.getPageTop(page);
+        let previousScrollTop: number = this.documentHelper.viewerContainer.scrollTop;
+        offsetY = (offsetY * this.documentHelper.zoomFactor) + (pageTop - previousScrollTop);
+        offsetX = (offsetX * this.documentHelper.zoomFactor) + page.boundingRectangle.x;
+        if (isPageDown) {
+            this.documentHelper.viewerContainer.scrollTop += this.documentHelper.visibleBounds.height;
+        }
+        else {
+            this.documentHelper.viewerContainer.scrollTop -= this.documentHelper.visibleBounds.height;
+        }
+        let isSameScrollTop: boolean = false;
+        if (previousScrollTop === this.documentHelper.viewerContainer.scrollTop) {
+            isSameScrollTop = true;
+        }
+        if (shiftKey) {
+            this.documentHelper.skipScrollToPosition = true;
+        }
+        setTimeout(() => {
+            if (isSameScrollTop) {
+                if (!shiftKey) {
+                    if (isPageDown)
+                        this.moveToDocumentEnd();
+                    else
+                        this.moveToDocumentStart();
+                }
+                else {
+                    let position: TextPosition;
+                    if (isPageDown) {
+                        position = this.getDocumentEnd();
+                    }
+                    else {
+                        position = this.getDocumentStart();
+                    }
+                    this.end.setPositionForLineWidget(position.currentWidget, position.offset);
+                    this.fireSelectionChanged(true);
+                }
+            } else {
+                this.select({ x: offsetX, y: offsetY, extend: shiftKey });
+            }
+        }, 0);
+    }
+    // returns current field in FormFill mode
+    private getFormFieldInFormFillMode(): FieldElementBox {
+        const currentStart: TextPosition = this.owner.selectionModule.start;
+        let formField: FieldElementBox;
+        for (let i: number = (this.documentHelper.formFields.length - 1); i >= 0; i--) {
+
+            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                continue;
+            }
+            const paraIndex: TextPosition = this.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            if (paraIndex.isExistBefore(currentStart)) {
+                formField = this.documentHelper.formFields[i];
+                break;
+            } else if (i === 0) {
+                formField = this.documentHelper.formFields[(this.documentHelper.formFields.length - 1)];
+            }
+        }
+        return formField;
+    }
+    // Navigates & Selects next form field
+    private selectPrevNextFormField(forward: boolean, formField?: FieldElementBox): void {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            if (!formField) {
+                formField = this.getCurrentFormField();
+            }
+            const index: number = this.documentHelper.formFields.indexOf(formField);
+            if (forward) {
+                for (let i: number = index; ; i++) {
+                    if (i === (this.documentHelper.formFields.length - 1)) {
+                        i = 0;
+                    } else {
+                        i = i + 1;
+                    }
+                    if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                        i = i - 1;
+                        continue;
+                    }
+                    this.selectFieldInternal(this.documentHelper.formFields[i], true);
+                    break;
+                }
+            } else {
+                for (let i: number = index; ; i--) {
+                    if (i === 0) {
+                        i = (this.documentHelper.formFields.length - 1);
+                    } else {
+                        i = i - 1;
+                    }
+                    if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                        i = i + 1;
+                        continue;
+                    }
+                    this.selectFieldInternal(this.documentHelper.formFields[i], true);
+                    break;
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public navigateToNextFormField(): void {
+        const currentStart: TextPosition = this.owner.selectionModule.end;
+        let currentFormField: FieldElementBox;
+        for (let i: number = 0; i < this.documentHelper.formFields.length; i++) {
+            currentFormField = this.documentHelper.formFields[i];
+            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                continue;
+            }
+            const paraIndex: TextPosition = this.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            if (paraIndex.isExistAfter(currentStart)) {
+
+                if (currentFormField.formFieldData instanceof TextFormField && currentFormField.formFieldData.type === 'Text' &&
+                    this.documentHelper.isInlineFormFillProtectedMode) {
+                    this.selectTextElementStartOfField(this.documentHelper.formFields[i]);
+                } else {
+                    this.selectFieldInternal(this.documentHelper.formFields[i]);
+                }
+                break;
+            } else if (i === (this.documentHelper.formFields.length - 1)) {
+                currentFormField = this.documentHelper.formFields[0];
+
+                if (currentFormField.formFieldData instanceof TextFormField && currentFormField.formFieldData.type === 'Text' &&
+                    this.documentHelper.isInlineFormFillProtectedMode) {
+                    this.selectTextElementStartOfField(this.documentHelper.formFields[0]);
+                } else {
+                    this.selectFieldInternal(this.documentHelper.formFields[0]);
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public selectTextElementStartOfField(formField: FieldElementBox): void {
+        const fieldSeparator: FieldElementBox = formField.fieldSeparator;
+        let element: ElementBox = fieldSeparator.nextElement;
+        if (element) {
+            while (!(element instanceof TextElementBox)) {
+                element = element.nextElement;
+            }
+            const offset: number = formField.line.getOffset(element, 0);
+            const point: Point = this.getPhysicalPositionInternal(formField.line, offset, false);
+            this.selectInternal(formField.line, element, 0, point);
+        }
+    }
+    private triggerFormFillEvent(isKeyBoardNavigation?: boolean): void {
+        let previousField: FieldElementBox = this.previousSelectedFormField;
+        const currentField: FieldElementBox = this.currentFormField;
+        let previousFieldData: FormFieldFillEventArgs;
+        let currentFieldData: FormFieldFillEventArgs;
+        if (currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
+            && previousField.formFieldData.type === 'Text') {
+            if ((previousField.formFieldData as TextFormField).format !== '' && !this.isFormatUpdated) {
+                // Need to handle update form field format
+                this.owner.editorModule.applyFormTextFormat(previousField);
+                if(!isNullOrUndefined(this.previousSelectedFormField)){
+                    previousField = this.previousSelectedFormField;
+                }                
+            }
+
+            previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(previousField) };
+            this.owner.trigger(afterFormFieldFillEvent, previousFieldData);
+        }
+        if (currentField !== previousField && currentField && ((currentField.formFieldData instanceof TextFormField
+            && currentField.formFieldData.type === 'Text' && isKeyBoardNavigation == undefined) || (((currentField.formFieldData instanceof TextFormField && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') || (currentField.formFieldData instanceof CheckBoxFormField)) && isKeyBoardNavigation))) {
+
+            currentFieldData = { 'fieldName': currentField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(currentField) };
+            this.owner.trigger(beforeFormFieldFillEvent, currentFieldData);
+        }
+    }
+
+    private selectPreviousCell(): void {
+        const tableCell: TableCellWidget = this.start.paragraph.associatedCell;
+        const tableRow: TableRowWidget = tableCell.ownerRow;
+        const tableAdv: TableWidget = tableRow.ownerTable;
+        if (isNullOrUndefined(tableCell.previousWidget)) {
+            if (!isNullOrUndefined(tableRow.previousRenderedWidget)) {
+                //Move text selection or cursor to previous row's last cell
+                let prevRow: TableRowWidget = undefined;
+                if (tableRow.previousRenderedWidget instanceof TableRowWidget) {
+                    prevRow = tableRow.previousRenderedWidget as TableRowWidget;
+                }
+                this.selectTableCellInternal(prevRow.childWidgets[prevRow.childWidgets.length - 1] as TableCellWidget, true);
+            }
+        } else {
+            //Move text selection or cursor to next cell in current row
+            let prevCell: TableCellWidget = undefined;
+            if (tableCell.previousWidget instanceof TableCellWidget) {
+                prevCell = tableCell.previousWidget as TableCellWidget;
+            }
+            this.selectTableCellInternal(prevCell, true);
+        }
+    }
+    private selectNextCell(): void {
+        const tableCell: TableCellWidget = this.start.paragraph.associatedCell;
+        const tableRow: TableRowWidget = tableCell.ownerRow;
+        const tableAdv: TableWidget = tableRow.ownerTable;
+        if (isNullOrUndefined(tableCell.nextWidget)) {
+            if (isNullOrUndefined(tableRow.nextRenderedWidget) && !this.owner.isReadOnlyMode) {
+                //Insert new row below
+                this.owner.editorModule.insertRow(false);
+            } else {
+                //Move text selection or cursor to next row's first cell
+                let nextRow: TableRowWidget = undefined;
+                if (tableRow.nextRenderedWidget instanceof TableRowWidget) {
+                    nextRow = tableRow.nextRenderedWidget as TableRowWidget;
+                }
+                this.selectTableCellInternal(nextRow.childWidgets[0] as TableCellWidget, true);
+            }
+            // }
+        } else {
+            //Move text selection or cursor to next cell in current row
+            let nextCell: TableCellWidget = undefined;
+            if (tableCell.nextRenderedWidget instanceof TableCellWidget) {
+                nextCell = tableCell.nextRenderedWidget as TableCellWidget;
+            }
+            this.selectTableCellInternal(nextCell, true);
+        }
+    }
+    /**
+     * Select given table cell
+     *
+     * @private
+     * @returns {void}
+     */
+    public selectTableCellInternal(tableCell: TableCellWidget, clearMultiSelection: boolean): void {
+        const firstParagraph: ParagraphWidget = this.getFirstParagraph(tableCell);
+        const lastParagraph: ParagraphWidget = this.getLastParagraph(tableCell);
+        if (firstParagraph === lastParagraph && lastParagraph.isEmpty()) {
+            this.selectParagraphInternal(lastParagraph, true);
+        } else {
+            const firstLineWidget: LineWidget = lastParagraph.childWidgets[0] as LineWidget;
+            this.start.setPosition(firstParagraph.childWidgets[0] as LineWidget, true);
+            this.end.setPositionParagraph(firstLineWidget, firstLineWidget.getEndOffset());
+            this.fireSelectionChanged(true);
+        }
+    }
+
+    /**
+     * Select while table
+     *
+     * @private
+     * @returns {void}
+     */
+    private selectTableInternal(): void {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        if (!isNullOrUndefined(start) && !isNullOrUndefined(end) && !isNullOrUndefined(this.getTable(start, end))) {
+            const containerCell: TableCellWidget = this.getContainerCellOf(start.paragraph.associatedCell, end.paragraph.associatedCell);
+            const table: TableWidget = containerCell.ownerTable;
+            const firstPara: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(table);
+            const lastPara: ParagraphWidget = this.documentHelper.getLastParagraphBlock(table);
+            const offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
+            this.start.setPosition(firstPara.childWidgets[0] as LineWidget, true);
+            this.end.setPositionParagraph((lastPara.lastChild as LineWidget), offset + 1);
+        }
+        this.selectPosition(this.start, this.end);
+    }
+    /**
+     * @private
+     */
+    public getTableRevision(): number {
+        let start: TextPosition = this.start.clone();
+        let end: TextPosition = this.end.clone();
+        if (!this.isForward) {
+            start = this.end.clone();
+            end = this.start.clone();
+        }
+        if (!isNullOrUndefined(start) && !isNullOrUndefined(end) && !isNullOrUndefined(this.getTable(start, end))) {
+            const containerCell: TableCellWidget = this.getContainerCellOf(start.paragraph.associatedCell, end.paragraph.associatedCell);
+            const table: TableWidget = containerCell.ownerTable;
+            const firstPara: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(table);
+            const lastPara: ParagraphWidget = this.documentHelper.getLastParagraphBlock(table);
+            const offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
+            start.setPosition(firstPara.childWidgets[0] as LineWidget, true);
+            end.setPositionParagraph((lastPara.lastChild as LineWidget), offset + 1);
+        }
+        let startIndex: number = this.getAbsolutePositionFromRelativePosition(start);
+        let endIndex: number = this.getAbsolutePositionFromRelativePosition(end);
+        return Math.abs(endIndex - startIndex);
+        // this.selectPosition(this.start, this.end);
+    }
+    /**
+     * Select single column
+     *
+     * @private
+     * @returns {void}
+     */
+    public selectColumnInternal(): void {
+        let startTextPos: TextPosition = this.start;
+        let endTextPos: TextPosition = this.end;
+        if (!this.isForward) {
+            startTextPos = this.end;
+            endTextPos = this.start;
+        }
+
+        if (!isNullOrUndefined(startTextPos) && !isNullOrUndefined(endTextPos) && !isNullOrUndefined(this.getTable(startTextPos, endTextPos))) {
+            const containerCell: TableCellWidget = this.getContainerCellOf(startTextPos.paragraph.associatedCell, endTextPos.paragraph.associatedCell);
+            if (containerCell.ownerTable.contains(endTextPos.paragraph.associatedCell)) {
+                const startCell: TableCellWidget = this.getSelectedCell(startTextPos.paragraph.associatedCell, containerCell);
+                const endCell: TableCellWidget = this.getSelectedCell(endTextPos.paragraph.associatedCell, containerCell);
+                if (this.containsCell(containerCell, endTextPos.paragraph.associatedCell)) {
+                    const row: TableRowWidget = startCell.ownerRow;
+                    const columnCells: TableCellWidget[] = containerCell.ownerTable.getColumnCellsForSelection(containerCell, containerCell);
+                    if (columnCells.length > 0) {
+                        const firstPara: ParagraphWidget = this.getFirstParagraph(columnCells[0] as TableCellWidget);
+                        const lastPara: ParagraphWidget = this.getLastParagraph(columnCells[columnCells.length - 1] as TableCellWidget);
+                        this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                        const lastLine: LineWidget = (lastPara.lastChild as LineWidget);
+                        this.end.setPositionParagraph(lastLine, lastLine.getEndOffset() + 1);
+                    }
+                } else {
+                    const startCellColumnCells: TableCellWidget[] = containerCell.ownerTable.getColumnCellsForSelection(startCell, startCell);
+                    const endCellColumnCells: TableCellWidget[] = containerCell.ownerTable.getColumnCellsForSelection(endCell, endCell);
+                    if (startCellColumnCells.length > 0 && endCellColumnCells.length > 0) {
+                        const firstPara: ParagraphWidget = this.getFirstParagraph(startCellColumnCells[0] as TableCellWidget);
+
+                        const lastPara: ParagraphWidget = this.getLastParagraph(endCellColumnCells[endCellColumnCells.length - 1] as TableCellWidget);
+                        this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                        const lastLine: LineWidget = (lastPara.lastChild as LineWidget);
+                        this.end.setPositionParagraph(lastLine, lastLine.getEndOffset() + 1);
+                    }
+                }
+            }
+        }
+        this.selectPosition(this.start, this.end);
+    }
+    /**
+     * Select single row
+     *
+     * @private
+     * @returns {void}
+     */
+    public selectTableRow(): void {
+        let startPos: TextPosition = this.start;
+        let endPos: TextPosition = this.end;
+        if (!this.isForward) {
+            startPos = this.end;
+            endPos = this.start;
+        }
+        if (!isNullOrUndefined(startPos) && !isNullOrUndefined(endPos) && !isNullOrUndefined(this.getTable(startPos, endPos))) {
+            let containerCell: TableCellWidget;
+            containerCell = this.getContainerCellOf(startPos.paragraph.associatedCell, endPos.paragraph.associatedCell);
+            if (containerCell.ownerTable.contains(endPos.paragraph.associatedCell)) {
+                const startCell: TableCellWidget = this.getSelectedCell(startPos.paragraph.associatedCell, containerCell);
+                const endCell: TableCellWidget = this.getSelectedCell(endPos.paragraph.associatedCell, containerCell);
+                if (this.containsCell(containerCell, endPos.paragraph.associatedCell)) {
+                    const row: TableRowWidget = startCell.ownerRow;
+                    const firstPara: ParagraphWidget = this.getFirstParagraph(row.childWidgets[0] as TableCellWidget);
+                    const lastPara: ParagraphWidget = this.getLastParagraph(row.childWidgets[row.childWidgets.length - 1] as TableCellWidget);
+                    this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                    this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                } else {
+                    const firstPara: ParagraphWidget = this.getFirstParagraph(startCell.ownerRow.childWidgets[0] as TableCellWidget);
+                    let lastPara: ParagraphWidget;
+
+                    lastPara = this.getLastParagraph(endCell.ownerRow.childWidgets[endCell.ownerRow.childWidgets.length - 1] as TableCellWidget);
+                    this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                    this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                }
+            }
+        }
+        this.selectPosition(this.start, this.end);
+    }
+    /**
+     * Select single cell
+     *
+     * @private
+     * @returns {void}
+     */
+    public selectTableCell(): void {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        if (isNullOrUndefined(this.getTable(start, end))) {
+            return;
+        }
+        if (this.isEmpty) {
+            if (start.paragraph.isInsideTable && !isNullOrUndefined(start.paragraph.associatedCell)) {
+                const firstPara: ParagraphWidget = this.getFirstParagraph(start.paragraph.associatedCell);
+                const lastPara: ParagraphWidget = this.getLastParagraph(end.paragraph.associatedCell);
+                if (firstPara === lastPara) {
+                    this.start.setPosition(lastPara.firstChild as LineWidget, true);
+                    this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                } else {
+                    this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                    this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                }
+            }
+        } else {
+            const containerCell: TableCellWidget = this.getContainerCell(start.paragraph.associatedCell);
+
+            if (this.containsCell(containerCell, start.paragraph.associatedCell) && this.containsCell(containerCell, end.paragraph.associatedCell)) {
+                const firstPara: ParagraphWidget = this.getFirstParagraph(containerCell);
+                const lastPara: ParagraphWidget = this.getLastParagraph(containerCell);
+                if (!isNullOrUndefined(firstPara) && !isNullOrUndefined(lastPara)) {
+                    this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                    this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                }
+            }
+        }
+        this.selectPosition(this.start, this.end);
+    }
+    /**
+     * Selects the entire document.
+     *
+     * @returns {void}
+     */
+    public selectAll(): void {
+        let documentStart: TextPosition;
+        let documentEnd: TextPosition;
+        this.documentHelper.skipScrollToPosition = true;
+        const container: Widget = this.getContainerWidget(this.start.paragraph);
+        if (this.owner.enableHeaderAndFooter) {
+            const headerFooter: HeaderFooterWidget = this.getContainerWidget(this.start.paragraph) as HeaderFooterWidget;
+            documentStart = this.setPositionForBlock(headerFooter.firstChild as BlockWidget, true);
+            documentEnd = this.setPositionForBlock(headerFooter.lastChild as BlockWidget, false);
+        } else if (this.isInShape) {
+            const textFrame: TextFrame = this.getCurrentTextFrame();
+            documentStart = this.setPositionForBlock(textFrame.firstChild as BlockWidget, true);
+            documentEnd = this.setPositionForBlock(textFrame.lastChild as BlockWidget, false);
+        } else if (container instanceof FootNoteWidget && container.footNoteType === 'Footnote') {
+            let i: number;
+            let j: number;
+            const pageLength: number = this.documentHelper.pages.length;
+            for (i = 0; i <= pageLength - 1; i++) {
+                if (isNullOrUndefined(this.documentHelper.pages[i].footnoteWidget)) {
+                    continue;
+                } else {
+                    documentStart = this.setPositionForBlock((this.documentHelper.pages[i].footnoteWidget.bodyWidgets[0].firstChild as BlockWidget), true);
+                    break;
+                }
+            }
+            for (j = pageLength - 1; j >= 0; j--) {
+                if (isNullOrUndefined(this.documentHelper.pages[j].footnoteWidget)) {
+                    continue;
+                } else {
+                    const child: number = this.documentHelper.pages[j].footnoteWidget.bodyWidgets.length;
+                    const lastChild: number = this.documentHelper.pages[j].footnoteWidget.bodyWidgets[child - 1].childWidgets.length
+
+                    documentEnd = this.setPositionForBlock((this.documentHelper.pages[j].footnoteWidget.bodyWidgets[child - 1].childWidgets[lastChild - 1] as BlockWidget), false);
+                    break;
+                }
+            }
+        } else if (container instanceof FootNoteWidget && container.footNoteType === 'Endnote') {
+            const endNotes: FootNoteWidget = this.getContainerWidget(this.start.paragraph) as FootNoteWidget;
+            documentStart = this.setPositionForBlock((endNotes.bodyWidgets[0] as BodyWidget).firstChild as BlockWidget, true);
+            documentEnd = this.setPositionForBlock((endNotes.bodyWidgets[endNotes.bodyWidgets.length - 1] as BodyWidget).firstChild as BlockWidget, false);
+        } else {
+            documentStart = this.owner.documentStart;
+            documentEnd = this.owner.documentEnd;
+        }
+        //Selects the entire document.
+        if (!isNullOrUndefined(documentStart)) {
+            this.start.setPositionInternal(documentStart);
+            this.end.setPositionParagraph(documentEnd.currentWidget, documentEnd.offset + 1);
+            this.upDownSelectionLength = this.end.location.x;
+            this.fireSelectionChanged(true);
+        }
+    }
+    /**
+     * Extends the selection backward.
+     *
+     * @returns {void}
+     */
+    public extendBackward(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        const isForward: boolean = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
+        if (isForward) {
+            this.end.moveForward();
+        } else {
+            this.end.moveBackward();
+        }
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Extends the selection forward.
+     *
+     * @returns {void}
+     */
+    public extendForward(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        const isForward: boolean = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
+        if (isForward) {
+            this.end.moveBackward();
+        } else {
+            this.end.moveForward();
+        }
+
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Extend selection to word start and end
+     *
+     * @private
+     * @returns {void}
+     */
+    public extendToWordStartEnd(): boolean {
+        if ((this.start.paragraph.isInsideTable || this.end.paragraph.isInsideTable)
+            && (this.start.paragraph.associatedCell !== this.end.paragraph.associatedCell
+                || this.isCellSelected(this.start.paragraph.associatedCell, this.start, this.end))) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Extends the selection to word start.
+     *
+     * @returns {void}
+     */
+    public extendToWordStart(): void {
+        this.extendToWordStartInternal(false);
+    }
+    /**
+     * Extends the selection to word end.
+     *
+     * @returns {void}
+     */
+    public extendToWordEnd(): void {
+        this.extendToWordEndInternal(false);
+    }
+    /**
+     * Extends selection to word start
+     *
+     * @private
+     * @returns {void}
+     */
+    public extendToWordStartInternal(isNavigation: boolean): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        const isCellSelected: boolean = this.extendToWordStartEnd();
+        if (isCellSelected) {
+            this.end.moveToPreviousParagraphInTable(this);
+        } else {
+            if (isNavigation && this.end.isCurrentParaBidi) {
+                this.end.moveToWordEndInternal(isNavigation ? 0 : 1, false);
+            } else {
+                this.end.moveToWordStartInternal(isNavigation ? 0 : 1);
+            }
+        }
+        if (isNavigation) {
+            this.start.setPositionInternal(this.end);
+        }
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Extends the selection to word end.
+     *
+     * @returns {void}
+     */
+    public extendToWordEndInternal(isNavigation: boolean): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        const isCellSelect: boolean = this.extendToWordStartEnd();
+        if (isCellSelect) {
+            this.end.moveToNextParagraphInTable();
+        } else {
+            if (isNavigation && this.end.isCurrentParaBidi) {
+                this.end.moveToWordStartInternal(isNavigation ? 0 : 1);
+            } else {
+                this.end.moveToWordEndInternal(isNavigation ? 0 : 1, false);
+            }
+        }
+        if (isNavigation) {
+            this.start.setPositionInternal(this.end);
+        }
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * Extends the selection to next line.
+     *
+     * @returns {void}
+     */
+    public extendToNextLine(): void {
+        if (isNullOrUndefined(this.start)) {
+            return;
+        }
+        this.end.moveToNextLine(this.upDownSelectionLength);
+        this.fireSelectionChanged(true);
+    }
+    //Selection Text get API
+
+    //Selection add, Highlight, remove API enda
+    private getTextPosition(hierarchicalIndex: string): TextPosition {
+        const textPosition: TextPosition = new TextPosition(this.owner);
+        textPosition.setPositionForCurrentIndex(hierarchicalIndex);
+        return textPosition;
+    }
+    /**
+     * Get Selected text
+     *
+     * @private
+     * @returns {void}
+     */
+    public getText(includeObject: boolean): string {
+        if (isNullOrUndefined(this.start) || isNullOrUndefined(this.end)
+            || isNullOrUndefined(this.start.paragraph) || isNullOrUndefined(this.end.paragraph)) {
+            return undefined;
+        }
+        const startPosition: TextPosition = this.start;
+        const endPosition: TextPosition = this.end;
+        if (startPosition.isAtSamePosition(endPosition)) {
+            return '';
+        }
+        return this.getTextInternal(startPosition, endPosition, includeObject);
+    }
+    /**
+     * Get selected text
+     *
+     * @private
+     * @returns {string}
+     */
+    public getTextInternal(start: TextPosition, end: TextPosition, includeObject: boolean): string {
+        if (start.isExistAfter(end)) {
+            const temp: TextPosition = end;
+            end = start;
+            start = temp;
+        }
+        const startPosition: TextPosition = start;
+        const endPosition: TextPosition = end;
+
+        if (!isNullOrUndefined(start) && !isNullOrUndefined(end) && !isNullOrUndefined(start.paragraph) && !isNullOrUndefined(end.paragraph)) {
+            let startIndex: number = 0;
+            let endIndex: number = 0;
+            const startOffset: number = start.offset;
+            const endOffset: number = end.offset;
+            const startInlineObj: ElementInfo = (start.currentWidget as LineWidget).getInline(startOffset, startIndex);
+            startIndex = startInlineObj.index;
+            let inline: ElementBox = startInlineObj.element;
+            // If the start position is at the beginning of field begin that has field end, then field code should be skipped.
+            if (inline instanceof FieldElementBox && !isNullOrUndefined((inline as FieldElementBox).fieldEnd)) {
+                const elementInfo: ElementInfo = this.getRenderedInline(inline as FieldElementBox, startIndex);
+                inline = elementInfo.element;
+                startIndex = elementInfo.index;
+            }
+            const endInlineObj: ElementInfo = (end.currentWidget as LineWidget).getInline(endOffset, endIndex);
+            const endInline: ElementBox = endInlineObj.element;
+            endIndex = endInlineObj.index;
+
+            let text: string = '';
+            // Retrieves the text from start inline.
+            if (inline instanceof ImageElementBox && includeObject && startIndex === 0) {
+
+                text = ElementBox.objectCharacter;
+            } else if (inline instanceof TextElementBox) {
+
+                text = ((isNullOrUndefined((inline as TextElementBox).text)) || ((inline as TextElementBox).text) === '') || (inline as TextElementBox).text.length < startIndex ? text : (inline as TextElementBox).text.substring(startIndex);
+            }
+            if (startPosition.paragraph === endPosition.paragraph) {
+                if (inline instanceof ElementBox) {
+                    if (inline === endInline && inline instanceof TextElementBox) {
+                        text = text.length < endIndex - startIndex ? text : text.substring(0, endIndex - startIndex);
+                    } else if (inline.nextNode instanceof ElementBox) {
+
+                        text = text + this.getTextInline(inline.nextNode as ElementBox, endPosition.paragraph, endInline, endIndex, includeObject);
+                    }
+                }
+            } else {
+                if (inline instanceof ElementBox && inline.nextNode instanceof ElementBox) {
+                    text = text + this.getTextInline(inline.nextNode as ElementBox, endPosition.paragraph, endInline, endIndex, includeObject);
+                } else {
+
+                    let nextParagraphWidget: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(startPosition.paragraph) as ParagraphWidget;
+                    text = text + '\r';
+                    while (!isNullOrUndefined(nextParagraphWidget) && nextParagraphWidget.isEmpty()) {
+                        text = text + '\r';
+                        if (nextParagraphWidget === endPosition.paragraph) {
+                            return text;
+                        }
+                        nextParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(nextParagraphWidget) as ParagraphWidget;
+                    }
+                    if (!isNullOrUndefined(nextParagraphWidget) && !nextParagraphWidget.isEmpty()) {
+
+                        text = text + this.getTextInline((nextParagraphWidget.childWidgets[0] as LineWidget).children[0] as ElementBox, endPosition.paragraph, endInline, endIndex, includeObject);
+                    }
+                }
+            }
+            // If the selection includes end paragraph mark.
+            if (endOffset === (endPosition.currentWidget).getEndOffset() + 1) {
+                text = text + '\r';
+            }
+            return text;
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     * @param block
+     * @param offset
+     * @returns {string}
+     */
+    public getHierarchicalIndex(block: Widget, offset: string): string {
+        let index: string;
+        if (block) {
+            if (block instanceof HeaderFooterWidget) {
+                const hfString: string = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
+                const pageIndex: string = block.page.index.toString();
+                // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
+                const sectionIndex: number = block.page.sectionIndex;
+                index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+            } else {
+                if (block instanceof BodyWidget && !isNullOrUndefined(block.containerWidget) && block.containerWidget instanceof FootNoteWidget) {
+                    let ind: number = block.containerWidget.bodyWidgets.indexOf(block);
+                    index = ind + ';' + offset;
+                } else {
+                    // if (block instanceof BodyWidget && block.sectionFormat.columns.length > 1) {
+                    //         index = block.indexInOwner + ';' + offset;
+                    // }
+                    // else {
+                    index = block.index + ';' + offset;
+                    // }
+                }
+            }
+            if (block instanceof TextFrame) {
+                const indexInOwner: number = block.containerShape.line.getOffset(block.containerShape, 1);
+                index = 'S' + ';' + indexInOwner + ';' + offset;
+                return this.getHierarchicalIndex(block.containerShape.paragraph, index);
+            }
+            if (block instanceof FootNoteWidget) {
+                // index = block.index + ';' + index;
+                //block = block.containerWidget;
+                const hfString: string = block.footNoteType === 'Footnote' ? 'FN' : 'EN';
+                const pageIndex: string = block.page.index.toString();
+                // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
+                const sectionIndex: number = block.page.sectionIndex;
+                index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+            }
+            if (block.containerWidget) {
+                if (block instanceof TableCellWidget && block.rowIndex !== block.containerWidget.index) {
+                    index = block.rowIndex + ';' + index;
+                    block = block.containerWidget;
+                }
+                return this.getHierarchicalIndex(block.containerWidget, index);
+            }
+        }
+        return index;
+    }
+    /**
+     * @private
+     * @returns {string}
+     */
+    public getHierarchicalIndexByPosition(position: TextPosition): string {
+        const info: ParagraphInfo = this.getParagraphInfo(position);
+        return this.getHierarchicalIndex(info.paragraph, info.offset.toString());
+    }
+    /**
+     * @private
+     * @returns {TextPosition}
+     */
+    public getTextPosBasedOnLogicalIndex(hierarchicalIndex: string): TextPosition {
+        const textPosition: TextPosition = new TextPosition(this.owner);
+        const blockInfo: ParagraphInfo = this.getParagraph({ index: hierarchicalIndex });
+        const lineInfo: LineInfo = this.getLineInfoBasedOnParagraph(blockInfo.paragraph, blockInfo.offset);
+        textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
+        return textPosition;
+    }
+    /**
+     * Get offset value to update in selection
+     *
+     * @private
+     * @returns {LineInfo}
+     */
+    public getLineInfoBasedOnParagraph(paragraph: ParagraphWidget, offset: number): LineInfo {
+        const position: TextPosition = undefined;
+        const element: ElementBox = undefined;
+        let length: number = this.getParagraphLength(paragraph);
+        let next: ParagraphWidget = paragraph.nextSplitWidget as ParagraphWidget;
+        if (offset > length + 1 && isNullOrUndefined(next)) {
+            offset = length;
+        }
+        while (offset > length && next instanceof ParagraphWidget) {
+            offset -= length;
+            paragraph = next;
+            length = this.getParagraphLength(paragraph);
+            next = paragraph.nextSplitWidget as ParagraphWidget;
+        }
+        return this.getLineInfo(paragraph, offset);
+    }
+    /**
+     * @private
+     * @returns {ParagraphInfo}
+     */
+    public getParagraph(position: IndexInfo): ParagraphInfo {
+        const paragraph: ParagraphWidget = this.getParagraphInternal(this.getBodyWidget(position), position);
+        return { paragraph: paragraph, offset: parseInt(position.index, 10) };
+    }
+    /**
+     * Gets body widget based on position.
+     *
+     * @private
+     * @returns {BlockContainer}
+     */
+    public getBodyWidget(position: IndexInfo): BlockContainer {
+        let index: number = position.index.indexOf(';');
+        let value: string = position.index.substring(0, index);
+        position.index = position.index.substring(index).replace(';', '');
+        const sectionIndex: number = parseInt(value, 10);
+        index = parseInt(value, 10);
+        index = position.index.indexOf(';');
+        value = position.index.substring(0, index);
+        // position = position.substring(index).replace(';', '');
+        if (value === 'H' || value === 'F') {
+            return this.getHeaderFooterWidget(position);
+        } else if (value === 'FN' || value === 'EN') {
+            return this.getFootNoteWidget(position);
+        }
+        index = parseInt(value, 10);
+        return this.getBodyWidgetInternal(sectionIndex, index);
+    }
+    private getFootNoteWidget(position: IndexInfo): BodyWidget {
+        let index1: number = position.index.indexOf(';');
+        let value1: string = position.index.substring(0, index1);
+        position.index = position.index.substring(index1).replace(';', '');
+        const footNote: boolean = value1 === 'FN';
+        index1 = position.index.indexOf(';');
+        value1 = position.index.substring(0, index1);
+        position.index = position.index.substring(index1).replace(';', '');
+        index1 = parseInt(value1, 10);
+        const page: Page = this.documentHelper.pages[index1];
+        index1 = position.index.indexOf(';');
+        value1 = position.index.substring(0, index1);
+        position.index = position.index.substring(index1).replace(';', '');
+        index1 = parseInt(value1, 10);
+        if (footNote) {
+            return page.footnoteWidget.bodyWidgets[index1];
+        } else {
+            return page.endnoteWidget.bodyWidgets[index1];
+        }
+    }
+    private getHeaderFooterWidget(position: IndexInfo): HeaderFooterWidget {
+        //HEADER OR FOOTER WIDGET
+        let index: number = position.index.indexOf(';');
+        let value: string = position.index.substring(0, index);
+        position.index = position.index.substring(index).replace(';', '');
+        const isHeader: boolean = value === 'H';
+        index = position.index.indexOf(';');
+        value = position.index.substring(0, index);
+        position.index = position.index.substring(index).replace(';', '');
+        index = parseInt(value, 10);
+        const page: Page = this.documentHelper.pages[index];
+        let headerFooterWidget: HeaderFooterWidget;
+        if (isHeader) {
+            headerFooterWidget = page.headerWidget;
+        } else {
+            headerFooterWidget = page.footerWidget;
+        }
+        if (!isNullOrUndefined(headerFooterWidget)) {
+            headerFooterWidget.page = page;
+        }
+        return headerFooterWidget;
+    }
+
+    /**
+     * @private
+     * @returns {BodyWidget}
+     */
+    public getBodyWidgetInternal(sectionIndex: number, blockIndex: number): BodyWidget {
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            for (let j: number = 0; j < this.documentHelper.pages[i].bodyWidgets.length; j++) {
+                let bodyWidget: BodyWidget = this.documentHelper.pages[i].bodyWidgets[j];
+                if (bodyWidget.index === sectionIndex) {
+                    if (bodyWidget.childWidgets.length > 0 && (bodyWidget.firstChild as Widget).index <= blockIndex &&
+                        (bodyWidget.lastChild as Widget).index >= blockIndex) {
+                        return bodyWidget;
+                    }
+                }
+                if (bodyWidget.index > sectionIndex) {
+                    break;
+                }
+            }
+        }
+        return undefined;
+    }
+
+    private getParagraphInternal(container: Widget, position: IndexInfo, cellIndex?: string): ParagraphWidget {
+        if (isNullOrUndefined(position.index)) {
+            return undefined;
+        }
+        if (container instanceof TableRowWidget && isNullOrUndefined(cellIndex)) {
+            cellIndex = position.index;
+        }
+        // let ins: Widget = container;
+        let index: number = position.index.indexOf(';');
+        let value: string = '0';
+        if (index >= 0) {
+            value = position.index.substring(0, index);
+            position.index = position.index.substring(index).replace(';', '');
+        }
+        // if (container instanceof BodyWidget && value === 'HF') {
+        //     return this.getParagraph(container.headerFooters, position);
+        // }
+        index = parseInt(value, 10);
+        if (container instanceof TableRowWidget && index >= container.childWidgets.length) {
+            position.index = '0;0';
+            index = container.childWidgets.length - 1;
+        }
+        let childWidget: Widget = this.getBlockByIndex(container, index);
+        if (!isNullOrUndefined(cellIndex) && isNullOrUndefined(childWidget) && container instanceof TableCellWidget && container.containerWidget && isNullOrUndefined(container.getSplitWidgets().pop().nextRenderedWidget)) {
+            index = cellIndex.indexOf(';');
+            index = parseInt(cellIndex.substring(0, index), 10) - 1;
+            position.index = cellIndex.substring(cellIndex.indexOf(';')).replace(';', '');
+            if (index >= 0) {
+                childWidget = this.getBlockByIndex(container.containerWidget, index);
+            }
+            cellIndex = undefined;
+        }
+        if (childWidget) {
+            value = position.index.substring(0, 1);
+            if (value === 'S') {
+                position.index = position.index.substring(1).replace(';', '');
+                const indexInOwner: string = position.index.substring(0, position.index.indexOf(';'));
+                position.index = position.index.substring(position.index.indexOf(';')).replace(';', '');
+                const paraIndex: string = position.index.substring(0, position.index.indexOf(';'));
+                position.index = position.index.substring(position.index.indexOf(';')).replace(';', '');
+                let shape: ElementBox = (childWidget as ParagraphWidget).getInline(parseInt(indexInOwner), 0).element;
+                childWidget = (shape as ShapeElementBox).textFrame.childWidgets[paraIndex] as Widget;
+            }
+            const child: Widget = childWidget as Widget;
+            if (child instanceof ParagraphWidget) {
+                if (position.index.indexOf(';') > 0) {
+                    position.index = '0';
+                }
+                return child as ParagraphWidget;
+            }
+            if (child instanceof Widget) {
+                if (position.index.indexOf(';') > 0) {
+                    return this.getParagraphInternal((child as Widget), position, cellIndex);
+                } else {
+                    //If table is shifted to previous text position then return the first paragraph within table.
+                    if (child instanceof TableWidget) {
+                        return this.documentHelper.getFirstParagraphInFirstCell((child as TableWidget));
+                    }
+                    return undefined;
+                }
+            }
+        } else if (container) {
+            const nextWidget: Widget = container.getSplitWidgets().pop().nextRenderedWidget;
+            if (nextWidget instanceof Widget) {
+                position.index = '0';
+                if (nextWidget instanceof TableWidget) {
+                    return this.documentHelper.getFirstParagraphInFirstCell((nextWidget as TableWidget));
+                }
+                return nextWidget as ParagraphWidget;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     * @returns {Widget}
+     */
+    public getBlockByIndex(container: Widget, blockIndex: number): Widget {
+        let childWidget: Widget;
+        if (container) {
+            for (let j: number = 0; j < container.childWidgets.length; j++) {
+                if ((container.childWidgets[j] as Widget).index === blockIndex) {
+                    childWidget = container.childWidgets[j] as Widget;
+                    break;
+                }
+            }
+            if (!childWidget && !(container instanceof HeaderFooterWidget)) {
+                return this.getBlockByIndex(container.nextSplitWidget, blockIndex);
+            }
+        }
+        return childWidget;
+    }
+    /**
+     * Get logical offset of paragraph.
+     *
+     * @private
+     * @returns {ParagraphInfo}
+     */
+    public getParagraphInfo(position: TextPosition): ParagraphInfo {
+        return this.getParagraphInfoInternal(position.currentWidget, position.offset);
+    }
+    /**
+     * Get the start or end cell from current selection
+     * 
+     * @private
+     * @returns {TableCellWidget}
+     */
+    public getCellFromSelection(type: number): TableCellWidget {
+        let cell: TableCellWidget;
+        let selectedCells: TableCellWidget[] = this.getSelectedCells();
+        if(this.hasMergedCells()){
+            return undefined;
+        }
+        if (type == 0 && selectedCells.length > 0) {
+            if (!(this.selectedWidgets.keys[0] instanceof TableCellWidget)) {
+                return undefined;
+            }
+            cell = selectedCells[0];
+            let rowIndex: number = cell.rowIndex;
+            let colIndex: number = cell.columnIndex;
+            let tableIndex: number = cell.ownerTable.index;
+            for (let i = 0; i < selectedCells.length; i++) {
+                let widget = selectedCells[i];
+                if (widget.rowIndex < rowIndex) {
+                    rowIndex = widget.rowIndex;
+                }
+                if (widget.columnIndex < colIndex) {
+                    colIndex = widget.columnIndex;
+                }
+                if(widget.ownerTable.index < tableIndex){
+                    tableIndex = widget.ownerTable.index;
+                }
+            }
+            for (let i = 0; i < selectedCells.length; i++) {
+                let widget = selectedCells[i];
+                if (rowIndex == widget.rowIndex && colIndex == widget.columnIndex  && tableIndex == widget.ownerTable.index) {
+                    cell = widget;
+                }
+            }
+        } else if (type == 1 && selectedCells.length > 0) {
+            if (!(this.selectedWidgets.keys[this.selectedWidgets.length - 1] instanceof TableCellWidget)) {
+                return undefined;
+            }
+            cell = selectedCells[selectedCells.length - 1];
+            let rowIndex: number = cell.rowIndex;
+            let colIndex: number = cell.columnIndex;
+            let tableIndex: number = cell.ownerTable.index;
+            for (let i = selectedCells.length - 1; i >= 0; i--) {
+                let widget: TableCellWidget = selectedCells[i];
+                if (widget.rowIndex > rowIndex) {
+                    rowIndex = widget.rowIndex;
+                }
+                if (widget.columnIndex > colIndex) {
+                    colIndex = widget.columnIndex;
+                }
+                if(widget.ownerTable.index > tableIndex){
+                    tableIndex = widget.ownerTable.index;
+                }
+            }
+            for (let i = 0; i < selectedCells.length; i++) {
+                let widget: TableCellWidget = selectedCells[i];
+                if (rowIndex == widget.rowIndex && colIndex == widget.columnIndex  && tableIndex == widget.ownerTable.index) {
+                    cell = widget;
+                }
+            }
+        }
+        return (cell instanceof TableCellWidget) ? cell : undefined;
+    }
+    /**
+     * Get the start cell or end cell in table with merged cells from current selection.
+     *
+     * @private
+     * @returns {TableCellWidget}
+     */
+    public getCellFromSelectionInTable(type: number): TableCellWidget {
+        let cell:TableCellWidget;
+        let selectedCells: TableCellWidget[] = this.getSelectedCells();
+        let bounds: any = this.getCellBoundsInfo();
+        let sortedRowIndexArray: number[] = [];
+        let sortedColumnIndexArray: number[] = [];
+        for (let i = 0; i < selectedCells.length; i++) {
+            var widget: TableCellWidget = selectedCells[i];
+            sortedRowIndexArray.push(widget.rowIndex);
+            sortedColumnIndexArray.push(widget.columnIndex);
+        }
+        sortedRowIndexArray.sort();
+        sortedColumnIndexArray.sort();
+        let requiredRow: number;
+        let requiredCol: number;
+        if (type == 1) {
+            requiredRow = bounds.row.rowLast;
+            requiredCol = bounds.column.colLast;
+            let isRequiredCellExist: boolean = false;
+            while (!isRequiredCellExist && isNullOrUndefined(cell)) {
+                for (let i = 0; i < selectedCells.length; i++) {
+                    let widget: TableCellWidget = selectedCells[i];
+                    if (widget.rowIndex == requiredRow && widget.columnIndex == requiredCol) {
+                        isRequiredCellExist = true;
+                        cell = widget;
+                        break;
+                    }
+                }
+                if (!isRequiredCellExist) {
+                    requiredRow -= 1;
+                }
+            }
+        }
+        else if(type == 0){
+            requiredRow = bounds.row.rowFirst;
+            requiredCol = bounds.column.colFirst;
+            let isRequiredCellExist: boolean = false;
+            while(!isRequiredCellExist && isNullOrUndefined(cell)){
+                for (let i = 0; i < selectedCells.length; i++) {
+                    let widget: TableCellWidget = selectedCells[i];
+                    if(widget.rowIndex == requiredRow && widget.columnIndex == requiredCol){
+                        isRequiredCellExist = true;
+                        cell = widget;
+                        break;
+                    }
+                }
+                if(!isRequiredCellExist){
+                    requiredCol += 1;
+                }
+            }
+        }
+        return cell;
+    }
+    /**
+     * Get the actual offset from the current selection.
+     *
+     * @private
+     * @returns {string}
+     */
+    public getActualOffset(cell: TableCellWidget, type: number): string {
+        let offset: string;
+        if (type == 0) {
+            let paraElement: ParagraphWidget = this.getFirstParagraph(cell);
+            offset = this.getHierarchicalIndex(paraElement, this.getStartOffset(paraElement).toString());
+        } else if (type == 1) {
+            let paraElement: ParagraphWidget = this.getLastParagraph(cell);
+            let lastLine: LineWidget = paraElement.lastChild as LineWidget;
+            let length: number = this.getParagraphLength(paraElement, lastLine) + this.getLineLength(lastLine) + 1;
+            offset = this.getHierarchicalIndex(paraElement, length.toString());
+        }
+        return offset;
+    }
+    /**
+     * Get the properties for Bookmark.
+     *
+     * @private
+     * @returns {object}
+     */
+    public getBookmarkProperties (bookmark: BookmarkElementBox): object {
+        let selectedWidgets: any = this.selectedWidgets.keys;
+        if (bookmark.bookmarkType == 0) {
+            if(!(selectedWidgets[0] instanceof TableCellWidget)){
+                return undefined;
+            }
+            let bounds: any = this.getCellBoundsInfo();
+            if(!isNullOrUndefined(bounds)){
+                return {
+                    'columnFirst': bounds.column.colFirst.toString(),
+                    'columnLast': bounds.column.colLast.toString()
+                };
+            }
+        }
+        if (bookmark.bookmarkType == 1) {
+            if(selectedWidgets[selectedWidgets.length - 1] instanceof TableCellWidget){
+                return undefined;
+            }
+            let properties: { [key: string]: string | boolean } = {};
+            // isAfterParagraphMark
+            // In Ms Word, If the paragraph mark is selected and the bookmark end is inside the table, then the bookmark end is considered to be after the paragraph mark.
+            if (this.isParagraphMarkSelected() && this.end.paragraph.isInsideTable) {
+                properties.isAfterParagraphMark = true;
+            }
+            // isAfterCellMark
+            let bookmarkStart = bookmark.reference;
+            let selectedCells: TableCellWidget[] = this.getSelectedCells();
+            if(bookmarkStart && !isNullOrUndefined(bookmarkStart.properties)){
+                if(selectedCells.length == 1){
+                    if(this.isCellSelected(selectedCells[0], this.start, this.end)){
+                        properties.isAfterCellMark = true;
+                        delete properties.isAfterParagraphMark;
+                    }
+                }
+            }
+            // isAfterTableMark
+            if(this.isTableSelected()){
+                properties.isAfterTableMark = true;
+            }
+            // isAfterRowMark
+            if(this.isRowSelected()){
+                properties.isAfterRowMark = true;
+            }
+            if(!isNullOrUndefined(properties.isAfterParagraphMark) || !isNullOrUndefined(properties.isAfterCellMark)){
+                return properties;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Returns true if Paragraph Mark is selected.
+     *
+     * @private
+     * @returns {boolean}
+     */
+    public isParagraphMarkSelected (): boolean {
+        let line: LineWidget = this.end.currentWidget;
+        let paraElement: ParagraphWidget;
+        if(line instanceof LineWidget){
+            paraElement = line.paragraph;
+        }
+        let paraLength: number = this.getParagraphLength(paraElement);
+        let endIndices: any = this.endOffset.split(';');
+        let endIndex: number = parseInt(endIndices[endIndices.length - 1]);
+        if(endIndex > paraLength){
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Returns true if Row is selected.
+     *
+     * @private
+     * @returns {boolean}
+     */
+    public isRowSelected (): boolean {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        if (isNullOrUndefined(start.paragraph.associatedCell) ||
+            isNullOrUndefined(end.paragraph.associatedCell)) {
+            return false;
+        }
+        let row: TableRowWidget[] = end.paragraph.associatedCell.ownerRow.getSplitWidgets() as TableRowWidget[];
+        let firstParagraph: ParagraphWidget;
+        let firstcell: TableCellWidget;
+        if (row[0].childWidgets.length > 0) {
+            firstcell = row[0].childWidgets[0] as TableCellWidget;
+            if (firstcell.childWidgets.length === 0) {
+                return undefined;
+            }
+            firstParagraph = firstcell.childWidgets[0] as ParagraphWidget;
+        }
+        let lastParagraph: ParagraphWidget;
+        let lastRow: TableRowWidget =  row[row.length - 1] as TableRowWidget;
+        let lastCell: TableCellWidget = lastRow.childWidgets[lastRow.childWidgets.length - 1] as TableCellWidget;
+        while (lastCell.childWidgets.length === 0 && !isNullOrUndefined(lastCell.previousSplitWidget)) {
+            lastCell = lastCell.previousSplitWidget as TableCellWidget;
+        }
+        lastParagraph = lastCell.childWidgets[lastCell.childWidgets.length - 1] as ParagraphWidget;
+        
+        return firstcell.equals(firstParagraph.associatedCell) &&
+            end.paragraph.associatedCell.equals(lastParagraph.associatedCell)
+            && (!firstParagraph.associatedCell.equals(lastParagraph.associatedCell) || (start.offset === 0
+                && end.offset === this.getLineLength(lastParagraph.lastChild as LineWidget) + 1));
+    }
+    /**
+     * Get the bounds of row and col index from selected cells
+     *
+     * @private
+     * @returns {object}
+     */
+    public getCellBoundsInfo(): object {
+        let selectedWidgets: TableCellWidget[] = this.getSelectedCells();
+        if(selectedWidgets.length > 0){
+            let colFirst: number = selectedWidgets[0].columnIndex;
+            let colLast: number = selectedWidgets[selectedWidgets.length - 1].columnIndex;
+            let rowFirst: number = selectedWidgets[0].rowIndex;
+            let rowLast: number = selectedWidgets[selectedWidgets.length - 1].rowIndex;
+            for (let i = 0; i < selectedWidgets.length; i++) {
+                let widget: TableCellWidget = selectedWidgets[i];
+                if (widget.columnIndex < colFirst) {
+                    colFirst = widget.columnIndex;
+                }
+                if (widget.columnIndex > colLast) {
+                    colLast = widget.columnIndex;
+                }
+                if (widget.rowIndex < rowFirst) {
+                    rowFirst = widget.rowIndex;
+                }
+                if (widget.rowIndex > rowLast) {
+                    rowLast = widget.rowIndex;
+                }
+            }
+            return {'column': {
+                    'colFirst': colFirst,
+                    'colLast': colLast
+                },
+                'row': {
+                    'rowFirst': rowFirst,
+                    'rowLast': rowLast
+                }
+            };
+        }
+        return undefined;
+    }
+    /**
+     * Return true if the selection has merged cells, else false.
+     *
+     * @private
+     * @returns {boolean}
+     */
+    public hasMergedCells(): boolean {
+        let selectedCells: TableCellWidget[] = this.getSelectedCells();
+        for (let i = 0; i < selectedCells.length; i++) {
+            let widget: TableCellWidget = selectedCells[i];
+            if(widget.cellFormat.rowSpan > 1 || widget.cellFormat.columnSpan > 1){
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     * @returns {ParagraphInfo}
+     */
+    public getParagraphInfoInternal(line: LineWidget, lineOffset: number): ParagraphInfo {
+        let paragraph: ParagraphWidget = line.paragraph;
+        let offset: number = this.getParagraphLength(paragraph, line) + lineOffset;
+        let previous: ParagraphWidget = paragraph.previousSplitWidget as ParagraphWidget;
+        while (previous instanceof ParagraphWidget) {
+            paragraph = previous;
+            offset += this.documentHelper.selection.getParagraphLength(paragraph);
+            previous = paragraph.previousSplitWidget as ParagraphWidget;
+        }
+        return { 'paragraph': paragraph, 'offset': offset };
+    }
+    /**
+     * @private
+     * @returns {ListTextElementBox}
+     */
+    public getListTextElementBox(paragarph: ParagraphWidget): ListTextElementBox {
+        if (isNullOrUndefined(paragarph)) {
+            return undefined;
+        }
+        let listTextElement: ListTextElementBox;
+        if (!paragarph.isEmpty()) {
+            const lineWidget: LineWidget = paragarph.childWidgets[0] as LineWidget;
+            if (lineWidget.children.length > 1) {
+                if (lineWidget.children[0] instanceof ListTextElementBox) {
+                    listTextElement = lineWidget.children[0] as ListTextElementBox;
+                }
+            }
+        }
+        return listTextElement;
+
+    }
+    /**
+     * @private
+     * @returns {WListLevel}
+     */
+    public getListLevel(paragraph: ParagraphWidget): WListLevel {
+        let currentList: WList = undefined;
+        let listLevelNumber: number = 0;
+        if (!isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
+            currentList = this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
+            listLevelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
+        }
+        if (!isNullOrUndefined(currentList) &&
+            !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId))
+            // && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels.getItem(listLevelNumber))) {
+            && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels)) {
+            return this.documentHelper.layout.getListLevel(currentList, listLevelNumber);
+        }
+        return undefined;
+    }
+
+
+    private getTextInline(inlineElement: ElementBox, endParagraphWidget: ParagraphWidget, endInline: ElementBox, endIndex: number, includeObject: boolean): string {
+        let text: string = '';
+        do {
+            if (inlineElement === endInline) {
+                if (inlineElement instanceof TextElementBox) {
+                    const span: TextElementBox = inlineElement as TextElementBox;
+                    if (!(isNullOrUndefined(span.text) || span.text === '')) {
+                        if (span.text.length < endIndex) {
+                            text = text + span.text;
+                        } else {
+                            text = text + span.text.substring(0, endIndex);
+                        }
+                    }
+
+                } else if (inlineElement instanceof ImageElementBox && includeObject && endIndex === (inlineElement as ImageElementBox).length) {
+                    text = text + ElementBox.objectCharacter;
+                }
+                return text;
+            }
+            if (inlineElement instanceof TextElementBox) {
+                text = text + (inlineElement as TextElementBox).text;
+            } else if (inlineElement instanceof ImageElementBox && includeObject) {
+                text = text + ElementBox.objectCharacter;
+            } else if (inlineElement instanceof FieldElementBox && !isNullOrUndefined((inlineElement as FieldElementBox).fieldEnd)) {
+                if (!isNullOrUndefined((inlineElement as FieldElementBox).fieldSeparator)) {
+                    inlineElement = (inlineElement as FieldElementBox).fieldSeparator;
+                } else {
+                    inlineElement = (inlineElement as FieldElementBox).fieldEnd;
+                }
+            }
+            if (isNullOrUndefined(inlineElement.nextNode)) {
+                break;
+            }
+            inlineElement = inlineElement.nextNode as ElementBox;
+        } while (!isNullOrUndefined(inlineElement));
+        if (endParagraphWidget as ParagraphWidget === inlineElement.line.paragraph) {
+            return text;
+        }
+
+        let nextParagraphWidget: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(inlineElement.line.paragraph) as ParagraphWidget;
+        while (!isNullOrUndefined(nextParagraphWidget) && nextParagraphWidget.isEmpty()) {
+            text = text + '\r';
+            if (nextParagraphWidget === endParagraphWidget) {
+                return text;
+            }
+            nextParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(nextParagraphWidget) as ParagraphWidget;
+        }
+        if (!isNullOrUndefined(nextParagraphWidget) && !nextParagraphWidget.isEmpty()) {
+            const lineWidget: LineWidget = nextParagraphWidget.childWidgets[0] as LineWidget;
+
+            if (isNullOrUndefined(nextParagraphWidget.previousSplitWidget)) {
+                text = text + '\r';
+            }
+            text = text + this.getTextInline(lineWidget.children[0] as ElementBox, endParagraphWidget, endInline, endIndex, includeObject);
+        }
+        return text;
+    }
+    /**
+     * Returns field code.
+     *
+     * @private
+     * @param fieldBegin
+     * @returns {string}
+     */
+    public getFieldCode(fieldBegin: FieldElementBox, isSkipTrim?: boolean): string {
+        let fieldCode: string = '';
+        if (!isNullOrUndefined(fieldBegin) && !(fieldBegin.fieldEnd instanceof FieldElementBox)) {
+            return fieldCode;
+        }
+        let paragraph: ParagraphWidget = fieldBegin.paragraph;
+        let endParagraph: ParagraphWidget = fieldBegin.fieldEnd.paragraph;
+        if (fieldBegin.fieldSeparator instanceof FieldElementBox) {
+            endParagraph = fieldBegin.fieldSeparator.paragraph;
+        }
+        let startLineIndex: number = fieldBegin.line.indexInOwner;
+        let startIndex: number = fieldBegin.indexInOwner;
+        do {
+            fieldCode += this.getFieldCodeInternal(paragraph, startLineIndex, startIndex);
+            if (paragraph === endParagraph) {
+                break;
+            }
+            paragraph = this.getNextParagraphBlock(paragraph);
+            startLineIndex = 0;
+            startIndex = 0;
+        } while (paragraph instanceof ParagraphWidget);
+
+        return isSkipTrim ? fieldCode : fieldCode.trim();
+    }
+    private getFieldCodeInternal(paragraph: ParagraphWidget, startLineIndex: number, inlineIndex: number): string {
+        let fieldCode: string = '';
+        for (let i: number = startLineIndex; i < paragraph.childWidgets.length; i++) {
+            const line: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            for (let i: number = inlineIndex; i < line.children.length; i++) {
+                const element: ElementBox = line.children[i];
+                if (element instanceof TextElementBox) {
+                    fieldCode += element.text;
+                }
+                if (element instanceof FieldElementBox
+                    && ((element as FieldElementBox).fieldType === 2 || (element as FieldElementBox).fieldType === 1)) {
+                    return fieldCode;
+                }
+            }
+            inlineIndex = 0;
+        }
+        return fieldCode;
+    }
+    /**
+     * @private
+     * @returns {FieldElementBox}
+     */
+    public getTocFieldInternal(): FieldElementBox {
+        let paragraph: ParagraphWidget = this.start.paragraph;
+        if (!this.isEmpty && !this.isForward) {
+            paragraph = this.end.paragraph;
+        }
+        while (paragraph instanceof ParagraphWidget && paragraph.childWidgets.length > 0) {
+            const line: LineWidget = paragraph.firstChild as LineWidget;
+            if (line.children.length > 0) {
+                const element: ElementBox = line.children[0];
+                const nextElement: ElementBox = element.nextNode;
+                if (element instanceof FieldElementBox && element.fieldType === 0 && nextElement instanceof TextElementBox
+                    && nextElement.text.trim().toLowerCase().indexOf('toc') === 0) {
+                    return element;
+                }
+            }
+            paragraph = paragraph.previousRenderedWidget as ParagraphWidget;
+        }
+        return undefined;
+    }
+    /**
+     * Get next paragraph in bodyWidget
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getNextParagraph(section: BodyWidget): ParagraphWidget {
+        if (section.nextRenderedWidget instanceof BodyWidget) {
+            const block: BlockWidget = (section.nextRenderedWidget as BodyWidget).childWidgets[0] as BlockWidget;
+            return this.documentHelper.getFirstParagraphBlock(block);
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getPreviousParagraph(section: BodyWidget): ParagraphWidget {
+        if (section.previousRenderedWidget instanceof BodyWidget) {
+            const bodyWidget: BodyWidget = section.previousRenderedWidget as BodyWidget;
+            const block: BlockWidget = bodyWidget.childWidgets[bodyWidget.childWidgets.length - 1] as BlockWidget;
+            return this.documentHelper.getLastParagraphBlock(block);
+        }
+        return undefined;
+    }
+
+    /**
+     * Get Next start inline
+     *
+     * @private
+     * @returns {ElementBox}
+     */
+    public getNextStartInline(line: LineWidget, offset: number): ElementBox {
+        let indexInInline: number = 0;
+        const inlineObj: ElementInfo = line.getInline(offset, indexInInline);
+        let inline: ElementBox = inlineObj.element;
+        indexInInline = inlineObj.index;
+        if ((!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox)
+            || inline instanceof ShapeElementBox) {
+            const nextValidInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode as ElementBox));
+            if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 0) {
+                inline = nextValidInline;
+            }
+        }
+        return inline;
+    }
+    /**
+     * Get previous text inline
+     *
+     * @private
+     * @returns {ElementBox}
+     */
+    public getPreviousTextInline(inline: ElementBox): ElementBox {
+        if (inline.previousNode instanceof TextElementBox) {
+            return inline.previousNode;
+        }
+        if (inline.previousNode instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline.previousNode)) {
+            if (inline.previousNode.fieldType === 0 || inline.previousNode.fieldType === 1) {
+                return inline.previousNode;
+            }
+            return inline.previousNode.fieldBegin;
+        }
+        if (!isNullOrUndefined(inline.previousNode)) {
+            return this.getPreviousTextInline((inline.previousNode));
+        }
+        return undefined;
+    }
+    /**
+     * Get next text inline
+     *
+     * @private
+     * @returns {ElementBox}
+     */
+    public getNextTextInline(inline: ElementBox): ElementBox {
+        if (inline.nextNode instanceof TextElementBox) {
+            return inline.nextNode;
+        }
+        if (inline.nextNode instanceof FieldElementBox && (HelperMethods.isLinkedFieldCharacter((inline.nextNode as FieldElementBox)))) {
+            if (inline.nextNode.fieldType === 1 || inline.nextNode.fieldType === 0) {
+                return inline.nextNode as ElementBox;
+            }
+            return (inline.nextNode as FieldElementBox).fieldEnd;
+        }
+        if (!isNullOrUndefined(inline.nextNode)) {
+            return this.getNextTextInline((inline.nextNode));
+        }
+        return undefined;
+    }
+    /**
+     * Get container table
+     *
+     * @private
+     * @returns {TableWidget}
+     */
+    public getContainerTable(block: BlockWidget): TableWidget {
+        if (block.isInsideTable) {
+            if (block.associatedCell.ownerTable.isInsideTable) {
+                block = this.getContainerTable(block.associatedCell.ownerTable);
+            } else {
+                block = block.associatedCell.ownerTable;
+            }
+        }
+        if (block instanceof TableWidget) {
+            return block as TableWidget;
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     * @param element 
+     * @returns 
+     */
+    public isElementInSelection(element: ElementBox, isEnd: boolean): boolean {
+        let offset: number = element.line.getOffset(element, isEnd ? 0 : 1);
+        let elemPosition: TextPosition = new TextPosition(this.owner);
+        elemPosition.setPositionParagraph(element.line, offset);
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        return ((elemPosition.isExistAfter(start) || elemPosition.isAtSamePosition(start))
+            && (elemPosition.isExistBefore(end) || elemPosition.isAtSamePosition(end)));
+    }
+    /**
+     * @private
+     */
+    public isSelectionInsideElement(element: ElementBox): boolean {
+        //Handled for spellcheck
+        if (this.isEmpty) {
+            let startOffset: number = element.line.getOffset(element, 0);
+            let startPosition: TextPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(element.line, startOffset);
+            let endOffset: number = element.line.getOffset(element, element.length);
+            let endPosition: TextPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(element.line, endOffset);
+            return ((this.start.isExistAfter(startPosition) || this.start.isAtSamePosition(startPosition))
+                && (this.start.isExistBefore(endPosition) || this.start.isAtSamePosition(endPosition)));
+        }
+        return false;
+    }
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    public isExistBefore(start: BlockWidget, block: BlockWidget): boolean {
+        if (start.isInsideTable) {
+            let cell1: TableCellWidget = start.associatedCell;
+            if (block.isInsideTable) {
+                let cell2: TableCellWidget = block.associatedCell;
+                if (cell1 === cell2) {
+                    return cell1.childWidgets.indexOf(start) < cell1.childWidgets.indexOf(block);
+                }
+                if (cell1.ownerRow === cell2.ownerRow) {
+                    return cell1.cellIndex < cell2.cellIndex;
+                }
+                if (cell1.ownerTable === cell2.ownerTable) {
+                    return cell1.ownerRow.rowIndex < cell2.ownerRow.rowIndex;
+                }
+                //Checks if current block exists before the block.
+                const containerCell: TableCellWidget = this.getContainerCellOf(cell1, cell2);
+                if (containerCell.ownerTable.contains(cell2)) {
+                    cell1 = this.getSelectedCell(cell1, containerCell);
+                    cell2 = this.getSelectedCell(cell2, containerCell);
+                    if (cell1 === containerCell) {
+                        return this.isExistBefore(start, cell2.ownerTable);
+                    }
+                    if (cell2 === containerCell) {
+                        return this.isExistBefore(cell1.ownerTable, block);
+                    }
+                    if (containerCell.ownerRow === cell2.ownerRow) {
+                        return containerCell.cellIndex < cell2.cellIndex;
+                    }
+                    if (containerCell.ownerTable === cell2.ownerTable) {
+                        return containerCell.ownerRow.rowIndex < cell2.ownerRow.rowIndex;
+                    }
+                    return this.isExistBefore(cell1.ownerTable, cell2.ownerTable);
+                }
+                return this.isExistBefore(containerCell.ownerTable, this.getContainerTable(cell2.ownerTable));
+            } else {
+                const ownerTable: TableWidget = this.getContainerTable(start) as TableWidget;
+                return this.isExistBefore(ownerTable, block);
+            }
+        } else if (block.isInsideTable) {
+            const ownerTable: TableWidget = this.getContainerTable(block) as TableWidget;
+            return this.isExistBefore(start, ownerTable);
+        } else {
+            {
+                if (start.containerWidget === block.containerWidget) {
+                    return start.index <
+                        block.index;
+
+                }
+                if ((start.containerWidget instanceof BodyWidget && block.containerWidget instanceof BodyWidget)) {
+                    //Splitted blocks
+                    const startPage: number = this.documentHelper.pages.indexOf(start.containerWidget.page);
+                    const endPage: number = this.documentHelper.pages.indexOf(block.containerWidget.page);
+                    if (startPage === endPage) {
+                        return start.containerWidget.indexInOwner < block.containerWidget.indexInOwner;
+                    }
+                    if (startPage === endPage && start.containerWidget.containerWidget instanceof FootNoteWidget && block.containerWidget.containerWidget instanceof FootNoteWidget) {
+                        const startindex: number = this.documentHelper.pages[startPage].footnoteWidget.bodyWidgets.indexOf(start.containerWidget);
+                        const endindex: number = this.documentHelper.pages[endPage].footnoteWidget.bodyWidgets.indexOf(block.containerWidget);
+                        return startindex < endindex;
+                    } else if (startPage === endPage && start.containerWidget.index !== block.containerWidget.index) {
+                        const startindex: number = this.documentHelper.pages[startPage].bodyWidgets.indexOf(start.containerWidget);
+                        const endindex: number = this.documentHelper.pages[endPage].bodyWidgets.indexOf(block.containerWidget);
+                        return startindex < endindex;
+                    } else {
+                        return startPage < endPage;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    public isExistAfter(start: BlockWidget, block: BlockWidget): boolean {
+        if (start.isInsideTable) {
+            let cell1: TableCellWidget = start.associatedCell;
+            //Current paragraph in cell, paragraph in cell
+            if (block.isInsideTable) {
+                let cell2: TableCellWidget = block.associatedCell;
+                if (cell1 === cell2) {
+                    return cell1.childWidgets.indexOf(start) > cell1.childWidgets.indexOf(block);
+                }
+                if (cell1.ownerRow === cell2.ownerRow) {
+                    return cell1.cellIndex > cell2.cellIndex;
+                }
+                if (cell1.ownerTable === cell2.ownerTable) {
+                    return cell1.ownerRow.rowIndex > cell2.ownerRow.rowIndex;
+                }
+                //Checks if this block exists before block.
+                const containerCell: TableCellWidget = this.getContainerCellOf(cell1, cell2);
+                if (containerCell.ownerTable.contains(cell2)) {
+                    cell1 = this.getSelectedCell(cell1, containerCell);
+                    cell2 = this.getSelectedCell(cell2, containerCell);
+                    if (cell1 === containerCell) {
+                        return this.isExistAfter(start, cell2.ownerTable);
+                    }
+                    if (cell2 === containerCell) {
+                        return this.isExistAfter(cell1.ownerTable, block);
+                    }
+                    if (containerCell.ownerRow === cell2.ownerRow) {
+                        return containerCell.cellIndex > cell2.cellIndex;
+                    }
+                    if (containerCell.ownerTable === cell2.ownerTable) {
+                        return containerCell.ownerRow.rowIndex > cell2.ownerRow.rowIndex;
+                    }
+                    return this.isExistAfter(cell1.ownerTable, cell2.ownerTable);
+                }
+                return this.isExistAfter(containerCell.ownerTable, this.getContainerTable(cell2.ownerTable));
+            } else {
+                const ownerTable: TableWidget = this.getContainerTable(start) as TableWidget;
+                return this.isExistAfter(ownerTable, block);
+            }
+        } else if (block.isInsideTable) {
+            const ownerTable: TableWidget = this.getContainerTable(block) as TableWidget;
+            return this.isExistAfter(start, ownerTable);
+        } else {
+            if (start.containerWidget === block.containerWidget) {
+                return start.index >
+                    block.index;
+
+            }
+
+            if ((start.containerWidget instanceof BodyWidget && block.containerWidget instanceof BodyWidget) || (start.containerWidget instanceof FootNoteWidget && block.containerWidget instanceof FootNoteWidget)) {
+                //Splitted blocks
+                const startPage: number = this.documentHelper.pages.indexOf(start.containerWidget.page);
+                const endPage: number = this.documentHelper.pages.indexOf(block.containerWidget.page);
+                return startPage > endPage;
+            }
+            //     if (start.owner instanceof WHeaderFooter) {
+            //         return (start.owner as WHeaderFooter).childWidgets.indexOf(start)
+            // > (block.owner as WHeaderFooter).childWidgets.indexOf(block);
+            //     } else if (start.section === block.section && start.section instanceof WSection) {
+            //         return (start.section as WSection).childWidgets.indexOf(start)
+            //  > (start.section as WSection).childWidgets.indexOf(block);
+            //     } else if (start.wordDocument instanceof WordDocument) {
+
+            //         return (start.wordDocument as WordDocument).sections.indexOf(start.section as WSection) > (start.wordDocument as WordDocument).sections.indexOf(block.section as WSection);
+
+        }
+        return false;
+    }
+
+    /**
+     * Return true if current inline in exist before inline
+     *
+     * @private
+     * @returns {boolean}
+     */
+    public isExistBeforeInline(currentInline: ElementBox, inline: ElementBox): boolean {
+        if (currentInline.line === inline.line) {
+            return currentInline.line.children.indexOf(currentInline) <=
+                inline.line.children.indexOf(inline);
+        }
+        if (currentInline.line.paragraph === inline.line.paragraph) {
+            return currentInline.line.paragraph.childWidgets.indexOf(currentInline.line)
+                < inline.line.paragraph.childWidgets.indexOf(inline.line);
+        }
+        const startParagraph: ParagraphWidget = currentInline.line.paragraph;
+        const endParagraph: ParagraphWidget = inline.line.paragraph;
+        if (startParagraph.containerWidget === endParagraph.containerWidget) {
+            if (startParagraph.isInsideTable) {
+                return startParagraph.associatedCell.childWidgets.indexOf(startParagraph) <
+                    endParagraph.associatedCell.childWidgets.indexOf(endParagraph);
+            } else if (startParagraph.containerWidget instanceof HeaderFooterWidget) {
+                // return ((currentInline.owner as WParagraph).owner as WHeaderFooter).blocks.indexOf(currentInline.owner as WParagraph) <
+                //     ((inline.owner as WParagraph).owner as WHeaderFooter).blocks.indexOf(inline.owner as WParagraph);
+            } else {
+                return startParagraph.containerWidget.childWidgets.indexOf(startParagraph) <
+                    endParagraph.containerWidget.childWidgets.indexOf(endParagraph);
+            }
+        }
+        return this.isExistBefore(startParagraph, endParagraph);
+    }
+    /**
+     * Return true id current inline is exist after inline
+     *
+     * @private
+     * @returns {boolean}
+     */
+    public isExistAfterInline(currentInline: ElementBox, inline: ElementBox, isRetrieve?: boolean): boolean {
+        if (currentInline.line === inline.line) {
+            let selection: Selection = this.documentHelper.selection;
+            if (isRetrieve) {
+                return currentInline.line.children.indexOf(currentInline) >=
+                    inline.line.children.indexOf(inline);
+            } else if (currentInline === inline && selection.start.offset !== selection.end.offset) {
+                return currentInline.line.children.indexOf(currentInline) ===
+                    inline.line.children.indexOf(inline);
+            } else {
+                return currentInline.line.children.indexOf(currentInline) >
+                    inline.line.children.indexOf(inline);
+            }
+        }
+        if (currentInline.line.paragraph === inline.line.paragraph) {
+            return currentInline.line.paragraph.childWidgets.indexOf(currentInline.line)
+                > inline.line.paragraph.childWidgets.indexOf(inline.line);
+        }
+        const startParagraph: ParagraphWidget = currentInline.line.paragraph;
+        const endParagraph: ParagraphWidget = inline.line.paragraph;
+        if (startParagraph.containerWidget === endParagraph.containerWidget) {
+            if (startParagraph.isInsideTable) {
+                return startParagraph.associatedCell.childWidgets.indexOf(startParagraph) >
+                    endParagraph.associatedCell.childWidgets.indexOf(endParagraph);
+            } else if (startParagraph.containerWidget instanceof HeaderFooterWidget) {
+                // return ((currentInline.owner as WParagraph).owner as WHeaderFooter).blocks.indexOf(currentInline.owner as WParagraph) <
+                //     ((inline.owner as WParagraph).owner as WHeaderFooter).blocks.indexOf(inline.owner as WParagraph);
+            } else {
+                return startParagraph.containerWidget.childWidgets.indexOf(startParagraph) >
+                    endParagraph.containerWidget.childWidgets.indexOf(endParagraph);
+            }
+        }
+        return this.isExistAfter(startParagraph, endParagraph);
+    }
+    /**
+     * Get next rendered block
+     *
+     * @private
+     * @returns {BlockWidget}
+     */
+    public getNextRenderedBlock(block: BlockWidget): BlockWidget {
+        if (isNullOrUndefined(block.nextWidget)) {
+            return block.nextRenderedWidget as BlockWidget;
+        }
+        return block.nextWidget as BlockWidget;
+    }
+    /**
+     * Get next rendered block
+     *
+     * @private
+     * @returns {BlockWidget}
+     */
+    public getPreviousRenderedBlock(block: BlockWidget): BlockWidget {
+        if (isNullOrUndefined(block.previousWidget)) {
+            return block.previousRenderedWidget as BlockWidget;
+        }
+        return block.previousWidget as BlockWidget;
+    }
+    /**
+     * Get Next paragraph in block
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getNextParagraphBlock(block: BlockWidget): ParagraphWidget {
+        if (block.nextRenderedWidget instanceof ParagraphWidget) {
+            return block.nextRenderedWidget as ParagraphWidget;
+        } else if (block.nextRenderedWidget instanceof TableWidget) {
+            return this.documentHelper.getFirstParagraphInFirstCell((block.nextRenderedWidget as TableWidget));
+        }
+        if ((block as BlockWidget).containerWidget instanceof TableCellWidget) {
+            return this.getNextParagraphCell(((block as BlockWidget).containerWidget as TableCellWidget));
+        } else if ((block as BlockWidget).containerWidget instanceof BodyWidget) {
+            const bodyWidget: BodyWidget = (block as BlockWidget).containerWidget as BodyWidget;
+            return this.getNextParagraph((block as BlockWidget).containerWidget as BodyWidget);
+        } else if (block.containerWidget instanceof HeaderFooterWidget && this.isMoveDownOrMoveUp) {
+            return this.getFirstBlockInNextHeaderFooter(block);
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getFirstBlockInNextHeaderFooter(block: BlockWidget): ParagraphWidget {
+        const headerFooter: HeaderFooterWidget = block.containerWidget as HeaderFooterWidget;
+        let nextBlock: BlockWidget;
+        if (headerFooter.headerFooterType.indexOf('Header') !== -1) {
+            nextBlock = headerFooter.page.footerWidget.firstChild as BlockWidget;
+        } else if (headerFooter.page.nextPage) {
+            const nextPage: Page = headerFooter.page.nextPage;
+            const headerWidget: HeaderFooterWidget = nextPage.headerWidget;
+            headerWidget.page = nextPage;
+            if (nextPage.footerWidget) {
+                nextPage.footerWidget.page = nextPage;
+            }
+            nextBlock = headerWidget.firstChild as BlockWidget;
+        } else {
+            return undefined;
+        }
+        if (nextBlock instanceof ParagraphWidget) {
+            return nextBlock;
+        } else {
+            return this.getFirstBlockInFirstCell(nextBlock as TableWidget) as ParagraphWidget;
+        }
+    }
+    /**
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getLastBlockInPreviousHeaderFooter(block: BlockWidget): ParagraphWidget {
+        const headerFooter: HeaderFooterWidget = block.containerWidget as HeaderFooterWidget;
+        let previousBlock: BlockWidget;
+        if (headerFooter.headerFooterType.indexOf('Footer') !== -1) {
+            previousBlock = headerFooter.page.headerWidget.lastChild as BlockWidget;
+        } else if (headerFooter.page.previousPage) {
+            const previousPage: Page = headerFooter.page.previousPage;
+            const footerWidget: HeaderFooterWidget = previousPage.footerWidget;
+            footerWidget.page = previousPage;
+            if (previousPage.headerWidget) {
+                previousPage.headerWidget.page = previousPage;
+            }
+            previousBlock = footerWidget.lastChild as BlockWidget;
+        } else {
+            return undefined;
+        }
+        if (previousBlock instanceof ParagraphWidget) {
+            return previousBlock;
+        } else {
+            return this.getFirstBlockInFirstCell(previousBlock as TableWidget) as ParagraphWidget;
+        }
+    }
+    /**
+     * Get previous paragraph in block
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getPreviousParagraphBlock(block: BlockWidget, isAutoList?: boolean): ParagraphWidget {
+        if (block.previousRenderedWidget instanceof ParagraphWidget) {
+            return block.previousRenderedWidget as ParagraphWidget;
+        } else if (block.previousRenderedWidget instanceof TableWidget) {
+            return this.documentHelper.getLastParagraphInLastCell((block.previousRenderedWidget));
+        }
+        if (block.containerWidget instanceof TableCellWidget) {
+            return this.getPreviousParagraphCell((block.containerWidget)) as ParagraphWidget;
+        } else if (block.containerWidget instanceof BodyWidget) {
+            return this.getPreviousParagraph(block.containerWidget);
+        } else if (block.containerWidget instanceof HeaderFooterWidget && this.isMoveDownOrMoveUp && !isAutoList) {
+            return this.getLastBlockInPreviousHeaderFooter(block);
+        }
+        return undefined;
+    }
+
+    /**
+     * Return true if paragraph has valid inline
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public hasValidInline(paragraph: ParagraphWidget, start: ElementBox, end: ElementBox): boolean {
+        const index: number = paragraph.childWidgets.indexOf(start.line);
+        for (let i: number = index; i < paragraph.childWidgets.length; i++) {
+            for (let j: number = 0; j < (paragraph.childWidgets[i] as LineWidget).children.length; j++) {
+                const inline: ElementBox = (paragraph.childWidgets[i] as LineWidget).children[j];
+                if (inline.length === 0) {
+                    continue;
+                }
+                if (inline === end) {
+                    return false;
+                }
+                if (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                    || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * Get paragraph length
+     *
+     * @private
+     * @returns {number}
+     */
+    public getParagraphLength(paragraph: ParagraphWidget, endLine?: LineWidget, elementInfo?: ElementInfo, includeShape?: boolean): number {
+        let length: number = 0;
+        if (!isNullOrUndefined(paragraph)) {
+            for (let j: number = 0; j < paragraph.childWidgets.length; j++) {
+                const line: LineWidget = paragraph.childWidgets[j] as LineWidget;
+                if (endLine instanceof LineWidget && endLine === line) {
+                    if (elementInfo) {
+                        length += this.getLineLength(line, elementInfo, includeShape);
+                    }
+                    break;
+                }
+                length += this.getLineLength(line, undefined, includeShape);
+            }
+        }
+        return length;
+    }
+    /**
+     * Get Line length
+     *
+     * @private
+     * @returns {number}
+     */
+    public getLineLength(line: LineWidget, elementInfo?: ElementInfo, includeShape?: boolean): number {
+        let length: number = 0;
+        const bidi: boolean = line.paragraph.bidi;
+        for (let i: number = !bidi ? 0 : line.children.length - 1; bidi ? i > -1 : i < line.children.length; bidi ? i-- : i++) {
+            const element: ElementBox = line.children[i] as ElementBox;
+            if (element instanceof ListTextElementBox) {
+                continue;
+            }
+            if (includeShape) {
+                if (element instanceof ShapeElementBox) {
+                    for (let m = 0; m < (element as ShapeElementBox).textFrame.childWidgets.length; m++) {
+                        let para = (element as ShapeElementBox).textFrame.childWidgets[m] as ParagraphWidget;
+                        length += this.getParagraphLength(para) + 1;
+                    }
+                } else if (element instanceof FootnoteElementBox) {
+                    for (let m = 0; m < (element as FootnoteElementBox).bodyWidget.childWidgets.length; m++) {
+                        let para = (element as FootnoteElementBox).bodyWidget.childWidgets[m] as ParagraphWidget;
+                        length += this.getParagraphLength(para) + 1;
+                    }
+                }
+            }
+            if (elementInfo && elementInfo.element instanceof ElementBox && elementInfo.element === element) {
+                length += elementInfo.index;
+                break;
+            }
+            length += element.length;
+        }
+        return length;
+    }
+    /**
+     * Get line information
+     *
+     * @private
+     * @returns {LineInfo}
+     */
+    public getLineInfo(paragraph: ParagraphWidget, offset: number): LineInfo {
+        let line: LineWidget = undefined;
+        let length: number = 0;
+        const childLength: number = paragraph.childWidgets.length;
+        for (let j: number = 0; j < childLength; j++) {
+            line = paragraph.childWidgets[j] as LineWidget;
+            length = this.getLineLength(line);
+            if (offset <= length || j === childLength - 1) {
+                break;
+            } else {
+                offset = offset - length;
+            }
+        }
+        return { 'line': line, 'offset': offset };
+    }
+    /**
+     * @private
+     * @returns {ElementInfo}
+     */
+    public getElementInfo(line: LineWidget, offset: number): ElementInfo {
+        const index: number = 0;
+        let element: ElementBox = undefined;
+        for (let i: number = 0; i < line.children.length; i++) {
+            element = line.children[i] as ElementBox;
+            if (element instanceof ListTextElementBox) {
+                continue;
+            }
+            if (offset > element.length
+                && (!(offset === element.length + 1 && isNullOrUndefined(element.nextNode)))) {
+                offset = offset - element.length;
+            } else {
+                break;
+            }
+        }
+        return { 'element': element, 'index': offset };
+    }
+    /**
+     * Get paragraph start offset
+     *
+     * @private
+     * @returns {number}
+     */
+    public getStartOffset(paragraph: ParagraphWidget): number {
+        const startOffset: number = 0;
+        if (paragraph.childWidgets.length > 0) {
+            const childWidgets: LineWidget = paragraph.childWidgets[0] as LineWidget;
+            return this.getStartLineOffset(childWidgets);
+        }
+        return startOffset;
+    }
+    /**
+     * @private
+     */
+    public getStartLineOffset(line: LineWidget): number {
+        let startOffset: number = 0;
+        for (let i: number = 0; i < line.children.length; i++) {
+            const inline: ElementBox = line.children[i] as ElementBox;
+            if (inline.length === 0) {
+                continue;
+            }
+
+            if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
+                || inline instanceof ShapeElementBox || inline instanceof EditRangeStartElementBox
+                || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
+                || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))
+                || inline instanceof ContentControl) {
+                return startOffset;
+            }
+            if (inline instanceof ListTextElementBox) {
+                continue;
+            }
+            startOffset += inline.length;
+        }
+        return startOffset;
+    }
+    /**
+     * Get previous paragraph from selection
+     *
+     * @private
+     */
+    public getPreviousSelectionCell(cell: TableCellWidget): ParagraphWidget {
+        if (!isNullOrUndefined(cell.previousRenderedWidget)) {
+            if (!this.isForward) {
+                const block: BlockWidget = (cell.previousRenderedWidget as TableCellWidget).childWidgets[0] as BlockWidget;
+                if (block instanceof ParagraphWidget) {
+                    return block as ParagraphWidget;
+                } else {
+                    return this.documentHelper.getFirstParagraphInLastRow(block as TableWidget);
+                }
+            } else {
+                const widgets: IWidget[] = (cell.previousRenderedWidget as TableCellWidget).childWidgets;
+                const block: BlockWidget = widgets[widgets.length - 1] as BlockWidget;
+                if (block instanceof ParagraphWidget) {
+                    return block as ParagraphWidget;
+                } else {
+
+                    return this.getPreviousParagraphSelection(((block as TableWidget).childWidgets[(block as TableWidget).childWidgets.length - 1] as TableRowWidget));
+                }
+            }
+        }
+        return this.getPreviousSelectionRow(cell.ownerRow);
+    }
+    /**
+     * Get previous paragraph selection in selection
+     *
+     * @private
+     */
+    public getPreviousSelectionRow(row: TableRowWidget): ParagraphWidget {
+        if (!isNullOrUndefined(row.previousRenderedWidget)) {
+            if (!this.isForward) {
+                const cell: TableCellWidget = (row.previousRenderedWidget as TableRowWidget).childWidgets[0] as TableCellWidget;
+                const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
+                return this.documentHelper.getFirstParagraphBlock(block);
+            } else {
+                return this.getPreviousParagraphSelection((row.previousRenderedWidget as TableRowWidget));
+            }
+        }
+        return this.getPreviousSelectionBlock(row.ownerTable);
+    }
+    /**
+     * @private
+     */
+    public getNextSelectionBlock(block: BlockWidget): ParagraphWidget {
+        if (block.nextRenderedWidget instanceof ParagraphWidget) {
+            return block.nextRenderedWidget as ParagraphWidget;
+        } else if (block.nextRenderedWidget instanceof TableWidget) {
+            if (this.isEmpty || this.isForward) {
+                return this.documentHelper.getLastParagraphInFirstRow(block.nextRenderedWidget);
+            } else {
+                return this.getNextParagraphSelection(((block.nextRenderedWidget as TableWidget).childWidgets[0] as TableRowWidget));
+            }
+        }
+        if (block.containerWidget instanceof TableCellWidget) {
+            return this.getNextSelectionCell((block.containerWidget as TableCellWidget));
+        } else if (block.containerWidget instanceof BodyWidget) {
+            return this.getNextSelection(block.containerWidget as BodyWidget);
+        }
+        return undefined;
+    }
+    /**
+     * Get next paragraph from selected cell
+     *
+     * @private
+     */
+    public getNextSelectionCell(cell: TableCellWidget): ParagraphWidget {
+        if (!isNullOrUndefined(cell.nextRenderedWidget)) {
+            if (this.isEmpty || this.isForward) {
+
+                const block: BlockWidget = (cell.nextRenderedWidget as TableCellWidget).childWidgets[(cell.nextRenderedWidget as TableCellWidget).childWidgets.length - 1] as BlockWidget;
+                return this.documentHelper.getLastParagraphBlock(block);
+            } else {
+                //Return first paragraph in cell.
+                const block: BlockWidget = (cell.nextRenderedWidget as TableCellWidget).childWidgets[0] as BlockWidget;
+                if (block instanceof ParagraphWidget) {
+                    return block as ParagraphWidget;
+                } else {
+                    return this.getNextParagraphSelection(((block as TableWidget).childWidgets[0] as TableRowWidget));
+                }
+            }
+        }
+        return this.getNextSelectionRow(cell.ownerRow);
+    }
+    /**
+     * Get next paragraph in selection
+     *
+     * @private
+     */
+    public getNextSelectionRow(row: TableRowWidget): ParagraphWidget {
+        if (!isNullOrUndefined(row.nextRenderedWidget)) {
+            const isForwardSelection: boolean = this.isEmpty || this.isForward;
+            if (isForwardSelection) {
+
+                const cell: TableCellWidget = (row.nextRenderedWidget as TableRowWidget).childWidgets[(row.nextRenderedWidget as TableRowWidget).childWidgets.length - 1] as TableCellWidget;
+                const block: BlockWidget = cell.childWidgets[cell.childWidgets.length - 1] as BlockWidget;
+                return this.documentHelper.getLastParagraphBlock(block);
+            } else {
+                return this.getNextParagraphSelection(row.nextRenderedWidget as TableRowWidget);
+            }
+        }
+        return this.getNextSelectionBlock(row.ownerTable);
+    }
+    /**
+     * Get next block with selection
+     *
+     * @private
+     */
+    public getNextSelection(section: BodyWidget): ParagraphWidget {
+        if (section.nextRenderedWidget instanceof BodyWidget) {
+            const block: BlockWidget = (section.nextRenderedWidget as BodyWidget).childWidgets[0] as BlockWidget;
+            if (block instanceof ParagraphWidget) {
+                return block as ParagraphWidget;
+            } else {
+                if (this.isEmpty || this.isForward) {
+                    return this.documentHelper.getLastParagraphInFirstRow((block as TableWidget));
+                } else {
+                    return this.getNextParagraphSelection(((block as TableWidget).childWidgets[0] as TableRowWidget));
+                }
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public getNextParagraphSelection(row: TableRowWidget): ParagraphWidget {
+        //Iterate the exact cell based on UP/Down selection length.
+        let cell: TableCellWidget = row.childWidgets[0] as TableCellWidget;
+        if (this.start.paragraph.isInsideTable
+            && row.ownerTable.contains(this.start.paragraph.associatedCell)) {
+            const startCell: TableCellWidget = this.getCellInTable(row.ownerTable, this.start.paragraph.associatedCell);
+            cell = this.getFirstCellInRegion(row, startCell, this.upDownSelectionLength, false);
+        }
+        const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
+        return this.documentHelper.getFirstParagraphBlock(block);
+    }
+    /**
+     * @private
+     */
+    public getPreviousSelectionBlock(block: BlockWidget): ParagraphWidget {
+        if (block.previousRenderedWidget instanceof ParagraphWidget) {
+            return block.previousRenderedWidget as ParagraphWidget;
+        } else if (block.previousRenderedWidget instanceof TableWidget) {
+            if (!this.isForward) {
+                return this.documentHelper.getFirstParagraphInLastRow(block.previousRenderedWidget as TableWidget);
+            } else {
+
+                return this.getPreviousParagraphSelection(((block.previousRenderedWidget as TableWidget).childWidgets[(block.previousRenderedWidget as TableWidget).childWidgets.length - 1] as TableRowWidget));
+            }
+        }
+        if (block.containerWidget instanceof TableCellWidget) {
+            return this.getPreviousSelectionCell(block.containerWidget as TableCellWidget);
+        } else if (block.containerWidget instanceof BodyWidget) {
+            return this.getPreviousSelection(block.containerWidget as BodyWidget);
+        }
+        return undefined;
+    }
+    /**
+     * Get previous paragraph in selection
+     *
+     * @private
+     */
+    public getPreviousSelection(section: BodyWidget): ParagraphWidget {
+        if (section.previousRenderedWidget instanceof BodyWidget) {
+            const prevBodyWidget: BodyWidget = (section.previousRenderedWidget as BodyWidget);
+            const block: BlockWidget = prevBodyWidget.childWidgets[prevBodyWidget.childWidgets.length - 1] as BlockWidget;
+            if (block instanceof ParagraphWidget) {
+                return block as ParagraphWidget;
+            } else {
+                if (!this.isForward) {
+                    return this.documentHelper.getFirstParagraphInLastRow(block as TableWidget);
+                } else {
+                    const tableWidget: TableWidget = block as TableWidget;
+
+                    return this.getPreviousParagraphSelection(tableWidget.childWidgets[tableWidget.childWidgets.length - 1] as TableRowWidget);
+                }
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public getPreviousParagraphSelection(row: TableRowWidget): ParagraphWidget {
+        //Iterate the exact cell based on UP/Down selection length.
+        let cell: TableCellWidget = row.childWidgets[row.childWidgets.length - 1] as TableCellWidget;
+        if (this.start.paragraph.isInsideTable
+            && row.ownerTable.contains(this.start.paragraph.associatedCell)) {
+            const startCell: TableCellWidget = this.getCellInTable(row.ownerTable, this.start.paragraph.associatedCell);
+            cell = this.getLastCellInRegion(row, startCell, this.upDownSelectionLength, true);
+        }
+        const block: BlockWidget = cell.childWidgets[cell.childWidgets.length - 1] as BlockWidget;
+        return this.documentHelper.getLastParagraphBlock(block);
+    }
+    /**
+     * Get last cell in the selected region
+     *
+     * @private
+     */
+    public getLastCellInRegion(row: TableRowWidget, startCell: TableCellWidget, selLength: number, isMovePrev: boolean): TableCellWidget {
+        const start: number = this.getCellLeft(row, startCell);
+        const end: number = start + startCell.cellFormat.cellWidth;
+        let flag: boolean = true;
+        if (start <= selLength && selLength < end) {
+            for (let i: number = row.childWidgets.length - 1; i >= 0; i--) {
+                const left: number = this.getCellLeft(row, row.childWidgets[i] as TableCellWidget);
+                if (HelperMethods.round(start, 2) <= HelperMethods.round(left, 2) &&
+                    HelperMethods.round(left, 2) < HelperMethods.round(end, 2)) {
+                    flag = false;
+                    return row.childWidgets[i] as TableCellWidget;
+                }
+            }
+        } else {
+            for (let i: number = row.childWidgets.length - 1; i >= 0; i--) {
+                const left: number = this.getCellLeft(row, row.childWidgets[i] as TableCellWidget);
+                if (left <= selLength && left + (row.childWidgets[i] as TableCellWidget).width > selLength) {
+                    flag = false;
+                    return row.childWidgets[i] as TableCellWidget;
+                }
+            }
+        }
+        if (flag) {
+            if (!isNullOrUndefined(row.previousRenderedWidget) && isMovePrev) {
+                return this.getLastCellInRegion(row.previousRenderedWidget as TableRowWidget, startCell, selLength, isMovePrev);
+            } else if (!isNullOrUndefined(row.nextRenderedWidget) && !isMovePrev) {
+                return this.getLastCellInRegion(row.nextRenderedWidget as TableRowWidget, startCell, selLength, isMovePrev);
+            }
+        }
+        return row.childWidgets[row.childWidgets.length - 1] as TableCellWidget;
+    }
+    /**
+     * Get Container table
+     *
+     * @private
+     */
+    public getCellInTable(table: TableWidget, tableCell: TableCellWidget): TableCellWidget {
+        while (tableCell.ownerTable.isInsideTable) {
+            if (table.equals(tableCell.ownerTable)) {
+                return tableCell;
+            }
+            tableCell = tableCell.ownerTable.associatedCell;
+        }
+        return tableCell;
+    }
+
+    /**
+     * Get previous valid offset
+     *
+     * @private
+     */
+    public getPreviousValidOffset(paragraph: ParagraphWidget, offset: number): number {
+        if (offset === 0) {
+            return 0;
+        }
+        let validOffset: number = 0;
+        let count: number = 0;
+        let value: number = 0;
+        const bidi: boolean = paragraph.paragraphFormat.bidi;
+        for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
+            const lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            for (let j: number = 0; j < lineWidget.children.length; j++) {
+                const inline: ElementBox = lineWidget.children[j] as ElementBox;
+                if (inline.length === 0 || inline instanceof ListTextElementBox) {
+                    continue;
+                }
+                if (offset <= count + inline.length) {
+                    return offset - 1 === count ? validOffset : offset - 1;
+                }
+                if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof CommentCharacterElementBox || inline instanceof BookmarkElementBox
+                    || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
+                    validOffset = count + inline.length;
+                }
+                count += inline.length;
+            }
+        }
+        return offset - 1 === count ? validOffset : offset - 1;
+    }
+    /**
+     * Get next valid offset
+     *
+     * @private
+     */
+    public getNextValidOffset(line: LineWidget, offset: number): number {
+        let count: number = 0;
+        // if (!line.paragraph.paragraphFormat.bidi) {
+        for (let i: number = 0; i < line.children.length; i++) {
+            const inline: ElementBox = line.children[i] as ElementBox;
+            if (inline.length === 0 || inline instanceof ListTextElementBox) {
+                continue;
+            }
+            if (offset < count + inline.length) {
+                if (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                    || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
+                    return (offset > count ? offset : count) + 1;
+                }
+            }
+            if (offset === count + inline.length && inline instanceof FieldElementBox &&
+                inline.fieldType === 1 && inline.previousNode instanceof ImageElementBox) {
+                return offset;
+            }
+            count += inline.length;
+        }
+        // } else {
+        //     if (offset !== this.getLineLength(line)) {
+        //         offset = line.getInlineForOffset(offset, false, undefined, false, false, true).index;
+        //     }
+        // }
+        return offset;
+    }
+
+    /**
+     * Get paragraph mark size info
+     *
+     * @private
+     */
+    public getParagraphMarkSize(paragraph: ParagraphWidget, topMargin: number, bottomMargin: number): SizeInfo {
+        const size: TextSizeInfo = this.documentHelper.textHelper.getParagraphMarkSize(paragraph.characterFormat);
+        const baselineOffset: number = size.BaselineOffset;
+        const maxHeight: number = size.Height;
+        const maxBaselineOffset: number = baselineOffset;
+        if (paragraph instanceof ParagraphWidget) {
+            // let paragraphWidget: ParagraphWidget[] = paragraph.renderedElement() as ParagraphWidget[];
+            if (paragraph.childWidgets.length > 0) {
+                const lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
+            }
+
+            //Gets line spacing.
+            const lineSpacing: number = this.documentHelper.layout.getLineSpacing(paragraph, maxHeight);
+            const beforeSpacing: number = this.documentHelper.layout.getBeforeSpacing(paragraph);
+            topMargin = maxBaselineOffset - baselineOffset;
+            bottomMargin = maxHeight - maxBaselineOffset - (size.Height - baselineOffset);
+            //Updates line spacing, paragraph after/ before spacing and aligns the text to base line offset.
+            const lineSpacingType: LineSpacingType = paragraph.paragraphFormat.lineSpacingType;
+            if (lineSpacingType === 'Multiple') {
+                if (lineSpacing > maxHeight) {
+                    bottomMargin += lineSpacing - maxHeight;
+                } else {
+                    topMargin += lineSpacing - maxHeight;
+                }
+            } else if (lineSpacingType === 'Exactly') {
+                topMargin += lineSpacing - (topMargin + size.Height + bottomMargin);
+            } else if (lineSpacing > topMargin + size.Height + bottomMargin) {
+                topMargin += lineSpacing - (topMargin + size.Height + bottomMargin);
+            }
+            topMargin += beforeSpacing;
+            bottomMargin += this.documentHelper.layout.getAfterSpacing(paragraph);
+        }
+        return { 'width': size.Width, 'height': size.Height, 'topMargin': topMargin, 'bottomMargin': bottomMargin };
+    }
+    /**
+     * @private
+     */
+    public getPhysicalPositionInternal(line: LineWidget, offset: number, moveNextLine: boolean): Point {
+        if (line.paragraph.isEmpty()) {
+            const paragraphWidget: ParagraphWidget = line.paragraph;
+            let left: number = paragraphWidget.x;
+            if (paragraphWidget.childWidgets.length > 0) {
+                const lineWidget: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
+                left = this.getLeft(lineWidget);
+            }
+            const topMargin: number = 0;
+            const bottomMargin: number = 0;
+            const size: SizeInfo = this.getParagraphMarkSize(line.paragraph, topMargin, bottomMargin);
+            if (offset > 0 || (offset === 0 && paragraphWidget.isEmpty() && paragraphWidget.bidi)) {
+                left += size.width;
+            }
+            return new Point(left, paragraphWidget.y + size.topMargin);
+        } else {
+            let indexInInline: number = 0;
+            const inlineObj: ElementInfo = line.getInline(offset, indexInInline, line.paragraph.bidi);
+            const inline: ElementBox = inlineObj.element;           //return indexInInline must
+            indexInInline = inlineObj.index;
+
+            // if (inline.length === indexInInline && !isNullOrUndefined(inline.nextNode) && this.viewer.renderedElements.containsKey(inline) &&
+            //     this.viewer.renderedElements.get(inline).length > 0 && this.viewer.renderedElements.containsKey(inline.nextNode as WInline)
+            //     && this.viewer.renderedElements.get(inline.nextNode as WInline).length > 0 &&
+
+            //     (this.viewer.renderedElements.get(inline)[this.viewer.renderedElements.get(inline).length - 1] as ElementBox).line !== (this.viewer.renderedElements.get(inline.nextNode as WInline)[0] as ElementBox).line) {
+            //     //Handled specifically to move the cursor at start of next line.
+            //     inline = inline.nextNode as WInline;
+            //     indexInInline = 0;
+            // }
+            return this.getPhysicalPositionInline(inline, indexInInline, moveNextLine);
+        }
+    }
+    /**
+     * Highlight selected content
+     *
+     * @private
+     */
+    public highlightSelectedContent(start: TextPosition, end: TextPosition): void {
+        if (start.paragraph.isInsideTable && (!end.paragraph.isInsideTable
+            || (!start.paragraph.associatedCell.equals(end.paragraph.associatedCell))
+            || (!this.documentHelper.isSelectionChangedOnMouseMoved && this.isCellSelected(start.paragraph.associatedCell, start, end))
+            || this.isCellPrevSelected)) {
+            this.highlightCell(start.paragraph.associatedCell, this, start, end);
+            this.isCellPrevSelected = true;
+        } else {
+            let inline: ElementBox = undefined;
+            let index: number = 0;
+            if (!this.owner.isReadOnlyMode && start.paragraph === end.paragraph) {
+                if (start.offset + 1 === end.offset) {
+                    const inlineObj: ElementInfo = end.currentWidget.getInline(end.offset, index);
+                    inline = inlineObj.element;  // return index value
+                    index = inlineObj.index;
+                    if (inline instanceof ImageElementBox || inline instanceof ShapeElementBox) {
+                        const startOffset: number = start.currentWidget.getOffset(inline, 0);
+                        if (startOffset !== start.offset) {
+                            inline = undefined;
+                        }
+                    }
+                } else {
+                    let indexInInline: number = 0;
+                    const startInlineObj: ElementInfo = start.currentWidget.getInline(start.offset, indexInInline);
+                    let startInline: ElementBox = startInlineObj.element as ElementBox;        //return indexInInline
+                    indexInInline = startInlineObj.index;
+                    if (indexInInline === startInline.length) {
+                        startInline = this.getNextRenderedElementBox(startInline, indexInInline);
+                    }
+                    const endInlineObj: ElementInfo = end.currentWidget.getInline(end.offset, indexInInline);
+                    const endInline: ElementBox = endInlineObj.element;                //return indexInInline
+                    indexInInline = endInlineObj.index;
+
+                    if (startInline instanceof FieldElementBox && endInline instanceof FieldElementBox && !isNullOrUndefined((startInline as FieldElementBox).fieldSeparator)) {
+                        const fieldValue: ElementBox = (startInline as FieldElementBox).fieldSeparator.nextNode as ElementBox;
+                        if (fieldValue instanceof ImageElementBox && fieldValue.nextNode === endInline) {
+                            inline = fieldValue;
+                        }
+                    }
+                }
+            }
+
+            if (!this.owner.isReadOnlyMode && this.owner.isDocumentLoaded && (inline instanceof ImageElementBox || inline instanceof ShapeElementBox)) {
+                const elementBoxObj: ElementInfo = this.getElementBoxInternal(inline, index);
+                const elementBox: ImageElementBox = elementBoxObj.element as ImageElementBox;     //return index
+                index = elementBoxObj.index;
+                if (this.owner.enableImageResizerMode && !this.owner.editorModule.isRemoteAction) {
+                    this.owner.imageResizerModule.positionImageResizer(elementBox);
+                    this.owner.imageResizerModule.showImageResizer();
+                }
+                if (this.documentHelper.isTouchInput) {
+                    this.documentHelper.touchStart.style.display = 'none';
+                    this.documentHelper.touchEnd.style.display = 'none';
+                }
+            } else {
+                if(start.paragraph.isInsideTable 
+                    && start.paragraph.associatedCell.equals(end.paragraph.associatedCell)
+                    && end.paragraph.equals(this.getLastParagraph(end.paragraph.associatedCell))
+                    && (this.getParagraphLength(end.paragraph) + 1) == end.offset ){
+                    end.offset--;
+                }
+                this.highlight(start.paragraph, start, end);
+                if (this.isHighlightNext) {
+                    if (this.hightLightNextParagraph === start.paragraph) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    }
+                    this.isHighlightNext = false;
+                    this.hightLightNextParagraph = undefined;
+                }
+            }
+            if (this.isInShape) {
+                this.showResizerForShape();
+            }
+        }
+    }
+    private showResizerForShape(): void {
+        const shape: ShapeElementBox = this.getCurrentTextFrame().containerShape as ShapeElementBox;
+        this.owner.imageResizerModule.positionImageResizer(shape as ShapeElementBox);
+        this.owner.imageResizerModule.showImageResizer();
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public highlight(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, contentControl?: ContentControl): void {
+        let selectionStartIndex: number = 0;
+        let selectionEndIndex: number = 0;
+        let startElement: ElementBox = undefined;
+        let endElement: ElementBox = undefined;
+        let startLineWidget: LineWidget = undefined;
+        let endLineWidget: LineWidget = undefined;
+
+        //return start Element and selection start index
+        let startLineObj: ElementInfo = this.getStartLineWidget(paragraph, start, startElement, selectionStartIndex);
+        startElement = startLineObj.element;
+        if (isNullOrUndefined(startElement)) {
+            startLineWidget = paragraph.childWidgets[0] as LineWidget;
+        } else {
+            startLineWidget = startElement.line;
+        }
+        selectionStartIndex = startLineObj.index;
+        let endLineObj: ElementInfo = this.getEndLineWidget(end, endElement, selectionEndIndex);
+        endElement = endLineObj.element;
+        if (endElement) {
+            endLineWidget = endElement.line;
+        } else {
+            endLineWidget = end.paragraph.childWidgets[end.paragraph.childWidgets.length - 1] as LineWidget;
+        }
+        selectionEndIndex = endLineObj.index;
+        let top: number = 0;
+        let left: number = 0;
+        if (!isNullOrUndefined(startLineWidget)) {
+            top = this.getTop(startLineWidget);
+            left = this.getLeftInternal(startLineWidget, startElement, selectionStartIndex);
+        }
+        if (!isNullOrUndefined(startLineWidget) && startLineWidget === endLineWidget) {
+            //Selection ends in current line.
+            let right: number = this.getLeftInternal(endLineWidget, endElement, selectionEndIndex);
+            let width: number = 0;
+            let isRtlText: boolean = false;
+            if (endElement instanceof TextElementBox) {
+                isRtlText = endElement.isRightToLeft;
+            }
+            if (!isRtlText && startElement instanceof TextElementBox) {
+                isRtlText = startElement.isRightToLeft;
+            }
+            width = Math.abs(right - left);
+            // Handled the highlighting approach as genric for normal and rtl text.
+            if (isRtlText || paragraph.bidi) {
+                let elementBoxCollection: ElementBox[] = this.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
+                if (elementBoxCollection && elementBoxCollection.length > 1) {
+                    for (let i: number = 0; i < elementBoxCollection.length; i++) {
+                        let element: ElementBox = elementBoxCollection[i];
+                        let elementIsRTL: boolean = false;
+                        let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                        if (element === startElement) {
+                            left = this.getLeftInternal(startLineWidget, element, selectionStartIndex);
+                            right = this.getLeftInternal(startLineWidget, element, index);
+                        } else if (element === endElement) {
+                            left = this.getLeftInternal(startLineWidget, element, 0);
+                            right = this.getLeftInternal(startLineWidget, element, selectionEndIndex);
+                        } else {
+                            left = this.getLeftInternal(startLineWidget, element, 0);
+                            right = this.getLeftInternal(startLineWidget, element, index);
+                        }
+                        if (element instanceof TextElementBox) {
+                            elementIsRTL = element.isRightToLeft;
+                        }
+                        width = Math.abs(right - left);
+                        // Handled the paragraph mark highliting as special case.
+                        if (element === endElement && element instanceof TextElementBox
+                            && selectionEndIndex > (element as TextElementBox).length) {
+                            let charFormat: WCharacterFormat = element.line.paragraph.characterFormat;
+                            let paragraphMarkWidth: number = this.documentHelper.textHelper.getParagraphMarkSize(charFormat).Width;
+                            if (paragraph.bidi && !elementIsRTL) {
+                                width -= paragraphMarkWidth;
+                                // Highlight the element.
+                                this.createHighlightBorder(startLineWidget, width, left, top, true, contentControl);
+                                // Highlight the paragraph mark of Bidi paragrph. 
+                                left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
+                                this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true, contentControl);
+                                // continue to next element.
+                                continue;
+                            }
+                        }
+                        this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true, contentControl);
+                    }
+                } else { // Need to handle the Paragraph mark highlighting.
+                    if (endElement instanceof TextElementBox && selectionEndIndex > (endElement as TextElementBox).length) {
+                        let charFormat: WCharacterFormat = endElement.line.paragraph.characterFormat;
+                        let paragraphMarkWidth: number = this.documentHelper.textHelper.getParagraphMarkSize(charFormat).Width;
+                        // Since isRTLText is truo, so the right is considered as left
+                        if (!paragraph.bidi && isRtlText) {
+                            right += paragraphMarkWidth;
+                            width -= paragraphMarkWidth;
+                            // Highlight the element.
+                            this.createHighlightBorder(startLineWidget, width, right, top, true, contentControl);
+                            // Highlight the paragraph mark. 
+                            right += endElement.width;
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, right, top, true, contentControl);
+                        } else if (paragraph.bidi && !isRtlText) {
+                            width -= paragraphMarkWidth;
+                            // Highlight the element.
+                            this.createHighlightBorder(startLineWidget, width, left, top, true, contentControl);
+                            // Highlight the paragraph mark of Bidi paragrph. 
+                            left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true, contentControl);
+                        } else {
+                            this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top, false, contentControl);
+                        }
+
+                    } else {
+                        this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top, false, contentControl);
+                    }
+                }
+            } else {
+                // Start element and end element will be in reverese for Bidi paragraph highlighting. 
+                // So, the right is considered based on Bidi property.
+                this.createHighlightBorder(startLineWidget, width, paragraph.bidi ? right : left, top, false, contentControl);
+            }
+        } else {
+            if (!isNullOrUndefined(startLineWidget)) {
+                let x: number = startLineWidget.paragraph.x;
+                if (paragraph !== startLineWidget.paragraph) {
+                    paragraph = startLineWidget.paragraph;
+                }
+                let width: number = this.getWidth(startLineWidget, true) - (left - startLineWidget.paragraph.x);
+                // Handled the  highlighting approach as genric for normal and rtl text.
+                if (paragraph.bidi || (startElement instanceof TextElementBox && startElement.isRightToLeft)) {
+                    let right: number = 0;
+
+                    let elementCollection: ElementBox[] = this.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
+                    if (elementCollection) {
+                        let elementIsRTL: boolean = false;
+                        for (let i: number = 0; i < elementCollection.length; i++) {
+                            let element: ElementBox = elementCollection[i];
+                            elementIsRTL = false;
+                            if (element === startElement) {
+                                left = this.getLeftInternal(startLineWidget, element, selectionStartIndex);
+                            } else {
+                                left = this.getLeftInternal(startLineWidget, element, 0);
+                            }
+                            let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                            right = this.getLeftInternal(startLineWidget, element, index);
+                            if (element instanceof TextElementBox) {
+                                elementIsRTL = element.isRightToLeft;
+                            }
+                            width = Math.abs(right - left);
+                            this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true, contentControl);
+                        }
+                        // Highlight the Paragrph mark for last line.
+                        if (startLineWidget.isLastLine()) {
+
+                            let charFormat: WCharacterFormat = elementCollection[elementCollection.length - 1].line.paragraph.characterFormat;
+                            let paragraphMarkWidth: number = this.documentHelper.textHelper.getParagraphMarkSize(charFormat).Width;
+                            if (paragraph.bidi) {
+                                // The paragraph mark will be at the left most end.
+                                left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
+                            } else { // The paragraph mark will at right most end.
+                                left = elementIsRTL ? startLineWidget.paragraph.x + this.getWidth(startLineWidget, false) : right;
+                            }
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true, contentControl);
+                        }
+                    } else {
+                        this.createHighlightBorder(startLineWidget, width, left, top, false, contentControl);
+                    }
+                } else {
+                    this.createHighlightBorder(startLineWidget, width, left, top, false, contentControl);
+                }
+                let lineIndex: number = startLineWidget.paragraph.childWidgets.indexOf(startLineWidget);
+                //Iterates to last item of paragraph or selection end.                                             
+                this.highlightParagraph(paragraph as ParagraphWidget, lineIndex + 1, endLineWidget, endElement, selectionEndIndex, contentControl);
+                if (paragraph.childWidgets.indexOf(end.currentWidget) !== -1) {
+                    return;
+                }
+            }
+            if (this.isHideSelection(paragraph)) {
+                this.isHighlightNext = false;
+                return;
+            }
+            this.isHighlightNext = true;
+            this.hightLightNextParagraph = paragraph;
+        }
+    }
+    private highlightNextBlock(paragraph: BlockWidget, start: TextPosition, end: TextPosition): void {
+        let block: BlockWidget = paragraph.nextRenderedWidget as BlockWidget;
+        if (!isNullOrUndefined(block)) {
+            if (block instanceof ParagraphWidget) {
+                this.isHighlightNext = false;
+                this.highlight(block, start, end);
+                if (this.isHighlightNext) {
+                    this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    this.isHighlightNext = false;
+                    this.hightLightNextParagraph = undefined;
+                }
+            } else {
+                this.highlightTable(block as TableWidget, start, end);
+            }
+        }
+    }
+    /**
+     * Get start line widget
+     * @private
+     * @returns {ElementInfo}
+     */
+
+    public getStartLineWidget(paragraph: ParagraphWidget, start: TextPosition, startElement: ElementBox, selectionStartIndex: number): ElementInfo {
+        let offset: number = paragraph === start.paragraph ? start.offset : this.getStartOffset(paragraph);
+        let startInlineObj: ElementInfo = undefined;
+        if (paragraph === start.paragraph) {
+            startInlineObj = start.currentWidget.getInline(offset, selectionStartIndex);
+        } else {
+            startInlineObj = (paragraph.firstChild as LineWidget).getInline(offset, selectionStartIndex);
+        }
+        startElement = startInlineObj.element;      //return selectionStartIndex
+        selectionStartIndex = startInlineObj.index;
+        if (startElement instanceof FieldElementBox) {
+            let inlineInfo: ElementInfo = this.getRenderedInline((startElement as FieldElementBox), selectionStartIndex);
+            startElement = inlineInfo.element;
+            selectionStartIndex = inlineInfo.index;
+        }
+        if (offset === this.getParagraphLength(start.paragraph) + 1) {
+            selectionStartIndex++;
+        }
+        return {
+            'index': selectionStartIndex, 'element': startElement
+        };
+    }
+    /**
+     * Get end line widget
+     * @private
+     */
+    public getEndLineWidget(end: TextPosition, endElement: ElementBox, selectionEndIndex: number): ElementInfo {
+        let endInlineObj: ElementInfo = end.currentWidget.getInline(end.offset, selectionEndIndex) as ElementInfo;
+        endElement = endInlineObj.element;       //return selection end index
+        selectionEndIndex = endInlineObj.index;
+        if (endElement instanceof FieldElementBox) {
+            let inlineInfo: ElementInfo = this.getRenderedInline((endElement as FieldElementBox), selectionEndIndex);
+            endElement = inlineInfo.element;
+            selectionEndIndex = inlineInfo.index;
+        }
+        let lineIndex: number = end.paragraph.childWidgets.indexOf(end.currentWidget);
+        if (lineIndex === end.paragraph.childWidgets.length - 1 && end.offset === this.getLineLength(end.currentWidget) + 1) {
+            selectionEndIndex = endElement ? endElement.length + 1 : 1;
+        }
+        return { 'index': selectionEndIndex, 'element': endElement };
+    }
+    /**
+     * Get line widget
+     * @private
+     */
+    public getLineWidgetInternal(line: LineWidget, offset: number, moveToNextLine: boolean): LineWidget {
+        let lineWidget: LineWidget = undefined;
+        if (line.children.length === 0 && line instanceof LineWidget) {
+            lineWidget = line as LineWidget;
+        } else {
+            let indexInInline: number = 0;
+            let inlineInfo: ElementInfo = line.getInline(offset, indexInInline);
+            let inline: ElementBox = inlineInfo.element;
+            indexInInline = inlineInfo.index;
+            lineWidget = inline instanceof ElementBox ? inline.line
+                : this.getLineWidgetInternalInline(inline, indexInInline, moveToNextLine);
+        }
+        return lineWidget;
+    }
+    /**
+     * Get last line widget
+     * @private
+     */
+    public getLineWidgetParagraph(offset: number, line: LineWidget): LineWidget {
+        let linewidget: LineWidget = undefined;
+        if (line.children.length === 0) {
+            linewidget = line as LineWidget;
+        } else {
+            let indexInInline: number = 0;
+            let inlineInfo: ElementInfo = line.getInline(offset, indexInInline);
+            let inline: ElementBox = inlineInfo.element;
+            indexInInline = inlineInfo.index;
+            linewidget = this.getLineWidget(inline, indexInInline);
+        }
+
+        return linewidget;
+    }
+
+    /**
+     * Highlight selected cell
+     * @private
+     */
+
+    public highlightCells(table: TableWidget, startCell: TableCellWidget, endCell: TableCellWidget): void {
+        let start: number = this.getCellLeft(startCell.ownerRow, startCell);
+        let end: number = start + startCell.cellFormat.cellWidth;
+        let endCellLeft: number = this.getCellLeft(endCell.ownerRow, endCell);
+        let endCellRight: number = endCellLeft + endCell.cellFormat.cellWidth;
+        if (start > endCellLeft) {
+            start = endCellLeft;
+        }
+        if (end < endCellRight) {
+            end = endCellRight;
+        }
+        if (start > this.upDownSelectionLength) {
+            start = this.upDownSelectionLength;
+        }
+        if (end < this.upDownSelectionLength) {
+            end = this.upDownSelectionLength;
+        }
+        let tableWidgetCollection: TableWidget[] = table.getSplitWidgets() as TableWidget[];
+        let startTableIndex: number = tableWidgetCollection.indexOf(startCell.ownerRow.ownerTable);
+        let endTableIndex: number = tableWidgetCollection.indexOf(endCell.ownerRow.ownerTable);
+        if (startTableIndex === endTableIndex) {
+            let count: number = table.childWidgets.indexOf(endCell.ownerRow as TableRowWidget);
+            for (let i: number = table.childWidgets.indexOf(startCell.ownerRow as TableRowWidget); i <= count; i++) {
+                this.highlightRow((table.childWidgets[i] as TableRowWidget), start, end);
+            }
+        } else {
+            let startRowIndex: number = 0;
+            let endRowIndex: number = 0;
+            for (let i: number = startTableIndex; i <= endTableIndex; i++) {
+                table = tableWidgetCollection[i];
+                if (i === startTableIndex) {
+                    startRowIndex = table.childWidgets.indexOf(startCell.ownerRow);
+                } else {
+                    startRowIndex = 0;
+                }
+                if (i === endTableIndex) {
+                    endRowIndex = table.childWidgets.indexOf(endCell.ownerRow);
+                } else {
+                    endRowIndex = table.childWidgets.length - 1;
+                }
+                for (let j: number = startRowIndex; j <= endRowIndex; j++) {
+                    this.highlightRow((table.childWidgets[j] as TableRowWidget), start, end);
+                }
+            }
+        }
+    }
+    /**
+     * highlight selected table
+     *
+     * @private
+     */
+    public highlightTable(table: TableWidget, start: TextPosition, end: TextPosition): void {
+        this.highlightInternal(table.childWidgets[0] as TableRowWidget, start, end);
+        if (!end.paragraph.isInsideTable //Selection end is outside the table cell.
+            || !table.contains(end.paragraph.associatedCell)) {//Selection end is not inside the current table.
+            this.highlightNextBlock(table, start, end);
+        }
+    }
+    /**
+     * Get cell left
+     *
+     * @private
+     */
+    public getCellLeft(row: TableRowWidget, cell: TableCellWidget): number {
+        let left: number = 0;
+        left += (cell as TableCellWidget).x - (cell as TableCellWidget).margin.left;
+        return left;
+    }
+
+    /**
+     * Get next paragraph for row
+     *
+     * @private
+     */
+    public getNextParagraphRow(row: BlockWidget): ParagraphWidget {
+        if (!isNullOrUndefined(row.nextRenderedWidget)) {
+            const cell: TableCellWidget = (row.nextRenderedWidget as TableRowWidget).childWidgets[0] as TableCellWidget;
+            const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
+            if (isNullOrUndefined(block)) {
+                return this.getNextParagraphCell(cell);
+            }
+            return this.documentHelper.getFirstParagraphBlock(block);
+        }
+        return this.getNextParagraphBlock((row as TableRowWidget).ownerTable) as ParagraphWidget;
+    }
+    /**
+     * Get previous paragraph from row
+     *
+     * @private
+     */
+    public getPreviousParagraphRow(row: TableRowWidget): ParagraphWidget {
+        if (!isNullOrUndefined(row.previousRenderedWidget)) {
+
+            const cell: TableCellWidget = (row.previousRenderedWidget as TableRowWidget).lastChild as TableCellWidget;
+            const block: BlockWidget = (cell.lastChild as BlockWidget) ? cell.lastChild as BlockWidget : (cell.previousSplitWidget).lastChild as BlockWidget;
+            return this.documentHelper.getLastParagraphBlock(block);
+        }
+        return this.getPreviousParagraphBlock(row.ownerTable as BlockWidget) as ParagraphWidget;
+    }
+    /**
+     * Return true if row contain cell
+     *
+     * @private
+     */
+    public containsRow(row: TableRowWidget, tableCell: TableCellWidget): boolean {
+        if ((row as TableRowWidget).childWidgets.indexOf(tableCell) !== -1) {
+            return true;
+        }
+        while (tableCell.ownerTable.isInsideTable) {
+            if ((row as TableRowWidget).childWidgets.indexOf(tableCell) !== -1) {
+                return true;
+            }
+            tableCell = tableCell.ownerTable.associatedCell;
+        }
+        return (row as TableRowWidget).childWidgets.indexOf(tableCell) !== -1;
+    }
+    /**
+     * Highlight selected row
+     *
+     * @private
+     */
+    public highlightRow(row: TableRowWidget, start: number, end: number): void {
+        for (let i: number = 0; i < row.childWidgets.length; i++) {
+            const left: number = this.getCellLeft(row, row.childWidgets[i] as TableCellWidget);
+            if (HelperMethods.round(start, 2) <= HelperMethods.round(left, 2) &&
+                HelperMethods.round(left, 2) < HelperMethods.round(end, 2)) {
+                this.highlightCellWidget(row.childWidgets[i] as TableCellWidget);
+            }
+        }
+    }
+    /**
+     * @private
+     */
+
+    public highlightInternal(row: TableRowWidget, start: TextPosition, end: TextPosition): void {
+        for (let i: number = 0; i < row.childWidgets.length; i++) {
+            this.highlightCellWidget(row.childWidgets[i] as TableCellWidget);
+        }
+        if (end.paragraph.isInsideTable && this.containsRow(row, end.paragraph.associatedCell)) {
+            return;
+        } else if ((row as TableRowWidget).nextRenderedWidget instanceof TableRowWidget) {
+            this.highlightInternal(row.nextRenderedWidget as TableRowWidget, start, end);
+        }
+    }
+
+    /**
+     * Get last paragraph in cell
+     *
+     * @private
+     */
+    public getLastParagraph(cell: TableCellWidget): ParagraphWidget {
+        while (cell.nextSplitWidget) {
+            if (cell.nextSplitWidget.childWidgets.length > 0) {
+                cell = cell.nextSplitWidget as TableCellWidget;
+            } else {
+                break;
+            }
+        }
+
+        let lastBlock: BlockWidget;
+
+        if (cell.childWidgets.length > 0) {
+            lastBlock = (cell as TableCellWidget).lastChild as BlockWidget;
+        } else {
+            lastBlock = cell.previousSplitWidget.lastChild as BlockWidget;
+        }
+        return this.documentHelper.getLastParagraphBlock(lastBlock);
+    }
+    /**
+     * Return true is source cell contain cell
+     *
+     * @private
+     */
+    public containsCell(sourceCell: TableCellWidget, cell: TableCellWidget): boolean {
+        if (sourceCell.equals(cell)) {
+            return true;
+        }
+        while (cell.ownerTable.isInsideTable) {
+            if (sourceCell.equals(cell.ownerTable.associatedCell)) {
+                return true;
+            }
+            cell = cell.ownerTable.associatedCell;
+        }
+        return false;
+    }
+    /**
+     * Return true if cell is selected
+     *
+     * @private
+     */
+    public isCellSelected(cell: TableCellWidget, startPosition: TextPosition, endPosition: TextPosition): boolean {
+        const lastParagraph: ParagraphWidget = this.getLastParagraph(cell as TableCellWidget) as ParagraphWidget;
+
+        const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && endPosition.offset === this.getParagraphLength(lastParagraph) + 1;
+
+        return isAtCellEnd || (!this.containsCell(cell, startPosition.paragraph.associatedCell) ||
+            !this.containsCell(cell, endPosition.paragraph.associatedCell));
+    }
+    /**
+     * Return Container cell
+     *
+     * @private
+     */
+    public getContainerCellOf(cell: TableCellWidget, tableCell: TableCellWidget): TableCellWidget {
+        while (cell.ownerTable.isInsideTable) {
+            if ((cell.ownerTable as TableWidget).contains(tableCell as TableCellWidget)) {
+                return cell;
+            }
+            cell = cell.ownerTable.associatedCell;
+        }
+        return cell;
+    }
+    /**
+     * Get Selected cell
+     *
+     * @private
+     */
+    public getSelectedCell(cell: TableCellWidget, containerCell: TableCellWidget): TableCellWidget {
+        if (cell.ownerTable.equals(containerCell.ownerTable)) {
+            return cell;
+        }
+        while (cell.ownerTable.isInsideTable) {
+            if (cell.ownerTable.associatedCell.equals(containerCell)) {
+                return cell;
+            }
+            cell = cell.ownerTable.associatedCell;
+        }
+        return cell;
+    }
+
+    /**
+     * @private
+     */
+    public getSelectedCells(): TableCellWidget[] {
+        const cells: TableCellWidget[] = [];
+        for (let i: number = 0; i < this.selectedWidgets.keys.length; i++) {
+            const widget: Widget = this.selectedWidgets.keys[i] as Widget;
+            if (widget instanceof TableCellWidget) {
+                cells.push(widget);
+            }
+        }
+        return cells;
+    }
+    /**
+     * @private
+     * @return
+     */
+    public getLevelFormatNumber(): string {
+        let numberFormat: string = '%';
+        numberFormat = numberFormat + (((this.paragraphFormat.listLevelNumber <= 0) ? 0 : this.paragraphFormat.listLevelNumber) + 1) + '.';
+        return numberFormat;
+    }
+    /**
+     * Get Next paragraph from cell
+     *
+     * @private
+     */
+    public getNextParagraphCell(cell: TableCellWidget): ParagraphWidget {
+        if ((cell as TableCellWidget).nextRenderedWidget && cell.nextRenderedWidget instanceof TableCellWidget) {
+            //Return first paragraph in cell.
+            cell = cell.nextRenderedWidget as TableCellWidget;
+            if (cell.getSplitWidgets()[0] instanceof TableCellWidget) {
+                cell = cell.getSplitWidgets()[0] as TableCellWidget;
+            }
+            const block: BlockWidget = cell.firstChild as BlockWidget;
+            if (block) {
+                return this.documentHelper.getFirstParagraphBlock(block);
+            } else {
+                return this.getNextParagraphCell(cell);
+            }
+        } else if(cell.nextSplitWidget && cell.nextSplitWidget.childWidgets.length === 0){
+            cell = cell.getSplitWidgets().pop() as TableCellWidget;
+        }
+        return this.getNextParagraphRow((cell as TableCellWidget).containerWidget as BlockWidget);
+    }
+    /**
+     * Get previous paragraph from cell
+     *
+     * @private
+     */
+    public getPreviousParagraphCell(cell: TableCellWidget): ParagraphWidget {
+        if (!isNullOrUndefined(cell.previousRenderedWidget) && cell.previousRenderedWidget instanceof TableCellWidget) {
+            cell = cell.previousRenderedWidget as TableCellWidget;
+            const block: BlockWidget = cell.lastChild as BlockWidget;
+            return this.documentHelper.getLastParagraphBlock(block);
+        }
+        return this.getPreviousParagraphRow(cell.ownerRow as TableRowWidget);
+    }
+    /**
+     * Get cell's container cell
+     *
+     * @private
+     */
+    public getContainerCell(cell: TableCellWidget): TableCellWidget {
+        while (!isNullOrUndefined(cell.ownerTable) && cell.ownerTable.isInsideTable) {
+            cell = cell.ownerTable.associatedCell;
+        }
+        return cell;
+    }
+    /**
+     * Highlight selected cell
+     *
+     * @private
+     */
+    public highlightCell(cell: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition): void {
+        if (end.paragraph.isInsideTable) {
+            let containerCell: TableCellWidget = this.getContainerCellOf(cell, end.paragraph.associatedCell);
+            if (containerCell.ownerTable.contains(end.paragraph.associatedCell)) {
+                let startCell: TableCellWidget = this.getSelectedCell(cell, containerCell);
+                let endCell: TableCellWidget = this.getSelectedCell(end.paragraph.associatedCell, containerCell);
+                if (this.containsCell(containerCell, end.paragraph.associatedCell)) {
+                    //Selection end is in container cell.
+                    if (this.isCellSelected(containerCell, start, end)) {
+                        this.highlightCellWidget(containerCell);
+                    } else {
+                        if (startCell === containerCell) {
+                            this.highlight(start.paragraph, start, end);
+                            if (this.isHighlightNext) {
+                                this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                                this.isHighlightNext = false;
+                                this.hightLightNextParagraph = undefined;
+                            }
+                        } else {
+                            this.highlightContainer(startCell, start, end);
+                        }
+                    }
+                } else {
+                    //Selection end is not in container cell.
+                    this.highlightCellWidget(containerCell);
+                    if (containerCell.ownerRow.equals(endCell.ownerRow)) {
+                        //Highlight other selected cells in current row.
+                        startCell = containerCell as TableCellWidget;
+                        while (!isNullOrUndefined((startCell as TableCellWidget).nextRenderedWidget)) {
+                            startCell = startCell.nextRenderedWidget as TableCellWidget;
+                            this.highlightCellWidget(startCell);
+                            if (startCell === endCell) {
+                                break;
+                            }
+                        }
+                    } else {
+                        this.highlightCells(containerCell.ownerTable, containerCell, endCell);
+                    }
+                }
+            } else {
+                this.highlightContainer(containerCell, start, end);
+            }
+        } else {
+            const cell1: TableCellWidget = this.getContainerCell(cell);
+            this.highlightContainer(cell1, start, end);
+        }
+    }
+    /**
+     * @private
+     */
+    public highlightContainer(cell: TableCellWidget, start: TextPosition, end: TextPosition): void {
+        this.highlightInternal(cell.containerWidget as TableRowWidget, start, end);
+        this.highlightNextBlock(cell.ownerTable.getSplitWidgets().pop() as TableWidget, start, end);
+    }
+    /**
+     * Get previous valid element
+     *
+     * @private
+     */
+    public getPreviousValidElement(inline: ElementBox): ElementBox {
+        let previousValidInline: ElementBox = undefined;
+        if (this.documentHelper.isFormFillProtectedMode && (inline as FieldElementBox).fieldType === 2) {
+            return inline;
+        }
+        while (inline instanceof FieldElementBox) {
+            if (HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox))) {
+                if (inline instanceof FieldElementBox && inline.fieldType === 0) {
+                    previousValidInline = inline;
+                } else if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                    previousValidInline = inline;
+                    if (isNullOrUndefined((inline as FieldElementBox).fieldSeparator)) {
+                        inline = (inline as FieldElementBox).fieldBegin;
+                        previousValidInline = inline;
+                    }
+                } else {
+                    inline = (inline as FieldElementBox).fieldBegin;
+                    previousValidInline = inline;
+                }
+            }
+            inline = inline.previousNode as ElementBox;
+        }
+
+        return isNullOrUndefined(previousValidInline) ? inline : previousValidInline;
+    }
+    /**
+     * Return next valid inline with index
+     *
+     * @private
+     */
+    public validateTextPosition(inline: ElementBox, index: number): ElementInfo {
+        let nextNode: ElementBox = inline.nextNode;
+        if (inline.length === index && (nextNode instanceof FieldElementBox
+            || (!(inline instanceof ImageElementBox) && (nextNode instanceof BookmarkElementBox || nextNode instanceof CommentCharacterElementBox)))) {
+            //If inline is last item within field, then set field end as text position.
+            const nextInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
+            if ((nextInline instanceof FieldElementBox && nextInline.fieldType === 1)
+                || (nextInline instanceof BookmarkElementBox && nextInline.bookmarkType === 1)
+                || (nextInline instanceof CommentCharacterElementBox && nextInline.commentType === 1)) {
+                inline = nextInline;
+                index = this.documentHelper.isFormFillProtectedMode ? 0 : 1;
+            }
+        } else if (index === 0 && inline.previousNode instanceof FieldElementBox) {
+            const prevInline: ElementBox = this.getPreviousValidElement((inline.previousNode as ElementBox));
+            inline = prevInline;
+            index = inline instanceof FieldElementBox ? 0 : inline.length;
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                index++;
+            }
+        }
+        return { 'element': inline, 'index': index };
+    }
+    /**
+     * Get inline physical location
+     *
+     * @private
+     */
+    public getPhysicalPositionInline(inline: ElementBox, index: number, moveNextLine: boolean): Point {
+        let element: ElementBox = undefined;
+        element = this.getElementBox(inline, index, moveNextLine).element;
+        let lineWidget: LineWidget = undefined;
+        if (isNullOrUndefined(element) || isNullOrUndefined(element.line)) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                element = inline;
+            } else {
+                if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox || inline instanceof CommentCharacterElementBox) {
+                    return this.getFieldCharacterPosition(inline);
+                }
+                return new Point(0, 0);
+            }
+        }
+        const margin: Margin = element.margin;
+        let top: number = 0;
+        let left: number = 0;
+        if (element instanceof TextElementBox && (element as TextElementBox).text === '\v' && isNullOrUndefined(inline.nextNode) && !this.owner.editorModule.handledEnter) {
+            lineWidget = this.getNextLineWidget(element.line.paragraph, element);
+            index = 0;
+        } else {
+            lineWidget = element.line;
+        }
+        top = this.getTop(lineWidget);
+        if (element instanceof ImageElementBox && element.textWrappingStyle === 'Inline') {
+            let format: WCharacterFormat = element.line.paragraph.characterFormat;
+            const previousInline: ElementBox = this.getPreviousTextElement(inline as ElementBox);
+            if (!isNullOrUndefined(previousInline)) {
+                format = previousInline.characterFormat;
+            } else {
+                const nextInline: ElementBox = this.getNextTextElement(inline as ElementBox);
+                if (!isNullOrUndefined(nextInline)) {
+                    format = nextInline.characterFormat;
+                }
+            }
+            const measureObj: TextSizeInfo = this.documentHelper.textHelper.getHeight(format);
+            if (element.margin.top + element.height - measureObj.BaselineOffset > 0) {
+                top += element.margin.top + element.height - measureObj.BaselineOffset;
+            }
+        } else if (!(element instanceof FieldElementBox)) {
+            top += margin.top > 0 ? margin.top : 0;
+        }
+        left = (isNullOrUndefined(element) || isNullOrUndefined(lineWidget)) ? 0 : this.getLeftInternal(lineWidget, element, index);
+        return new Point(left, top);
+    }
+    /**
+     * Get field character position
+     *
+     * @private
+     */
+    public getFieldCharacterPosition(firstInline: ElementBox): Point {
+        const nextValidInline: ElementBox = this.documentHelper.getNextValidElementForField(firstInline);
+
+        //If field separator/end exists at end of paragraph, then move to next paragraph.
+        if (isNullOrUndefined(nextValidInline)) {
+            const nextParagraph: ParagraphWidget = firstInline.line.paragraph;
+            return this.getEndPosition(nextParagraph);
+        } else {
+            return this.getPhysicalPositionInline(nextValidInline, 0, true);
+        }
+    }
+    /**
+     * @private
+     */
+    public isRenderBookmarkAtEnd(bookmark: BookmarkElementBox): boolean {
+        let bookmarkElement: BookmarkElementBox;
+            if (bookmark.bookmarkType == 1) {
+                bookmarkElement = bookmark.reference;
+            } else {
+                bookmarkElement = bookmark;
+            }
+            if (bookmarkElement && isNullOrUndefined(bookmarkElement.properties)) {
+                let endCell: TableCellWidget =bookmarkElement.reference ? bookmarkElement.reference.paragraph.associatedCell: undefined;
+                if(isNullOrUndefined(endCell)){
+                    return false;
+                }
+                let lastRow: TableRowWidget =bookmarkElement.reference ? bookmarkElement.reference.paragraph.associatedCell.ownerRow as TableRowWidget:undefined;
+                let lastCell: TableCellWidget =lastRow ? lastRow.childWidgets[lastRow.childWidgets.length - 1] as TableCellWidget:undefined;
+                if(isNullOrUndefined(lastCell)){
+                    return false;
+                }
+                if (endCell == lastCell && !(bookmark.bookmarkType === 1 && !isNullOrUndefined(bookmark.line) && bookmark.line.children.indexOf(bookmark) !== bookmark.line.children.length - 1)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+    }
+    /**
+     * Get paragraph end position
+     *
+     * @private
+     */
+    public getEndPosition(widget: ParagraphWidget): Point {
+        let left: number = widget.x;
+        let top: number = widget.y;
+        let lineWidget: LineWidget = undefined;
+        if (widget.childWidgets.length > 0) {
+            lineWidget = widget.childWidgets[widget.childWidgets.length - 1] as LineWidget;
+            if (widget.paragraphFormat.bidi) {
+                left = this.getLeft(lineWidget);
+            } else {
+                left += this.getWidth(lineWidget, false);
+            }
+        }
+        if (!isNullOrUndefined(lineWidget)) {
+            top = this.getTop(lineWidget);
+        }
+        const topMargin: number = 0;
+        const bottomMargin: number = 0;
+        const size: SizeInfo = this.getParagraphMarkSize(widget, topMargin, bottomMargin);
+        return new Point(left, top + size.topMargin);
+    }
+    /**
+     * Get element box
+     *
+     * @private
+     */
+    public getElementBox(currentInline: ElementBox, index: number, moveToNextLine: boolean): ElementInfo {
+        let elementBox: ElementBox = undefined;
+        if (!(currentInline instanceof FieldElementBox || currentInline instanceof BookmarkElementBox || currentInline instanceof CommentCharacterElementBox)) {
+            elementBox = currentInline;
+        }
+        return { 'element': elementBox, 'index': index };
+    }
+    /**
+     * @private
+     */
+    public getPreviousTextElement(inline: ElementBox): ElementBox {
+        if (inline.previousNode instanceof TextElementBox) {
+            return inline.previousNode as ElementBox;
+        }
+        if (!isNullOrUndefined(inline.previousNode)) {
+            return this.getPreviousTextElement((inline.previousNode as ElementBox));
+        }
+        return undefined;
+    }
+    /**
+     * Get next text inline
+     *
+     * @private
+     */
+    public getNextTextElement(inline: ElementBox): ElementBox {
+        if (inline.nextNode instanceof TextElementBox) {
+            return inline.nextNode as ElementBox;
+        }
+        if (!isNullOrUndefined(inline.nextNode)) {
+            return this.getNextTextElement((inline.nextNode as ElementBox));
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public getNextRenderedElementBox(inline: ElementBox, indexInInline: number): ElementBox {
+        if (inline instanceof FieldElementBox) {
+            const fieldBegin: FieldElementBox = inline as FieldElementBox;
+            if (fieldBegin.fieldType === 0) {
+                inline = this.getRenderedField(fieldBegin) as ElementBox;
+                if (fieldBegin === inline) {
+                    return fieldBegin;
+                }
+            }
+            indexInInline = 1;
+        }
+        while (!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox) {
+            const nextValidInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode)) as ElementBox;
+            if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 0) {
+                const fieldBegin: FieldElementBox = nextValidInline;
+                inline = this.getRenderedField(fieldBegin) as ElementBox;
+                if (!isNullOrUndefined(inline) && fieldBegin === inline) {
+                    return fieldBegin;
+                }
+                indexInInline = 1;
+            } else {
+                inline = nextValidInline;
+            }
+        }
+        return inline;
+    }
+    /**
+     * @private
+     */
+    public getElementBoxInternal(inline: ElementBox, index: number): ElementInfo {              //for Highlight text
+        let element: ElementBox = undefined;
+        element = inline;
+        return {
+            'element': element, 'index': index
+        };
+    }
+    /**
+     * Get Line widget
+     *
+     * @private
+     */
+    public getLineWidget(inline: ElementBox, index: number): LineWidget {
+        return this.getLineWidgetInternalInline(inline, index, true);
+    }
+    /**
+     * @private
+     */
+    public getLineWidgetInternalInline(inline: ElementBox, index: number, moveToNextLine: boolean): LineWidget {
+        const elementObj: ElementInfo = this.getElementBox(inline, index, moveToNextLine);
+        const element: ElementBox = elementObj.element;    //return index
+        index = elementObj.index;
+        if (!isNullOrUndefined(element)) {
+            if (moveToNextLine && element instanceof TextElementBox && (element as TextElementBox).text === '\v' && index === 1) {
+                return this.getNextLineWidget(element.line.paragraph, element);
+            } else {
+                return element.line;
+            }
+        }
+        const startInline: ElementBox = inline;
+        //ToDo: Check previous inline here.
+        const nextValidInline: ElementBox = this.documentHelper.getNextValidElementForField(startInline);
+        //If field separator/end exists at end of paragraph, then move to next paragraph.
+        if (isNullOrUndefined(nextValidInline)) {
+            let lineWidget: LineWidget = undefined;
+            const widget: Widget = startInline.line.paragraph;
+            if (widget.childWidgets.length > 0) {
+                lineWidget = widget.childWidgets[widget.childWidgets.length - 1] as LineWidget;
+            }
+            return lineWidget;
+        } else {
+            return this.getLineWidget(nextValidInline, 0);
+        }
+    }
+    /**
+     * Get next line widget
+     *
+     * @private
+     */
+    private getNextLineWidget(paragraph: ParagraphWidget, element: ElementBox): LineWidget {
+        let lineWidget: LineWidget = undefined;
+        let widget: Widget = paragraph;
+        if (widget.childWidgets.length > 0) {
+            let widgetIndex: number = widget.childWidgets.indexOf(element.line);
+            if (widgetIndex === widget.childWidgets.length - 1) {
+                widget = paragraph;
+                // widget = paragraph.leafWidgets[paragraph.leafWidgets.length - 1];
+                widgetIndex = -1;
+            } else if (widgetIndex > widget.childWidgets.length - 1) {
+                widget = this.getNextParagraphBlock(paragraph);
+                widgetIndex = -1;
+            } else if (widgetIndex < 0) {
+                // widget = paragraph.leafWidgets[paragraph.leafWidgets.length - 1];
+                widget = paragraph;
+                widgetIndex = widget.childWidgets.indexOf(element.line);
+            }
+            lineWidget = widget.childWidgets[widgetIndex + 1] as LineWidget;
+        }
+        return lineWidget;
+    }
+
+
+    private getCaretHeight(inline: ElementBox, index: number, format: WCharacterFormat, isEmptySelection: boolean, topMargin: number, isItalic: boolean): CaretHeightInfo {
+        const elementBoxInfo: ElementInfo = this.getElementBox(inline, index, false);
+        const element: ElementBox = elementBoxInfo.element;
+        const currentInline: ElementBox = inline;
+        if (isNullOrUndefined(element)) {
+            if (currentInline instanceof FieldElementBox) {
+                return this.getFieldCharacterHeight(currentInline, format, isEmptySelection, topMargin, isItalic);
+            }
+            return { 'height': this.documentHelper.textHelper.getHeight(format).Height, 'topMargin': topMargin, 'isItalic': isItalic };
+        }
+        const margin: Margin = element.margin;
+
+        const heightElement: number = element.height;
+        let maxLineHeight: number = 0;
+        if (element instanceof ImageElementBox) {
+            const previousInline: ElementBox = this.getPreviousTextElement(inline);
+            const nextInline: ElementBox = this.getNextTextElement(inline);
+            if (isNullOrUndefined(previousInline) && isNullOrUndefined(nextInline)) {
+                let top: number = 0;
+                let bottom: number = 0;
+                const paragarph: ParagraphWidget = inline.line.paragraph;
+                const sizeInfo: SizeInfo = this.getParagraphMarkSize(paragarph, top, bottom);
+                top = sizeInfo.topMargin;
+                bottom = sizeInfo.bottomMargin;
+                maxLineHeight = sizeInfo.height;
+                isItalic = paragarph.characterFormat.italic;
+                if (!isEmptySelection) {
+                    maxLineHeight += this.documentHelper.layout.getAfterSpacing(paragarph);
+                }
+            } else if (isNullOrUndefined(previousInline)) {
+                isItalic = nextInline.characterFormat.italic;
+                return this.getCaretHeight(nextInline, 0, nextInline.characterFormat, isEmptySelection, topMargin, isItalic);
+            } else {
+                if (!isNullOrUndefined(nextInline) && element instanceof ImageElementBox) {
+                    //Calculates the caret size using image character format.
+                    const textSizeInfo: TextSizeInfo = this.documentHelper.textHelper.getHeight(element.characterFormat);
+                    const charHeight: number = textSizeInfo.Height;
+                    const baselineOffset: number = textSizeInfo.BaselineOffset;
+
+                    maxLineHeight = (element.margin.top < 0 && baselineOffset > element.margin.top + element.height) ? element.margin.top + element.height + charHeight - baselineOffset : charHeight;
+                    if (!isEmptySelection) {
+                        maxLineHeight += element.margin.bottom;
+                    }
+                } else {
+                    isItalic = previousInline.characterFormat.italic;
+
+                    return this.getCaretHeight(previousInline, previousInline.length, previousInline.characterFormat, isEmptySelection, topMargin, isItalic);
+                }
+            }
+        } else {
+            const baselineAlignment: BaselineAlignment = this.characterFormat.baselineAlignment;
+            let elementHeight: number = heightElement;
+            if (baselineAlignment !== 'Normal' && isEmptySelection) {
+                //Set the caret height as sub/super script text height and updates the top margin for sub script text.
+                elementHeight = elementHeight / 1.5;
+                if (baselineAlignment === 'Subscript') {
+                    topMargin = heightElement - elementHeight;
+                }
+            }
+            maxLineHeight = (margin.top < 0 ? margin.top : 0) + elementHeight;
+            if (!isEmptySelection) {
+                maxLineHeight += margin.bottom;
+            }
+        }
+        if (!isEmptySelection) {
+            return { 'height': maxLineHeight, 'topMargin': topMargin, 'isItalic': isItalic };
+        }
+        let height: number = this.documentHelper.textHelper.getHeight(format).Height;
+        if (height > maxLineHeight) {
+            height = maxLineHeight;
+        }
+        return { 'height': height, 'topMargin': topMargin, 'isItalic': isItalic };
+    }
+
+    private getFieldCharacterHeight(startInline: FieldElementBox, format: WCharacterFormat, isEmptySelection: boolean, topMargin: number, isItalic: boolean): CaretHeightInfo {
+        const nextValidInline: ElementBox = this.documentHelper.getNextValidElementForField(startInline);
+        //If field separator/end exists at end of paragraph, then move to next paragraph.
+        if (isNullOrUndefined(nextValidInline)) {
+            const nextParagraph: ParagraphWidget = startInline.line.paragraph as ParagraphWidget;
+            let height: number = this.documentHelper.textHelper.getParagraphMarkSize(format).Height;
+            let top: number = 0;
+            let bottom: number = 0;
+            const sizeInfo: SizeInfo = this.getParagraphMarkSize(nextParagraph, top, bottom);
+            let maxLineHeight: number = sizeInfo.height;
+            top = sizeInfo.topMargin;
+            bottom = sizeInfo.bottomMargin;
+            if (!isEmptySelection) {
+                maxLineHeight += bottom;
+                return { 'height': maxLineHeight, 'topMargin': topMargin, 'isItalic': isItalic };
+            }
+            if (height > maxLineHeight) {
+                height = maxLineHeight;
+            }
+            return { 'height': height, 'topMargin': topMargin, 'isItalic': isItalic };
+        } else {
+            return this.getCaretHeight(nextValidInline, 0, format, isEmptySelection, topMargin, isItalic);
+        }
+    }
+    /**
+     * Get rendered inline
+     *
+     * @private
+     */
+    //FieldCharacter
+    public getRenderedInline(inline: FieldElementBox, inlineIndex: number): ElementInfo {
+        if (this.documentHelper.isFormFillProtectedMode && (inline as FieldElementBox).fieldType === 2) {
+            return { 'element': inline, 'index': inlineIndex };
+        }
+        let prevInline: ElementBox = this.getPreviousValidElement(inline);
+        while (prevInline instanceof FieldElementBox) {
+            prevInline = this.getPreviousTextElement(prevInline);
+            if (prevInline instanceof FieldElementBox) {
+                prevInline = prevInline.previousNode as ElementBox;
+            }
+        }
+        if (!isNullOrUndefined(prevInline)) {
+            inlineIndex = prevInline.length;
+            return { 'element': prevInline, 'index': inlineIndex };
+        }
+        inlineIndex = 0;
+        let nextInline: ElementBox = this.getNextRenderedElementBox(inline, 0) as ElementBox;
+        if (nextInline instanceof FieldElementBox && nextInline.fieldType === 0) {
+            nextInline = (nextInline as FieldElementBox).fieldSeparator;
+            nextInline = nextInline.nextNode as ElementBox;
+            while (nextInline instanceof FieldElementBox) {
+                if (nextInline instanceof FieldElementBox && nextInline.fieldType === 0
+                    && HelperMethods.isLinkedFieldCharacter((nextInline as FieldElementBox))) {
+                    if (isNullOrUndefined((nextInline as FieldElementBox).fieldSeparator)) {
+                        nextInline = (nextInline as FieldElementBox).fieldEnd;
+                    } else {
+                        nextInline = (nextInline as FieldElementBox).fieldSeparator;
+                    }
+                }
+                nextInline = nextInline.nextNode as ElementBox;
+            }
+        }
+        return { 'element': nextInline, 'index': inlineIndex };
+    }
+    //Field Begin
+    /**
+     * Get rendered field
+     *
+     * @private
+     */
+    public getRenderedField(fieldBegin: FieldElementBox): FieldElementBox {
+        let inline: FieldElementBox = fieldBegin as FieldElementBox;
+        if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
+            inline = fieldBegin.fieldEnd;
+        } else {
+            inline = fieldBegin.fieldSeparator;
+            const paragraph: ParagraphWidget = inline.line.paragraph;
+            if (paragraph === fieldBegin.fieldEnd.line.paragraph
+                && !this.hasValidInline(paragraph, inline, fieldBegin.fieldEnd)) {
+                inline = fieldBegin.fieldEnd;
+            } else {
+                return inline;
+            }
+        }
+        return inline;
+    }
+
+    /**
+     * Return true is inline is tha last inline
+     *
+     * @private
+     */
+    public isLastRenderedInline(inline: ElementBox, index: number): boolean {
+        while (index === inline.length && inline.nextNode instanceof FieldElementBox) {
+            const nextValidInline: ElementBox = this.documentHelper.getNextValidElement((inline.nextNode as ElementBox)) as ElementBox;
+            index = 0;
+            if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 0) {
+                inline = nextValidInline;
+            }
+            if (inline instanceof FieldElementBox && inline.fieldType === 0 && !isNullOrUndefined((inline as FieldElementBox).fieldEnd)) {
+                const fieldBegin: FieldElementBox = inline as FieldElementBox;
+                if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
+                    inline = fieldBegin.fieldEnd;
+                    index = 1;
+                } else {
+                    inline = fieldBegin.fieldSeparator;
+                    const paragraph: ParagraphWidget = inline.line.paragraph;
+                    index = 1;
+                    if (paragraph === fieldBegin.fieldEnd.line.paragraph
+                        && !this.hasValidInline(paragraph, inline, fieldBegin.fieldEnd)) {
+                        inline = fieldBegin.fieldEnd;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        return index === inline.length && isNullOrUndefined(inline.nextNode);
+    }
+    /**
+     * Get page
+     *
+     * @private
+     */
+    public getPage(widget: Widget): Page {
+        let page: Page = undefined;
+        if (widget.containerWidget instanceof TextFrame) {
+            const shape: ShapeElementBox = widget.containerWidget.containerShape as ShapeElementBox;
+            if (shape.line) {
+                page = this.getPage(shape.line.paragraph);
+            }
+        } else if (widget.containerWidget instanceof BlockContainer) {
+            const bodyWidget: BodyWidget = widget.containerWidget as BodyWidget;
+            page = (widget.containerWidget as BodyWidget).page;
+        } else if (!isNullOrUndefined(widget.containerWidget)) {
+            page = this.getPage(widget.containerWidget);
+        }
+        return page;
+    }
+
+    /**
+     * Clear Selection highlight
+     *
+     * @private
+     */
+    public clearSelectionHighlightInSelectedWidgets(): boolean {
+        let isNonEmptySelection: boolean = false;
+        const widgets: IWidget[] = this.selectedWidgets.keys;
+        if(!this.viewer.documentHelper.isDragStarted) {
+            for (let i: number = 0; i < widgets.length; i++) {
+                this.removeSelectionHighlight(widgets[i]);
+                isNonEmptySelection = true;
+            }
+            this.selectedWidgets.clear();
+        }
+        return isNonEmptySelection;
+    }
+    /**
+     * Clear selection highlight
+     *
+     * @private
+     */
+    public clearChildSelectionHighlight(widget: Widget): void {
+        for (let i: number = 0; i < widget.childWidgets.length; i++) {
+            if (widget.childWidgets[i] instanceof LineWidget) {
+                this.clearSelectionHighlightLineWidget((widget.childWidgets[i] as LineWidget));
+            } else if (widget.childWidgets[i] instanceof TableCellWidget) {
+                this.clearSelectionHighlight((widget.childWidgets[i] as TableCellWidget));
+            } else if (widget.childWidgets[i] instanceof Widget) {
+                this.clearChildSelectionHighlight((widget.childWidgets[i] as Widget));
+            }
+        }
+    }
+    /**
+     * Get line widget from paragraph widget
+     *
+     * @private
+     */
+    //Body Widget 
+    public getLineWidgetBodyWidget(widget: Widget, point: Point, isGetFirstChild?: boolean ): LineWidget {
+        isGetFirstChild = isNullOrUndefined(isGetFirstChild) ? true : isGetFirstChild;
+        let bodyWgt: BodyWidget = widget as BodyWidget;
+        if (bodyWgt instanceof BlockContainer) {
+            for (let x: number = 0; x < bodyWgt.floatingElements.length; x++) {
+                const floatWidget: IWidget = bodyWgt.floatingElements[x];
+                if (floatWidget instanceof TableWidget) {
+                    let floatWidgetWidth: number = floatWidget.getTableCellWidth();
+                    if (point.x <= floatWidget.x + floatWidgetWidth && point.x >= floatWidget.x
+                        && point.y <= floatWidget.y + floatWidget.height && point.y >= floatWidget.y) {
+                        return this.getLineWidgetTableWidget(floatWidget, point);
+                    }
+                } else if (floatWidget instanceof ShapeBase && floatWidget.textWrappingStyle !== 'Behind' && floatWidget.x <= point.x && (floatWidget.x + floatWidget.width) >= point.x
+                    && floatWidget.y <= point.y && (floatWidget.y + floatWidget.height) >= point.y) {
+                    return floatWidget.line;
+                }
+            }
+        }
+        if (widget instanceof FootNoteWidget) {
+            let selectionBody: BodyWidget;
+            let isFit: boolean = false;
+            for (let j: number = 0; j < widget.bodyWidgets.length; j++) {
+                if (widget.sectionFormat.columns.length <= 1) {
+                    for (let k: number = 0; k < widget.bodyWidgets[j].childWidgets.length; k++) {
+                        const footChild: IWidget = widget.bodyWidgets[j].childWidgets[k];
+                        if (footChild instanceof Widget && (footChild as Widget).y <= point.y
+                            && ((footChild as Widget).y + (footChild as Widget).height) >= point.y) {
+                            if (footChild instanceof ParagraphWidget) {
+                                return this.getLineWidgetParaWidget((footChild as ParagraphWidget), point);
+                            } else {
+                                return this.getLineWidgetTableWidget((footChild as TableWidget), point);
+                            }
+                        }
+                    }
+                } else {
+                    let bodyWidget: BodyWidget = widget.bodyWidgets[j];
+                    if ((bodyWidget.firstChild as BlockWidget).x + bodyWidget.sectionFormat.columns[bodyWidget.columnIndex].width >= point.x && (bodyWidget.firstChild as BlockWidget).x <= point.x && (bodyWidget.firstChild as BlockWidget).y <= point.y && this.documentHelper.layout.getNextWidgetHeight(bodyWidget) >= point.y) {
+                        selectionBody = bodyWidget;
+                    } else if ((bodyWidget.firstChild as BlockWidget).x + bodyWidget.sectionFormat.columns[bodyWidget.columnIndex].width < point.x && (bodyWidget.firstChild as BlockWidget).y <= point.y && this.documentHelper.layout.getNextWidgetHeight(bodyWidget) >= point.y) {
+                        selectionBody = bodyWidget;
+                    } else if (widget.x > point.x && (bodyWidget.firstChild as BlockWidget).y <= point.y && this.documentHelper.layout.getNextWidgetHeight(bodyWidget) >= point.y && !isFit) {
+                        selectionBody = bodyWidget;
+                        isFit = true;
+                    }
+                    if (j === widget.bodyWidgets.length - 1 && !isNullOrUndefined(selectionBody)) {
+                        for (let k: number = 0; k < selectionBody.childWidgets.length; k++) {
+                            const footChild: IWidget = selectionBody.childWidgets[k];
+                            if (footChild instanceof Widget && (footChild as Widget).y <= point.y
+                                && ((footChild as Widget).y + (footChild as Widget).height) >= point.y) {
+                                if (footChild instanceof ParagraphWidget) {
+                                    return this.getLineWidgetParaWidget((footChild as ParagraphWidget), point);
+                                } else {
+                                    return this.getLineWidgetTableWidget((footChild as TableWidget), point);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (let i: number = 0; i < widget.childWidgets.length; i++) {
+            const childWidget: IWidget = widget.childWidgets[i];
+            if (childWidget instanceof FootNoteWidget) {
+                return childWidget[i];
+            } else {
+                if (childWidget instanceof Widget && (childWidget as Widget).y <= point.y
+                    && ((childWidget as Widget).y + (childWidget as Widget).height) >= point.y) {
+                    if (childWidget instanceof ParagraphWidget) {
+                        // if ((childWidget as Widget).x <= point.x
+                        // && ((childWidget as Widget).x + (childWidget as Widget).width) >= point.x) {
+                        return this.getLineWidgetParaWidget((childWidget as ParagraphWidget), point);
+                        // }// return this.getLineWidgetParaWidget((childWidget as ParagraphWidget), point);
+                    } else {
+                        let table: TableWidget = childWidget as TableWidget;
+                        if (table.wrapTextAround) {
+                            continue;
+                        }
+                        return this.getLineWidgetTableWidget(table, point);
+                    }
+                }
+            }
+        }
+        let line: LineWidget = undefined;
+        if (isGetFirstChild) {
+            if (widget.childWidgets.length > 0) {
+                const firstChild: IWidget = widget.childWidgets[0];
+                if (firstChild instanceof Widget && (firstChild as Widget).y <= point.y) {
+                    if ((widget.childWidgets[widget.childWidgets.length - 1] as Widget) instanceof ParagraphWidget) {
+                        for(let i:number=0; i<widget.childWidgets.length;i++){
+                            line = this.getLineWidgetParaWidget((widget.childWidgets[i] as ParagraphWidget), point);
+                        }
+                    } else {
+                        for(let i:number=0; i<widget.childWidgets.length;i++){
+                            line = this.getLineWidgetTableWidget((widget.childWidgets[i] as TableWidget), point);
+                        }
+                    }
+                } else {
+                    let childWidget: Widget = undefined;
+                    if (firstChild instanceof Widget) {
+                        childWidget = firstChild as Widget;
+                    }
+                    if (!isNullOrUndefined(childWidget)) {
+                        if (childWidget instanceof ParagraphWidget) {
+                            line = this.getLineWidgetParaWidget((firstChild as ParagraphWidget), point);
+                        } else {
+                            line = this.getLineWidgetTableWidget((firstChild as TableWidget), point);
+                        }
+                    }
+                }
+            }
+        }
+        return line;
+    }
+    //ParagraphWidget
+    /**
+     * Get line widget from paragraph widget
+     *
+     * @private
+     */
+    public getLineWidgetParaWidget(widget: ParagraphWidget, point: Point): LineWidget {
+        const childWidgets: IWidget[] = widget.childWidgets;
+        let top: number = widget.y;
+        for (let i: number = 0; i < childWidgets.length; i++) {
+            let line: LineWidget = childWidgets[i] as LineWidget;
+            top += line.marginTop;
+            let lineTotalHeight: number = line.height;
+            if (line.nextLine && line.nextLine.marginTop > 0) {
+                lineTotalHeight += line.nextLine.marginTop;
+            }
+            if (top <= point.y
+                && (top + lineTotalHeight) >= point.y) {
+                return line;
+            }
+            top += line.height;
+        }
+        let lineWidget: LineWidget = undefined;
+        if (childWidgets.length > 0) {
+            if (widget.y <= point.y) {
+                lineWidget = childWidgets[childWidgets.length - 1] as LineWidget;
+            } else {
+                lineWidget = childWidgets[0] as LineWidget;
+            }
+        }
+        return lineWidget;
+    }
+
+    private highlightParagraph(widget: ParagraphWidget, startIndex: number, endLine: LineWidget, endElement: ElementBox, endIndex: number, contentControl?: ContentControl): void {
+        let top: number = 0;
+        let width: number = 0;
+        let isRtlText: boolean = false;
+        let startElement: ElementBox = endElement;
+        if (widget.paragraphFormat.bidi && endLine.children.indexOf(endElement) > 0) {
+            startElement = endLine.children[0];
+        }
+        for (let i: number = startIndex; i < widget.childWidgets.length; i++) {
+            const line: LineWidget = widget.childWidgets[i] as LineWidget;
+            if (i === startIndex) {
+                top = this.getTop(line);
+            } else {
+                top += line.marginTop;
+            }
+            if (endElement instanceof TextElementBox) {
+                isRtlText = endElement.isRightToLeft;
+            }
+            let left: number = this.getLeft(line);
+            if (line === endLine) {
+                //Selection ends in current line.
+                let right: number = 0;
+                // highlighting approach for normal and rtl text.
+                if (isRtlText || widget.bidi) {
+                    const elementBoxCollection: ElementBox[] = this.getElementsBackward(line, startElement, endElement, widget.bidi);
+                    for (let i: number = 0; i < elementBoxCollection.length; i++) {
+                        const element: ElementBox = elementBoxCollection[i];
+                        let elementIsRTL: boolean = false;
+                        if (element === endElement) {
+                            right = this.getLeftInternal(line, element, element.length);
+                        } else {
+                            const index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                            right = this.getLeftInternal(line, element, index);
+                        }
+                        left = this.getLeftInternal(line, element, 0);
+                        if (element instanceof TextElementBox) {
+                            elementIsRTL = element.isRightToLeft;
+                        }
+                        width = Math.abs(right - left);
+                        // Handled the paragraph mark highliting as special case.
+                        if (element === endElement && element instanceof TextElementBox && endIndex > (element as TextElementBox).length) {
+
+                            const paragraphMarkWidth: number = this.documentHelper.textHelper.getParagraphMarkSize(element.line.paragraph.characterFormat).Width;
+                            if (!widget.bidi && elementIsRTL) {
+                                right += paragraphMarkWidth;
+                            } else if (widget.bidi && !elementIsRTL) { // Paragrph and Selection ends in normal text
+                                width -= paragraphMarkWidth;
+                                // Highlight the element.
+                                this.createHighlightBorder(line, width, left, top, true, contentControl);
+                                // Highlight the paragraph mark of Bidi paragrph.
+                                left = this.getLineStartLeft(line) - paragraphMarkWidth;
+                                this.createHighlightBorder(line, paragraphMarkWidth, left, top, true, contentControl);
+                                // continue to next element.
+                                continue;
+                            }
+                        }
+                        this.createHighlightBorder(line, width, elementIsRTL ? right : left, top, true, contentControl);
+                    }
+                    return;
+                } else {
+                    right = this.getLeftInternal(endLine, endElement, endIndex, true);
+                    width = Math.abs(right - left);
+                    this.createHighlightBorder(line, width, isRtlText ? right : left, top, false, contentControl);
+                    return;
+                }
+            } else {
+                width = this.getWidth(line, true) - (left - widget.x);
+                // Highlight the paragrph mark for Bidi paragrph.
+                if (widget.bidi && line.isLastLine()) {
+                    left -= this.documentHelper.textHelper.getParagraphMarkSize(widget.characterFormat).Width;
+                }
+                this.createHighlightBorder(line, width, left, top, false, contentControl);
+                top += line.height;
+            }
+
+        }
+    }
+    //Table Widget
+    /**
+     * Get line widget form table widget
+     *
+     * @private
+     */
+    public getLineWidgetTableWidget(widget: TableWidget, point: Point): LineWidget {
+        let lineWidget: LineWidget = undefined;
+        for (let i: number = 0; i < widget.childWidgets.length; i++) {
+            //Removed the height condition check to handle the vertically merged cells.
+            const childWidget: IWidget = widget.childWidgets[i];
+            if (childWidget instanceof TableRowWidget && (childWidget as TableRowWidget).y <= point.y) {
+                if (childWidget.rowFormat.heightType === 'Exactly' &&
+                    (childWidget.y + HelperMethods.convertPointToPixel(childWidget.rowFormat.height) < point.y)) {
+                    continue;
+                }
+                lineWidget = this.getLineWidgetRowWidget((childWidget as TableRowWidget), point);
+                let cellWidget: TableCellWidget = undefined;
+                if (!isNullOrUndefined(lineWidget) && lineWidget.paragraph.containerWidget instanceof TableCellWidget) {
+                    cellWidget = lineWidget.paragraph.containerWidget as TableCellWidget;
+                }
+
+                let cellSpacing: number = 0;
+                let rowSpan: number = 0;
+                if (!isNullOrUndefined(cellWidget)) {
+                    const tableWidget: TableWidget = (cellWidget.ownerRow.containerWidget as TableWidget);
+                    cellSpacing = HelperMethods.convertPointToPixel(tableWidget.tableFormat.cellSpacing);
+                    rowSpan = cellWidget.cellFormat.rowSpan;
+                }
+                let leftCellSpacing: number = 0;
+                let rightCellSpacing: number = 0;
+                let topCellSpacing: number = 0;
+                let bottomCellSpacing: number = 0;
+                if (cellSpacing > 0) {
+                    leftCellSpacing = cellWidget.cellIndex === 0 ? cellSpacing : cellSpacing / 2;
+
+                    rightCellSpacing = cellWidget.cellIndex === cellWidget.ownerRow.childWidgets.length - 1 ? cellSpacing : cellSpacing / 2;
+                    let rowWidget: TableRowWidget = undefined;
+                    if (cellWidget.containerWidget instanceof TableRowWidget) {
+                        rowWidget = cellWidget.containerWidget as TableRowWidget;
+                    }
+                    let tableWidget: TableWidget = undefined;
+                    if (cellWidget.containerWidget.containerWidget instanceof TableWidget) {
+                        tableWidget = cellWidget.containerWidget.containerWidget as TableWidget;
+                    }
+                    if (!isNullOrUndefined(rowWidget) && !isNullOrUndefined(tableWidget)) {
+                        topCellSpacing = cellWidget.ownerRow.rowIndex === 0 ? cellSpacing : cellSpacing / 2;
+                        if (cellWidget.ownerRow.rowIndex + rowSpan === cellWidget.ownerTable.childWidgets.length) {
+                            bottomCellSpacing = cellSpacing;
+                        } else {
+                            bottomCellSpacing = cellSpacing / 2;
+                        }
+                    }
+                }
+                if ((!isNullOrUndefined(lineWidget) && lineWidget.paragraph.x <= point.x
+                    && lineWidget.paragraph.x + lineWidget.width >= point.x
+                    && lineWidget.paragraph.y <= point.y && this.getTop(lineWidget) + lineWidget.height >= point.y)
+                    || (!isNullOrUndefined(cellWidget) && cellWidget.x - cellWidget.margin.left - leftCellSpacing <= point.x
+                        && cellWidget.x + cellWidget.width + cellWidget.margin.right + rightCellSpacing >= point.x
+                        && cellWidget.y - cellWidget.margin.top - topCellSpacing <= point.y
+                        && cellWidget.y + cellWidget.height + cellWidget.margin.bottom + bottomCellSpacing >= point.y)) {
+                    break;
+                }
+            }
+        }
+        return lineWidget;
+    }
+    //TableRowWidget
+    /**
+     * Get line widget fom row
+     *
+     * @private
+     */
+    public getLineWidgetRowWidget(widget: TableRowWidget, point: Point): LineWidget {
+        for (let i: number = 0; i < widget.childWidgets.length; i++) {
+            let cellSpacing: number = 0;
+            cellSpacing = HelperMethods.convertPointToPixel(widget.ownerTable.tableFormat.cellSpacing);
+            let leftCellSpacing: number = 0;
+            let rightCellSpacing: number = 0;
+            if (cellSpacing > 0) {
+                leftCellSpacing = (widget.childWidgets[i] as TableCellWidget).columnIndex === 0 ? cellSpacing : cellSpacing / 2;
+
+                rightCellSpacing = (widget.childWidgets[i] as TableCellWidget).cellIndex === (widget.childWidgets[i] as TableCellWidget).ownerRow.childWidgets.length - 1 ? cellSpacing : cellSpacing / 2;
+            }
+            if ((widget.childWidgets[i] as TableCellWidget).x -
+
+                (widget.childWidgets[i] as TableCellWidget).margin.left - leftCellSpacing <= point.x && ((widget.childWidgets[i] as TableCellWidget).x +
+
+                    (widget.childWidgets[i] as TableCellWidget).width) + (widget.childWidgets[i] as TableCellWidget).margin.right + rightCellSpacing >= point.x) {
+                return this.getLineWidgetCellWidget((widget.childWidgets[i] as TableCellWidget), point);
+            }
+        }
+        let lineWidget: LineWidget = undefined;
+        if (widget.childWidgets.length > 0) {
+            if ((widget.childWidgets[0] as Widget).x <= point.x) {
+                lineWidget = this.getLineWidgetCellWidget((widget.childWidgets[widget.childWidgets.length - 1] as TableCellWidget), point);
+            } else {
+                lineWidget = this.getLineWidgetCellWidget((widget.childWidgets[0] as TableCellWidget), point);
+            }
+        }
+        return lineWidget;
+    }
+    /**
+     * @private
+     */
+    public getFirstBlock(cell: TableCellWidget): BlockWidget {
+        if (cell.childWidgets.length > 0) {
+            return cell.childWidgets[0] as BlockWidget;
+        }
+        return undefined;
+    }
+    //Table Cell Widget
+    /**
+     * Highlight selected cell widget
+     *
+     * @private
+     */
+    public highlightCellWidget(widget: TableCellWidget): void {
+        let widgets: TableCellWidget[] = [];
+        if (widget.previousSplitWidget || widget.nextSplitWidget) {
+            widgets = widget.getSplitWidgets() as TableCellWidget[];
+        } else {
+            widgets.push(widget);
+        }
+        for (let i: number = 0; i < widgets.length; i++) {
+            widget = widgets[i];
+            //Clears Selection highlight of the child widgets.
+            this.clearChildSelectionHighlight(widget);
+            //Highlights the entire cell.
+            this.createHighlightBorderInsideTable(widget);
+        }
+    }
+    /**
+     * Clear selection highlight
+     *
+     * @private
+     */
+    public clearSelectionHighlight(widget: IWidget): void {
+        if (this.selectedWidgets.containsKey(widget)) {
+            this.removeSelectionHighlight(widget);
+            this.selectedWidgets.remove(widget);
+        }
+    }
+    /**
+     * Get line widget from cell widget
+     *
+     * @private
+     */
+    public getLineWidgetCellWidget(widget: TableCellWidget, point: Point): LineWidget {
+        for (let i: number = 0; i < widget.childWidgets.length; i++) {
+            if ((widget.childWidgets[i] as Widget).y <= point.y
+                && ((widget.childWidgets[i] as Widget).y + (widget.childWidgets[i] as Widget).height) >= point.y) {
+                if ((widget.childWidgets[i] as Widget) instanceof ParagraphWidget) {
+                    return this.getLineWidgetParaWidget((widget.childWidgets[i] as ParagraphWidget), point);
+                } else {
+                    return this.getLineWidgetTableWidget((widget.childWidgets[i] as TableWidget), point);
+                }
+            }
+        }
+        let lineWidget: LineWidget = undefined;
+        if (widget.childWidgets.length > 0) {
+            if ((widget.childWidgets[0] as Widget).y - widget.margin.top <= point.y) {
+                if ((widget.childWidgets[widget.childWidgets.length - 1] as Widget) instanceof ParagraphWidget) {
+
+                    lineWidget = this.getLineWidgetParaWidget((widget.childWidgets[widget.childWidgets.length - 1] as ParagraphWidget), point);
+                } else {
+                    lineWidget = this.getLineWidgetTableWidget((widget.childWidgets[0] as TableWidget), point);
+                }
+            }
+        }
+        return lineWidget;
+    }
+    //LineWidget
+    /**
+     * update text position
+     *
+     * @private
+     */
+    public updateTextPosition(widget: LineWidget, point: Point): void {
+        let caretPosition: Point = point;
+        let element: ElementBox = undefined;
+        let index: number = 0;
+        let isImageSelected: boolean = false;
+        if (this.owner.enableHeaderAndFooter) {
+            let headerFooterWidget: HeaderFooterWidget = this.start.paragraph.bodyWidget as HeaderFooterWidget;
+            if (headerFooterWidget.headerFooterType.indexOf('Header') != -1){
+                this.comparePageWidthAndMargins(headerFooterWidget.page.headerWidget, headerFooterWidget.page);
+            } else {
+                this.comparePageWidthAndMargins(headerFooterWidget.page.footerWidget, headerFooterWidget.page);
+            }
+        }
+        const isImageSelectedObj: TextPositionInfo = this.updateTextPositionIn(widget, element, index, point, false);
+        if (!isNullOrUndefined(isImageSelectedObj)) {
+            element = isImageSelectedObj.element;
+            index = isImageSelectedObj.index;
+            caretPosition = isImageSelectedObj.caretPosition;
+            isImageSelected = isImageSelectedObj.isImageSelected;
+            this.isImageSelected = isImageSelected;
+        }
+        if (isImageSelected) {
+            this.selectInternal(widget, element, index, caretPosition);
+            if (index === 0) {
+                this.extendForward();
+            } else {
+                this.extendBackward();
+            }
+        } else {
+            if (!isNullOrUndefined(this.owner.imageResizerModule)) {
+                this.owner.imageResizerModule.selectedImageWidget.clear();
+            }
+            this.selectInternal(widget, element, index, caretPosition);
+        }
+    }
+    /**
+     * @private
+     */
+    public updateTextPositionIn(widget: LineWidget, inline: ElementBox, index: number, caretPosition: Point, includeParagraphMark: boolean): TextPositionInfo {
+        let isImageSelected: boolean = false;
+        let top: number = this.getTop(widget);
+        let left: number = widget.paragraph.x;
+        let elementValues: FirstElementInfo = this.getFirstElement(widget, left);
+        let element: ElementBox = elementValues.element;
+        let isRtlText: boolean = false;
+        let isParaBidi: boolean = false;
+        left = elementValues.left;
+        let children: ElementBox[] = widget.renderedElements;
+        if (isNullOrUndefined(element)) {
+            let topMargin: number = 0; let bottomMargin: number = 0;
+            let size: SizeInfo = this.getParagraphMarkSize(widget.paragraph, topMargin, bottomMargin);
+            topMargin = size.topMargin;
+            bottomMargin = size.bottomMargin;
+            let selectParaMark: boolean = this.documentHelper.mouseDownOffset.y >= top && this.documentHelper.mouseDownOffset.y < top + widget.height ? (this.documentHelper.mouseDownOffset.x < left + size.width) : true;
+            if (selectParaMark && includeParagraphMark && caretPosition.x > left + size.width / 2) {
+                left += size.width;
+                if (children.length > 0) {
+                    inline = children[children.length - 1];
+                    index = inline.length;
+                }
+                index++;
+            } else if (widget.paragraph.isEmpty() && widget.paragraph.bidi) {
+                left += size.width;
+            }
+            caretPosition = new Point(left, topMargin > 0 ? top + topMargin : top);
+        } else {
+            if (!isNullOrUndefined(element)) {
+                if (caretPosition.x > left + element.margin.left || (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline')) {
+                    let isInInline: boolean = false;
+                    if (widget.paragraph.floatingElements.length > 0) {
+                        isInInline = this.documentHelper.checkPointIsInLine(widget, caretPosition);
+                    }
+                    for (let i: number = children.indexOf(element); i < children.length; i++) {
+                        element = children[i];
+                        if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                            if (this.documentHelper.isInShapeBorder(element, caretPosition) &&
+                                !this.documentHelper.isSelectionChangedOnMouseMoved && !isInInline) {
+                                left = element.x;
+                                top = element.y;
+                                break;
+                            }
+                            continue;
+                        }
+                        let isCurrentParaBidi: boolean = false;
+                        if (element instanceof ListTextElementBox || element instanceof TextElementBox) {
+                            isCurrentParaBidi = element.line.paragraph.paragraphFormat.bidi;
+                        }
+                        if (caretPosition.x < left + element.margin.left + element.width + element.padding.left || i === children.length - 1
+                            || ((children[i + 1] instanceof ListTextElementBox) && isCurrentParaBidi)) {
+                            break;
+                        }
+                        left += element.margin.left + element.width + element.padding.left;
+                    }
+                    if (element instanceof TextElementBox) {
+                        isRtlText = element.isRightToLeft;
+                        isParaBidi = (element as TextElementBox).line.paragraph.paragraphFormat.bidi;
+                    }
+                    if (caretPosition.x > left + element.margin.left + element.width + element.padding.left && !(element instanceof ShapeElementBox)) {
+                        //Line End
+                        index = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                        if (isRtlText && isParaBidi) {
+                            index = 0;
+                        }
+                        if ((element instanceof TextElementBox && ((element as TextElementBox).text !== "\v" && (element as TextElementBox).text !== '\f' && (element as TextElementBox).text !== String.fromCharCode(14))) || includeParagraphMark) {
+                            left += element.margin.left + element.width + element.padding.left;
+                        }
+                    } else if (element instanceof TextElementBox) {
+                        if (element instanceof TextElementBox && isRtlText) {
+                            left += element.width + element.padding.left;
+                        }
+                        let x: number = 0;
+                        if (isRtlText) {
+                            x = (left + element.margin.left) - caretPosition.x;
+                        } else {
+                            x = caretPosition.x - left - element.margin.left - element.padding.left;
+                        }
+                        left += (element.margin.left + element.padding.left);
+                        let prevWidth: number = 0;
+                        let charIndex: number = 0;
+                        for (let i: number = 1; i <= (element as TextElementBox).length; i++) {
+                            let width: number = 0;
+                            if (i === (element as TextElementBox).length) {
+                                width = element.width + element.padding.left;
+                            } else {
+                                width = this.documentHelper.textHelper.getWidth((element as TextElementBox).text.substr(0, i), element.characterFormat, (element as TextElementBox).scriptType);
+                            }
+                            if (x < width || i === (element as TextElementBox).length) {
+                                //Updates exact left position of the caret.
+                                let charWidth: number = width - prevWidth;
+                                if (x - prevWidth > charWidth / 2) {
+                                    if (isRtlText) {
+                                        left -= width;
+                                    } else {
+                                        left += width;
+                                    }
+                                    charIndex = i;
+                                } else {
+                                    if (isRtlText) {
+                                        left -= prevWidth;
+                                    } else {
+                                        left += prevWidth;
+                                    }
+                                    charIndex = i - 1;
+                                    if (i === 1 && element !== children[0] && !(children[0] instanceof ShapeBase &&
+                                        (children[0] as ShapeBase).textWrappingStyle !== 'Inline')) {
+                                        let curIndex: number = children.indexOf(element);
+                                        if (!(children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
+                                            element = children[curIndex - 1];
+                                            if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline' && charIndex == 0 && !isNullOrUndefined(element.previousElement)) {
+                                                element = children[children.indexOf(element) - 1];
+                                            }
+                                            charIndex = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                            prevWidth = width;
+                        }
+                        index = charIndex;
+                    } else {
+                        isImageSelected = element instanceof ImageElementBox || element instanceof ShapeElementBox;
+                        if (caretPosition.x - left - element.margin.left > element.width / 2) {
+                            index = 1;
+                            left += (element.margin.left + element.width + element.padding.left);
+                        } else if (element !== children[0] && !isImageSelected) {
+                            let curIndex: number = children.indexOf(element);
+                            if (!(children[curIndex - 1] instanceof ListTextElementBox)) {
+                                element = children[curIndex - 1];
+                                index = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                            }
+                        }
+                    }
+                    if (element instanceof TextElementBox && ((element as TextElementBox).text === '\v' || (element as TextElementBox).text === '\f' || (element as TextElementBox).text === String.fromCharCode(14))) {
+                        index = 0;
+                    }
+                } else {
+                    isRtlText = element.isRightToLeft;
+                    isParaBidi = element.line.paragraph.paragraphFormat.bidi;
+                    if (element instanceof TextElementBox && (isParaBidi || isRtlText) && caretPosition.x < left + element.margin.left + element.width + element.padding.left) {
+                        index = this.getTextLength(element.line, element) + (element as TextElementBox).length;
+                    } else {
+                        index = this.getTextLength(element.line, element);
+                    }
+                    left += element.margin.left;
+                }
+                if (element instanceof TextElementBox) {
+                    top += element.margin.top > 0 ? element.margin.top : 0;
+                } else {
+                    let textMetrics: TextSizeInfo = this.documentHelper.textHelper.getHeight(element.characterFormat);     //for ascent and descent
+                    let height: number = element.height;
+                    if (element instanceof BookmarkElementBox && !this.documentHelper.layout.hasValidElement(element.line.paragraph)) {
+                        height = textMetrics.Height;    //after text helper class
+                    }
+                    top += element.margin.top + height - textMetrics.BaselineOffset;
+                }
+                inline = element;
+                if (inline instanceof FieldElementBox && inline.fieldType === 2 && !isNullOrUndefined(inline.fieldBegin)) {
+                    inline = inline.fieldBegin;
+                    index = 0;
+                }
+                if (inline instanceof EditRangeEndElementBox) {
+                    index = 0;
+                }
+                if (!isNullOrUndefined(inline.previousElement) && inline.previousElement instanceof ShapeBase && inline.previousElement.textWrappingStyle !== 'Inline' && index == 0) {
+                    inline = inline.previousElement;
+                }
+                let inlineObj: ElementInfo = this.validateTextPosition(inline, index);
+                inline = inlineObj.element;
+                index = inlineObj.index;
+                let isParagraphEnd: boolean = isNullOrUndefined(inline.nextNode) && index === inline.length;
+                let isLineEnd: boolean = inline.line.isEndsWithLineBreak
+                    && inline instanceof TextElementBox && (inline as TextElementBox).text === '\v';
+                if (includeParagraphMark && inline.nextNode instanceof FieldElementBox && index === inline.length) {
+                    isParagraphEnd = this.isLastRenderedInline(inline, index);
+                }
+                if (includeParagraphMark && isParagraphEnd || isLineEnd) {
+                    let width: number = 0;
+                    //Include width of Paragraph mark.
+                    if (isParagraphEnd) {
+                        width = this.documentHelper.textHelper.getParagraphMarkWidth(widget.paragraph.characterFormat);
+                        let selectParaMark: boolean = this.documentHelper.mouseDownOffset.y >= top && this.documentHelper.mouseDownOffset.y < top + widget.height ? (this.documentHelper.mouseDownOffset.x < left + width) : true;
+                        if (selectParaMark && caretPosition.x > left + width / 2) {
+                            left += width;
+                            index = inline.length + 1;
+                        }
+                        //Include width of line break mark.
+                    } else if (isLineEnd) {
+                        width = element.width + element.padding.left;
+                        left += width;
+                        // index = inline.length;
+                    }
+                }
+                caretPosition = new Point(left, top);
+            }
+        }
+        return {
+            'element': inline,
+            'index': index,
+            'caretPosition': caretPosition,
+            'isImageSelected': isImageSelected
+        };
+    }
+    /**
+     * @private
+     */
+    public checkAllFloatingElements(widget: LineWidget, caretPosition: Point): ShapeInfo {
+        let bodyWidget: BlockContainer;
+        let isShapeSelected: boolean = false;
+        let isInShapeBorder: boolean = false;
+        let floatElement: ShapeBase;
+        if (!isNullOrUndefined(widget)) {
+            bodyWidget = widget.paragraph.bodyWidget;
+            isShapeSelected = false;
+            isInShapeBorder = false;
+            for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
+                if (bodyWidget.floatingElements[i] instanceof TableWidget) {
+                    continue;
+                }
+                floatElement = bodyWidget.floatingElements[i] as ShapeBase;
+                if (caretPosition.x < floatElement.x + floatElement.margin.left + floatElement.width && caretPosition.x > floatElement.x
+                    && caretPosition.y < floatElement.y + floatElement.margin.top + floatElement.height && caretPosition.y > floatElement.y) {
+                    isShapeSelected = true;
+                    if (this.documentHelper.isInShapeBorder(floatElement, caretPosition)) {
+                        isInShapeBorder = true;
+                    }
+                    break;
+                }
+            }
+        }
+        return {
+            'element': floatElement,
+            'caretPosition': caretPosition,
+            'isShapeSelected': isShapeSelected,
+            'isInShapeBorder': isInShapeBorder
+        }
+    }
+    /**
+     * Get text length if the line widget
+     *
+     * @private
+     */
+    public getTextLength(widget: LineWidget, element: ElementBox): number {
+        let length: number = 0;
+        let renderedElement: ElementBox[] = widget.renderedElements;
+        let count: number = renderedElement.indexOf(element);
+        if (renderedElement.length > 0 && renderedElement[0] instanceof ListTextElementBox) {
+            if (renderedElement[1] instanceof ListTextElementBox) {
+                count -= 2;
+            } else {
+                count -= 1;
+            }
+        }
+        for (let i: number = 1; i < count; i++) {
+            length += renderedElement[i].length;
+        }
+        return length;
+    }
+    /**
+     * Get Line widget left
+     *
+     * @private
+     */
+    public getLeft(widget: LineWidget): number {
+        let left: number = widget.paragraph.x;
+        const paragraphFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
+        if (this.isParagraphFirstLine(widget) && !paragraphFormat.bidi && !(paragraphFormat.textAlignment === 'Right')) {
+            left += HelperMethods.convertPointToPixel(paragraphFormat.firstLineIndent);
+        }
+        let renderedElements: ElementBox[] = widget.renderedElements;
+        for (let i: number = 0; i < renderedElements.length; i++) {
+            const element: ElementBox = renderedElements[i];
+            if (element instanceof ListTextElementBox && !paragraphFormat.bidi) {     //after list implementation
+                if (i === 0) {
+                    left += element.margin.left + element.width;
+                } else {
+                    left += element.width;
+                }
+            } else {
+                left += element.margin.left;
+                break;
+            }
+        }
+        return left;
+    }
+    /**
+     * Get line widget top
+     *
+     * @private
+     */
+    public getTop(widget: LineWidget): number {
+        let top: number = widget.paragraph.y;
+        const count: number = widget.paragraph.childWidgets.indexOf(widget);
+        for (let i: number = 0; i < count; i++) {
+            let line: LineWidget = widget.paragraph.childWidgets[i] as LineWidget;
+            top = (top + line.height + line.marginTop);
+        }
+        top += widget.marginTop;
+        return top;
+    }
+    /**
+     * Get first element the widget
+     *
+     * @private
+     */
+    public getFirstElement(widget: LineWidget, left: number): FirstElementInfo {
+        let firstLineIndent: number = 0;
+        if (this.isParagraphFirstLine(widget) && !widget.paragraph.paragraphFormat.bidi) {
+            firstLineIndent = HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.firstLineIndent);
+        }
+        left += firstLineIndent;
+        let element: ElementBox = undefined;
+        let renderedChild: ElementBox[] = widget.renderedElements;
+        for (let i: number = 0; i < renderedChild.length; i++) {
+            element = renderedChild[i];
+            if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox) {
+                if (widget.paragraph.paragraphFormat.bidi) {
+                    left += element.margin.left;
+                    element = undefined;
+                } else {
+                    left += element.margin.left + element.width;
+                    element = undefined;
+                }
+                // }
+                //  else if (element instanceof FieldElementBox || element instanceof BookmarkElementBox
+                //     || (element.nextNode instanceof FieldElementBox && ((element.nextNode as FieldElementBox).fieldType === 2))) {
+                //     element = undefined;
+            } else {
+                break;
+            }
+        }
+        return { 'element': element, 'left': left };
+    }
+    /**
+     * Return inline index
+     *
+     * @private
+     */
+    //ElementBox
+    public getIndexInInline(elementBox: ElementBox): number {
+        let indexInInline: number = 0;
+        if (elementBox instanceof TextElementBox) {
+            const count: number = elementBox.line.children.indexOf(elementBox);
+            for (let i: number = 0; i < count; i++) {
+                const element: ElementBox = elementBox.line.children[i];
+                if (element instanceof FieldElementBox || element instanceof ListTextElementBox) {
+                    continue;
+                }
+                indexInInline += element.length;
+            }
+        }
+        return indexInInline;
+    }
+    /**
+     * Return true if widget is first inline of paragraph
+     *
+     * @private
+     */
+    public isParagraphFirstLine(widget: LineWidget): boolean {
+        if (isNullOrUndefined(widget.paragraph.previousSplitWidget) &&
+            widget === widget.paragraph.firstChild) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @param widget
+     * @private
+     */
+    public isParagraphLastLine(widget: LineWidget): boolean {
+        if (isNullOrUndefined(widget.paragraph.nextSplitWidget)
+            && widget === widget.paragraph.lastChild) {
+            return true;
+        }
+        return false;
+
+    }
+    /**
+     * Return line widget width
+     *
+     * @private
+     */
+    public getWidth(widget: LineWidget, includeParagraphMark: boolean): number {
+        let width: number = 0;
+        const paraFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
+        if (this.isParagraphFirstLine(widget) && !paraFormat.bidi) {
+            width += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
+        }
+        for (let i: number = 0; i < widget.children.length; i++) {
+            const elementBox: ElementBox = widget.children[i];
+            if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
+                continue;
+            }
+            width += (elementBox.margin.left + elementBox.width + elementBox.padding.left);
+        }
+        if (includeParagraphMark && widget.paragraph.childWidgets.indexOf(widget) === widget.paragraph.childWidgets.length - 1
+            && isNullOrUndefined(widget.paragraph.nextSplitWidget)) {
+            width += this.documentHelper.textHelper.getParagraphMarkWidth(widget.paragraph.characterFormat);
+        }
+        return width;
+    }
+    /**
+     * Return line widget left
+     *
+     * @private
+     */
+    public getLeftInternal(widget: LineWidget, elementBox: ElementBox, index: number, skipPadding?: boolean): number {
+        let left: number = widget.paragraph.x;
+        let paraFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
+        if (this.isParagraphFirstLine(widget) && !paraFormat.bidi) {
+
+            left += HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.firstLineIndent);
+        }
+        let renderedWidget: ElementBox[] = widget.renderedElements;
+        let count: number = renderedWidget.indexOf(elementBox);
+        if ((renderedWidget.length === 1 && renderedWidget[0] instanceof ListTextElementBox) || (renderedWidget.length === 2
+            && renderedWidget[0] instanceof ListTextElementBox && renderedWidget[1] instanceof ListTextElementBox)) {
+            count = renderedWidget.length;
+        }
+        let isFieldCode: boolean = false;
+        for (let i: number = 0; i < count; i++) {
+            let widgetInternal: ElementBox = renderedWidget[i];
+            if (widgetInternal instanceof FieldElementBox && widgetInternal.fieldType === 2) {
+                isFieldCode = false;
+            }
+            if (isFieldCode) {
+                continue;
+            }
+            if (widgetInternal instanceof ShapeBase && widgetInternal.textWrappingStyle !== 'Inline') {
+                continue;
+            }
+            if (i === 1 && widgetInternal instanceof ListTextElementBox) {
+                left += widgetInternal.width;
+            } else if (widgetInternal instanceof TabElementBox && elementBox === widgetInternal) {
+                left += widgetInternal.margin.left;
+            } else {
+                left += widgetInternal.margin.left + widgetInternal.width + widgetInternal.padding.left;
+            }
+            if (widgetInternal instanceof FieldElementBox && widgetInternal.fieldType === 0) {
+                isFieldCode = true;
+            }
+        }
+        let isRtlText: boolean = false;
+        let isParaBidi: boolean = widget.paragraph.bidi;
+        if (!isNullOrUndefined(elementBox)) {
+            isRtlText = elementBox.characterRange === CharacterRangeType.RightToLeft;
+            isParaBidi = elementBox.line.paragraph.paragraphFormat.bidi;
+            left = (index === 0 && skipPadding) ? left + elementBox.margin.left : left + elementBox.margin.left + elementBox.padding.left;
+            if (elementBox instanceof ShapeBase && !isNullOrUndefined(elementBox.nextElement)) {
+                left += (elementBox.nextElement.margin.left + elementBox.nextElement.padding.left)
+            }
+            if (isRtlText || (this.documentHelper.moveCaretPosition === 1 && !isRtlText && isParaBidi)) {
+                left += elementBox.width;
+            }
+        }
+        let width: number = 0;
+        if (elementBox instanceof TextElementBox) {
+            if ((this.documentHelper.moveCaretPosition !== 0) && (isParaBidi || isRtlText)) {
+                if ((isRtlText && isParaBidi && this.documentHelper.moveCaretPosition === 2)
+                    || (isRtlText && !isParaBidi && this.documentHelper.moveCaretPosition === 1)) {
+                    left -= elementBox.width;
+                }
+                this.documentHelper.moveCaretPosition = 0;
+                return left;
+            }
+            if (index === (elementBox as TextElementBox).length && !isRtlText) {
+                left += elementBox.width;
+            } else if (index > (elementBox as TextElementBox).length) {
+                width = this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                if (isRtlText) {
+                    left -= elementBox.width + width;
+                } else {
+                    left += elementBox.width + width;
+                }
+            } else {
+                if (index === elementBox.length && isRtlText && paraFormat.textAlignment === 'Justify') {
+                    width = elementBox.width;
+                } else {
+                    width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat, (elementBox as TextElementBox).scriptType);
+                }
+                if (isRtlText) {
+                    left -= width;
+                } else {
+                    left += width;
+                }
+            }
+            this.documentHelper.moveCaretPosition = 0;
+        } else if (index > 0) {
+            if (!isNullOrUndefined(elementBox) && !(elementBox instanceof ListTextElementBox)) {
+                if (!(elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline')) {
+                    left += elementBox.width;
+                }
+                if (index === 2) {
+                    let paragraph: ParagraphWidget = elementBox.line.paragraph;
+                    left += this.documentHelper.textHelper.getParagraphMarkWidth(paragraph.characterFormat);
+                }
+            } else {
+                left += this.documentHelper.textHelper.getParagraphMarkWidth(widget.paragraph.characterFormat);
+            }
+        }
+        return left;
+    }
+    /**
+     * Return line widget start offset
+     * @private
+     */
+    public getLineStartLeft(widget: LineWidget): number {
+        let left: number = widget.paragraph.x;
+        let paragraphFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
+        if (this.isParagraphFirstLine(widget) && !paragraphFormat.bidi) {
+            left += HelperMethods.convertPointToPixel(paragraphFormat.firstLineIndent);
+        }
+        if (widget.children.length > 0) {
+            left += widget.children[0].margin.left;
+        }
+        return left;
+    }
+    /**
+     * Update text position 
+     * @private
+     */
+    public updateTextPositionWidget(widget: LineWidget, point: Point, textPosition: TextPosition, includeParagraphMark: boolean): void {
+        let caretPosition: Point = point;
+        let inline: ElementBox = undefined;
+        let index: number = 0;
+        let updatePositionObj: TextPositionInfo;
+        updatePositionObj = this.updateTextPositionIn(widget, inline, index, caretPosition, includeParagraphMark);
+        inline = updatePositionObj.element;
+        index = updatePositionObj.index;
+        caretPosition = updatePositionObj.caretPosition;
+        textPosition.setPositionForSelection(widget, inline, index, caretPosition);
+    }
+    /**
+     * Clear selection highlight
+     * @private
+     */
+    public clearSelectionHighlightLineWidget(widget: LineWidget): void {
+        if (!isNullOrUndefined(this.owner) && this.selectedWidgets.length > 0) {
+            this.clearSelectionHighlight(this);
+        }
+    }
+    /**
+     * Return first element from line widget
+     * @private
+     */
+    public getFirstElementInternal(widget: LineWidget): ElementBox {
+        let element: ElementBox = undefined;
+        let childLen: number = widget.children.length;
+        for (let i: number = 0; i < childLen; i++) {
+            element = widget.children[i];
+            if (element instanceof ListTextElementBox) {
+                element = undefined;
+            } else {
+                break;
+            }
+        }
+        return element;
+    }
+    //Selection API.   
+    /**
+     * Select content between given range
+     * @private
+     */
+    public selectRange(startPosition: TextPosition, endPosition: TextPosition, isBookmark?: boolean): void {
+        this.start.setPositionInternal(startPosition);
+        this.end.setPositionInternal(endPosition);
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true, true, isBookmark);
+    }
+    /**
+     * Selects current paragraph
+     * @private
+     */
+    public selectParagraphInternal(paragraph: ParagraphWidget, positionAtStart: boolean): void {
+        let line: LineWidget;
+        if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(paragraph.firstChild)) {
+            line = paragraph.firstChild as LineWidget;
+            if (positionAtStart) {
+                this.start.setPosition(line, positionAtStart);
+            } else {
+                let endOffset: number = line.getEndOffset();
+                this.start.setPositionParagraph(line, endOffset);
+            }
+        }
+        this.end.setPositionInternal(this.start);
+        this.upDownSelectionLength = this.start.location.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * @private
+     */
+    public setPositionForBlock(block: BlockWidget, selectFirstBlock: boolean): TextPosition {
+        let position: TextPosition;
+        if (block instanceof TableWidget) {
+            if (selectFirstBlock) {
+                block = this.documentHelper.getFirstParagraphInFirstCell(block);
+            } else {
+                block = this.documentHelper.getLastParagraphInLastCell(block);
+            }
+        }
+        if (block instanceof ParagraphWidget) {
+            position = new TextPosition(this.owner);
+            if (selectFirstBlock) {
+                position.setPosition(block.firstChild as LineWidget, true);
+            } else {
+                let line: LineWidget = block.lastChild as LineWidget;
+                position.setPositionParagraph(line, line.getEndOffset());
+            }
+        }
+        return position;
+    }
+    /**
+     * Select content in given text position
+     * @private
+     */
+    public selectContent(textPosition: TextPosition, clearMultiSelection: boolean): void {
+        if (isNullOrUndefined(textPosition)) {
+            throw new Error('textPosition is undefined.');
+        }
+
+        this.start.setPositionInternal(textPosition);
+        this.end.setPositionInternal(textPosition);
+        this.upDownSelectionLength = this.end.location.x;
+        this.fireSelectionChanged(true);
+    }
+
+    /**
+     * Select paragraph
+     * @private
+     */
+    public selectInternal(lineWidget: LineWidget, element: ElementBox, index: number, physicalLocation: Point): void {
+        this.start.setPositionForSelection(lineWidget, element, index, physicalLocation);
+        this.end.setPositionInternal(this.start);
+        this.upDownSelectionLength = physicalLocation.x;
+        this.fireSelectionChanged(true);
+    }
+    /**
+     * @private
+     */
+    public selects(lineWidget: LineWidget, offset: number, skipSelectionChange: boolean): void {
+        this.documentHelper.clearSelectionHighlight();
+        this.start.setPositionForLineWidget(lineWidget, offset);
+        this.end.setPositionInternal(this.start);
+        if (!skipSelectionChange) {
+            this.fireSelectionChanged(true);
+        }
+    }
+
+    /**
+     * Select content between start and end position
+     * @private
+     */
+    public selectPosition(startPosition: TextPosition, endPosition: TextPosition): void {
+        if (isNullOrUndefined(startPosition) || isNullOrUndefined(endPosition)) {
+            throw new Error('TextPosition cannot be undefined');
+        }
+        if (isNullOrUndefined(startPosition.paragraph)
+            || startPosition.offset > this.getParagraphLength(startPosition.paragraph) + 1) {
+            throw new Error('Start TextPosition is not valid.');
+        }
+        if (isNullOrUndefined(endPosition.paragraph)
+            || endPosition.offset > this.getParagraphLength(endPosition.paragraph) + 1) {
+            throw new Error('End TextPosition is not valid.');
+        }
+
+
+        if (startPosition.isAtSamePosition(endPosition)) {
+            // Select start position.
+            this.selectRange(startPosition, startPosition);
+        } else {
+            // If both text position exists within same comment or outside comment, and not at same position.
+            if (startPosition.isExistBefore(endPosition)) {
+
+                endPosition.validateForwardFieldSelection(startPosition.getHierarchicalIndexInternal(), endPosition.getHierarchicalIndexInternal());
+            } else {
+
+                startPosition.validateForwardFieldSelection(endPosition.getHierarchicalIndexInternal(), startPosition.getHierarchicalIndexInternal());
+            }
+            this.selectRange(startPosition, endPosition);
+        }
+    }
+
+    /**
+     * Notify selection change event
+     * @private
+     */
+    public fireSelectionChanged(isSelectionChanged: boolean, isKeyBoardNavigation?: boolean, isBookmark?: boolean): void {
+        if (!this.isSelectBookmark) {
+            this.isExcludeBookmarkStartEnd = false;
+        }
+        if (!this.isEmpty) {
+            if (this.isForward) {
+                this.start.updatePhysicalPosition(true);
+                this.end.updatePhysicalPosition(false);
+            } else {
+                this.start.updatePhysicalPosition(false);
+                this.end.updatePhysicalPosition(true);
+            }
+        }
+        if (this.isModifyingSelectionInternally) {
+            return;
+        }
+        if (this.documentHelper.formFields.length > 0 && !this.owner.editor.isRemoteAction) {
+            this.currentFormField = this.getCurrentFormField();
+        } else {
+            this.currentFormField = undefined;
+        }
+        if (!isNullOrUndefined(this.previousSelectedFormField) && isNullOrUndefined(this.previousSelectedFormField.fieldSeparator)) {
+            this.previousSelectedFormField = this.currentFormField;
+        }
+        if (!this.skipFormatRetrieval) {
+            this.retrieveCurrentFormatProperties();
+        }
+        this.documentHelper.clearSelectionHighlight();
+        this.hideToolTip();
+        if (this.owner.isLayoutEnabled && !this.owner.isShiftingEnabled) {
+            this.highlightSelection(true, isBookmark);
+        }
+        if (this.documentHelper.restrictEditingPane.isShowRestrictPane && !this.skipEditRangeRetrieval) {
+            this.documentHelper.restrictEditingPane.updateUserInformation();
+        }
+        if (isSelectionChanged) {
+            if (this.start.paragraph.isInHeaderFooter && !this.owner.enableHeaderAndFooter) {
+                this.owner.enableHeaderAndFooter = true;
+            } else if (!this.start.paragraph.isInHeaderFooter && this.owner.enableHeaderAndFooter) {
+                this.owner.enableHeaderAndFooter = false;
+            }
+            this.owner.fireSelectionChange();
+        }
+        if(this.owner.enableAutoFocus)
+        {
+            this.documentHelper.updateFocus();
+        }
+        if (this.documentHelper.isFormFillProtectedMode && isSelectionChanged) {
+            this.triggerFormFillEvent(isKeyBoardNavigation);
+            this.previousSelectedFormField = this.currentFormField;
+        }
+        if (this.owner.rulerHelper && this.owner.documentEditorSettings && this.owner.documentEditorSettings.showRuler &&
+            !this.owner.isReadOnlyMode) {
+            this.owner.rulerHelper.updateRuler(this.owner, false);
+        }
+    }
+    //Formats Retrieval
+    /**
+     * Retrieve all current selection format
+     * @private
+     */
+    public retrieveCurrentFormatProperties(): void {
+        this.isRetrieveFormatting = true;
+        let startPosition: TextPosition = this.start;
+        let endPosition: TextPosition = this.end;
+        if (!this.isForward) {
+            startPosition = this.end;
+            endPosition = this.start;
+        }
+        this.retrieveImageFormat(startPosition, endPosition);
+        this.retrieveCharacterFormat(startPosition, endPosition);
+        this.retrieveParagraphFormat(startPosition, endPosition);
+        this.retrieveSectionFormat(startPosition, endPosition);
+        this.retrieveTableFormat(startPosition, endPosition);
+        this.isRetrieveFormatting = false;
+        this.setCurrentContextType();
+    }
+    /**
+     * @private
+     */
+    public retrieveImageFormat(start: TextPosition, end: TextPosition): void {
+        let image: ElementBox;
+        if (start.currentWidget === end.currentWidget && start.offset + 1 === end.offset) {
+            let elementInfo: ElementInfo = end.currentWidget.getInline(end.offset, 0);
+            image = elementInfo.element;
+            let index: number = elementInfo.index;
+            if (image instanceof ImageElementBox) {
+                let startOffset: number = start.currentWidget.getOffset(image, 0);
+                if (startOffset !== start.offset) {
+                    image = undefined;
+                }
+            }
+        }
+        if (image instanceof ImageElementBox) {
+            this.imageFormat.copyImageFormat(image);
+        } else {
+            this.imageFormat.clearImageFormat();
+        }
+    }
+    /**
+     * Gets the context type of previous character or element.
+     * @param isElement - Decides whether to get previous context type from element or character. By default, character.
+     * @returns Returns the context type of previous character or element.
+     */
+    public getPreviousContextType(isElement?: boolean): string {
+        let contextType: string;
+        let start: TextPosition = this.start;
+        if (start.offset > 0) {
+            let element: ElementBox = start.currentWidget.getInline(start.offset, 0).element;
+            if (isElement) {
+                element = element.previousElement;
+            } else {
+                element = start.currentWidget.getInline(start.offset - 1, 0).element;
+            }
+            contextType = this.getContextElement(element);
+            return contextType;
+        }
+        return undefined;
+    }
+    /**
+     * Gets the context type of next character or element.
+     * @param isElement - Decides whether to get next context type from element or character. By default, character.
+     * @return Returns the context type of next character or element.
+     */
+    public getNextContextType(isElement?: boolean): string {
+        let contextType: string;
+        let start: TextPosition = this.start;
+        let element: ElementBox = start.currentWidget.getInline(start.offset, 0).element;
+        if (isElement && element.nextElement) {
+            element = element.nextElement;
+        } else {
+            element = start.currentWidget.getInline(start.offset + 1, 0).element;
+        }
+        contextType = this.getContextElement(element);
+        return contextType;
+    }
+    private getContextElement(element: ElementBox): string {
+        if (element instanceof TextElementBox) {
+            return 'Text';
+        } else if (element instanceof FieldElementBox || element instanceof FieldTextElementBox) {
+            return 'Field';
+        } else if (element instanceof BookmarkElementBox) {
+            return 'Bookmark';
+        } else if (element instanceof ImageElementBox) {
+            return 'Image';
+        } else if (element instanceof ShapeElementBox) {
+            return 'Shape';
+        } else if (element instanceof CommentElementBox || element instanceof CommentCharacterElementBox) {
+            return 'Comment';
+        } else if (element instanceof ListTextElementBox) {
+            return 'List';
+        } else if (element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox) {
+            return 'EditRange';
+        } else {
+            return undefined;
+        }
+    }
+    /**
+    * Retrieves the information about the content control associated with the current selection.
+    *
+    * @returns {ContentControlInfo} An object containing details about the content control, including
+    * its title, tag, value, editability, deletability, type, and any XML mapping if applicable.
+    */
+    public getContentControlInfo(): ContentControlInfo {
+        let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+        if (!isNullOrUndefined(contentControl)) {
+            let ccValue: string;
+            for (let i = 0; i < contentControl.line.children.length; i++) {
+                if (contentControl.line.children[i] instanceof TextElementBox) {
+                    ccValue = (contentControl.line.children[i] as TextElementBox).text;
+                }
+            }
+            let contentControlInfo: ContentControlInfo = {
+                title: contentControl.contentControlProperties.title,
+                tag: contentControl.contentControlProperties.tag,
+                value: ccValue,
+                canDelete: contentControl.contentControlProperties.lockContentControl,
+                canEdit: contentControl.contentControlProperties.lockContents,
+                type: contentControl.contentControlProperties.type
+            };
+            return contentControlInfo;
+        }
+        return undefined;
+    }
+    private setCurrentContextType(): void {
+        let contextIsinImage: boolean = this.imageFormat.image ? true : false;
+        let contextIsinTable: boolean = (isNullOrUndefined(this.tableFormat) || isNullOrUndefined(this.tableFormat.table)) ? false : true;
+        let style: WStyle = this.start.paragraph.paragraphFormat.baseStyle;
+        if (style instanceof WParagraphStyle && style.name.toLowerCase().indexOf('toc') === 0) {
+            let tocField: FieldElementBox = this.getTocFieldInternal();
+            if (!isNullOrUndefined(tocField)) {
+                this.contextTypeInternal = 'TableOfContents';
+                return;
+            }
+        }
+        let currentRevision: Revision[] = this.getCurrentRevision();
+        if (!isNullOrUndefined(currentRevision) && this.owner.showRevisions) {
+            this.owner.trackChangesPane.currentSelectedRevision = currentRevision[0];
+            if (isNullOrUndefined(this.owner.documentHelper.currentSelectedComment)) {
+                this.owner.commentReviewPane.selectReviewTab('Changes');
+            }
+            this.owner.notify('reviewPane', { comment: this.owner.showComments, changes: true, isUserClosed: false });
+        } else if (!isNullOrUndefined(this.owner.trackChangesPane.currentSelectedRevision)) {
+            this.owner.trackChangesPane.currentSelectedRevision = undefined;
+        }
+        if (this.start.paragraph.isInHeaderFooter) {
+            let isInHeader: boolean = (this.start.paragraph.bodyWidget as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1;
+            if (contextIsinTable) {
+                if (contextIsinImage) {
+                    this.contextTypeInternal = isInHeader ? 'HeaderTableImage' : 'FooterTableImage';
+                } else {
+                    this.contextTypeInternal = isInHeader ? 'HeaderTableText' : 'FooterTableText';
+                }
+
+            } else {
+                if (contextIsinImage) {
+                    this.contextTypeInternal = isInHeader ? 'HeaderImage' : 'FooterImage';
+                } else {
+                    this.contextTypeInternal = isInHeader ? 'HeaderText' : 'FooterText';
+                }
+            }
+        } else {
+            if (contextIsinTable) {
+                this.contextTypeInternal = contextIsinImage ? 'TableImage' : 'TableText';
+            } else {
+                this.contextTypeInternal = contextIsinImage ? 'Image' : 'Text';
+            }
+        }
+        if (!isNullOrUndefined(this.owner.editor) && !isNullOrUndefined(this.owner.editor.documentHelper) &&
+            this.owner.editor.documentHelper.contentControlCollection &&
+            this.owner.editor.documentHelper.contentControlCollection.length > 0) {
+            let contentControl: ContentControl = this.owner.editor.getContentControl();
+            let contentControlImage: ElementBox = this.owner.getImageContentControl();
+            if (!isNullOrUndefined(contentControl) || !isNullOrUndefined(contentControlImage)) {
+                let type: ContentControlType = contentControl ? contentControl.contentControlProperties.type :
+                    contentControlImage.contentControlProperties.type;
+                switch (type) {
+                    case 'RichText':
+                        this.contextTypeInternal = "RichTextContentControl";
+                        break;
+                    case 'Text':
+                        this.contextTypeInternal = "PlainTextContentControl";
+                        break;
+                    case 'Picture':
+                        this.contextTypeInternal = "PictureContentControl";
+                        break;
+                    case 'ComboBox':
+                        this.contextTypeInternal = "ComboBoxContentControl";
+                        break;
+                    case 'DropDownList':
+                        this.contextTypeInternal = "DropDownListContentControl";
+                        break;
+                    case 'CheckBox':
+                        this.contextTypeInternal = "CheckBoxContentControl";
+                        break;
+                    case 'Date':
+                        this.contextTypeInternal = "DatePickerContentControl";
+                        break;
+                }
+            }
+        }
+    }
+    private addItemRevisions(currentItem: any, isFromAccept: boolean): void {
+        for (let i: number = 0; i < currentItem.revisions.length; i++) {
+            let currentRevision: Revision = currentItem.revisions[i];
+            this.selectRevision(currentRevision);
+            if (isFromAccept) {
+                currentRevision.accept();
+            } else {
+                currentRevision.reject();
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public hasRevisions(): boolean {
+        if (this.getCurrentRevision()) {
+            return true;
+        }
+        return false;
+    }
+
+    private getCurrentRevision(): Revision[] {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        let isUpdateSelection: boolean = false;
+        if (this.owner.enableTrackChanges && this.owner.editorHistoryModule && this.owner.editorHistoryModule.currentBaseHistoryInfo && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'BackSpace') {
+            isUpdateSelection = true;
+        }
+        let elementInfo: ElementInfo;
+        if (isUpdateSelection && this.getLineLength(start.currentWidget) >= start.offset + 1) {
+            elementInfo = start.currentWidget.getInline(start.offset + 1, 0);
+        } else {
+            elementInfo = start.currentWidget.getInline(start.offset, 0);
+        }
+        let currentElement: ElementBox = elementInfo.element;
+        let startPara: ParagraphWidget = start.paragraph;
+        let nextOffsetElement: ElementBox;
+        if (isUpdateSelection && this.getLineLength(start.currentWidget) >= start.offset + 2) {
+            nextOffsetElement = start.currentWidget.getInline(start.offset + 2, 0).element;
+        } else {
+            nextOffsetElement = start.currentWidget.getInline(start.offset + 1, 0).element;
+        }
+        let eleEndPosition: TextPosition;
+        if (currentElement && currentElement === nextOffsetElement) {
+            let offset: number = currentElement.line.getOffset(currentElement, (currentElement.length));
+            eleEndPosition = new TextPosition(this.owner);
+            eleEndPosition.setPositionParagraph(currentElement.line, offset);
+            if (end.offset === eleEndPosition.offset && !isNullOrUndefined(currentElement.nextElement)) {
+                return undefined;
+            }
+        }
+        if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
+            return currentElement.revisions;
+        }
+        if (startPara.isInsideTable) {
+            let cellWidget: TableCellWidget = startPara.associatedCell;
+            if (!isNullOrUndefined(cellWidget.ownerRow) && cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+                return cellWidget.ownerRow.rowFormat.revisions;
+            }
+        }
+        if (end.offset > end.paragraph.getLength()) {
+            if (end.paragraph.characterFormat.revisions.length > 0) {
+                return end.paragraph.characterFormat.revisions;
+            }
+        }
+        return undefined;
+    }
+
+
+    private processLineRevisions(linewidget: LineWidget, isFromAccept: boolean): void {
+        for (let i: number = 0; i < linewidget.children.length; i++) {
+            let element: ElementBox = linewidget.children[i] as ElementBox;
+            if (element.revisions.length > 0) {
+                this.addItemRevisions(element, isFromAccept);
+            }
+        }
+    }
+    /**
+     * @private
+     * @param isFromAccept 
+     */
+    public handleAcceptReject(isFromAccept: boolean): void {
+        if (this.isEmpty) {
+            let elementInfo: ElementInfo = this.start.currentWidget.getInline((this.start.offset + 1), 0);
+            let currentElement: ElementBox = elementInfo.element;
+            let startPara: ParagraphWidget = this.start.paragraph;
+            if (!isNullOrUndefined(currentElement) && currentElement.revisions.length > 0) {
+                this.addItemRevisions(currentElement, isFromAccept);
+            }
+            if (startPara.isInsideTable) {
+                let cellWidget: TableCellWidget = startPara.associatedCell;
+                if (!isNullOrUndefined(cellWidget)) {
+                    if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
+                        this.addItemRevisions(cellWidget.ownerRow.rowFormat, isFromAccept);
+                    }
+                } else if (!startPara.isEmpty()) {
+                    for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
+                        let paraWidget: ParagraphWidget = cellWidget.childWidgets[i] as ParagraphWidget;
+                        for (let lineIndex: 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                            let linewidget: LineWidget = paraWidget.childWidgets[lineIndex] as LineWidget;
+                            this.processLineRevisions(linewidget, isFromAccept);
+                        }
+                    }
+                }
+            }
+        } else {
+            let revisions: Revision[] = this.getselectedRevisionElements();
+            for (let i: number = 0; i < revisions.length; i++) {
+                this.acceptReject(revisions[i], isFromAccept);
+            }
+
+        }
+    }
+
+    private acceptReject(currentRevision: Revision, toAccept: boolean): void {
+        this.selectRevision(currentRevision);
+        if (toAccept) {
+            currentRevision.accept();
+        } else {
+            currentRevision.reject();
+        }
+    }
+    private getselectedRevisionElements(): Revision[] {
+        let revisionCollec: Revision[] = [];
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        for (let i: number = 0; i < this.selectedWidgets.length; i++) {
+            let currentWidget: Widget = this.selectedWidgets.keys[i] as Widget;
+            if (currentWidget instanceof LineWidget) {
+                revisionCollec = this.getSelectedLineRevisions(currentWidget, start, end, revisionCollec);
+            } else if (currentWidget instanceof TableCellWidget) {
+                if (currentWidget.ownerRow.rowFormat.revisions.length > 0) {
+                    revisionCollec = this.addRevisionsCollec(currentWidget.ownerRow.rowFormat.revisions, revisionCollec);
+                }
+                for (let i: number = 0; i < currentWidget.childWidgets.length; i++) {
+                    let paraWidget: ParagraphWidget = currentWidget.childWidgets[i] as ParagraphWidget;
+                    for (let lineIndex: number = 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
+                        let linewidget: LineWidget = paraWidget.childWidgets[lineIndex] as LineWidget;
+                        revisionCollec = this.getSelectedLineRevisions(linewidget, start, end, revisionCollec);
+                    }
+                }
+            }
+        }
+        return revisionCollec;
+    }
+
+    private getSelectedLineRevisions(currentWidget: LineWidget, start: TextPosition, end: TextPosition, elements: Revision[]): Revision[] {
+        if (currentWidget.paragraph.characterFormat.revisions.length > 0) {
+            elements = this.addRevisionsCollec(currentWidget.paragraph.characterFormat.revisions, elements);
+        }
+        for (let j: number = 0; j < currentWidget.children.length; j++) {
+            let currentElement: ElementBox = currentWidget.children[j];
+
+            let offset: number = currentElement.line.getOffset(currentElement, 0);
+            let eleStartPosition: TextPosition = new TextPosition(this.owner);
+            eleStartPosition.setPositionParagraph(currentElement.line, offset);
+
+            offset = currentElement.line.getOffset(currentElement, (currentElement.length));
+            let eleEndPosition: TextPosition = new TextPosition(this.owner);
+            eleEndPosition.setPositionParagraph(currentElement.line, offset);
+
+            if (((eleEndPosition.isExistAfter(start) && eleEndPosition.isExistBefore(end))
+                || (eleStartPosition.isExistAfter(start) && eleStartPosition.isExistBefore(end))
+                || eleStartPosition.isAtSamePosition(start)
+                || (start.isExistAfter(eleStartPosition) && end.isExistBefore(eleEndPosition))) && currentElement.revisions.length > 0) {
+                elements = this.addRevisionsCollec(currentElement.revisions, elements);
+            }
+        }
+        return elements;
+    }
+
+    private addRevisionsCollec(element: Revision[], revisCollec: Revision[]): Revision[] {
+        for (let i: number = 0; i < element.length; i++) {
+            if (revisCollec.indexOf(element[i]) === -1) {
+                revisCollec.push(element[i]);
+            }
+        }
+        return revisCollec;
+    }
+
+    //Table Format retrieval starts
+    /**
+     * Retrieve selection table format
+     * @private
+     */
+    public retrieveTableFormat(start: TextPosition, end: TextPosition): void {
+        let tableAdv: TableWidget = this.getTable(start, end);
+
+        if (!isNullOrUndefined(tableAdv)) {
+            this.tableFormat.table = tableAdv;
+            this.tableFormat.copyFormat(tableAdv.tableFormat);
+            this.retrieveCellFormat(start, end);
+            this.retrieveRowFormat(start, end);
+        } else {
+            //When the selection is out of table
+            this.tableFormat.clearFormat();
+        }
+    }
+    /**
+     * Retrieve selection cell format
+     * @private
+     */
+    public retrieveCellFormat(start: TextPosition, end: TextPosition): void {
+        if (start.paragraph.isInsideTable && end.paragraph.isInsideTable) {
+            this.cellFormat.copyFormat(start.paragraph.associatedCell.cellFormat);
+            this.getCellFormat(start.paragraph.associatedCell.ownerTable, start, end);
+        } else {
+            //When the selection is out of table
+            this.cellFormat.clearCellFormat();
+        }
+    }
+    /**
+     * Retrieve selection row format
+     * @private
+     */
+    public retrieveRowFormat(start: TextPosition, end: TextPosition): void {
+        if (start.paragraph.isInsideTable && end.paragraph.isInsideTable) {
+            this.rowFormat.copyFormat(start.paragraph.associatedCell.ownerRow.rowFormat);
+            this.getRowFormat(start.paragraph.associatedCell.ownerTable, start, end);
+        } else {
+            //When the selection is out of table
+            this.rowFormat.clearRowFormat();
+        }
+    }
+    /**
+     * Get selected cell format
+     * @private
+     */
+    public getCellFormat(table: TableWidget, start: TextPosition, end: TextPosition): void {
+        if (start.paragraph.associatedCell.equals(end.paragraph.associatedCell)) {
+            return;
+        }
+        let isStarted: boolean = false;
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            if (row === start.paragraph.associatedCell.ownerRow) {
+                isStarted = true;
+            }
+            if (isStarted) {
+                for (let j: number = 0; j < row.childWidgets.length; j++) {
+                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    if (this.isCellSelected(cell, start, end)) {
+                        this.cellFormat.combineFormat(cell.cellFormat);
+                    }
+                    if (cell === end.paragraph.associatedCell) {
+                        this.cellFormat.combineFormat(cell.cellFormat);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Get selected row format
+     * @private
+     */
+    public getRowFormat(table: TableWidget, start: TextPosition, end: TextPosition): void {
+        let tableRow: TableRowWidget = start.paragraph.associatedCell.ownerRow;
+        if (tableRow === end.paragraph.associatedCell.ownerRow) {
+            return;
+        }
+        for (let i: number = table.childWidgets.indexOf(tableRow) + 1; i < table.childWidgets.length; i++) {
+            let tempTableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            this.rowFormat.combineFormat(tempTableRow.rowFormat);
+            if (tempTableRow === end.paragraph.associatedCell.ownerRow) {
+                return;
+            }
+        }
+    }
+    /**
+     * Return table with given text position
+     * @private
+     */
+    public getTable(startPosition: TextPosition, endPosition: TextPosition): TableWidget {
+        if (!isNullOrUndefined(startPosition.paragraph.associatedCell) && !isNullOrUndefined(endPosition.paragraph.associatedCell)) {
+            let startTable: TableWidget = startPosition.paragraph.associatedCell.ownerTable;
+            let endTable: TableWidget = startPosition.paragraph.associatedCell.ownerTable;
+            if (startTable === endTable) {
+                return startTable;
+            } else {
+                if (startTable.contains(startPosition.paragraph.associatedCell)) {
+                    return startTable;
+                } else if (endTable.contains(startPosition.paragraph.associatedCell)) {
+                    return endTable;
+                } else if (!startTable.isInsideTable || !endTable.isInsideTable) {
+                    return undefined;
+                } else {
+                    do {
+                        startTable = startTable.associatedCell.ownerTable;
+                        if (startTable === endTable || startTable.contains(endTable.associatedCell)) {
+                            return startTable;
+                        } else if (endTable.contains(startTable.associatedCell)) {
+                            return endTable;
+                        }
+                    } while (!isNullOrUndefined(startTable.associatedCell));
+                }
+            }
+        }
+        return undefined;
+    }
+    private getContainerWidget(block: BlockWidget): BlockContainer {
+        let bodyWidget: Widget;
+        if (block.containerWidget instanceof TextFrame) {
+            bodyWidget = block.containerWidget.containerShape.line.paragraph.bodyWidget;
+        } else if (block.containerWidget instanceof BlockContainer) {
+            if (!isNullOrUndefined(block.containerWidget.containerWidget) && block.containerWidget.containerWidget instanceof FootNoteWidget) {
+                bodyWidget = block.containerWidget.containerWidget;
+            } else {
+                bodyWidget = block.containerWidget;
+            }
+        } else {
+            bodyWidget = block.containerWidget;
+            while (!(bodyWidget instanceof BlockContainer)) {
+                if (bodyWidget instanceof TextFrame) {
+                    bodyWidget = bodyWidget.containerShape.line.paragraph;
+                }
+                bodyWidget = bodyWidget.containerWidget;
+            }
+        }
+        return bodyWidget as BlockContainer;
+    }
+    //Table format retrieval ends
+    //Section format retrieval starts
+    /**
+     * Retrieve selection section format
+     * @private
+     */
+    public retrieveSectionFormat(start: TextPosition, end: TextPosition): void {
+        let startParaSection: BodyWidget = this.getContainerWidget(start.paragraph) as BodyWidget;
+        let endParaSection: BodyWidget = this.getContainerWidget(end.paragraph) as BodyWidget;
+        if (!isNullOrUndefined(startParaSection)) {
+            this.sectionFormat.copyFormat(startParaSection.sectionFormat);
+            let startPageIndex: number = this.documentHelper.pages.indexOf(startParaSection.page);
+            let endPageIndex: number = this.documentHelper.pages.indexOf(endParaSection.page);
+            for (let i: number = startPageIndex + 1; i <= endPageIndex; i++) {
+                this.sectionFormat.combineFormat((this.documentHelper.pages[i].bodyWidgets[0] as BodyWidget).sectionFormat);
+            }
+        }
+    }
+    //section format retrieval ends.
+    //Paragraph format retrieval implementation starts.
+    /**
+     * Retrieve selection paragraph format
+     * @private
+     */
+    public retrieveParagraphFormat(start: TextPosition, end: TextPosition): void {
+        this.getParagraphFormatForSelection(start.paragraph, this, start, end);
+    }
+    /**
+     * @private
+     */
+    public getParagraphFormatForSelection(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition): void {
+        //Selection start in cell.
+        if (start.paragraph.isInsideTable && (!end.paragraph.isInsideTable
+            || start.paragraph.associatedCell !== end.paragraph.associatedCell
+            || this.isCellSelected(start.paragraph.associatedCell, start, end)
+        )) {
+            this.getParagraphFormatInternalInCell(start.paragraph.associatedCell, start, end);
+        } else {
+            this.getParagraphFormatInternalInParagraph(paragraph, start, end);
+            if (end.paragraph === paragraph) {
+                return;
+            }
+            let block: BlockWidget = this.getNextRenderedBlock(paragraph) as BlockWidget;
+            if (!isNullOrUndefined(block)) {
+                this.getParagraphFormatInternalInBlock(block, start, end);
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public getParagraphsInSelection(): ParagraphWidget[] {
+        let selection = this.owner.selectionModule;
+        let selectedWidgets = selection.selectedWidgets.keys;
+        let paragraphsInSelection: ParagraphWidget[] = [];
+        if (selection.isEmpty || selection.start.paragraph === selection.end.paragraph) {
+            return [selection.start.paragraph];
+        }
+        for (let i = 0; i < selectedWidgets.length; i++) {
+            let widget: LineWidget = selectedWidgets[i] as LineWidget;
+            if (paragraphsInSelection.indexOf(widget.paragraph) === -1) {
+                paragraphsInSelection.push(widget.paragraph);
+            }
+        }
+        return paragraphsInSelection;
+    }
+    /**
+     * @private
+     */
+    public getParagraphFormatInternalInParagraph(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
+        if (start.paragraph === paragraph) {
+            this.paragraphFormat.copyFormat(paragraph.paragraphFormat);
+        } else {
+            this.paragraphFormat.combineFormat(paragraph.paragraphFormat);
+        }
+    }
+    /**
+     * @private
+     */
+    public getParagraphFormatInternalInBlock(block: BlockWidget, start: TextPosition, end: TextPosition): void {
+        if (block instanceof ParagraphWidget) {
+            this.getParagraphFormatInternalInParagraph(block, start, end);
+            if (end.paragraph === block) {
+                return;
+            }
+            let para: BlockWidget = this.getNextRenderedBlock(block) as BlockWidget;
+            if (!isNullOrUndefined(para)) {
+                this.getParagraphFormatInternalInBlock(para, start, end);
+            }
+        } else {
+            this.getParagraphFormatInternalInTable(block as TableWidget, start, end);
+        }
+    }
+    /**
+     * @private
+     */
+    public getParagraphFormatInternalInTable(table: TableWidget, start: TextPosition, end: TextPosition): void {
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < tableRow.childWidgets.length; j++) {
+                this.getParagraphFormatInCell(tableRow.childWidgets[j] as TableCellWidget);
+            }
+            if (end.paragraph.isInsideTable && this.containsRow(tableRow, end.paragraph.associatedCell)) {
+                return;
+            }
+        }
+        let block: BlockWidget = this.getNextRenderedBlock(table) as BlockWidget;
+        //Goto the next block.
+        this.getParagraphFormatInternalInBlock(block, start, end);
+    }
+    /**
+     * Get paragraph format in cell
+     * @private
+     */
+    public getParagraphFormatInCell(cell: TableCellWidget): void {
+        for (let i: number = 0; i < cell.childWidgets.length; i++) {
+            this.getParagraphFormatInBlock((cell.childWidgets[i] as BlockWidget));
+        }
+    }
+    /**
+     * @private
+     */
+    public getParagraphFormatInBlock(block: BlockWidget): void {
+        if (block instanceof ParagraphWidget) {
+            this.getParagraphFormatInParagraph(block);
+        } else {
+            this.getParagraphFormatInTable(block as TableWidget);
+        }
+    }
+    /**
+     * @private
+     */
+    public getParagraphFormatInTable(tableAdv: TableWidget): void {
+        for (let i: number = 0; i < tableAdv.childWidgets.length; i++) {
+            let tableRow: TableRowWidget = tableAdv.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < tableRow.childWidgets.length; j++) {
+                this.getParagraphFormatInCell((tableRow.childWidgets[j] as TableCellWidget));
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public getParagraphFormatInParagraph(paragraph: ParagraphWidget): void {
+        if (this.start.paragraph === paragraph) {
+            this.paragraphFormat.copyFormat(paragraph.paragraphFormat);
+        } else {
+            this.paragraphFormat.combineFormat(paragraph.paragraphFormat);
+        }
+    }
+    /**
+     * Get paragraph format in cell
+     * @private
+     */
+    public getParagraphFormatInternalInCell(cellAdv: TableCellWidget, start: TextPosition, end: TextPosition): void {
+        if (end.paragraph.isInsideTable) {
+            let containerCell: TableCellWidget = this.getContainerCellOf(cellAdv, end.paragraph.associatedCell);
+            if (containerCell.ownerTable.contains(end.paragraph.associatedCell)) {
+                let startCell: TableCellWidget = this.getSelectedCell(cellAdv, containerCell);
+                let endCell: TableCellWidget = this.getSelectedCell(end.paragraph.associatedCell, containerCell);
+                if (this.containsCell(containerCell, end.paragraph.associatedCell)) {
+                    //Selection end is in container cell.
+                    if (this.isCellSelected(containerCell, start, end)) {
+                        this.getParagraphFormatInCell(containerCell);
+                    } else {
+                        if (startCell === containerCell) {
+                            this.getParagraphFormatInternalInParagraph(start.paragraph, start, end);
+                            if (end.paragraph === start.paragraph) {
+                                return;
+                            }
+                            let block: BlockWidget = this.getNextRenderedBlock(start.paragraph) as BlockWidget;
+                            if (!isNullOrUndefined(block)) {
+                                this.getParagraphFormatInternalInBlock(block, start, end);
+                            }
+                        } else {
+                            this.getParagraphFormatInRow(startCell.ownerRow, start, end);
+                        }
+                    }
+                } else {
+                    //Format other selected cells in current table.
+                    this.getParaFormatForCell(containerCell.ownerTable, containerCell, endCell);
+                }
+            } else {
+                this.getParagraphFormatInRow(containerCell.ownerRow, start, end);
+            }
+        } else {
+            let cell: TableCellWidget = this.getContainerCell(cellAdv);
+            this.getParagraphFormatInRow(cell.ownerRow, start, end);
+        }
+    }
+    /**
+     * @private
+     */
+    public getParaFormatForCell(table: TableWidget, startCell: TableCellWidget, endCell: TableCellWidget): void {
+        let startCellIn: number = this.getCellLeft(startCell.ownerRow, startCell);
+        let endCellIn: number = startCellIn + startCell.cellFormat.cellWidth;
+        let endCellLeft: number = this.getCellLeft(endCell.ownerRow, endCell);
+        let endCellRight: number = endCellLeft + endCell.cellFormat.cellWidth;
+        if (startCellIn > endCellLeft) {
+            startCellIn = endCellLeft;
+        }
+        if (endCellIn < endCellRight) {
+            endCellIn = endCellRight;
+        }
+        if (startCellIn > this.upDownSelectionLength) {
+            startCellIn = this.upDownSelectionLength;
+        }
+        if (startCellIn < this.upDownSelectionLength) {
+            startCellIn = this.upDownSelectionLength;
+        }
+        let count: number = table.childWidgets.indexOf(endCell.ownerRow);
+        for (let i: number = table.childWidgets.indexOf(startCell.ownerRow); i <= count; i++) {
+            let tableRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < tableRow.childWidgets.length; j++) {
+                let cell: TableCellWidget = tableRow.childWidgets[j] as TableCellWidget;
+                let left: number = this.getCellLeft(tableRow, cell);
+                if (HelperMethods.round(startCellIn, 2) <= HelperMethods.round(left, 2)
+                    && HelperMethods.round(left, 2) < HelperMethods.round(endCellIn, 2)) {
+                    this.getParagraphFormatInCell(cell);
+                }
+            }
+        }
+    }
+    /**
+     * Get paragraph format ins row
+     * @private
+     */
+    public getParagraphFormatInRow(tableRow: TableRowWidget, start: TextPosition, end: TextPosition): void {
+        for (let i: number = tableRow.rowIndex; i < tableRow.ownerTable.childWidgets.length; i++) {
+            let row: TableRowWidget = tableRow.ownerTable.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                this.getParagraphFormatInCell((row.childWidgets[j] as TableCellWidget));
+            }
+            if (end.paragraph.isInsideTable && this.containsRow(row, end.paragraph.associatedCell)) {
+                return;
+            }
+        }
+        let block: BlockWidget = this.getNextRenderedBlock(tableRow.ownerTable) as BlockWidget;
+        //Goto the next block.
+        this.getParagraphFormatInternalInBlock(block, start, end);
+    }
+    // paragraph format retrieval implementation ends
+    // Character format retrieval implementation starts.
+    /**
+     * Retrieve Selection character format
+     * @private
+     */
+    public retrieveCharacterFormat(start: TextPosition, end: TextPosition): void {
+        this.characterFormat.copyFormat(start.paragraph.characterFormat);
+        if(start.paragraph.isEmpty()){
+            this.characterFormat.copyFormat(start.paragraph.characterFormat,this.documentHelper.textHelper.getFontNameToRender(0,start.paragraph.characterFormat));
+        }
+        if (start.paragraph === end.paragraph && start.currentWidget.isLastLine()
+            && start.offset === this.getLineLength(start.currentWidget) && start.offset + 1 === end.offset) {
+            return;
+        }
+        let para: ParagraphWidget = start.paragraph as ParagraphWidget;
+        if (start.paragraph === end.paragraph && this.isSelectList) {
+            let listLevel: WListLevel = this.getListLevel(start.paragraph);
+            // let breakCharacterFormat: WCharacterFormat = start.paragraph.characterFormat;
+            if (listLevel && listLevel.characterFormat.uniqueCharacterFormat) {
+                this.characterFormat.copyFormat(listLevel.characterFormat);
+            }
+            return;
+        }
+        if (start.offset === this.getParagraphLength(para) && !this.isEmpty) {
+            para = this.getNextParagraphBlock(para) as ParagraphWidget;
+        }
+        while (!isNullOrUndefined(para) && para !== end.paragraph && para.isEmpty()) {
+            para = this.getNextParagraphBlock(para) as ParagraphWidget;
+        }
+        let offset: number = para === start.paragraph ? start.offset : 0;
+        let indexInInline: number = 0;
+        if (!isNullOrUndefined(para) && !para.isEmpty()) {
+            let position: TextPosition = new TextPosition(this.owner);
+            let elemInfo: ElementInfo = start.currentWidget.getInline(offset, indexInInline);
+            let physicalLocation: Point = this.getPhysicalPositionInternal(start.currentWidget, offset, true);
+            position.setPositionForSelection(start.currentWidget, elemInfo.element, elemInfo.index, physicalLocation);
+            this.getCharacterFormatForSelection(para, this, position, end);
+        }
+    }
+    /**
+     * @private
+     */
+
+    public getCharacterFormatForSelection(paragraph: ParagraphWidget, selection: Selection, startPosition: TextPosition, endPosition: TextPosition): void {
+        //Selection start in cell.
+        if (startPosition.paragraph instanceof ParagraphWidget && startPosition.paragraph.isInsideTable
+            && (!endPosition.paragraph.isInsideTable
+                || startPosition.paragraph.associatedCell !== endPosition.paragraph.associatedCell
+                || this.isCellSelected(startPosition.paragraph.associatedCell, startPosition, endPosition))) {
+            this.getCharacterFormatInTableCell(startPosition.paragraph.associatedCell, selection, startPosition, endPosition);
+        } else {
+            this.getCharacterFormat(paragraph, startPosition, endPosition);
+        }
+    }
+    /**
+     * Get Character format
+     * @private
+     */
+    //Format Retrieval
+    public getCharacterFormatForTableRow(tableRowAdv: TableRowWidget, start: TextPosition, end: TextPosition): void {
+        for (let i: number = tableRowAdv.rowIndex; i < tableRowAdv.ownerTable.childWidgets.length; i++) {
+            let tableRow: TableRowWidget = tableRowAdv.ownerTable.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < tableRow.childWidgets.length; j++) {
+                this.getCharacterFormatForSelectionCell((tableRow.childWidgets[j] as TableCellWidget), start, end);
+            }
+            if (end.paragraph.isInsideTable && this.containsRow(tableRow, end.paragraph.associatedCell)) {
+                return;
+            }
+        }
+        let block: BlockWidget = this.getNextRenderedBlock(tableRowAdv.ownerTable) as BlockWidget;
+        // //Goto the next block.
+        this.getCharacterFormatForBlock(block, start, end);
+    }
+    /**
+     * Get Character format in table
+     * @private
+     */
+    public getCharacterFormatInTableCell(tableCell: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition): void {
+        if (end.paragraph.isInsideTable) {
+            let containerCell: TableCellWidget = this.getContainerCellOf(tableCell, end.paragraph.associatedCell);
+            if (containerCell.ownerTable.contains(end.paragraph.associatedCell)) {
+                let startCell: TableCellWidget = this.getSelectedCell(tableCell, containerCell);
+                let endCell: TableCellWidget = this.getSelectedCell(end.paragraph.associatedCell, containerCell);
+                if (this.containsCell(containerCell, end.paragraph.associatedCell)) {
+                    //Selection end is in container cell.
+                    if (this.isCellSelected(containerCell, start, end)) {
+                        this.getCharacterFormatForSelectionCell(containerCell, start, end);
+                    } else {
+                        if (startCell === containerCell) {
+                            this.getCharacterFormat(start.paragraph, start, end);
+                        } else {
+                            this.getCharacterFormatForTableRow(startCell.ownerRow, start, end);
+                        }
+                    }
+                } else {
+                    //Format other selected cells in current table.
+                    this.getCharacterFormatInternalInTable(containerCell.ownerTable, containerCell, endCell, start, end);
+                }
+            } else {
+                this.getCharacterFormatForTableRow(containerCell.ownerRow, start, end);
+            }
+        } else {
+            let cell: TableCellWidget = this.getContainerCell(tableCell);
+            this.getCharacterFormatForTableRow(cell.ownerRow, start, end);
+        }
+    }
+    /**
+     * @private
+     */
+
+    public getCharacterFormatInternalInTable(table: TableWidget, startCell: TableCellWidget, endCell: TableCellWidget, startPosition: TextPosition, endPosition: TextPosition): void {
+        let startIn: number = this.getCellLeft(startCell.ownerRow, startCell);
+        let endIn: number = startIn + startCell.cellFormat.cellWidth;
+        let endCellLeft: number = this.getCellLeft(endCell.ownerRow, endCell);
+        let endCellRight: number = endCellLeft + endCell.cellFormat.cellWidth;
+        if (startIn > endCellLeft) {
+            startIn = endCellLeft;
+        }
+        if (endIn < endCellRight) {
+            endIn = endCellRight;
+        }
+        if (startIn > this.upDownSelectionLength) {
+            startIn = this.upDownSelectionLength;
+        }
+        if (endIn < this.upDownSelectionLength) {
+            endIn = this.upDownSelectionLength;
+        }
+        let count: number = table.childWidgets.indexOf(endCell.ownerRow);
+        for (let i: number = table.childWidgets.indexOf(startCell.ownerRow); i <= count; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                let left: number = this.getCellLeft(row, cell);
+                if (HelperMethods.round(startIn, 2) <= HelperMethods.round(left, 2) &&
+                    HelperMethods.round(left, 2) < HelperMethods.round(endIn, 2)) {
+                    this.getCharacterFormatForSelectionCell(cell, startPosition, endPosition);
+                }
+            }
+        }
+    }
+    /**
+     * Get character format with in selection
+     * @private
+     */
+    public getCharacterFormat(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
+        if (paragraph !== start.paragraph && paragraph !== end.paragraph && !paragraph.isEmpty()) {
+            this.getCharacterFormatInternal(paragraph, this);
+            if(!this.characterFormat.canRetrieveNextCharacterFormat())
+                return;
+        }
+        if (end.paragraph === paragraph && start.paragraph !== paragraph && end.offset === 0) {
+            return;
+        }
+        let startOffset: number = 0;
+        let length: number = this.getParagraphLength(paragraph);
+        if (paragraph === start.paragraph) {
+            startOffset = start.offset;
+            //Sets selection character format.            
+            let isUpdated: boolean = this.setCharacterFormat(paragraph, start, end, length);
+            if (isUpdated) {
+                return;
+            }
+        }
+        let startLineWidget: number = paragraph.childWidgets.indexOf(start.currentWidget) !== -1 ?
+            paragraph.childWidgets.indexOf(start.currentWidget) : 0;
+        let endLineWidget: number = paragraph.childWidgets.indexOf(end.currentWidget) !== -1 ?
+            paragraph.childWidgets.indexOf(end.currentWidget) : paragraph.childWidgets.length - 1;
+        let endOffset: number = end.offset;
+        if (paragraph !== end.paragraph) {
+            endOffset = length;
+        }
+        let isFieldStartSelected: boolean = false;
+        for (let i: number = startLineWidget; i <= endLineWidget; i++) {
+            let lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            if (i !== startLineWidget) {
+                startOffset = this.getStartLineOffset(lineWidget);
+            }
+            if (lineWidget === end.currentWidget) {
+                endOffset = end.offset;
+            } else {
+                endOffset = this.getLineLength(lineWidget);
+            }
+            let count: number = 0;
+            for (let j: number = 0; j < lineWidget.children.length; j++) {
+                let inline: ElementBox = lineWidget.children[j] as ElementBox;
+                if (inline instanceof ListTextElementBox) {
+                    continue;
+                }
+                if (startOffset >= count + inline.length) {
+                    count += inline.length;
+                    continue;
+                }
+                if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 0
+                    && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox))) {
+                    let nextInline: ElementBox = isNullOrUndefined((inline as FieldElementBox).fieldEnd) ?
+                        (inline as FieldElementBox).fieldBegin : (inline as FieldElementBox).fieldEnd;
+                    j--;
+                    do {
+                        this.characterFormat.combineFormat(inline.characterFormat);
+                        count += inline.length;
+                        inline = inline.nextNode;
+                        i++;
+                        j++;
+                    } while (!isNullOrUndefined(inline) && inline !== nextInline);
+                    continue;
+                    //isFieldStartSelected = true;
+                }
+                // if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1
+                //     && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)) && isFieldStartSelected) {
+                //     let fieldInline: ElementBox = (inline as FieldElementBox).fieldBegin;
+                //     do {
+                //         this.characterFormat.combineFormat(fieldInline.characterFormat);
+                //         fieldInline = fieldInline.nextNode as ElementBox;
+                //     } while (!(fieldInline instanceof FieldElementBox));
+                // }
+                if (inline instanceof TextElementBox || inline instanceof FieldElementBox) {
+                    this.characterFormat.combineFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                }
+                if (isNullOrUndefined(inline) || endOffset <= count + inline.length) {
+                    break;
+                }
+                count += inline.length;
+            }
+        }
+        if (end.paragraph === paragraph) {
+            return;
+        }
+        let block: BlockWidget = this.getNextRenderedBlock(paragraph) as BlockWidget;
+        if (!isNullOrUndefined(block)) {
+            this.getCharacterFormatForBlock(block, start, end);
+        }
+    }
+    private setCharacterFormat(para: ParagraphWidget, startPos: TextPosition, endPos: TextPosition, length: number): boolean {
+        let index: number = 0;
+        let startOffset: number = startPos.offset;
+        let inlineAndIndex: ElementInfo = startPos.currentWidget.getInline(startOffset, index);
+        index = inlineAndIndex.index;
+        let inline: ElementBox = inlineAndIndex.element;
+        if (isNullOrUndefined(inline)) {
+            let currentLineIndex: number = startPos.paragraph.childWidgets.indexOf(startPos.currentWidget);
+            if (startPos.currentWidget.previousLine) {
+                inline = startPos.currentWidget.previousLine.children[startPos.currentWidget.previousLine.children.length - 1];
+                this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                return true;
+            }
+        }
+        if (startOffset < length) {
+            if (this.isEmpty) {
+                if (inline instanceof TextElementBox || (inline instanceof FieldElementBox
+                    && ((inline as FieldElementBox).fieldType === 0 || (inline as FieldElementBox).fieldType === 1))) {
+                    let previousNode: TextElementBox = this.getPreviousTextElement(inline) as TextElementBox;
+                    if (startOffset === 0 && previousNode) {
+                        inline = previousNode;
+                    }
+                    this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                } else {
+                    if (!isNullOrUndefined(this.getPreviousTextElement(inline))) {
+                        let element: ElementBox = this.getPreviousTextElement(inline);
+                        this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
+                    } else if (!isNullOrUndefined(this.getNextTextElement(inline))) {
+                        let element: ElementBox = this.getNextTextElement(inline);
+                        this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
+                    } else {
+                        this.characterFormat.copyFormat(para.characterFormat);
+                    }
+                }
+                return true;
+            } else {
+                if (index === inline.length && !isNullOrUndefined(inline.nextNode)) {
+                    this.characterFormat.copyFormat(this.getNextValidCharacterFormat(inline), this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                } else if (inline instanceof TextElementBox) {
+                    this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                } else if (inline instanceof FieldElementBox) {
+                    this.characterFormat.copyFormat(this.getNextValidCharacterFormatOfField(inline as FieldElementBox));
+                }
+            }
+        } else {
+            if (length === endPos.offset) {
+                if (inline instanceof TextElementBox || inline instanceof FieldElementBox) {
+                    this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                } else if (!isNullOrUndefined(inline)) {
+                    inline = this.getPreviousTextElement(inline);
+                    if (!isNullOrUndefined(inline)) {
+                        this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                    }
+                } else {
+                    this.characterFormat.copyFormat(para.characterFormat);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public getCharacterFormatForBlock(block: BlockWidget, start: TextPosition, end: TextPosition): void {
+        if (block instanceof ParagraphWidget) {
+            this.getCharacterFormat(block, start, end);
+        } else {
+            this.getCharacterFormatInTable(block as TableWidget, start, end);
+        }
+    }
+    /**
+     * @private
+     */
+    public getCharacterFormatInTable(table: TableWidget, start: TextPosition, end: TextPosition): void {
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                this.getCharacterFormatForSelectionCell((row.childWidgets[j] as TableCellWidget), start, end);
+            }
+            if (end.paragraph.isInsideTable && this.containsRow(row, end.paragraph.associatedCell)) {
+                return;
+            }
+        }
+        let blockAdv: BlockWidget = this.getNextRenderedBlock(table) as BlockWidget;
+        // //Goto the next block.
+        if (!isNullOrUndefined(blockAdv)) {
+            this.getCharacterFormatForBlock(blockAdv, start, end);
+        }
+    }
+    /**
+     * Get character format in selection
+     * @private
+     */
+    public getCharacterFormatForSelectionCell(cell: TableCellWidget, start: TextPosition, end: TextPosition): void {
+        for (let i: number = 0; i < cell.childWidgets.length; i++) {
+            this.getCharacterFormatForBlock((cell.childWidgets[i] as BlockWidget), start, end);
+        }
+    }
+    /**
+     * @private
+     */
+    public getCharacterFormatInternal(paragraph: ParagraphWidget, selection: Selection): void {
+        for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
+            let linewidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            for (let j: number = 0; j < linewidget.children.length; j++) {
+                let element: ElementBox = linewidget.children[j];
+                if (!(element instanceof ImageElementBox || element instanceof FieldElementBox || element instanceof ListTextElementBox)) {
+                    selection.characterFormat.combineFormat(element.characterFormat);
+                }
+            }
+        }
+    }
+    /**
+     * Get next valid character format from inline
+     * @private
+     */
+    public getNextValidCharacterFormat(inline: ElementBox): WCharacterFormat {
+        let startInline: ElementBox = this.getNextTextElement(inline);
+        if (isNullOrUndefined(startInline)) {
+            return inline.characterFormat;
+        }
+        let fieldBegin: FieldElementBox = undefined;
+        if (startInline instanceof FieldElementBox) {
+            if (fieldBegin.fieldType === 0) {
+                fieldBegin = startInline;
+            }
+        }
+        if (isNullOrUndefined(fieldBegin)) {
+            return startInline.characterFormat;
+        } else {
+            return this.getNextValidCharacterFormatOfField(fieldBegin as FieldElementBox);
+        }
+    }
+    /**
+     * Get next valid paragraph format from field
+     * @private
+     */
+    public getNextValidCharacterFormatOfField(fieldBegin: FieldElementBox): WCharacterFormat {
+        let startInline: ElementBox = fieldBegin;
+        if (HelperMethods.isLinkedFieldCharacter(fieldBegin)) {
+            if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
+                startInline = fieldBegin.fieldEnd;
+            } else {
+                startInline = fieldBegin.fieldSeparator;
+            }
+        }
+        let nextValidInline: ElementBox = undefined;
+        if (!isNullOrUndefined(startInline.nextNode)) {
+            //Check the next node is a valid and returns inline.
+            nextValidInline = this.documentHelper.getNextValidElement((startInline.nextNode as ElementBox)) as ElementBox;
+        }
+        //If field separator/end exists at end of paragraph, then move to next paragraph.
+        if (isNullOrUndefined(nextValidInline)) {
+            return startInline.characterFormat;
+        }
+        return nextValidInline.characterFormat;
+    }
+    /**
+     * Return true if cursor point with in selection range
+     * @private
+     */
+    public checkCursorIsInSelection(widget: IWidget, point: Point): boolean {
+        if (isNullOrUndefined(this.start) || this.isEmpty || isNullOrUndefined(widget)) {
+            return false;
+        }
+        let isSelected: boolean = false;
+        do {
+            if (this.selectedWidgets.containsKey(widget)) {
+                let top: number;
+                let left: number;
+                if (widget instanceof LineWidget) {
+                    top = this.owner.selectionModule.getTop(widget);
+                    left = this.owner.selectionModule.getLeft(widget);
+                } else {
+                    top = (widget as Widget).y;
+                    left = (widget as Widget).x;
+                }
+                let widgetInfo: SelectionWidgetInfo = this.selectedWidgets.get(widget as IWidget) as SelectionWidgetInfo;
+                if (widgetInfo instanceof SelectionWidgetInfo) {
+                    isSelected = widgetInfo.left <= point.x && top <= point.y &&
+                        top + (widget as Widget).height >= point.y && widgetInfo.left + widgetInfo.width >= point.x;
+                } else {
+                    let widgetIn: SelectionWidgetInfo[] = widgetInfo as SelectionWidgetInfo[];
+                    for (let j: number = 0; j < widgetIn.length; j++) {
+                        if (widgetIn[j] instanceof SelectionWidgetInfo) {
+                            isSelected = widgetIn[j].left <= point.x && top <= point.y &&
+                                top + (widget as Widget).height >= point.y && widgetIn[j].left + widgetIn[j].width >= point.x;
+                            if (isSelected) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            widget = (widget instanceof LineWidget) ? widget.paragraph : (widget as Widget).containerWidget;
+        } while (!isNullOrUndefined(widget) && !isSelected);
+        return isSelected;
+    }
+    /**
+     * Copy paragraph for to selection paragraph format
+     * @private
+     */
+    public copySelectionParagraphFormat(): WParagraphFormat {
+        let format: WParagraphFormat = new WParagraphFormat();
+        this.paragraphFormat.copyToFormat(format);
+        return format;
+    }
+    /**
+     * Get hyperlink display text
+     * @private
+     */
+    public getHyperlinkDisplayText(paragraph: ParagraphWidget, fieldSeparator: FieldElementBox, fieldEnd: FieldElementBox, isNestedField: boolean, format: WCharacterFormat): HyperlinkTextInfo {
+        let para: ParagraphWidget = paragraph;
+        if (para !== fieldEnd.line.paragraph) {
+            isNestedField = true;
+            return { displayText: '<<Selection in Document>>', 'isNestedField': isNestedField, 'format': format };
+        }
+        let displayText: string = '';
+        let lineIndex: number = para.childWidgets.indexOf(fieldSeparator.line);
+        let index: number = (para.childWidgets[lineIndex] as LineWidget).children.indexOf(fieldSeparator);
+        for (let j: number = lineIndex; j < para.childWidgets.length; j++) {
+            let lineWidget: LineWidget = para.childWidgets[j] as LineWidget;
+            if (j !== lineIndex) {
+                index = -1;
+            }
+            for (let i: number = index + 1; i < lineWidget.children.length; i++) {
+                let inline: ElementBox = lineWidget.children[i];
+                if (inline === fieldEnd) {
+                    return { 'displayText': displayText, 'isNestedField': isNestedField, 'format': format };
+                }
+                if (inline instanceof TextElementBox) {
+                    displayText += (inline as TextElementBox).text;
+                    format = inline.characterFormat;
+                } else if (inline instanceof FieldElementBox) {
+                    if (inline instanceof FieldElementBox && inline.fieldType === 0
+                        && !isNullOrUndefined((inline as FieldElementBox).fieldEnd)) {
+                        if (isNullOrUndefined((inline as FieldElementBox).fieldSeparator)) {
+                            index = lineWidget.children.indexOf((inline as FieldElementBox).fieldEnd);
+                        } else {
+                            index = lineWidget.children.indexOf((inline as FieldElementBox).fieldSeparator);
+                        }
+                    }
+                } else {
+                    isNestedField = true;
+                    return { 'displayText': '<<Selection in Document>>', 'isNestedField': isNestedField, 'format': format };
+                }
+            }
+        }
+        return { 'displayText': displayText, 'isNestedField': isNestedField, 'format': format };
+    }
+
+    /**
+     * Navigates hyperlink on mouse Event.
+     * @private
+     */
+    public navigateHyperLinkOnEvent(cursorPoint: Point, isTouchInput: boolean): void {
+        let widget: LineWidget = this.documentHelper.getLineWidget(cursorPoint);
+        if (!isNullOrUndefined(widget)) {
+            let hyperLinkField: FieldElementBox = this.getHyperLinkFieldInCurrentSelection(widget, cursorPoint);
+            //Invokes Hyperlink navigation events.
+            if (!isNullOrUndefined(hyperLinkField)) {
+                this.documentHelper.updateTextPositionForSelection(cursorPoint, 1);
+                this.fireRequestNavigate(hyperLinkField);
+                setTimeout(() => {
+                    if (this.viewer) {
+                        this.documentHelper.isTouchInput = isTouchInput;
+                        this.documentHelper.updateFocus();
+                        this.documentHelper.isTouchInput = false;
+                    }
+                });
+
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public getLinkText(fieldBegin: FieldElementBox, copyAddress?: boolean): string {
+        let hyperlink: Hyperlink = new Hyperlink(fieldBegin, this);
+        let link: string = hyperlink.navigationLink;
+        let screenTip: string = hyperlink.screenTip;
+        if (copyAddress) {
+            if (hyperlink.localReference.length > 0) {
+                if (hyperlink.localReference[0] === '_' && (isNullOrUndefined(link) || link.length === 0)) {
+                    link = 'Current Document';
+                } else {
+                    if (hyperlink.isCrossRef) {
+                        link += hyperlink.localReference;
+                    } else {
+                        link += '#' + hyperlink.localReference;
+                    }
+                }
+            }
+            hyperlink.destroy();
+            return link;
+        } else {
+            hyperlink.destroy();
+            return screenTip;
+        }
+    }
+    /**
+     * Set Hyperlink content to tool tip element
+     * @private
+     */
+    public setHyperlinkContentToToolTip(fieldBegin: FieldElementBox, widget: LineWidget, xPos: number, isFormField?: boolean): void {
+        if (fieldBegin) {
+            if (this.owner.contextMenuModule &&
+                this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
+                return;
+            }
+            if (!this.toolTipElement) {
+                this.toolTipElement = createElement('div', { className: 'e-de-tooltip' });
+                this.documentHelper.viewerContainer.appendChild(this.toolTipElement);
+                this.screenTipElement= createElement('p');
+                this.toolTipElement.appendChild(this.screenTipElement);
+                this.toolTipTextElement = createElement('p', { styles: 'font-weight:bold' });
+                this.toolTipElement.appendChild(this.toolTipTextElement);
+            }
+            this.toolTipElement.style.display = 'block';
+            let l10n: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+            l10n.setLocale(this.owner.locale);
+            let toolTipText: string = l10n.getConstant('Click to follow link');
+            if (this.owner.useCtrlClickToFollowHyperlink) {
+                if(this.documentHelper.isIosDevice) {
+                    toolTipText = 'Command+' + toolTipText;
+                } else {
+                    toolTipText = 'Ctrl+' + toolTipText;
+                }
+            }
+            let linkText: string = this.getScreenTipText(fieldBegin);
+           
+            if (isFormField) {
+                let helpText: string = fieldBegin.formFieldData.helpText;
+                if (isNullOrUndefined(helpText) || helpText === '') {
+                    return;
+                }
+                this.screenTipElement.innerText = helpText;
+            } else {
+                this.screenTipElement.innerText = linkText;
+                this.toolTipTextElement.innerText = toolTipText;
+            }
+            let position: Point = this.getTooltipPosition(fieldBegin.line, xPos, this.toolTipElement, false);
+            this.showToolTip(position.x, position.y);
+            if (!isNullOrUndefined(this.toolTipField) && fieldBegin !== this.toolTipField) {
+                this.toolTipObject.position = { X: position.x, Y: position.y };
+            }
+            this.toolTipObject.show();
+            this.toolTipField = fieldBegin;
+        } else {
+            this.hideToolTip();
+        }
+    }
+    /**
+    * Get screenTip text
+    * @private
+    */
+    public getScreenTipText(fieldBegin: FieldElementBox) {
+        let hyperlink: Hyperlink = new Hyperlink(fieldBegin, this);
+        if (!hyperlink.screenTip && !hyperlink.localReference) {
+            return hyperlink.navigationLink;
+        } else if (hyperlink.screenTip) {
+            return hyperlink.screenTip;
+        } else {
+            return hyperlink.localReference;
+        }
+    }
+    /**
+     * Set Hyperlink content to tool tip element
+     * @private
+     */
+    public setFootnoteContentToToolTip(footnote: FootnoteElementBox, widget: LineWidget, xPos: number): void {
+        if (footnote) {
+            if (this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block' &&
+                this.owner.contextMenuModule) {
+                return;
+            }
+            if (!this.toolTipElement) {
+                this.toolTipElement = createElement('div', { className: 'e-de-tooltip' });
+                this.documentHelper.viewerContainer.appendChild(this.toolTipElement);
+            }
+            this.toolTipElement.style.display = 'block';
+            let ln: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+            ln.setLocale(this.owner.locale);
+            let toolTipText: string;
+            if (footnote.footnoteType === 'Endnote') {
+                toolTipText = ln.getConstant('Click to View/Edit Endnote');
+            } else if (footnote.footnoteType === 'Footnote') {
+                toolTipText = ln.getConstant('Click to View/Edit Footnote');
+            }
+            this.toolTipElement.innerHTML = '<b>' + toolTipText + '</b>';
+
+            let positions: Point = this.getTooltipPosition(footnote.line, xPos, this.toolTipElement, false);
+            this.showToolTip(positions.x, positions.y);
+            if (!isNullOrUndefined(this.toolTipField)) {
+                this.toolTipObject.position = { X: positions.x, Y: positions.y };
+            }
+            this.toolTipObject.show();
+            // this.toolTipField = fieldBegin;
+        } else {
+            this.hideToolTip();
+        }
+    }
+
+    /**
+     * Set locked content info to tool tip element
+     * @private
+     */
+    public setLockInfoTooptip(widget: LineWidget, xPos: number, user: string): void {
+        if (widget) {
+            if (this.owner.contextMenuModule &&
+                this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
+                return;
+            }
+            let toolTipElement: HTMLElement = this.toolTipElement;
+            if (!this.toolTipElement) {
+                toolTipElement = createElement('div', { className: 'e-de-tooltip' });
+                this.documentHelper.viewerContainer.appendChild(toolTipElement);
+                this.toolTipElement = toolTipElement;
+            }
+            toolTipElement.style.display = 'block';
+            let l10n: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+            l10n.setLocale(this.owner.locale);
+            let toolTipInfo: string = l10n.getConstant('This region is locked by');
+            toolTipElement.innerHTML = toolTipInfo + ' <b>' + user + '</b>';
+            let position: Point = this.getTooltipPosition(widget, xPos, toolTipElement, false);
+            this.showToolTip(position.x, position.y);
+            if (!isNullOrUndefined(this.toolTipField) && user !== this.toolTipField) {
+                this.toolTipObject.position = { X: position.x, Y: position.y };
+            }
+            this.toolTipObject.show();
+            this.toolTipField = user;
+        } else {
+            this.hideToolTip();
+        }
+    }
+    /**
+     * @private
+     */
+    public getTooltipPosition(widget: LineWidget, xPos: number, toolTipElement: HTMLElement, isFormField: boolean): Point {
+        let widgetTop: number = this.getTop(widget) * this.documentHelper.zoomFactor;
+        let page: Page = this.getPage(widget.paragraph);
+
+        let containerWidth: number = this.documentHelper.viewerContainer.getBoundingClientRect().width + this.documentHelper.viewerContainer.scrollLeft;
+        let left: number = page.boundingRectangle.x + xPos * this.documentHelper.zoomFactor;
+        if ((left + toolTipElement.clientWidth + 10) > containerWidth) {
+            left = left - ((toolTipElement.clientWidth - (containerWidth - left)) + 15);
+        }
+        let offsetHeight: number = !isFormField ? toolTipElement.offsetHeight : 0;
+        let top: number = this.getPageTop(page) + (widgetTop - offsetHeight);
+        top = top > this.documentHelper.viewerContainer.scrollTop ? top : top + widget.height + offsetHeight;
+        return new Point(left, top);
+    }
+    /**
+     * @private
+     */
+    public updateSelectionInfo(info: SelectionInfo): SelectionInfo {
+        let cells: any = this.selectedWidgets.keys;
+        if (cells[0] instanceof TableCellWidget && cells[cells.length - 1] instanceof TableCellWidget) {
+            if (cells.length > 0) {
+                let firstcell: TableCellWidget = cells[0];
+                let lastCell: TableCellWidget = cells[cells.length - 1];
+                let firstrow: TableRowWidget = firstcell.ownerRow;
+                let lastRow: TableRowWidget = lastCell.ownerRow;
+                let startCell: TableCellWidget = firstrow.getCell(firstrow.rowIndex, undefined, 0);
+                let firstPara: ParagraphWidget = this.owner.documentHelper.getFirstParagraphInCell(startCell);
+                info.start = this.owner.documentHelper.selection.getHierarchicalIndex(firstPara, "0");
+                let lastCellInRow: TableCellWidget = lastRow.getCell(lastRow.rowIndex, undefined, lastRow.childWidgets.length - 1);
+                let lastPara: ParagraphWidget = this.getLastParagraph(lastCellInRow);
+                var offset: number = this.getParagraphLength(lastPara);
+                info.end = this.owner.documentHelper.selection.getHierarchicalIndex(lastPara, offset.toString());
+            }
+        }
+        return info;
+    }
+    /**
+     * @private
+     */
+    public createPasteElement(top: string, left: string): void {
+        let items: ItemModel[];
+        let locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        locale.setLocale(this.owner.locale);
+        switch (this.currentPasteAction) {
+            case 'DefaultPaste':
+                items = [
+                    {
+                        text: locale.getConstant('Keep source formatting'),
+                        iconCss: 'e-icons e-de-paste-source'
+                    },
+                    {
+                        text: locale.getConstant('Match destination formatting'),
+                        iconCss: 'e-icons e-de-paste-merge'
+                    },
+                    {
+                        text: locale.getConstant('Text only'),
+                        iconCss: 'e-icons e-de-paste-text'
+                    }
+                ];
+                break;
+            case 'TextOnly':
+                items = [
+                    {
+                        text: locale.getConstant('Text only'),
+                        iconCss: 'e-icons e-de-paste-text'
+                    }
+                ];
+                break;
+            case 'InsertAsColumns':
+            case 'OverwriteCells':
+            case 'InsertAsRows':
+                items = [
+                    {
+                        text: locale.getConstant('NestTable'),
+                        iconCss: 'e-icons e-de-paste-nested-table'
+                    },
+                    {
+                        text: locale.getConstant('InsertAsRows'),
+                        iconCss: 'e-icons e-de-paste-row'
+                    }
+                ];
+                if (this.currentPasteAction === 'InsertAsColumns') {
+                    let obj = {
+                        text: locale.getConstant('InsertAsColumns'),
+                        iconCss: 'e-icons e-de-paste-column'
+                    };
+                    items.unshift(obj);
+                }
+                else if (this.currentPasteAction === 'OverwriteCells') {
+                    let obj = {
+                        text: locale.getConstant('OverwriteCells'),
+                        iconCss: 'e-icons e-de-paste-overwrite-cells'
+                    };
+                    items.splice(2, 0, obj);
+                }
+                break;
+        }
+
+        if (!this.pasteElement) {
+            this.pasteElement = createElement('div', { className: 'e-de-tooltip' });
+            this.documentHelper.viewerContainer.appendChild(this.pasteElement);
+            let splitButtonEle: HTMLElement = createElement('button', { id: this.owner.containerId + '_iconsplitbtn' });
+            this.pasteElement.appendChild(splitButtonEle);
+            this.pasteDropDwn = new DropDownButton({
+                items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
+            });
+            this.pasteDropDwn.appendTo(splitButtonEle);
+        } else {
+            this.pasteDropDwn.items = items;
+        }
+        this.pasteElement.style.display = 'block';
+        this.pasteElement.style.position = 'absolute';
+        this.pasteElement.style.left = left;
+        this.pasteElement.style.top = top;
+        this.pasteDropDwn.dataBind();
+    }
+
+    /**
+     * @private
+     */
+    public pasteOptions = (event: MenuEventArgs) => {
+        let locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        locale.setLocale(this.owner.locale);
+        if (event.item.text === locale.getConstant('Keep source formatting')) {
+            this.owner.editorModule.applyPasteOptions('KeepSourceFormatting');
+        } else if (event.item.text === locale.getConstant('Match destination formatting')) {
+            this.owner.editorModule.applyPasteOptions('MergeWithExistingFormatting');
+        } else if (event.item.text === locale.getConstant('NestTable')) {
+            this.owner.editorModule.applyTablePasteOptions('NestTable');
+        } else if (event.item.text === locale.getConstant('InsertAsRows')) {
+            this.owner.editorModule.applyTablePasteOptions('InsertAsRows');
+        } else if (event.item.text === locale.getConstant('InsertAsColumns')) {
+            this.owner.editorModule.applyTablePasteOptions('InsertAsColumns');
+        } else if (event.item.text === locale.getConstant('OverwriteCells')) {
+            this.owner.editorModule.applyTablePasteOptions('OverwriteCells');
+        } else {
+            this.owner.editorModule.applyPasteOptions('KeepTextOnly');
+        }
+    }
+
+    /**
+    * Returns an array of context-based paste options.
+    *
+    * @returns {(PasteOptions | TablePasteOptions)[]} An array containing the available paste options.
+    */
+    public getContextBasedPasteOptions(sfdtContent: string) {
+        // Parse the sfdt content
+        let content: any = HelperMethods.getSfdtDocument(sfdtContent);
+        if (!isNullOrUndefined(content.optimizeSfdt) && content.optimizeSfdt) {
+            this.owner.editorModule.keywordIndex = 1;
+        } else {
+            this.owner.editorModule.keywordIndex = 0;
+        }
+        let widgets: BodyWidget[] = [];
+        this.owner.editorModule.getBlocks(content, true, widgets,[],[], true);
+        let selection: Selection = this.documentHelper.selection;
+        // Check the sfdt has table alone 
+        if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable) {
+            let isTablePaste: boolean = false;
+            if (widgets.length === 1) {
+                let childWidgets: IWidget[] = widgets[0].childWidgets;
+                if ((childWidgets.length < 3)) {
+                    if (childWidgets.length === 1 && childWidgets[0] instanceof TableWidget || childWidgets.length === 2 && childWidgets[0] instanceof TableWidget && (childWidgets[1] as ParagraphWidget).isEmpty()) {
+                        isTablePaste = true;
+                    }
+                }
+            }
+            if (isTablePaste) {
+                let startCell: TableCellWidget = selection.start.paragraph.associatedCell;
+                let endCell: TableCellWidget = selection.end.paragraph.associatedCell;
+                let newTable: TableWidget = widgets[0].childWidgets[0] as TableWidget;
+                // tslint:disable-next-line:max-line-length
+                if (startCell.ownerTable.equals(endCell.ownerTable)) {
+                    if (selection.start.paragraph.associatedCell.rowIndex === 0 && selection.end.paragraph.associatedCell.rowIndex === 0
+                        && startCell.equals(endCell) && !this.isCellSelected(startCell, selection.start, selection.end)) {
+                        return ['NewColumn', 'NestTable', 'NewRow'];
+                    } else {
+                        return ['NestTable', 'NewRow', 'OverwriteCells'];
+                    }
+                }
+            }
+        }
+        return ['KeepSourceFormatting', 'MergeWithExistingFormatting', 'KeepTextOnly'];
+    }
+    
+    /**
+     * Show hyperlink tooltip
+     * @private
+     */
+    public showToolTip(x: number, y: number): void {
+        if (!this.toolTipObject) {
+            this.toolTipObject = new Popup(this.toolTipElement, {
+                height: 'auto',
+                width: 'auto',
+                relateTo: this.documentHelper.viewerContainer.parentElement,
+                position: { X: x, Y: y }
+            });
+        }
+    }
+    /**
+     * Hide tooltip object
+     * @private
+     */
+    public hideToolTip(): void {
+        this.toolTipField = undefined;
+        if (this.toolTipObject) {
+            this.toolTipElement.style.display = 'none';
+            this.toolTipObject.hide();
+            this.toolTipObject.destroy();
+            this.toolTipObject = undefined;
+        }
+    }
+    /**
+     * Return hyperlink field
+     * @private
+     */
+    public getHyperLinkFieldInCurrentSelection(widget: LineWidget, cursorPosition: Point, isFormField?: boolean): FieldElementBox {
+        let inline: ElementBox = undefined;
+        let top: number = this.getTop(widget);
+        let lineStartLeft: number = this.getLineStartLeft(widget);
+        let leftIndent: number = HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.leftIndent);
+        let rightIndent: number =  HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.rightIndent);
+        if (cursorPosition.y < top || cursorPosition.y > top + widget.height
+            || cursorPosition.x < lineStartLeft || cursorPosition.x > lineStartLeft + widget.paragraph.width + leftIndent + rightIndent) {
+            return undefined;
+        }
+        let left: number = widget.paragraph.x;
+        let elementValues: FirstElementInfo = this.getFirstElement(widget, left);
+        left = elementValues.left;
+        let element: ElementBox = elementValues.element;
+        if (isNullOrUndefined(element)) {
+            let width: number = this.documentHelper.textHelper.getParagraphMarkWidth(widget.paragraph.characterFormat);
+            if (cursorPosition.x <= lineStartLeft + width || cursorPosition.x >= lineStartLeft + width) {
+                //Check if paragraph is within a field result.
+                let checkedFields: FieldElementBox[] = [];
+                let field: FieldElementBox = this.getHyperLinkFields(widget.paragraph, checkedFields, false, isFormField);
+                checkedFields = [];
+                checkedFields = undefined;
+                return field;
+            }
+        } else {
+            let renderedChild: ElementBox[] = widget.renderedElements;
+            if (cursorPosition.x > left + element.margin.left) {
+                for (let i: number = renderedChild.indexOf(element); i < renderedChild.length; i++) {
+                    element = renderedChild[i];
+                    if (cursorPosition.x < left + element.margin.left + element.width || i === renderedChild.length - 1) {
+                        break;
+                    }
+                    left += element.margin.left + element.width;
+                }
+            }
+            inline = element;
+            let width: number = element.margin.left + element.width;
+            if (isNullOrUndefined(inline.nextNode)) {
+                //Include width of Paragraph mark.
+                width += this.documentHelper.textHelper.getParagraphMarkWidth(inline.line.paragraph.characterFormat);
+            }
+            if (cursorPosition.x <= left + width) {
+                //Check if inline is within a field result.
+                let checkedFields: FieldElementBox[] = [];
+
+                let field: FieldElementBox = this.getHyperLinkFieldInternal(inline.line.paragraph, inline, checkedFields, false, isFormField);
+                checkedFields = [];
+                checkedFields = undefined;
+                return field;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Return FootnoteElementBox
+     * @private
+     */
+    public getFootNoteElementInCurrentSelection(lineWidget: LineWidget, position: Point): FootnoteElementBox {
+        let inline: FootnoteElementBox = undefined;
+        let top: number = this.getTop(lineWidget);
+        let lineStartInLeft: number = this.getLineStartLeft(lineWidget);
+        if (position.y < top || position.y > top + lineWidget.height
+            || position.x < lineStartInLeft
+            || position.x > lineStartInLeft + lineWidget.paragraph.width) {
+            return undefined;
+        }
+        let leftLength: number = lineWidget.paragraph.x;
+        let elementValues: FirstElementInfo = this.getFirstElement(lineWidget, leftLength);
+        leftLength = elementValues.left;
+        let element: ElementBox = elementValues.element;
+        if (isNullOrUndefined(element)) {
+            let width: number = this.documentHelper.textHelper.getParagraphMarkWidth(lineWidget.paragraph.characterFormat);
+            if (position.x <= lineStartInLeft + width || position.x >= lineStartInLeft + width) {
+                //Check if paragraph is within a field result.
+
+                let inlineObj: ElementInfo = this.documentHelper.selection.start.currentWidget.getInline(this.documentHelper.selection.start.offset, 0);
+                let footNote: ElementBox = inlineObj.element;
+                if (footNote instanceof FootnoteElementBox) {
+                    return footNote;
+                } else {
+                    return undefined;
+                }
+            }
+        } else {
+            if (position.x > leftLength + element.margin.left) {
+                for (let i: number = lineWidget.children.indexOf(element); i < lineWidget.children.length; i++) {
+                    element = lineWidget.children[i];
+                    if (position.x < leftLength + element.margin.left + element.width || i === lineWidget.children.length - 1) {
+                        break;
+                    }
+                    leftLength += element.margin.left + element.width;
+                }
+            }
+            if (element instanceof FootnoteElementBox) {
+                inline = element;
+            }
+            let width: number = element.margin.left + element.width;
+            if (isNullOrUndefined(element.nextNode)) {
+                //Include width of Paragraph mark.
+                width += this.documentHelper.textHelper.getParagraphMarkWidth(element.line.paragraph.characterFormat);
+            }
+            if (position.x <= leftLength + width) {
+                return inline;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Return field if paragraph contain hyperlink field
+     * @private
+     */
+    public getHyperlinkField(isRetrieve?: boolean): FieldElementBox {
+        if (isNullOrUndefined(this.end)) {
+            return undefined;
+        }
+        let index: number = 0;
+        let selection: Selection = this.documentHelper.selection;
+        let start: TextPosition = selection.start;
+        let end: TextPosition = selection.end;
+        if (!selection.isForward) {
+            start = selection.end;
+            end = selection.start;;
+        }
+        let currentInline: ElementInfo = this.end.currentWidget.getInline(end.offset, index) as ElementInfo;
+        index = currentInline.index;
+        let inline: ElementBox = currentInline.element;
+        let checkedFields: FieldElementBox[] = [];
+        let field: FieldElementBox = undefined;
+        if (isNullOrUndefined(inline)) {
+            field = this.getHyperLinkFields(this.end.paragraph as ParagraphWidget, checkedFields, isRetrieve);
+        } else if (this.documentHelper.isFormFillProtectedMode && inline instanceof BookmarkElementBox
+            && inline.previousNode instanceof FieldElementBox && inline.previousNode.fieldType === 1) {
+            field = undefined;
+        } else {
+            let paragraph: ParagraphWidget = inline.line.paragraph;
+            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve, false);
+        }
+        checkedFields = [];
+        return field;
+    }
+    /**
+     * @private
+     */
+
+    public getHyperLinkFields(paragraph: ParagraphWidget, checkedFields: FieldElementBox[], isRetrieve: boolean, checkFormField?: boolean): FieldElementBox {
+        for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
+
+            if (checkedFields.indexOf(this.documentHelper.fields[i]) !== -1 || isNullOrUndefined(this.documentHelper.fields[i].fieldSeparator)) {
+                continue;
+            } else {
+                checkedFields.push(this.documentHelper.fields[i]);
+            }
+            let field: string = this.getFieldCode(this.documentHelper.fields[i]);
+            field = field.trim().toLowerCase();
+            let isParagraph: boolean = this.paragraphIsInFieldResult(this.documentHelper.fields[i], paragraph as ParagraphWidget);
+            if ((isRetrieve || (!isRetrieve && field.match('hyperlink '))) && isParagraph) {
+                return this.documentHelper.fields[i];
+            }
+            if (isParagraph && checkFormField && this.documentHelper.fields[i].formFieldData) {
+                return this.documentHelper.fields[i];
+            }
+            if ((isRetrieve || (!isRetrieve && field.match('ref '))) && isParagraph) {
+                return this.documentHelper.fields[i];
+            }
+        }
+        // if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof WHeaderFooter)) {
+        //     return this.getHyperLinkFields((paragraph.con as WCompositeNode), checkedFields);
+        // }
+
+        return undefined;
+    }
+    /**
+     * @private
+     */
+
+    public getHyperLinkFieldInternal(paragraph: Widget, inline: ElementBox, fields: FieldElementBox[], isRetrieve: boolean, checkFormField: boolean): FieldElementBox {
+        for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
+            if (fields.indexOf(this.documentHelper.fields[i]) !== -1 || isNullOrUndefined(this.documentHelper.fields[i].fieldSeparator)) {
+                continue;
+            } else {
+                fields.push(this.documentHelper.fields[i]);
+            }
+            let fieldCode: string = this.getFieldCode(this.documentHelper.fields[i]);
+            fieldCode = fieldCode.trim().toLowerCase();
+            let fieldBegin: FieldElementBox = this.documentHelper.fields[i];
+            let fieldEnd: ElementBox = fieldBegin.fieldEnd;
+            if (isRetrieve && fieldBegin.nextNode instanceof BookmarkElementBox && fieldBegin.nextNode.reference) {
+                fieldEnd = fieldBegin.nextNode.reference;
+            }
+
+            let isInline: boolean = (this.inlineIsInFieldResult(fieldBegin, fieldEnd, fieldBegin.fieldSeparator, inline, isRetrieve) || this.isImageField());
+            if ((isRetrieve || (!isRetrieve && fieldCode.match('hyperlink '))) && isInline) {
+                return this.documentHelper.fields[i];
+            }
+            if (isInline && checkFormField && this.documentHelper.fields[i].formFieldData) {
+                return this.documentHelper.fields[i];
+            }
+            if ((isRetrieve || (!isRetrieve && fieldCode.match('ref '))) && isInline) {
+                return this.documentHelper.fields[i];
+            }
+        }
+        if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof HeaderFooterWidget)) {
+            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields, isRetrieve, checkFormField);
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public getBlock(currentIndex: string): BlockWidget {
+        if (currentIndex === '' || isNullOrUndefined(currentIndex)) {
+            return undefined;
+        }
+        let index: IndexInfo = { index: currentIndex };
+        let page: Page = this.start.getPage(index);
+        let bodyIndex: number = index.index.indexOf(';');
+        let value: string = index.index.substring(0, bodyIndex);
+        index.index = index.index.substring(bodyIndex).replace(';', '');
+        let bodyWidget: BodyWidget = page.bodyWidgets[parseInt(value, 10)];
+        return this.getBlockInternal(bodyWidget, index.index);
+    }
+    /**
+     * Return Block relative to position
+     * @private
+     */
+    public getBlockInternal(widget: Widget, position: string): BlockWidget {
+        if (position === '' || isNullOrUndefined(position)) {
+            return undefined;
+        }
+        let index: number = position.indexOf(';');
+        let value: string = position.substring(0, index);
+        position = position.substring(index).replace(';', '');
+        let node: Widget = widget;
+        // if (node instanceof Widget && value === 'HF') {
+        //     //Gets the block in Header footers.
+        //     let blockObj: BlockInfo = this.getBlock((node as WSection).headersFooters, position);
+
+        //     return { 'node': (!isNullOrUndefined(blockObj)) ? blockObj.node : undefined, 'position': (!isNullOrUndefined(blockObj)) ? blockObj.position : undefined };
+        // }
+        index = parseInt(value, 10);
+        if (index >= 0 && index < widget.childWidgets.length) {
+            let child: Widget = widget.childWidgets[(index)] as Widget;
+            if (position.indexOf(';') >= 0) {
+                if (child instanceof ParagraphWidget) {
+                    if (position.indexOf(';') >= 0) {
+                        position = '0';
+                    }
+                    return child;
+                }
+                if (child instanceof BlockWidget) {
+                    let blockObj: BlockWidget = this.getBlockInternal(child, position);
+                    return blockObj;
+                }
+            } else {
+                return child as BlockWidget;
+            }
+        } else {
+            return node as BlockWidget;
+        }
+        return node as BlockWidget;
+    }
+    /**
+     * Return true if inline is in field result
+     * @private
+     */
+
+    public inlineIsInFieldResult(fieldBegin: FieldElementBox, fieldEnd: ElementBox, fieldSeparator: FieldElementBox, inline: ElementBox, isRetrieve?: boolean): boolean {
+        if (!isNullOrUndefined(fieldEnd) && !isNullOrUndefined(fieldSeparator)) {
+            if (this.isExistBeforeInline(fieldSeparator, inline)) {
+                return this.isExistAfterInline(fieldEnd, inline, isRetrieve);
+            }
+        }
+        return false;
+    }
+    /**
+     * Retrieve true if paragraph is in field result
+     * @private
+     */
+    public paragraphIsInFieldResult(fieldBegin: FieldElementBox, paragraph: ParagraphWidget): boolean {
+        if (!isNullOrUndefined(fieldBegin.fieldEnd) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
+            let fieldParagraph: ParagraphWidget = fieldBegin.fieldSeparator.line.paragraph;
+            if (fieldBegin.fieldSeparator.line.paragraph === paragraph
+                || this.isExistBefore(fieldParagraph, paragraph)) {
+                let currentParagraph: ParagraphWidget = fieldBegin.fieldEnd.line.paragraph;
+                return (currentParagraph !== paragraph && this.isExistAfter(fieldParagraph, paragraph));
+            }
+        }
+        return false;
+    }
+    /**
+     * Return true if image is In field
+     * @private
+     */
+    public isImageField(): boolean {
+        if (this.start.paragraph.isEmpty() || this.end.paragraph.isEmpty()) {
+            return false;
+        }
+        let startPosition: TextPosition = this.start;
+        let endPosition: TextPosition = this.end;
+        if (!this.isForward) {
+            startPosition = this.end;
+            endPosition = this.start;
+        }
+        let indexInInline: number = 0;
+        let inlineInfo: ElementInfo = startPosition.paragraph.getInline(startPosition.offset, indexInInline) as ElementInfo;
+        let inline: ElementBox = inlineInfo.element;
+        indexInInline = inlineInfo.index;
+        if (indexInInline === inline.length) {
+            inline = this.getNextRenderedElementBox(inline, indexInInline) as ElementBox;
+        }
+        inlineInfo = endPosition.paragraph.getInline(endPosition.offset, indexInInline) as ElementInfo;
+        let endInline: ElementBox = inlineInfo.element;
+        indexInInline = inlineInfo.index;
+        if (inline instanceof FieldElementBox && inline.fieldType === 0
+            && endInline instanceof FieldElementBox && endInline.fieldType === 1 && (inline as FieldElementBox).fieldSeparator) {
+            let fieldValue: ElementBox = (inline as FieldElementBox).fieldSeparator.nextNode as ElementBox;
+            if (fieldValue instanceof ImageElementBox && fieldValue.nextNode === endInline) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * Return true if selection is in Form field
+     * @private
+     */
+    public isFormField(): boolean {
+        let inline: FieldElementBox = this.currentFormField;
+        if (inline instanceof FieldElementBox && inline.formFieldData) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Return true if selection is in reference field
+     * @private
+     */
+    public isReferenceField(field?: FieldElementBox): boolean {
+        if (isNullOrUndefined(field)) {
+            field = this.getHyperlinkField(true);
+        }
+        if (field) {
+            let fieldCode: string = this.getFieldCode(field);
+            fieldCode = fieldCode.toLowerCase();
+            if (field instanceof FieldElementBox && fieldCode.match('ref ')) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * Return true if selection is in text form field
+     * @private
+     */
+    public isInlineFormFillMode(field?: FieldElementBox): boolean {
+        if (this.documentHelper.isInlineFormFillProtectedMode) {
+            field = isNullOrUndefined(field) ? this.currentFormField : field;
+            if (isNullOrUndefined(field)) {
+                field = this.getCurrentFormField();
+            }
+            if (field) {
+                if (field.formFieldData instanceof TextFormField && field.formFieldData.type === 'Text') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public getFormFieldType(formField?: FieldElementBox): FormFieldType {
+        if (isNullOrUndefined(formField)) {
+            formField = this.currentFormField;
+        }
+        if (formField instanceof FieldElementBox) {
+            if (formField.formFieldData instanceof TextFormField) {
+                return 'Text';
+            } else if (formField.formFieldData instanceof CheckBoxFormField) {
+                return 'CheckBox';
+            } else if (formField.formFieldData instanceof DropDownFormField) {
+                return 'DropDown';
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Get selected form field type
+     * @private
+     */
+    public getCurrentFormField(checkFieldResult?: boolean): FieldElementBox {
+        let field: FieldElementBox;
+        if (checkFieldResult || this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
+            this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
+            for (let i: number = 0; i < this.documentHelper.formFields.length; i++) {
+                let formField: FieldElementBox = this.documentHelper.formFields[i];
+                let start: TextPosition = this.start;
+                let end: TextPosition = this.end;
+                if (!this.isForward) {
+                    start = this.end;
+                    end = this.start;
+                }
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    let offset: number = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
+                    let fieldStart: TextPosition = new TextPosition(this.owner);
+                    fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset)
+                    let fieldEndElement: FieldElementBox = formField.fieldEnd;
+                    offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
+                    let fieldEnd: TextPosition = new TextPosition(this.owner);
+                    fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
+                    if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
+                        && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
+                        field = formField;
+                        break;
+                    }
+                }
+            }
+        } else {
+            field = this.getHyperlinkField(true);
+        }
+        if (field instanceof FieldElementBox && field.fieldType === 0 && !isNullOrUndefined(field.formFieldData)) {
+            return field;
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public getCurrentTextFrame(): TextFrame {
+        let container: Widget = this.start.paragraph.containerWidget;
+        do {
+            if (container instanceof TextFrame) {
+                return container;
+            }
+            if (container) {
+                container = container.containerWidget;
+            }
+        } while (container);
+        return null;
+    }
+    /**
+     * @private
+     */
+    public isTableSelected(isNested?: boolean): boolean {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        if (isNullOrUndefined(start.paragraph.associatedCell) ||
+            isNullOrUndefined(end.paragraph.associatedCell)) {
+            return false;
+        }
+        let table: TableWidget[] = start.paragraph.associatedCell.ownerTable.getSplitWidgets() as TableWidget[];
+        let firstParagraph: ParagraphWidget = this.getFirstBlockInFirstCell(table[0]) as ParagraphWidget;
+        let lastParagraph: ParagraphWidget = this.getLastBlockInLastCell(table[table.length - 1]) as ParagraphWidget;
+        if (isNested) {
+            let nestedTable: TableWidget = lastParagraph.associatedCell.ownerTable;
+            while (nestedTable.containerWidget instanceof TableCellWidget) {
+                nestedTable = nestedTable.containerWidget.ownerTable;
+            }
+            lastParagraph = this.getLastBlockInLastCell(nestedTable) as ParagraphWidget;
+        }
+        return start.paragraph.associatedCell.equals(firstParagraph.associatedCell) &&
+            end.paragraph.associatedCell.equals(lastParagraph.associatedCell)
+            && (!firstParagraph.associatedCell.equals(lastParagraph.associatedCell) || (start.offset === 0
+                && end.offset === this.getLineLength(lastParagraph.lastChild as LineWidget) + 1));
+
+    }
+
+    /**
+     * Select List Text
+     * @private
+     */
+    public selectListText(): void {
+        let lineWidget: LineWidget = this.documentHelper.selectionLineWidget as LineWidget;
+        let endOffset: string = '0';
+        let selectionIndex: string = lineWidget.getHierarchicalIndex(endOffset);
+        let startPosition: TextPosition = this.getTextPosition(selectionIndex);
+        let endPosition: TextPosition = this.getTextPosition(selectionIndex);
+        this.isSelectList = true;
+        this.selectRange(startPosition, endPosition);
+        this.isSelectList = false;
+        this.highlightListText(this.documentHelper.selectionLineWidget);
+        this.contextTypeInternal = 'List';
+    }
+    /**
+     * Manually select the list text
+     * @private
+     */
+    public highlightListText(linewidget: LineWidget): void {
+        let width: number = linewidget.children[0].width;
+        let left: number = this.documentHelper.getLeftValue(linewidget);
+        let top: number = linewidget.paragraph.y;
+        this.createHighlightBorder(linewidget, width, left, top, false);
+        this.documentHelper.isListTextSelected = true;
+    }
+    /**
+     * @private
+     */
+    public updateImageSize(imageFormat: ImageSizeInfo): void {
+        this.owner.isShiftingEnabled = true;
+        let startPosition: TextPosition = this.start;
+        let endPosition: TextPosition = this.end;
+        if (!this.isForward) {
+            startPosition = this.end;
+            endPosition = this.start;
+        }
+        let inline: ElementBox = null;
+        let index: number = 0;
+        let paragraph: ParagraphWidget = startPosition.paragraph;
+        if (paragraph === endPosition.paragraph
+            && startPosition.offset + 1 === endPosition.offset) {
+            let inlineObj: ElementInfo = paragraph.getInline(endPosition.offset, index);
+            inline = inlineObj.element;
+            index = inlineObj.index;
+        }
+        if (inline instanceof ImageElementBox || inline instanceof ShapeElementBox) {
+            let width: number = inline.width;
+            let height: number = inline.height;
+            let alternateText: string = inline.alternateText;
+            inline.width = imageFormat.width;
+            inline.height = imageFormat.height;
+            inline.alternateText = imageFormat.alternatetext;
+            imageFormat.width = width;
+            imageFormat.height = height;
+            imageFormat.alternatetext = alternateText;
+            if (paragraph !== null && paragraph.containerWidget !== null && this.owner.editorModule) {
+                let lineIndex: number = paragraph.childWidgets.indexOf(inline.line);
+                let elementIndex: number = inline.line.children.indexOf(inline);
+                this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+                this.highlightSelection(false);
+            }
+        }
+    }
+    /**
+     * Gets selected table content 
+     * @private
+     */
+    private getSelectedCellsInTable(table: TableWidget, startCell: TableCellWidget, endCell: TableCellWidget): TableCellWidget[] {
+        let startColumnIndex: number = startCell.columnIndex;
+        let endColumnIndex: number = endCell.columnIndex + endCell.cellFormat.columnSpan - 1;
+        let startRowindex: number = startCell.ownerRow.index;
+        let endRowIndex: number = endCell.ownerRow.index;
+        let cells: TableCellWidget[] = [];
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            if (row.index >= startRowindex && row.index <= endRowIndex) {
+                for (let j: number = 0; j < row.childWidgets.length; j++) {
+                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    if (cell.columnIndex >= startColumnIndex && cell.columnIndex <= endColumnIndex) {
+                        cells.push(cell);
+                    }
+                }
+            }
+            if (row.index > endRowIndex) {
+                break;
+            }
+        }
+        return cells;
+        // return html;
+    }
+    /**
+     * Copies the selected content to clipboard.
+     *
+     * @returns {void}
+     */
+    public copy(): void {
+        if (this.isEmpty) {
+            return;
+        }
+        this.copySelectedContent(false);
+    }
+    /**
+     * @private
+     *
+     * @returns {void}
+     */
+    public copySelectedContent(isCut: boolean): void {
+        if (isNullOrUndefined(this.owner.sfdtExportModule)) {
+            return;
+        }
+        this.htmlContent = this.getHtmlContent();
+        this.documentHelper.isCopying = true;
+        this.copyToClipboard();
+        this.documentHelper.isCopying = false;
+        if (isCut && this.owner.editorModule) {
+            this.owner.editorModule.handleCut(this);
+        }
+        if(this.owner.enableAutoFocus)
+        {
+            this.documentHelper.updateFocus();
+        }
+    }
+    /**
+     * Write the selected content as SFDT.
+     * @returns SFDT Object.
+     */
+    private writeSfdt(): any {
+        let startPosition: TextPosition = this.start;
+        let endPosition: TextPosition = this.end;
+        if (!this.isForward) {
+            startPosition = this.end;
+            endPosition = this.start;
+        }
+        return (this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), startPosition.currentWidget, startPosition.offset, endPosition.currentWidget, endPosition.offset, true));
+    }
+    /**
+     * @private
+     */
+    public getHtmlContent(): string {
+        let documentContent: any = this.writeSfdt();
+        this.sfdtContent = JSON.stringify(documentContent);
+        if (this.owner.editorModule) {
+            this.owner.editorModule.copiedData = JSON.stringify(documentContent);
+        }
+        let isOptimizedSfdt: boolean = this.owner.documentEditorSettings.optimizeSfdt;
+        return this.htmlWriter.writeHtml(documentContent, isOptimizedSfdt);
+    }
+
+    private copyToClipboard(htmlContent?: string): boolean {
+        window.getSelection().removeAllRanges();
+        //Skip the copy operation Using shadow DOM if it is mobile device or IE browser.
+        let isSafariOnMac = (navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
+        navigator.userAgent &&
+        navigator.userAgent.indexOf('Macintosh') > -1 &&
+        navigator.userAgent.indexOf('Safari') > -1 &&
+        navigator.userAgent.indexOf('Chrome') === -1);
+        let isMobileDeviceOrInternetExplorer: boolean = /Android|Windows Phone|iPhone|Trident|webOS/i.test(navigator.userAgent) || isSafariOnMac;
+        let shadowRoot: HTMLDivElement;
+        let div: HTMLDivElement = document.createElement('div');
+        div.style.left = '-10000px';
+        div.style.top = '-10000px';
+        div.style.position = 'relative';
+        if (!isNullOrUndefined(htmlContent)) {
+            div.innerHTML = htmlContent;
+        } else if (isSafariOnMac) {
+            div.innerText = 'copy';
+        }
+        if (!isMobileDeviceOrInternetExplorer) {
+            shadowRoot = document.createElement('div');
+            let shadowDOM = shadowRoot.attachShadow({ mode: 'open' });
+            shadowDOM.appendChild(div);
+            document.body.appendChild(shadowRoot);
+        } else {
+            document.body.appendChild(div);
+        }
+        if (navigator !== undefined && navigator.userAgent.indexOf('Firefox') !== -1) {
+            div.contentEditable = 'true';
+        }
+        let range: Range = document.createRange();
+        range.selectNodeContents(div);
+        window.getSelection().addRange(range);
+        let copySuccess: boolean = false;
+        try {
+            copySuccess = document.execCommand('copy');
+        }
+        catch (e) {
+            // Copying data to Clipboard can potentially fail - for example, if another application is holding Clipboard open.       
+        }
+        finally {
+            window.getSelection().removeAllRanges();
+            div.parentNode.removeChild(div);
+            if (!isMobileDeviceOrInternetExplorer) {
+                shadowRoot.parentNode.removeChild(shadowRoot);
+            }
+        }
+        return copySuccess;
+    }
+    /**
+     * @private
+     */
+    public onCopy(event: ClipboardEvent): void {
+        if (event.clipboardData && !isNullOrUndefined(this.htmlContent)) {
+            event.clipboardData.clearData();
+            event.clipboardData.setData('text/html', this.htmlContent);
+            event.clipboardData.setData('text/plain', this.text);
+            event.clipboardData.setData('application/json', JSON.stringify(this.sfdtContent));
+            this.htmlContent = undefined;
+            this.sfdtContent = undefined;
+        }
+    }
+    // Caret implementation starts
+    /**
+     * Shows caret in current selection position.
+     *
+     * @private
+     * @returns {void}
+     */
+    public showCaret(): void {
+
+        let page: Page = !isNullOrUndefined(this.documentHelper.currentPage) ? this.documentHelper.currentPage : this.documentHelper.currentRenderingPage;
+        if (isNullOrUndefined(page) || this.documentHelper.isRowOrCellResizing || (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !this.owner.imageResizerModule.isShapeResize)) {
+            return;
+        }
+        let left: number = page.boundingRectangle.x;
+        let right: number;
+        if (this.viewer instanceof PageLayoutViewer) {
+            right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
+        } else {
+            right = page.boundingRectangle.width - this.owner.viewer.padding.right - this.documentHelper.scrollbarWidth;
+        }
+
+        if (!this.owner.enableImageResizerMode || (!this.owner.imageResizerModule.isImageResizerVisible || this.owner.imageResizerModule.isShapeResize)) {
+            if (this.isHideSelection(this.start.paragraph)) {
+                this.caret.style.display = 'none';
+            } else if (this.isEmpty && (!this.owner.isReadOnly || this.owner.enableCursorOnReadOnly || this.isInlineFormFillMode())) {
+                let caretLeft: number = parseInt(this.caret.style.left.replace('px', ''), 10);
+                if (caretLeft < left || caretLeft > right) {
+                    this.caret.style.display = 'none';
+                } else {
+                    this.caret.style.display = 'block';
+                }
+            } else if (this.isImageSelected && !this.owner.enableImageResizerMode) {
+                this.caret.style.display = 'block';
+            } else {
+                if (this.caret.style.display === 'block' || isNullOrUndefined(this)) {
+                    if (!this.documentHelper.isComposingIME) {
+                        this.caret.style.display = 'none';
+                    }
+                }
+            }
+        }
+        if (!isNullOrUndefined(this) && this.documentHelper.isTouchInput && !this.owner.isReadOnlyMode) {
+            let caretStartLeft: number = parseInt(this.documentHelper.touchStart.style.left.replace('px', ''), 10) + 14;
+            let caretEndLeft: number = parseInt(this.documentHelper.touchEnd.style.left.replace('px', ''), 10) + 14;
+            let page: Page = this.getSelectionPage(this.start);
+            if (page) {
+                if (caretEndLeft < left || caretEndLeft > right) {
+                    this.documentHelper.touchEnd.style.display = 'none';
+                } else {
+                    this.documentHelper.touchEnd.style.display = 'block';
+                }
+                if (!this.isEmpty) {
+                    left = page.boundingRectangle.x;
+                    right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
+                }
+                if (caretStartLeft < left || caretStartLeft > right) {
+                    this.documentHelper.touchStart.style.display = 'none';
+                } else {
+                    this.documentHelper.touchStart.style.display = 'block';
+                }
+            }
+        } else {
+            this.documentHelper.touchStart.style.display = 'none';
+            this.documentHelper.touchEnd.style.display = 'none';
+        }
+    }
+    /**
+     * To set the editable div caret position
+     *
+     * @private
+     * @returns {void}
+     */
+    public setEditableDivCaretPosition(index: number): void {
+        this.documentHelper.editableDiv.focus();
+        let child: Node = this.documentHelper.editableDiv.childNodes[this.documentHelper.editableDiv.childNodes.length - 1];
+        if (child) {
+            let range: Range = document.createRange();
+            range.setStart(child, index);
+            range.collapse(true);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        }
+    }
+    /**
+     * Hides caret.
+     *
+     * @private
+     * @returns {void}
+     */
+    public hideCaret = (): void => {
+        if (!isNullOrUndefined(this.caret)) {
+            this.caret.style.display = 'none';
+        }
+    }
+    /** 
+     * Initializes caret.
+     *
+     * @private
+     * @returns {void}
+     */
+    public initCaret(): void {
+        this.caret = createElement('div', {
+            styles: 'position:absolute',
+            className: 'e-de-blink-cursor e-de-cursor-animation'
+        }) as HTMLDivElement;
+        this.caret.style.display = 'none';
+        this.owner.documentHelper.viewerContainer.appendChild(this.caret);
+    }
+    /**
+     * Updates caret position.
+     *
+     * @private
+     * @returns {void}
+     */
+    public updateCaretPosition(): void {
+        let caretPosition: Point = this.end.location;
+        let page: Page = this.getSelectionPage(this.end);
+        if (page && !isNullOrUndefined(this.caret)) {
+            this.caret.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.documentHelper.zoomFactor) + 'px';
+            let caretInfo: CaretHeightInfo = this.updateCaretSize(this.owner.selectionModule.end);
+            let topMargin: number = caretInfo.topMargin;
+            //let caretHeight: number = caretInfo.height;
+            let viewer: LayoutViewer = this.viewer;
+
+            let pageTop: number = (page.boundingRectangle.y - (viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1)) * this.documentHelper.zoomFactor + (viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1);
+            this.caret.style.top = pageTop + (Math.round(caretPosition.y + topMargin) * this.documentHelper.zoomFactor) + 'px';
+            if (this.owner.selectionModule.characterFormat.baselineAlignment === 'Subscript') {
+                this.caret.style.top = parseFloat(this.caret.style.top) + (parseFloat(this.caret.style.height) / 2) + 'px';
+            }
+            if (this.documentHelper.isTouchInput || this.documentHelper.touchStart.style.display !== 'none') {
+
+                this.documentHelper.touchStart.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.documentHelper.zoomFactor - 14) + 'px';
+                this.documentHelper.touchStart.style.top = pageTop + ((caretPosition.y + caretInfo.height) * this.documentHelper.zoomFactor) + 'px';
+
+                this.documentHelper.touchEnd.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.documentHelper.zoomFactor - 14) + 'px';
+                this.documentHelper.touchEnd.style.top = pageTop + ((caretPosition.y + caretInfo.height) * this.documentHelper.zoomFactor) + 'px';
+            }
+        }
+        this.showHidePasteOptions(this.caret.style.top, this.caret.style.left);
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public showHidePasteOptions(top: string, left: string): void {
+        if (Browser.isIE) {
+            return;
+        }
+        if (this.isViewPasteOptions) {
+            if (this.pasteElement && this.pasteElement.style.display === 'block') {
+                return;
+            }
+            this.createPasteElement(top, left);
+        } else if (this.pasteElement) {
+            this.pasteElement.style.display = 'none';
+            if (!isNullOrUndefined(this.owner.editorModule)) {
+                this.owner.editorModule.isHtmlPaste = false;
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public getRect(position: TextPosition): Point {
+        let caretPosition: Point = position.location;
+        let page: Page = this.getSelectionPage(position);
+        if (page) {
+
+            let documentHelper: DocumentHelper = this.owner.documentHelper;
+            let left: number = page.boundingRectangle.x + (Math.round(caretPosition.x) * documentHelper.zoomFactor);
+            let pageGap: number = this.viewer.pageGap;
+
+            let pageTop: number = (page.boundingRectangle.y - pageGap * (page.index + 1)) * documentHelper.zoomFactor + pageGap * (page.index + 1);
+
+            let top: number = pageTop + (Math.round(caretPosition.y) * documentHelper.zoomFactor);
+
+            return new Point(left, top);
+        }
+        return new Point(0, 0);
+    }
+    /**
+     * Gets current selected page
+     * @private
+     */
+    public getSelectionPage(position: TextPosition): Page {
+        let lineWidget: LineWidget = this.getLineWidgetInternal(position.currentWidget, position.offset, true);
+        if (lineWidget) {
+            return this.getPage(lineWidget.paragraph);
+        }
+        return undefined;
+    }
+    /**
+     * Updates caret size.
+     * @private
+     */
+    public updateCaretSize(textPosition: TextPosition, skipUpdate?: boolean): CaretHeightInfo {
+        let topMargin: number = 0;
+        let isItalic: boolean = false;
+        let caret: CaretHeightInfo;
+        let index: number = 0;
+        let caretHeight: number = 0;
+        if (this.characterFormat.italic) {
+            isItalic = this.characterFormat.italic;
+        }
+        if (textPosition.paragraph.isEmpty()) {
+            let paragraph: ParagraphWidget = textPosition.paragraph;
+            let bottomMargin: number = 0;
+            let paragraphInfo: SizeInfo = this.getParagraphMarkSize(paragraph, topMargin, bottomMargin);
+            topMargin = paragraphInfo.topMargin;
+            bottomMargin = paragraphInfo.bottomMargin;
+            let height: number = paragraphInfo.height;
+            const baselineAlignment: BaselineAlignment = this.characterFormat.baselineAlignment;
+            let elementHeight: number = height;
+            if (baselineAlignment !== 'Normal') {
+                //Set the caret height as sub/super script text height and updates the top margin for sub script text.
+                elementHeight = elementHeight / 1.5;
+                if (baselineAlignment === 'Subscript') {
+                    topMargin = height - elementHeight;
+                }
+            }
+            caretHeight = topMargin < 0 ? topMargin + elementHeight : elementHeight;
+            if (!skipUpdate) {
+                this.caret.style.height = caretHeight * this.documentHelper.zoomFactor + 'px';
+            }
+            topMargin = 0;
+        } else {
+            let inlineInfo: ElementInfo = textPosition.currentWidget.getInline(textPosition.offset, index);
+            index = inlineInfo.index;
+            let inline: ElementBox = inlineInfo.element;
+            if (!isNullOrUndefined(inline)) {
+                caret = this.getCaretHeight(inline, index, inline.characterFormat, true, topMargin, isItalic);
+                caretHeight = caret.height;
+                if (!skipUpdate) {
+                    this.caret.style.height = caret.height * this.documentHelper.zoomFactor + 'px';
+                }
+            }
+        }
+        if (!skipUpdate) {
+            if (isItalic) {
+                this.caret.style.transform = 'rotate(13deg)';
+            } else {
+                this.caret.style.transform = '';
+            }
+        }
+        return {
+            'topMargin': topMargin,
+            'height': caretHeight
+        };
+    }
+    /**
+     * Updates caret to page.
+     * @private
+     * @returns {void}
+     */
+    public updateCaretToPage(startPosition: TextPosition, endPage: Page): void {
+        if (!isNullOrUndefined(endPage)) {
+            this.documentHelper.selectionEndPage = endPage;
+            if (this.owner.selectionModule.isEmpty) {
+                this.documentHelper.selectionStartPage = endPage;
+            } else {
+
+                let startLineWidget: LineWidget = this.getLineWidgetParagraph(startPosition.offset, startPosition.paragraph.childWidgets[0] as LineWidget);
+                //Gets start page.
+                let startPage: Page = this.getPage(startLineWidget.paragraph);
+                if (!isNullOrUndefined(startPage)) {
+                    this.documentHelper.selectionStartPage = startPage;
+                }
+            }
+        }
+        if(this.owner.enableAutoFocus)
+        {
+            this.checkForCursorVisibility();
+        }
+    }
+    /**
+     * Gets caret bottom position.
+     * @private
+     */
+    public getCaretBottom(textPosition: TextPosition, isEmptySelection: boolean): number {
+        let bottom: number = textPosition.location.y;
+        if (textPosition.paragraph.isEmpty()) {
+            let paragraph: ParagraphWidget = textPosition.paragraph;
+            let topMargin: number = 0;
+            let bottomMargin: number = 0;
+            let sizeInfo: SizeInfo = this.getParagraphMarkSize(paragraph, topMargin, bottomMargin);
+            topMargin = sizeInfo.topMargin;
+            bottomMargin = sizeInfo.bottomMargin;
+            bottom += sizeInfo.height;
+            bottom += topMargin;
+            if (!isEmptySelection) {
+                bottom += bottomMargin;
+            }
+        } else {
+            let index: number = 0;
+            let inlineInfo: ElementInfo = textPosition.paragraph.getInline(textPosition.offset, index);
+            let inline: ElementBox = inlineInfo.element;
+            index = inlineInfo.index;
+            let topMargin: number = 0;
+            let isItalic: boolean = false;
+
+            let caretHeightInfo: CaretHeightInfo = this.getCaretHeight(inline, index, inline.characterFormat, false, topMargin, isItalic);
+            topMargin = caretHeightInfo.topMargin;
+            isItalic = caretHeightInfo.isItalic;
+            bottom += caretHeightInfo.height;
+            if (isEmptySelection) {
+                bottom -= HelperMethods.convertPointToPixel(this.documentHelper.layout.getAfterSpacing(textPosition.paragraph));
+            }
+        }
+        return bottom;
+    }
+    /**
+     * Checks for cursor visibility.
+     *
+     * @private
+     * @returns {void}
+     */
+    public checkForCursorVisibility(): void {
+        this.showCaret();
+    }
+    // caret implementation ends
+    /**
+     * Keyboard shortcuts
+     * 
+     * @private
+     * @returns {void}
+     */
+    public onKeyDownInternal(event: KeyboardEvent, ctrl: boolean, shift: boolean, alt: boolean): void {
+        let key: number = event.which || event.keyCode;
+        this.owner.focusIn();
+        if (ctrl && !shift && !alt) {
+            this.documentHelper.isControlPressed = true;
+            switch (key) {
+                // case 9:
+                //     event.preventDefault();
+                //     if (this.owner.acceptTab) {
+                //         this.selection.handleTabKey(false, false);
+                //     }
+                //     break;
+                case 35:
+                    this.handleControlEndKey();
+                    break;
+                case 36:
+                    this.handleControlHomeKey();
+                    break;
+                case 37:
+                    this.handleControlLeftKey();
+                    break;
+                case 38:
+                    this.handleControlUpKey();
+                    break;
+                case 39:
+                    this.handleControlRightKey();
+                    break;
+                case 40:
+                    this.handleControlDownKey();
+                    break;
+                case 65:
+                    this.owner.selectionModule.selectAll();
+                    break;
+                case 67:
+                    event.preventDefault();
+                    this.copy();
+                    break;
+                case 70:
+                    event.preventDefault();
+                    if (!isNullOrUndefined(this.owner.optionsPaneModule)) {
+                        this.owner.documentEditorSettings.showNavigationPane = true;
+                        this.owner.optionsPaneModule.showHideOptionsPane(true);
+                    }
+                    break;
+            }
+        } else if (shift && !ctrl && !alt) {
+            this.documentHelper.isCompleted = false;
+            switch (key) {
+                case 33:
+                    event.preventDefault();
+                    this.handlePageUpPageDownKey(false, shift);
+                    break;
+                case 34:
+                    event.preventDefault();
+                    this.handlePageUpPageDownKey(true, shift);
+                    break;
+                case 35:
+                    this.handleShiftEndKey();
+                    event.preventDefault();
+                    break;
+                case 36:
+                    this.handleShiftHomeKey();
+                    event.preventDefault();
+                    break;
+                case 37:
+                    this.handleShiftLeftKey();
+                    event.preventDefault();
+                    break;
+                case 38:
+                    this.handleShiftUpKey();
+                    event.preventDefault();
+                    break;
+                case 39:
+                    this.handleShiftRightKey();
+                    event.preventDefault();
+                    break;
+                case 40:
+                    this.handleShiftDownKey();
+                    event.preventDefault();
+                    break;
+            }
+        } else if (shift && ctrl && !alt) {
+            switch (key) {
+                case 32:
+                    this.owner.editorModule.insertText(String.fromCharCode(160));
+                    break;
+                case 35:
+                    this.handleControlShiftEndKey();
+                    break;
+                case 36:
+                    this.handleControlShiftHomeKey();
+                    break;
+                case 37:
+                    this.handleControlShiftLeftKey();
+                    break;
+                case 38:
+                    this.handleControlShiftUpKey();
+                    break;
+                case 39:
+                    this.handleControlShiftRightKey();
+                    break;
+                case 40:
+                    this.handleControlShiftDownKey();
+                    break;
+                case 56:
+                    this.owner.toggleShowHiddenMarksInternal();
+                    break;
+            }
+        } else {
+            switch (key) {
+                // case 9:
+                //     event.preventDefault();
+                //     if (this.owner.acceptTab) {
+                //         this.handleTabKey(true, false);
+                //     }
+                //     break;  
+                case 33:
+                    event.preventDefault();
+                    this.handlePageUpPageDownKey(false,shift);
+                    break;
+                case 34:
+                    event.preventDefault();
+                    this.handlePageUpPageDownKey(true,shift);
+                    break;
+                case 35:
+                    this.handleEndKey();
+                    event.preventDefault();
+                    break;
+                case 36:
+                    this.handleHomeKey();
+                    event.preventDefault();
+                    break;
+                case 37:
+                    this.handleLeftKey();
+                    event.preventDefault();
+                    break;
+                case 38:
+                    this.handleUpKey();
+                    event.preventDefault();
+                    break;
+                case 39:
+                    this.handleRightKey();
+                    event.preventDefault();
+                    break;
+                case 40:
+                    this.handleDownKey();
+                    event.preventDefault();
+                    break;
+            }
+        }
+        if (this.isFormField() && !(this.documentHelper.isDocumentProtected)) {
+            let formField: ElementBox = this.getCurrentFormField(true);
+            if (formField && (formField as FieldElementBox).formFieldData instanceof DropDownFormField) {
+
+                formField = (event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 40) ? formField : formField.nextElement instanceof BookmarkElementBox ? formField.nextElement.reference : (formField as FieldElementBox).fieldEnd;
+                let index: number = event.keyCode === 39 ? 1 : 0;
+                let offset: number = formField.line.getOffset(formField, index);
+                let point: Point = this.getPhysicalPositionInternal(formField.line, offset, false);
+                this.selectInternal(formField.line, formField, index, point);
+            }
+        }
+        if (!this.owner.isReadOnlyMode || this.documentHelper.isCommentOnlyMode || this.isInlineFormFillMode() || (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.owner.editor.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked())) {
+            this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
+        } else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
+            if (event.keyCode === 9 || event.keyCode === 32) {
+                this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
+            }
+        }
+        if (this.owner.searchModule) {
+
+            if (!isNullOrUndefined(this.owner.searchModule.searchHighlighters) && this.owner.searchModule.searchHighlighters.length > 0) {
+                this.owner.searchModule.searchResults.clear();
+            }
+        }
+        if (event.keyCode === 27 || event.which === 27) {
+            if (!isNullOrUndefined(this.owner.optionsPaneModule)) {
+                this.owner.optionsPaneModule.showHideOptionsPane(false);
+                this.documentHelper.updateFocus();
+            }
+            if (this.owner.enableHeaderAndFooter) {
+                this.disableHeaderFooter();
+            }
+        }
+    }
+
+
+
+    //#region Enable or disable Header Footer
+    /**
+     * @private
+     */
+    public checkAndEnableHeaderFooter(point: Point, pagePoint: Point): boolean {
+        let page: Page = this.documentHelper.currentPage;
+        if (this.isCursorInsidePageRect(point, page)) {
+            if (this.isCursorInHeaderRegion(point, page)) {
+                if (this.owner.enableHeaderAndFooter) {
+                    return false;
+                }
+                return this.enableHeadersFootersRegion(page.headerWidget, page);
+            }
+            if (this.isCursorInFooterRegion(point, page)) {
+                if (this.owner.enableHeaderAndFooter) {
+                    return false;
+                }
+                return this.enableHeadersFootersRegion(page.footerWidget, page);
+            }
+        }
+        if (this.owner.enableHeaderAndFooter) {
+            this.owner.enableHeaderAndFooter = false;
+            this.documentHelper.updateTextPositionForSelection(pagePoint, 1);
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public isCursorInsidePageRect(point: Point, page: Page): boolean {
+
+        if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
+            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor)) && this.viewer instanceof PageLayoutViewer) {
+            return true;
+
+        } else if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
+            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + page.boundingRectangle.width)) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public isCursorInHeaderRegion(point: Point, page: Page): boolean {
+        if (this.viewer instanceof PageLayoutViewer) {
+            let pageTop: number = this.getPageTop(page);
+            let headerHeight: number = 0;
+            let header: HeaderFooterWidget = page.headerWidget;
+            if (header) {
+                headerHeight = (header.y + header.height);
+            }
+            let isEmpty: boolean = header.isEmpty && !this.owner.enableHeaderAndFooter;
+            let topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+            let pageHeight: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageHeight);
+            let height: number = isEmpty ? topMargin : Math.min(Math.max(headerHeight, topMargin), pageHeight / 100 * 40);
+            height = height * this.documentHelper.zoomFactor;
+            if ((this.viewer.containerTop + point.y) >= pageTop && (this.viewer.containerTop + point.y) <= pageTop + height) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public isCursorInFooterRegion(point: Point, page: Page): boolean {
+        if (this.viewer instanceof PageLayoutViewer) {
+            let pageRect: Rect = page.boundingRectangle;
+            let pageTop: number = this.getPageTop(page);
+            let pageBottom: number = pageTop + (pageRect.height * this.documentHelper.zoomFactor);
+            let footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
+            let footerHeight: number = 0;
+            if (page.footerWidget) {
+                footerHeight = page.footerWidget.height;
+            }
+            let bottomMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin);
+            let isEmpty: boolean = page.footerWidget.isEmpty && !this.owner.enableHeaderAndFooter;
+            let height: number = pageRect.height;
+            if (isEmpty) {
+                height = (height - bottomMargin) * this.documentHelper.zoomFactor;
+            } else {
+
+                height = (height - Math.min(pageRect.height / 100 * 40, Math.max(footerHeight + footerDistance, bottomMargin))) * this.documentHelper.zoomFactor;
+            }
+
+            if ((this.viewer.containerTop + point.y) <= pageBottom && (this.viewer.containerTop + point.y) >= pageTop + height) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public enableHeadersFootersRegion(widget: HeaderFooterWidget, page: Page): boolean {
+        if (this.viewer instanceof PageLayoutViewer) {
+            this.owner.enableHeaderAndFooter = true;
+            widget.page = page;
+            this.comparePageWidthAndMargins(widget, page);
+            this.updateTextPositionForBlockContainer(widget);
+            this.shiftBlockOnHeaderFooterEnableDisable();
+            return true;
+        }
+        return false;
+    }
+    /**
+    * Disable xml
+    * @private
+    */
+    public disableXml(): void {
+        let page: Page = this.getPage(this.start.paragraph);
+        this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
+        this.owner.enableHeaderAndFooter = false;
+        this.shiftBlockOnHeaderFooterEnableDisable();
+    }
+    /**
+     * /* Here is the explanation for the code below:
+        1. When there are multiple sections in a document, the first section is the parent section of the other sections.
+        2. If you change the page width or header distance of the parent section, the child section will inherit the page width or header distance of the parent section.
+        3. So when you change the page width or header distance of the parent section, the child section should be relayouted.
+     * @private
+     */
+    private comparePageWidthAndMargins(parentHFWidget: HeaderFooterWidget, page: Page):void { 
+        let headerFooterType: HeaderFooterType = parentHFWidget.headerFooterType;
+        let currentHFWidget: HeaderFooterWidget;
+        let isHeader: boolean = headerFooterType.indexOf('Header') != -1;
+        let isRelayout: boolean = false;
+        if (isHeader) {
+            currentHFWidget = page.headerWidgetIn;
+        } else {
+            currentHFWidget = page.footerWidgetIn;
+        }
+        if(!isNullOrUndefined(currentHFWidget)) {
+            const parentSectionFormat: WSectionFormat = parentHFWidget.sectionFormat;
+            const currentSectionFormat: WSectionFormat = currentHFWidget.sectionFormat;
+            if (!isNullOrUndefined(parentSectionFormat) && !isNullOrUndefined(currentSectionFormat)) {
+                if (isHeader) {
+                    if (parentHFWidget.width != currentHFWidget.width || parentSectionFormat.headerDistance != currentSectionFormat.headerDistance) {
+                        isRelayout = true;
+                    }
+                } else {
+                    if (parentHFWidget.width != currentHFWidget.width || parentSectionFormat.footerDistance != currentSectionFormat.footerDistance) {
+                        isRelayout = true;
+                    }
+                }
+            }
+            if (isRelayout) {
+                (this.owner.viewer as PageLayoutViewer).updateHFClientArea(parentHFWidget.sectionFormat, isHeader);
+                parentHFWidget = this.documentHelper.layout.layoutHeaderFooterItems(this.owner.viewer, parentHFWidget);
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public shiftBlockOnHeaderFooterEnableDisable(): void {
+        for (let i: number = 0; i < this.documentHelper.headersFooters.length; i++) {
+            let headerFooter: HeaderFooters = this.documentHelper.headersFooters[i];
+            let bodywidget = this.getBodyWidgetInternal(i, 0);
+            if(isNullOrUndefined(bodywidget)) {
+                continue;
+            }
+            let sectionFormat: WSectionFormat = bodywidget.sectionFormat;
+            for (let key of Object.keys(headerFooter)) {
+                let widget: HeaderFooterWidget = headerFooter[key];
+                if (widget.isEmpty) {
+                    this.owner.editorModule.shiftPageContent(widget.headerFooterType, sectionFormat);
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public updateTextPositionForBlockContainer(widget: BlockContainer): void {
+        let block: BlockWidget = widget.firstChild as BlockWidget;
+        if (block instanceof TableWidget) {
+            block = this.getFirstBlockInFirstCell(block);
+            if (block instanceof TableWidget) {
+                block = this.getFirstBlockInFirstCell(block);
+            }
+        }
+        this.selectParagraphInternal(block as ParagraphWidget, true);
+    }
+    /**
+     * Disable Header footer
+     * @private
+     */
+    public disableHeaderFooter(): void {
+        let page: Page = this.getPage(this.start.paragraph);
+        this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
+        this.owner.enableHeaderAndFooter = false;
+        this.shiftBlockOnHeaderFooterEnableDisable();
+    }
+    //#endregion
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public clear(): void {
+        if (this.editRegionHighlighters) {
+            this.editRegionHighlighters.clear();
+        }
+        this.editRangeCollection = [];
+        if (this.selectedWidgets) {
+            this.selectedWidgets.clear();
+        }
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        if (!isNullOrUndefined(this.contextTypeInternal)) {
+            this.contextTypeInternal = undefined;
+        }
+        if (this.pasteDropDwn) {
+            this.pasteDropDwn.destroy();
+            this.pasteDropDwn = undefined;
+        }
+        this.caret = undefined;
+        this.contextTypeInternal = undefined;
+        this.upDownSelectionLength = undefined;
+        this.owner = undefined;
+        this.upDownSelectionLength = undefined;
+        this.isSkipLayouting = undefined;
+        this.isImageSelected = undefined;
+        if (!isNullOrUndefined(this.documentHelper)) {
+            this.documentHelper = undefined;
+        }
+        this.contextTypeInternal = undefined;
+        this.isRetrieveFormatting = undefined;
+        if (this.characterFormatIn) {
+            this.characterFormatIn.destroy();
+        }
+        this.characterFormatIn = undefined;
+        if (this.paragraphFormatIn) {
+            this.paragraphFormatIn.destroy();
+        }
+        this.paragraphFormatIn = undefined;
+        if (this.sectionFormatIn) {
+            this.sectionFormatIn.destroy();
+        }
+        this.sectionFormatIn = undefined;
+        if (this.tableFormatIn) {
+            this.tableFormatIn.destroy();
+        }
+        this.tableFormatIn = undefined;
+        if (this.cellFormatIn) {
+            this.cellFormatIn.destroy();
+        }
+        this.cellFormatIn = undefined;
+        if (this.rowFormatIn) {
+            this.rowFormatIn.destroy();
+        }
+        this.rowFormatIn = undefined;
+        this.imageFormatInternal = undefined;
+        this.skipFormatRetrieval = undefined;
+        this.startInternal = undefined;
+        this.endInternal = undefined;
+        this.htmlWriterIn = undefined;
+        this.toolTipElement = undefined;
+        if (!isNullOrUndefined(this.toolTipObject)) {
+            this.toolTipObject.destroy();
+        }
+        this.toolTipField = undefined;
+        this.isMoveDownOrMoveUp = undefined;
+        this.pasteElement = undefined;
+        this.currentPasteAction = undefined;
+        this.isViewPasteOptions = undefined;
+        this.skipEditRangeRetrieval = undefined;
+        this.editPosition = undefined;
+        if (!isNullOrUndefined(this.selectedWidgets)) {
+            this.selectedWidgets.destroy();
+        }
+        this.isHighlightEditRegionIn = undefined;
+        this.isHighlightFormFields = undefined;
+        this.editRangeCollection = [];
+        this.editRangeCollection = undefined;
+        this.isHightlightEditRegionInternal = undefined;
+        this.isCurrentUser = undefined;
+        this.isHighlightNext = undefined;
+        this.hightLightNextParagraph = undefined;
+        this.isWebLayout = undefined;
+        if (!isNullOrUndefined(this.editRegionHighlighters)) {
+            this.editRegionHighlighters.destroy();
+        }
+        if (!isNullOrUndefined(this.formFieldHighlighters)) {
+            this.formFieldHighlighters.destroy();
+        }
+        this.isCellPrevSelected = undefined;
+        this.currentFormField = undefined;
+    }
+    /**
+     * Returns the cells in between the bounds.
+     * @param table Specify the table to find cells.
+     * @param columnFirst Specify start index of column to find cells.
+     * @param columnLast Specify end index of column to find cells.
+     * @param bookmark Specify the bookmark element.
+     */
+    public getCellsToSelect(table: TableWidget, columnFirst: number, columnLast: number, bookmark: BookmarkElementBox): TableCellWidget[] {
+        let rows: TableRowWidget[] = table.childWidgets as TableRowWidget[];
+        if(isNullOrUndefined(bookmark.paragraph.associatedCell) || !isNullOrUndefined(bookmark.reference) && isNullOrUndefined(bookmark.reference.paragraph.associatedCell)){
+            return undefined;
+        }
+        let startRowIndex: number = bookmark.paragraph.associatedCell.ownerRow.rowIndex;
+        let endRowIndex: number = bookmark.reference.paragraph.associatedCell.ownerRow.rowIndex;
+        let cellArray: TableCellWidget[] = [];
+        for (let i: number = startRowIndex; i <= endRowIndex; i++) {
+            let row: TableRowWidget = rows[i];
+            for (let j: number = columnFirst; j <= columnLast; j++) {
+                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                if(!isNullOrUndefined(cell)){
+                    cellArray.push(cell);
+                }
+            }
+        }
+        return cellArray;
+    }
+    /**
+     * Selects the cells between bookmark start and end.
+     * @param bookmark Specify the bookmark.
+     */
+    public selectBookmarkInTable(bookmark: BookmarkElementBox): void{
+        this.documentHelper.clearSelectionHighlight();
+        let columnFirst: number = parseInt(bookmark.properties['columnFirst']);
+        let columnLast: number = parseInt(bookmark.properties['columnLast']);
+        let table: TableWidget = bookmark.paragraph.associatedCell.ownerTable;
+        let cellArray: TableCellWidget[] = this.getCellsToSelect(table, columnFirst, columnLast, bookmark);
+        if(!isNullOrUndefined(cellArray)){
+            for (let i: number = 0; i < cellArray.length; i++) {
+                this.highlightCellWidget(cellArray[i]);
+            }
+        }
+    }
+    /**
+     * Navigates to the specified bookmark.
+     * @param name
+     * @param moveToStart
+     * @param excludeBookmarkStartEnd
+     * @private
+     */
+    public navigateBookmark(name: string, moveToStart?: boolean, excludeBookmarkStartEnd?: boolean): void {
+        let bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+        if (bookmarks.containsKey(name)) {
+            //bookmark start element
+            let bookmrkElmnt: BookmarkElementBox = bookmarks.get(name);
+            if(!isNullOrUndefined(bookmrkElmnt.properties)){
+                this.selectBookmarkInTable(bookmrkElmnt);
+            }else{
+                let offset: number = bookmrkElmnt.line.getOffset(bookmrkElmnt, 0);
+                if(excludeBookmarkStartEnd){
+                    offset ++;
+                }
+                let startPosition: TextPosition = new TextPosition(this.owner);
+                startPosition.setPositionParagraph(bookmrkElmnt.line, offset);
+                if (moveToStart) {
+                    this.documentHelper.selection.selectRange(startPosition, startPosition, true);
+                } else {
+                    //bookmark end element
+                    let bookmrkEnd: BookmarkElementBox = bookmrkElmnt.reference;
+                    if (bookmrkElmnt.reference && bookmrkElmnt.reference.line.paragraph.bodyWidget == null) {
+                        bookmrkEnd = bookmrkElmnt;
+                    }
+                    let endoffset: number = bookmrkEnd.line.getOffset(bookmrkEnd, 1);
+                    if (bookmrkEnd instanceof BookmarkElementBox && !excludeBookmarkStartEnd) {
+                        if (!isNullOrUndefined(bookmrkEnd.properties)) {
+                            if (bookmrkEnd.properties['isAfterParagraphMark']) {
+                                endoffset = bookmrkEnd.line.getOffset(bookmrkEnd, 1)
+                            }
+                        }
+                    }
+                    if(excludeBookmarkStartEnd){
+                        endoffset --;
+                    }
+                    let endPosition: TextPosition = new TextPosition(this.owner);
+                    endPosition.setPositionParagraph(bookmrkEnd.line, endoffset);
+                    //selects the bookmark range
+                    this.documentHelper.selection.selectRange(startPosition, endPosition, true);
+                }
+            }
+        }
+    }
+    /**
+     * Selects the specified bookmark.
+     * @param name Specify the bookmark name to select.
+     * @param excludeBookmarkStartEnd Specify true to exclude bookmark start and end from selection, otherwise false.
+     */
+    public selectBookmark(name: string, excludeBookmarkStartEnd?: boolean): void {
+        this.isSelectBookmark = true;
+        this.isExcludeBookmarkStartEnd = excludeBookmarkStartEnd;
+        this.navigateBookmark(name, undefined, excludeBookmarkStartEnd);
+        this.isSelectBookmark = false;
+    }
+    /**
+     * Returns the toc field from the selection.
+     * @private
+     */
+    public getTocField(): FieldElementBox {
+        let paragraph: ParagraphWidget = this.start.paragraph;
+        let tocPara: ParagraphWidget = undefined;
+        while ((paragraph !== undefined && this.isTocStyle(paragraph))) {
+            tocPara = paragraph;
+            paragraph = paragraph.previousRenderedWidget as ParagraphWidget;
+        }
+        if (tocPara !== undefined) {
+            let lineWidget: LineWidget = tocPara.childWidgets[0] as LineWidget;
+            if (lineWidget !== undefined) {
+                return lineWidget.children[0] as FieldElementBox;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Returns true if the paragraph has toc style.
+     */
+    private isTocStyle(paragraph: ParagraphWidget): boolean {
+        let style: WStyle = (paragraph.paragraphFormat.baseStyle as WStyle);
+        return (style !== undefined && (style.name.toLowerCase().indexOf('toc') !== -1));
+    }
+    /**
+     * Return true if selection is in TOC
+     * @private
+     */
+    public isTOC(): boolean {
+        let info: ParagraphInfo = this.getParagraphInfo(this.start);
+        let para: ParagraphWidget = info.paragraph;
+        for (let i: number = 0; i < (para.childWidgets[0] as LineWidget).children.length; i++) {
+            let element: ElementBox = (para.childWidgets[0] as LineWidget).children[i];
+            if (element instanceof FieldElementBox) {
+                let fieldCode: string = this.owner.selectionModule.getFieldCode(element);
+                if (fieldCode.match('TOC ') || fieldCode.match('Toc')) {
+                    return true;
+                }
+            } else {
+                continue;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @private
+     */
+    public getElementsForward(lineWidget: LineWidget, startElement: ElementBox, endElement: ElementBox, bidi: boolean): ElementBox[] {
+        if (isNullOrUndefined(startElement)) {
+            return undefined;
+        }
+        let elements: ElementBox[] = [];
+        // while (bidi && startElement && startElement !== endElement && startElement.nextElement && !startElement.isRightToLeft) {
+        //     startElement = startElement.nextElement;
+        // }
+        // while (bidi && endElement && startElement !== endElement && endElement.previousElement && !endElement.isRightToLeft) {
+        //     endElement = endElement.previousElement;
+        // }
+        let elementIndex: number = lineWidget.children.indexOf(startElement);
+        while (elementIndex >= 0) {
+            for (let i: number = elementIndex; i < lineWidget.children.length; i++) {
+                let inlineElement: ElementBox = lineWidget.children[i];
+                if (inlineElement.line === lineWidget) {
+                    if (inlineElement === endElement) {
+                        elements.push(inlineElement);
+                        elementIndex = -1;
+                        break;
+                    } else {
+                        elements.push(inlineElement);
+                    }
+                } else {
+                    elementIndex = -1;
+                    break;
+                }
+
+            }
+            // inline = inline !== null && inline.NextNode !== null ? (inline.NextNode as Inline).GetNextRenderedInline() : null;
+            elementIndex = -1;
+        }
+
+        return elements.length === 0 ? undefined : elements;
+    }
+
+    // Gets the current line elements in inline reverse order from the end element.
+    /**
+     * @private
+     */
+    public getElementsBackward(lineWidget: LineWidget, startElement: ElementBox, endElement: ElementBox, bidi: boolean): ElementBox[] {
+        let elements: ElementBox[] = [];
+        while (bidi && startElement && startElement.previousElement && (!startElement.isRightToLeft
+            || startElement instanceof TextElementBox && this.documentHelper.textHelper.isRTLText(startElement.text))) {
+            startElement = startElement.previousElement;
+        }
+        let elementIndex: number = lineWidget.children.indexOf(startElement);
+        while (elementIndex >= 0) {
+            for (let i: number = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i++ : i--) {
+                let inlineElement: ElementBox = lineWidget.children[i];
+                if (inlineElement.line === lineWidget) {
+                    elements.push(inlineElement);
+                    if (inlineElement === endElement) {
+                        elementIndex = -1;
+                        break;
+                    }
+                } else {
+                    elementIndex = -1;
+                    break;
+                }
+
+            }
+            // inline = inline !== null && inline.NextNode !== null ? (inline.NextNode as Inline).GetNextRenderedInline() : null;
+            elementIndex = -1;
+        }
+
+        return elements;
+    }
+
+    /**
+     * Navigates to the previous comment in the document.
+     *
+     * @returns {void}
+     */
+    public navigatePreviousComment(): void {
+        this.commentNavigateInternal(false);
+    }
+    /**
+     * Navigates to the next comment in the document.
+     *
+     * @returns {void}
+     */
+    public navigateNextComment(): void {
+        this.commentNavigateInternal(true);
+    }
+    private commentNavigateInternal(next: boolean): void {
+        if (!this.documentHelper.currentSelectedComment) {
+            if (this.documentHelper.comments.length === 0) {
+                return;
+            }
+            this.documentHelper.currentSelectedComment = this.documentHelper.comments[0];
+        }
+        if (this.documentHelper.currentSelectedComment) {
+            let comments: CommentElementBox[] = this.documentHelper.comments;
+            let comment: CommentElementBox = this.documentHelper.currentSelectedComment;
+            let index: number = comments.indexOf(comment);
+            if (next) {
+                comment = (index === (comments.length - 1)) ? comments[0] : comments[index + 1];
+            } else {
+                comment = index === 0 ? comments[comments.length - 1] : comments[index - 1];
+            }
+            this.documentHelper.currentSelectedComment = comment;
+            this.selectComment(comment);
+        }
+    }
+    /**
+     * Navigates to the previous revision in the document.
+     *
+     * @returns {void}
+     */
+    public navigatePreviousRevision(): void {
+        this.revisionNavigateInternal(false);
+    }
+    /**
+     * Navigates to the next revision in the document.
+     *
+     * @returns {void}
+     */
+    public navigateNextRevision(): void {
+        this.revisionNavigateInternal(true);
+    }
+    /**
+     * Method to navigate revisions
+     *
+     * @private
+     * @returns {void}
+     */
+    private revisionNavigateInternal(next: boolean): void {
+        if (!this.documentHelper.currentSelectedRevisionInternal) {
+            if (this.documentHelper.owner.revisions.length === 0) {
+                return;
+            }
+            this.documentHelper.currentSelectedRevision = this.documentHelper.owner.revisions.get(0);
+        }
+        if (this.documentHelper.currentSelectedRevision) {
+            let revisions: Revision[] = this.documentHelper.owner.revisions.changes;
+            let revision: Revision = this.documentHelper.currentSelectedRevision;
+            let index: number = revisions.indexOf(revision);
+            if (next) {
+                revision = (index === (revisions.length - 1)) ? revisions[0] : revisions[index + 1];
+            } else {
+                revision = index === 0 ? revisions[revisions.length - 1] : revisions[index - 1];
+            }
+            this.documentHelper.currentSelectedRevision = revision;
+            this.selectRevision(revision);
+        }
+        this.owner.trackChangesPane.currentSelectedRevision = this.documentHelper.currentSelectedRevision;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public selectComment(comment: CommentElementBox): void {
+        if (!isNullOrUndefined(comment)) {
+            let startPosition: TextPosition = this.getElementPosition(comment.commentStart, true).startPosition;
+            let endPosition: TextPosition = this.getElementPosition(comment.commentEnd, false).startPosition;
+            if (this.owner.commentReviewPane) {
+                this.owner.commentReviewPane.selectComment(comment);
+            }
+            this.selectPosition(startPosition, endPosition);
+        }
+    }
+    /**
+     * @private
+     * @param revision
+     * @returns {void}
+     */
+    public selectRevision(revision: Revision, startPosition?: TextPosition, endPosition?: TextPosition): void {
+        let isSelect: boolean = false;
+        if(isNullOrUndefined(startPosition) && isNullOrUndefined(endPosition)) {
+            isSelect = true;
+        }
+        if (!isNullOrUndefined(revision) && revision.range.length > 0) {
+            let firstElement: any = revision.range[0];
+            let lastElement: any = revision.range[revision.range.length - 1];
+            let paragraph: ParagraphWidget;
+            if (firstElement instanceof WCharacterFormat) {
+                paragraph = firstElement.ownerBase as ParagraphWidget;
+            } else if (!(firstElement instanceof WRowFormat)) {
+                paragraph = firstElement.line.paragraph;
+            }
+            if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(paragraph.bodyWidget) && paragraph.bodyWidget instanceof HeaderFooterWidget && (isNullOrUndefined(paragraph.bodyWidget.page) || (!isNullOrUndefined(paragraph.bodyWidget.page) && paragraph.bodyWidget.page.index === -1))) {
+                return;
+            }
+            if (firstElement instanceof WRowFormat) {
+                let rowWidget: TableRowWidget = firstElement.ownerBase;
+                let firstCell: TableCellWidget = rowWidget.childWidgets[0] as TableCellWidget;
+                let lastCell: TableCellWidget = rowWidget.childWidgets[rowWidget.childWidgets.length - 1] as TableCellWidget;
+                let firstPara: ParagraphWidget = this.getFirstParagraph(firstCell);
+                let lastPara: ParagraphWidget = this.getLastParagraph(lastCell);
+                this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                this.selectPosition(this.start, this.end);
+            } else if (firstElement && lastElement) {
+                if(isNullOrUndefined(startPosition)) {
+                    startPosition = new TextPosition(this.owner);
+                }
+                let offset: number = 0;
+                if (firstElement instanceof WCharacterFormat) {
+                    let currentPara: ParagraphWidget = firstElement.ownerBase as ParagraphWidget;
+                    // Set the offset based on length of para - length of remaning lines except last line because we have added the remaning line length in getParagraphInfoInternal method.
+                    //when we have add para length to the offset, again added the length of remaning lines except last line in getParagraphInfoInternal method. so when perform undo, the offset is greater than para length + 1. in this case, we set the para length to start and end offset, so paramark doesn't comes to selection region (undo case for splitted para but paramark only tracked).
+                    if (currentPara.childWidgets.length > 1) {
+                        offset = this.getParagraphLength(currentPara) - this.getParagraphLength(currentPara, currentPara.lastChild as LineWidget);
+                    } else {
+                        // added the condition to set offset to paragraph start when para without contain text elements.
+                        if (this.isEmptyWidget(currentPara)) {
+                            offset = 0;
+                        } else {
+                            offset = currentPara.getLength();
+                        }
+                    }
+                    startPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset);
+                } else {
+                    offset = firstElement.line.getOffset(firstElement, 0);
+                    let line: LineWidget = firstElement.line as LineWidget;
+                    if (line.isFirstLine()) {
+                        for (let i = 0; i < line.children.length; i++) {
+                            if (firstElement === line.children[i] && line.children[i] instanceof TextElementBox && !(line.children[i] instanceof FootnoteElementBox)) {
+                                offset = 0;
+                                break;
+                            } else if (line.children[i] instanceof TextElementBox) {
+                                break;
+                            }
+                        }
+                    }
+                    startPosition.setPositionForLineWidget(firstElement.line, offset);
+                }
+                if(isNullOrUndefined(endPosition)) {
+                    endPosition = new TextPosition(this.owner);
+                }
+                if (lastElement instanceof WCharacterFormat) {
+                    let currentPara: ParagraphWidget = lastElement.ownerBase as ParagraphWidget;
+                    const splittedWidgets = currentPara.getSplitWidgets();
+                    currentPara = splittedWidgets[splittedWidgets.length - 1] as ParagraphWidget;
+                    if (currentPara.isEndsWithPageBreak || currentPara.isEndsWithColumnBreak) {
+                        this.owner.trackChangesPane.isTrackingPageBreak = true;
+                    }
+                    // Changed the condition to get last child of current paragraph instead of next para of current para if current para contain page break
+                    if (currentPara.childWidgets.length > 1) {
+                        offset = this.getParagraphLength(currentPara) - this.getParagraphLength(currentPara, currentPara.lastChild as LineWidget);
+                    } else {
+                        offset = currentPara.getLength();
+                    }
+                    endPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset + 1);
+                } else {
+                    offset = lastElement.line.getOffset(lastElement, 0) + lastElement.length;
+                    if (this.isTOC()) {
+                        offset += 1;
+                    }
+                    endPosition.setPositionForLineWidget(lastElement.line, offset);
+                }
+                let curentPosition: TextPosition = startPosition.clone();
+                if (!startPosition.isExistBefore(endPosition)) {
+                    startPosition = endPosition;
+                    endPosition = curentPosition;
+                }
+                if(isSelect) {
+                    this.selectPosition(startPosition, endPosition);
+                }
+            }
+        }
+    }
+    private isEmptyWidget(block: any): boolean {
+        if (block instanceof TableWidget) {
+            return false;
+        } else if ((block as ParagraphWidget).isEmpty()) {
+            return true;
+        } else {
+            for (let i = 0; i < block.childWidgets.length; i++) {
+                let line: LineWidget = block.childWidgets[i];
+                for (let j = 0; j < line.children.length; j++) {
+                    if (line.children[j] instanceof TextElementBox) {
+                        return false;
+                    }
+                }
+
+            }
+            return true;
+        }
+    }
+    /**
+     * @private
+     */
+    public selectTableRevision(revision: Revision[]): void {
+        if (!isNullOrUndefined(revision) && revision[0].range.length > 0) {
+            let firstElementTable: any = revision[0].range[0];
+            let lastElementTable: any = revision[revision.length - 1].range[0];
+            if (firstElementTable instanceof WRowFormat) {
+                let firstRowWidget: TableRowWidget = firstElementTable.ownerBase;
+                let firstCell: TableCellWidget = firstRowWidget.childWidgets[0] as TableCellWidget;
+                let secondRowWidget: TableRowWidget = lastElementTable.ownerBase;
+                let lastCell: TableCellWidget = secondRowWidget.childWidgets[secondRowWidget.childWidgets.length - 1] as TableCellWidget;
+                let firstPara: ParagraphWidget = this.getFirstParagraph(firstCell);
+                let lastPara: ParagraphWidget = this.getLastParagraph(lastCell);
+                this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                this.selectPosition(this.start, this.end);
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateEditRangeCollection(): void {
+        if (this.editRangeCollection.length > 0) {
+            this.editRangeCollection = [];
+        }
+        let editRangeStart: EditRangeStartElementBox[];
+        let everyOneArea: EditRangeStartElementBox[];
+        if (!this.documentHelper.isDocumentProtected) {
+            for (let i: number = 0; i < this.documentHelper.editRanges.length; i++) {
+                let user: string = this.documentHelper.editRanges.keys[i];
+                editRangeStart = this.documentHelper.editRanges.get(user);
+                for (let j: number = 0; j < editRangeStart.length; j++) {
+                    if (!isNullOrUndefined(editRangeStart[j].editRangeEnd)) {
+                        this.editRangeCollection.push(editRangeStart[j]);
+                    }
+                }
+            }
+        } else {
+            if (this.documentHelper.editRanges.containsKey(this.owner.currentUser)) {
+                editRangeStart = this.documentHelper.editRanges.get(this.owner.currentUser);
+                for (let j: number = 0; j < editRangeStart.length; j++) {
+                    if (!isNullOrUndefined(editRangeStart[j].editRangeEnd)) {
+                        this.editRangeCollection.push(editRangeStart[j]);
+                    }
+                }
+            }
+            if (this.documentHelper.editRanges.containsKey('Everyone')) {
+                let user: string = 'Everyone';
+                everyOneArea = this.documentHelper.editRanges.get(user);
+                for (let j: number = 0; j < everyOneArea.length; j++) {
+                    if (!isNullOrUndefined(everyOneArea[j].editRangeEnd)) {
+                        this.editRangeCollection.push(everyOneArea[j]);
+                    }
+                }
+            }
+        }
+    }
+    //Restrict editing implementation starts
+    /**
+     * @private
+     * @returns {void}
+     */
+    public onHighlight(): void {
+        if (this.isHighlightEditRegion) {
+            this.highlightEditRegion();
+        } else {
+            this.unHighlightEditRegion();
+        }
+        this.viewer.renderVisiblePages();
+    }
+    //Restrict editing implementation starts
+    /**
+     * @private
+     * @returns {void}
+     */
+    public onHighlightContentControl(): void {
+        if (this.isHighlightContentControlEditRegionIn) {
+            if (this.documentHelper.contentControlCollection.length > 0) {
+                for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+                    if(this.documentHelper.contentControlCollection[i].paragraph.isInHeaderFooter && this.documentHelper.owner.layoutType === "Continuous"){
+                        continue;
+                    }
+                    if (this.documentHelper.contentControlCollection[i].line.paragraph.bodyWidget.page
+                        && this.documentHelper.contentControlCollection[i].line.paragraph.bodyWidget.page.documentHelper) {
+                        this.highlightContentControlEditRegionInternal(this.documentHelper.contentControlCollection[i] as ContentControl);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public highlightContentControlEditRegionInternal(editRangeStart: ContentControl): void {
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let startPosition: TextPosition = positionInfo.startPosition;
+        let endPosition: TextPosition = positionInfo.endPosition;
+        this.highlight(editRangeStart.line.paragraph, startPosition, endPosition, editRangeStart);
+        let currentParagraph : ParagraphWidget = editRangeStart.line.paragraph;
+        while(currentParagraph !== endPosition.paragraph){
+            if(currentParagraph.nextRenderedWidget instanceof ParagraphWidget){
+                currentParagraph = currentParagraph.nextRenderedWidget;
+                this.highlight(currentParagraph,startPosition,endPosition,editRangeStart);
+            }
+            else{
+                return;
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public selectPlaceHolderText(contentControl: ContentControl): void {
+        if (contentControl.contentControlProperties && contentControl.contentControlProperties.hasPlaceHolderText && (contentControl.contentControlProperties.type === 'RichText' || contentControl.contentControlProperties.type === 'Text')) {
+            this.selectContentControlInternal(contentControl);
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public isPlainContentControl(): boolean {
+        let contentControl: ContentControl = this.owner.editorModule.getContentControl();
+        if (contentControl && contentControl.contentControlProperties && contentControl.contentControlProperties.type === 'Text') {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public highlightEditRegion(): void {
+        this.updateEditRangeCollection();
+        if (this.owner.enableLockAndEdit) {
+            this.viewer.updateScrollBars();
+            return;
+        }
+        if (!this.isHighlightEditRegion) {
+            this.unHighlightEditRegion();
+            return;
+        }
+        this.isHightlightEditRegionInternal = true;
+        if (isNullOrUndefined(this.editRegionHighlighters)) {
+            this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        }
+        this.editRegionHighlighters.clear();
+        for (let j: number = 0; j < this.editRangeCollection.length; j++) {
+            this.highlightEditRegionInternal(this.editRangeCollection[j]);
+        }
+        this.isHightlightEditRegionInternal = false;
+        this.viewer.updateScrollBars();
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public highlightFormFields(): void {
+        if (isNullOrUndefined(this.formFieldHighlighters)) {
+            this.formFieldHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        }
+        this.formFieldHighlighters.clear();
+        let formFields: FieldElementBox[] = this.documentHelper.formFields;
+        if (!isNullOrUndefined(formFields) && formFields.length > 0) {
+            for (let i: number = 0; i < formFields.length; i++) {
+                let formField: FieldElementBox = formFields[i];
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    let offset: number = formField.line.getOffset(formField, 0);
+                    let startPosition: TextPosition = new TextPosition(this.owner);
+                    startPosition.setPositionParagraph(formField.line, offset);
+
+                    let endElement: FieldElementBox = formField.fieldEnd;
+                    offset = endElement.line.getOffset(endElement, 1);
+                    let endPosition: TextPosition = new TextPosition(this.owner);
+                    endPosition.setPositionParagraph(endElement.line, offset);
+                    this.isHighlightFormFields = true;
+                    this.highlight(startPosition.paragraph, startPosition, endPosition);
+                    if (this.isHighlightNext) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                        this.isHighlightNext = false;
+                        this.hightLightNextParagraph = undefined;
+                    }
+                }
+            }
+            this.isHighlightFormFields = false;
+            this.viewer.updateScrollBars();
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public unHighlightEditRegion(): void {
+        if (!isNullOrUndefined(this.editRegionHighlighters)) {
+            this.editRegionHighlighters.clear();
+            this.editRegionHighlighters = undefined;
+        }
+        this.isHightlightEditRegionInternal = false;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public highlightEditRegionInternal(editRangeStart: EditRangeStartElementBox): void {
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let startPosition: TextPosition = positionInfo.startPosition;
+        let endPosition: TextPosition = positionInfo.endPosition;
+        // if (editRangeStart.user === this.owner.currentUser && editRangeStart.group === '') {
+        this.isCurrentUser = true;
+        // }
+        this.highlightEditRegions(editRangeStart, startPosition, endPosition);
+        this.isCurrentUser = false;
+    }
+    /**
+     * Shows all the editing region, where current user can edit.
+     *
+     * @returns {void}
+     */
+    public showAllEditingRegion(): void {
+        if (this.editRangeCollection.length === 0) {
+            this.updateEditRangeCollection();
+        }
+        this.documentHelper.clearSelectionHighlight();
+        for (let j: number = 0; j < this.editRangeCollection.length; j++) {
+            let editRangeStart: EditRangeStartElementBox = this.editRangeCollection[j];
+            let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+            let startPosition: TextPosition = positionInfo.startPosition;
+            let endPosition: TextPosition = positionInfo.endPosition;
+            this.highlightEditRegions(editRangeStart, startPosition, endPosition);
+        }
+    }
+    private highlightEditRegions(editRangeStart: EditRangeStartElementBox, startPosition: TextPosition, endPosition: TextPosition): void {
+        if (!editRangeStart.line.paragraph.isInsideTable
+            || (editRangeStart.line.paragraph.isInsideTable && !editRangeStart.editRangeEnd.line.paragraph.isInsideTable) || editRangeStart.columnFirst === -1) {
+            this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
+            if (this.isHighlightNext) {
+                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                this.isHighlightNext = false;
+                this.hightLightNextParagraph = undefined;
+            }
+        } else {
+            let row: TableRowWidget = editRangeStart.line.paragraph.associatedCell.ownerRow as TableRowWidget;
+            let cell: TableCellWidget = row.childWidgets[editRangeStart.columnFirst] as TableCellWidget;
+            if (cell) {
+                for (let i: number = 0; i < cell.childWidgets.length; i++) {
+                    if (cell.childWidgets[i] instanceof ParagraphWidget) {
+                        this.highlight(cell.childWidgets[i] as ParagraphWidget, startPosition, endPosition);
+                        if (this.isHighlightNext) {
+                            this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                            this.isHighlightNext = false;
+                            this.hightLightNextParagraph = undefined;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Navigates to the next editing region, where current user can edit.
+     *
+     * @returns {void}
+     */
+    public navigateToNextEditingRegion(): void {
+        let editRange: EditRangeStartElementBox = this.getEditRangeStartElement(true);
+        if(this.editRangeCollection.length > 0){
+            this.sortEditRangeCollection();
+            let length: number = this.editRangeCollection.length;
+            let index: number = length;
+            if (!isNullOrUndefined(editRange)) {
+                index = this.editRangeCollection.indexOf(editRange);
+            }
+            let editRangeStart: EditRangeStartElementBox = index < length - 1 ?
+                this.editRangeCollection[index + 1] as EditRangeStartElementBox : this.editRangeCollection[0] as EditRangeStartElementBox;
+            let positionInfo: PositionInfo = this.getPosition(editRangeStart, true);
+            let startPosition: TextPosition = positionInfo.startPosition;
+            let endPosition: TextPosition = positionInfo.endPosition;
+            this.selectRange(startPosition, endPosition);
+        }
+    }
+    private sortEditRangeCollection() {
+        //Sort based on position
+        for (let i: number = this.editRangeCollection.length - 1; i >= 0; i--) {
+            for (let j: number = 1; j <= i; j++) {
+                let nextPosition: TextPosition = this.getPosition(this.editRangeCollection[j - 1]).startPosition;
+                let firstPosition: TextPosition = this.getPosition(this.editRangeCollection[j]).startPosition;
+                if (nextPosition.isExistAfter(firstPosition)) {
+                    let temp: EditRangeStartElementBox = this.editRangeCollection[j - 1];
+                    this.editRangeCollection[j - 1] = this.editRangeCollection[j];
+                    this.editRangeCollection[j] = temp;
+                }
+            }
+        }
+    }
+    /**
+     * Highlights all the editing region, where current user can edit.
+     *
+     * @returns {void}
+     */
+    public toggleEditingRegionHighlight(): void {
+        this.isHighlightEditRegion = !this.isHighlightEditRegion;
+    }
+    /**
+     * @private
+     */
+    public getEditRangeStartElement(isNavigateToNextEditRegion?: boolean): EditRangeStartElementBox {
+        for (let i: number = 0; i < this.editRangeCollection.length; i++) {
+            let editStart: EditRangeStartElementBox = this.editRangeCollection[i];
+            let position: PositionInfo = this.getPosition(editStart, isNavigateToNextEditRegion);
+            let start: TextPosition = position.startPosition;
+            let end: TextPosition = position.endPosition;
+            if ((this.start.isExistAfter(start) || this.start.isAtSamePosition(start))
+                && (this.end.isExistBefore(end) || this.end.isAtSamePosition(end))) {
+                return editStart;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Determines whether the selection is inside the edit region.
+     * 
+     * @returns {boolean} Returns true if the selection is inside the edit region; Otherwise, false.
+     */
+    public isSelectionInEditRegion(): boolean {
+        if (!this.documentHelper.isDocumentProtected) {
+            return false;
+        }
+        return this.checkSelectionIsAtEditRegion();
+    }
+    /**
+     * Determines whether the specified start and end position of the selection is inside the edit region.
+     * @param {TextPosition} start Specify the start position of the selection.
+     * @param {TextPosition} end Specify the end position of the selection.
+     * @returns {boolean} Returns true if the specified start and end position of the selection is inside the edit region; Otherwise, false.
+     */
+    public checkSelectionIsAtEditRegion(start?: TextPosition, end?: TextPosition): boolean {
+        if (isNullOrUndefined(start) && isNullOrUndefined(end)) {
+            start = this.start;
+            end = this.end;
+            if (!this.isForward) {
+                start = this.end;
+                end = this.start;
+            }
+        }
+        if (this.editRangeCollection.length > 0 && this.isFootEndNoteParagraph(start.paragraph) && this.isFootEndNoteParagraph(end.paragraph) && start.paragraph.containerWidget == end.paragraph.containerWidget) {
+            let position: TextPosition = this.getElementPosition((start.paragraph.containerWidget as BodyWidget).footNoteReference, true).startPosition;
+            start = position;
+            end = position;
+        }
+        for (let i: number = 0; i < this.editRangeCollection.length; i++) {
+            let editRangeStart: EditRangeStartElementBox = this.editRangeCollection[i];
+            if (!editRangeStart.line.paragraph.isInsideTable
+                || (editRangeStart.line.paragraph.isInsideTable && !editRangeStart.editRangeEnd.line.paragraph.isInsideTable)
+                || editRangeStart.columnFirst === -1) {
+                if (this.isSelectionInsideEditRange(editRangeStart, start, end)) {
+                    return true;
+                }
+            } else {
+                if (editRangeStart.paragraph.isInsideTable && editRangeStart.editRangeEnd &&
+                    editRangeStart.editRangeEnd.line.paragraph.isInsideTable) {
+                    let editRangeRow: TableRowWidget = editRangeStart.paragraph.associatedCell.ownerRow;
+                    let startCell: TableCellWidget = start.paragraph.associatedCell;
+                    let endCell: TableCellWidget = end.paragraph.associatedCell;
+                    if (!isNullOrUndefined(startCell) && !isNullOrUndefined(endCell)) {
+                        if (editRangeRow.equals(startCell.ownerRow) && editRangeRow.equals(endCell.ownerRow)
+                            && startCell.index >= editRangeStart.columnFirst && startCell.index <= editRangeStart.columnLast) {
+                            if (this.isEmpty && startCell.index === editRangeStart.line.paragraph.associatedCell.index) {
+                                if (this.isSelectionInsideEditRange(editRangeStart, start, end)) {
+                                    return true;
+                                }
+                            } else if (!this.isCellSelected(startCell, start, end)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public isEditRangeCellSelected(start?: TextPosition, end?: TextPosition):boolean {
+        if (isNullOrUndefined(start) && isNullOrUndefined(end)) {
+            start = this.start;
+            end = this.end;
+            if (!this.isForward) {
+                start = this.end;
+                end = this.start;
+            }
+        }
+        for (var i = 0; i < this.editRangeCollection.length; i++) {
+            var editRangeStart = this.editRangeCollection[i];
+            if (editRangeStart.paragraph.isInsideTable && editRangeStart.editRangeEnd &&
+                editRangeStart.editRangeEnd.line.paragraph.isInsideTable) {
+                let startCell: TableCellWidget = start.paragraph.associatedCell;
+                let endCell: TableCellWidget = end.paragraph.associatedCell;
+                let editRangeCell: TableCellWidget = editRangeStart.paragraph.associatedCell;
+                if (!isNullOrUndefined(startCell) && !isNullOrUndefined(endCell)) {
+                    if (startCell.index >= editRangeStart.columnFirst && startCell.index <= editRangeStart.columnLast) {
+                        if (this.isCellSelected(editRangeCell, start, end)) {
+                            return true;
+                        }
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
+    private isSelectionInsideEditRange(editRangeStart: EditRangeStartElementBox, start: TextPosition, end: TextPosition): boolean {
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let startPosition: TextPosition = positionInfo.startPosition;
+        let endPosition: TextPosition = positionInfo.endPosition;
+        if ((start.isExistAfter(startPosition) || start.isAtSamePosition(startPosition))
+            && (end.isExistBefore(endPosition) || end.isAtSamePosition(endPosition))) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public getPosition(element: ElementBox, isNavigateToNextEditRegion?: boolean): PositionInfo {
+        let offset: number = element.line.getOffset(element, 1);
+        let startPosition: TextPosition = new TextPosition(this.owner);
+        startPosition.setPositionParagraph(element.line, offset);
+        let endElement: ElementBox;
+        if (element instanceof EditRangeStartElementBox) {
+            endElement = (element as EditRangeStartElementBox).editRangeEnd as ElementBox;
+        } else if (element instanceof ContentControl) {
+            endElement = (element as ContentControl).reference as ElementBox;
+        } else if (element instanceof BookmarkElementBox) {
+            endElement = element.reference;
+        } else if (element instanceof CommentCharacterElementBox) {
+            endElement = element.comment.commentEnd;
+        }
+        let endPosition: TextPosition;
+        if (endElement) {
+            let line: LineWidget = endElement.line as LineWidget;
+            if (!isNullOrUndefined(endElement.line) && !isNullOrUndefined(line.children)) {
+                offset = endElement.line.getOffset(endElement, isNavigateToNextEditRegion || (endElement instanceof ContentControl && this.isSelectionisInCC) ? 0 : 1);
+                endPosition = new TextPosition(this.owner);
+                endPosition.setPositionParagraph(endElement.line, offset);
+            } else {
+                endPosition = startPosition.clone();
+            }
+        }
+        return { 'startPosition': startPosition, 'endPosition': endPosition };
+    }
+    /**
+     * @private
+     */
+    public checkContentControlLocked(checkFormat?: boolean): boolean {
+        this.owner.editorModule.isXmlMapped = false;
+        this.isSelectionisInCC = true;
+        for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+            let contentControlStart: ContentControl = this.documentHelper.contentControlCollection[i];
+            if (isNullOrUndefined(contentControlStart.reference) || contentControlStart.reference.indexInOwner === -1) {
+                continue;
+            }
+            let position: PositionInfo = this.getPosition(contentControlStart);
+            let cCstart: TextPosition = position.startPosition;
+            let cCend: TextPosition = position.endPosition;
+            let start: TextPosition = this.start;
+            let end: TextPosition = this.end;
+            if (!this.isForward) {
+                start = this.end;
+                end = this.start;
+            }
+            if (isNullOrUndefined(checkFormat)) {
+
+                let cCStartInsideSelction: boolean = ((cCstart.isExistAfter(start) || cCstart.isAtSamePosition(start)) && (cCstart.isExistBefore(end) || cCstart.isAtSamePosition(end)));
+
+                let cCEndInsideSelction: boolean = ((cCend.isExistAfter(start) || cCend.isAtSamePosition(start)) && (cCend.isExistBefore(end) || cCend.isAtSamePosition(end)));
+                if (cCStartInsideSelction && cCEndInsideSelction) {
+                    if (contentControlStart.contentControlProperties.lockContentControl) {
+                        this.owner.trigger(contentControlEvent);
+                        return true;
+                    }
+                    return false;
+                }
+                if ((cCStartInsideSelction) || (cCEndInsideSelction)) {
+                    if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start)) && (contentControlStart.contentControlProperties.lockContentControl || contentControlStart.contentControlProperties.lockContents)) {
+                        return true;
+                    }
+                }
+            }
+            if (checkFormat) {
+
+                let cCStartInsideSelction: boolean = ((cCstart.isExistAfter(start) || cCstart.isAtSamePosition(start)) && (cCstart.isExistBefore(end) || cCstart.isAtSamePosition(end)));
+
+                let cCEndInsideSelction: boolean = ((cCend.isExistAfter(start) || cCend.isAtSamePosition(start)) && (cCend.isExistBefore(end) || cCend.isAtSamePosition(end)));
+                if (cCStartInsideSelction && cCEndInsideSelction) {
+                    if (contentControlStart.contentControlProperties.lockContents) {
+                        this.owner.trigger(contentControlEvent);
+                        return true;
+                    }
+                    return false;
+                }
+                if ((cCStartInsideSelction) || (cCEndInsideSelction)) {
+                    if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start)) && contentControlStart.contentControlProperties.lockContents) {
+                        return true;
+                    }
+                }
+            }
+            if ((start.isExistAfter(cCstart) || start.isAtSamePosition(cCstart))
+                && (end.isExistBefore(cCend) || end.isAtSamePosition(cCend))) {
+                if (contentControlStart.contentControlProperties.xmlMapping
+                    && contentControlStart.contentControlProperties.xmlMapping.isMapped) {
+                    this.owner.editorModule.isXmlMapped = true;
+                }
+                if (contentControlStart.contentControlProperties.lockContents) {
+                    this.owner.trigger(contentControlEvent);
+                    return true;
+                } else if (isNullOrUndefined(checkFormat)
+                    && (contentControlStart.contentControlProperties.type === 'CheckBox'
+                        || contentControlStart.contentControlProperties.type === 'ComboBox'
+                        || contentControlStart.contentControlProperties.type === 'DropDownList'
+                        || contentControlStart.contentControlProperties.type === 'Date'
+                        || contentControlStart.contentControlProperties.type === 'Picture'
+                        || contentControlStart.contentControlProperties.type === 'Text'
+                        || contentControlStart.contentControlProperties.type === 'RichText')) {
+                    this.owner.trigger(contentControlEvent);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public getElementPosition(element: ElementBox, isEnd?: boolean): PositionInfo {
+        let offset: number = element.line.getOffset(element, isEnd ? 0 : 1);
+        let startPosition: TextPosition = new TextPosition(this.owner);
+        startPosition.setPositionParagraph(element.line, offset);
+        return { 'startPosition': startPosition, 'endPosition': undefined };
+    }
+    //Restrict editing implementation ends
+    /**
+     * Update ref field.
+     * @private
+     */
+    public updateRefField(field?: FieldElementBox): void {
+        if (isNullOrUndefined(field)) {
+            field = this.getHyperlinkField(true);
+        }
+        if (!isNullOrUndefined(field)) {
+            if (!this.isReferenceField(field)) {
+                return;
+            }
+            let fieldCode: string = this.getFieldCode(field).replace(/\s+/g, ' ');
+            fieldCode = fieldCode.trim();
+            if (fieldCode.toLowerCase().indexOf('ref') === 0) {
+                let code: string[] = fieldCode.split(' ');
+                if (code.length > 1) {
+                    let bookmarkId: string = code[1];
+                    if (this.documentHelper.bookmarks.containsKey(bookmarkId)) {
+                        let start: TextPosition = this.start;
+                        let end: TextPosition = this.end;
+                        if (!this.isForward) {
+                            start = this.end;
+                            end = this.start;
+                        }
+                        let bookmarkStart: ElementBox = this.documentHelper.bookmarks.get(bookmarkId);
+                        let bookmarkEnd: ElementBox = (bookmarkStart as BookmarkElementBox).reference;
+                        let previousNode: ElementBox = bookmarkStart.previousNode;
+                        if ((isNullOrUndefined(previousNode) || !(previousNode instanceof FieldElementBox))
+                            && bookmarkEnd && bookmarkEnd.previousNode instanceof FieldElementBox
+                            && bookmarkEnd.previousNode.fieldType === 1
+                            && !isNullOrUndefined(bookmarkEnd.previousNode.fieldBegin)
+                            && !isNullOrUndefined(bookmarkEnd.previousNode.fieldBegin.formFieldData)) {
+                            bookmarkStart = bookmarkEnd.previousNode.fieldBegin.fieldSeparator;
+                            bookmarkEnd = bookmarkEnd.previousNode.fieldBegin.fieldEnd;
+                        } else if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
+                            && !isNullOrUndefined(previousNode.formFieldData)) {
+                            bookmarkStart = previousNode.fieldSeparator;
+                            bookmarkEnd = previousNode.fieldEnd;
+                        }
+                        let offset: number = bookmarkStart.line.getOffset(bookmarkStart, 1);
+                        start.setPositionParagraph(bookmarkStart.line, offset);
+                        end.setPositionParagraph(bookmarkEnd.line, bookmarkEnd.line.getOffset(bookmarkEnd, 0));
+
+                        let documentContent: any = this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), start.currentWidget, start.offset, end.currentWidget, end.offset, false, true);
+                        let startElement: FieldElementBox = field.fieldSeparator;
+                        let endElement: FieldElementBox = field.fieldEnd;
+                        start.setPositionParagraph(startElement.line, startElement.line.getOffset(startElement, 1));
+                        end.setPositionParagraph(endElement.line, endElement.line.getOffset(endElement, 0));
+                        this.owner.editorModule.pasteContents(documentContent);
+                    }
+                }
+            }
+        }
+
+    }
+    /**
+     * 
+     * @private
+     * @returns {void}
+     */
+    public footnoteReferenceElement(start: TextPosition, end: TextPosition, inline?: ElementBox): void {
+        let container: Widget = this.getContainerWidget(start.paragraph);
+        let count: number = 0;
+        if (container instanceof FootNoteWidget) {
+            let footNoteElement: FootnoteElementBox = this.start.paragraph.bodyWidget.footNoteReference;
+            for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+                count = 0;
+                let page: Page = this.documentHelper.pages[i];
+                for (let j: number = 0; j < page.bodyWidgets.length; j++) {
+                    let bodyWidget: BodyWidget = page.bodyWidgets[j];
+                    for (let k: number = 0; k < bodyWidget.childWidgets.length; k++) {
+                        let paragraph: Widget = bodyWidget.childWidgets[k] as BlockWidget;
+                        if (paragraph instanceof TableWidget) {
+                            for (let tr: number = 0; tr < paragraph.childWidgets.length; tr++) {
+                                let tablerow: TableRowWidget = paragraph.childWidgets[tr] as TableRowWidget;
+                                for (let tc: number = 0; tc < tablerow.childWidgets.length; tc++) {
+                                    let tablecell: TableCellWidget = tablerow.childWidgets[tc] as TableCellWidget;
+                                    for (let para: number = 0; para < tablecell.childWidgets.length; para++) {
+                                        let paragr: BlockWidget = tablecell.childWidgets[para] as BlockWidget;
+                                        for (let line: number = 0; line < paragr.childWidgets.length; line++) {
+                                            let lines: LineWidget = paragr.childWidgets[line] as LineWidget;
+                                            count = 0;
+                                            if (!isNullOrUndefined(lines.children)) {
+                                                for (let m: number = 0; m < lines.children.length; m++) {
+                                                    let child: ElementBox = lines.children[m];
+                                                    count += child.length;
+                                                    if (child instanceof FootnoteElementBox && child === footNoteElement) {
+                                                        start.setPositionParagraph(lines, count - 1);
+                                                        end.setPositionParagraph(lines, count);
+                                                        this.selectRange(start, end);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            for (let l: number = 0; l < (paragraph as BlockWidget).childWidgets.length; l++) {
+                                let lines: LineWidget = (paragraph as BlockWidget).childWidgets[l] as LineWidget;
+                                count = 0;
+                                if (!isNullOrUndefined(lines.children)) {
+                                    for (let m: number = 0; m < lines.children.length; m++) {
+                                        let child: ElementBox = (lines as LineWidget).children[m];
+                                        count += child.length;
+                                        if (child instanceof FootnoteElementBox && child === footNoteElement) {
+                                            start.setPositionParagraph(lines, count - 1);
+                                            end.setPositionParagraph(lines, count);
+                                            this.selectRange(start, end);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Convert hierachical index to linear index;
+     * @private
+     */
+    public getAbsolutePositionFromRelativePosition(textPosition: TextPosition | string) {
+        let startPosition: TextPosition;
+        if (typeof textPosition == 'string') {
+            startPosition = this.getTextPosBasedOnLogicalIndex(textPosition);
+        } else {
+            startPosition = textPosition;
+        }
+        let paragraphInfo = this.getParagraphInfo(startPosition);
+
+        let positionInfo: AbsolutePositionInfo = { position: 0, done: false };
+        this.getPositionInfoForHeaderFooter(paragraphInfo, positionInfo);
+        if (!positionInfo.done) {
+            //Iterate Footnotes content;
+
+        }
+        return positionInfo.position;
+    }
+    /**
+     * @private 
+     */   
+    public getPositionInfoForBodyContent(paragraphInfo: ParagraphInfo, positionInfo: AbsolutePositionInfo, blockWidget?: BlockWidget, tableBlock?: BlockWidget): AbsolutePositionInfo {
+        let block: BlockWidget = !isNullOrUndefined(blockWidget)? blockWidget : this.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as BlockWidget;
+        //Iterate body content;
+        positionInfo.position += this.getBlockIndex(block, paragraphInfo, positionInfo, tableBlock);
+        return positionInfo;
+    }
+    /**
+     * @private 
+     */   
+    public getPositionInfoForHeaderFooter(paragraphInfo: ParagraphInfo, positionInfo: AbsolutePositionInfo, tableBlock?: BlockWidget): AbsolutePositionInfo {
+        positionInfo = this.getPositionInfoForBodyContent(paragraphInfo, positionInfo, undefined, tableBlock);
+        if (!positionInfo.done) {
+            //Iterate header/footer content;
+            this.getBlockIndexFromHeaderFooter(paragraphInfo, positionInfo, tableBlock);
+        }
+        return positionInfo;
+    }
+
+    private getBlockIndexFromHeaderFooter(paragraphInfo: ParagraphInfo, positionInfo: AbsolutePositionInfo, tableBlock?: BlockWidget): AbsolutePositionInfo {
+        //Iterate header/footer content;
+        const headersFooters = this.documentHelper.headersFooters;
+        for (const headerFooter of headersFooters) {
+            for (let i = 0; i < 6; i++) {
+                const currentHeaderFooter = headerFooter[i];
+                if (currentHeaderFooter) {
+                    positionInfo.position += this.getBlockIndex(currentHeaderFooter.childWidgets[0] as BlockWidget, paragraphInfo, positionInfo, tableBlock);
+                    if (positionInfo.done) {
+                        return positionInfo;
+                    }
+                } else {
+                    positionInfo.position += 1;
+                }
+            }
+        }
+        return positionInfo;
+    }
+
+    private getBlockIndex(block: BlockWidget, paragraphInfo: ParagraphInfo, positionInfo: AbsolutePositionInfo, tableBlock?: BlockWidget): number {
+        let position: number = 0;
+        let fieldResult: FieldResultInfo = {length: 0};
+        do {
+            if (block instanceof ParagraphWidget && !isNullOrUndefined(paragraphInfo) && !isNullOrUndefined(paragraphInfo.paragraph) && paragraphInfo.paragraph.equals(block)) {
+                //Paragraph start
+                position += 1;
+                let elementInfo = (block as ParagraphWidget).getInline(paragraphInfo.offset, 0);
+                position += this.getBlockOffsetByElement(paragraphInfo, block, elementInfo.element, elementInfo.index, fieldResult);
+                // if (this.isEndOffset && this.end.offset === this.getLineLength(this.end.currentWidget) + 1) {
+                //     position += 1;
+                // }
+                // if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly') {
+                //     position -= fieldResult.length;
+                // }
+                positionInfo.done = true;
+                break;
+            }
+
+            position = this.getBlockLength(paragraphInfo, block, position, positionInfo, true, tableBlock, fieldResult);
+            if (positionInfo.done) {
+                // if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly') {
+                //     position -= fieldResult.length;
+                // }
+                break;
+            }
+            if (!isNullOrUndefined(block)) {
+                if (block.containerWidget instanceof BodyWidget && (block.containerWidget as BodyWidget).containerWidget instanceof FootNoteWidget) {
+                    let nextBlock: BlockWidget = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+                    if (!isNullOrUndefined(nextBlock) && block.containerWidget !== nextBlock.containerWidget) {
+                        break;
+                    } else {
+                        block = nextBlock;
+                    }
+                } else {
+                    block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+                }
+            }
+        } while (block);
+        //positionInfo.position = position;
+        return position;
+    }
+
+    private getBlockTotalLength(block: BlockWidget, targetBlock: ParagraphInfo, positionInfo: AbsolutePositionInfo, tableBlock: BlockWidget, fieldResult?: FieldResultInfo): number {
+        let offset: number = 0;
+        let isDropdown: boolean = false;
+        let splittedWidget: ParagraphWidget[] = block.getSplitWidgets() as ParagraphWidget[];
+        for (let i: number = 0; i < splittedWidget.length; i++) {
+            for (let j: number = 0; j < splittedWidget[i].childWidgets.length; j++) {
+                let line: LineWidget = splittedWidget[i].childWidgets[j] as LineWidget;
+                for (let k: number = 0; k < line.children.length; k++) {
+                    let element: ElementBox = line.children[k] as ElementBox;
+                    if (element instanceof ListTextElementBox) {
+                        continue;
+                    }
+                    if (element instanceof ShapeElementBox || element instanceof FootnoteElementBox) {
+                        if (element instanceof ShapeElementBox) {
+                            if (element.textFrame.childWidgets.length > 0) {
+                                offset += this.getBlockIndex(element.textFrame.childWidgets[0] as BlockWidget, targetBlock, positionInfo, undefined);
+                            }
+
+                        } else {
+                            offset += this.getBlockIndex(element.bodyWidget.childWidgets[0] as BlockWidget, targetBlock, positionInfo, undefined);
+                        }
+                        if (positionInfo.done) {
+                            return offset;
+                        }
+                    }
+                    if (element instanceof FieldElementBox && element.fieldType == 0 && element.formFieldData instanceof DropDownFormField) {
+                        isDropdown = true;
+                    }
+                    if (isDropdown && element instanceof FieldElementBox && element.fieldType == 1) {
+                        if (element.previousNode instanceof TextElementBox) {
+                            fieldResult.length += element.previousNode.length;
+                            isDropdown = false;
+                        } 
+                    }
+                    if (!element.skipformFieldLength) {
+                        offset += element.length;
+                    }
+                }
+            }
+        }
+        return offset;
+    }
+
+    /**
+     * @private 
+     */    
+    public getBlockLength(paragraphInfo: any, block: BlockWidget, position: number, completed: any, skipShapeElement: boolean, tableBlock: BlockWidget, fieldResult?: FieldResultInfo): number {
+        if (paragraphInfo && block instanceof ParagraphWidget && !isNullOrUndefined(paragraphInfo.paragraph) && paragraphInfo.paragraph.equals(block)) {
+            //Paragraph start
+            position += 1;
+            let elementInfo = (block as ParagraphWidget).getInline(paragraphInfo.offset, 0);
+            position += this.getBlockOffsetByElement(paragraphInfo, block, elementInfo.element, elementInfo.index, fieldResult);
+            if (this.isEndOffset && block.isInsideTable && (block.associatedCell.lastChild as ParagraphWidget).equals(block) && paragraphInfo.offset === this.getParagraphLength(block) + 1) {
+                position += 1;
+            }
+            completed.done = true;
+            return position;
+        }
+        if (block instanceof ParagraphWidget) {
+            // Code for Comparing the offset calculated using old approach and optimized approach
+            // if (this.isNewApproach) {
+                // position += 1;
+                // if (!skipShapeElement) {
+                //     position += block.length;
+                // } else {
+                //     position += this.getBlockTotalLength(block, paragraphInfo, completed, tableBlock, fieldResult);
+                // }
+            // } else {
+                //Add Paragraph start length;
+                position += 1;
+                if (!skipShapeElement) {
+                    position += (block.getTotalLength());
+                } else {
+                    position += this.getBlockTotalLength(block, paragraphInfo, completed, tableBlock, fieldResult);
+                }
+            // }
+        } else if (block instanceof TableWidget) {
+            // Table start mark length
+            position += 1;
+            if(!isNullOrUndefined(tableBlock)) {
+                if(tableBlock instanceof TableWidget) {
+                    if(tableBlock.equals(block)) {
+                        completed.done = true;
+                        return position;
+                    }
+                }
+            }
+            let row: TableRowWidget = block.firstChild as TableRowWidget;
+            while (row) {
+                // Row mark length
+                position += 1;
+                if(!isNullOrUndefined(tableBlock)) {
+                    if(tableBlock instanceof TableRowWidget) {
+                        if(tableBlock.equals(row)) {
+                            completed.done = true;
+                            return position;
+                        }
+                    }
+                }
+                let cell: TableCellWidget = row.firstChild as TableCellWidget;
+                while (cell) {
+                    // Cell mark length
+                    position += 1;
+                    if(!isNullOrUndefined(tableBlock)) {
+                        if(tableBlock instanceof TableCellWidget) {
+                            if(tableBlock.equals(cell)) {
+                                completed.done = true;
+                                return position;
+                            }
+                        }
+                    }
+                    let childBlock: BlockWidget = cell.firstChild as BlockWidget;
+                    while (childBlock) {
+                        position = this.getBlockLength(paragraphInfo, childBlock as BlockWidget, position, completed, skipShapeElement, tableBlock, fieldResult);
+                        if (completed.done) {
+                            return position;
+                        }
+                        childBlock = childBlock.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+                    }
+                    cell = cell.nextWidget as TableCellWidget;
+                }
+                let tableIndex: number = row.ownerTable.index;
+                row = row.getSplitWidgets().pop().nextRenderedWidget as TableRowWidget;
+                if (row && row.ownerTable.index !== tableIndex) {
+                    row = undefined;
+                }
+            }
+            // Table end mark length
+            // position += 1;
+        }
+        return position;
+    }
+    /**
+     * Calculate the cell length.
+     * @private
+     */
+    public calculateCellLength(cell: TableCellWidget): number {
+        let block: BlockWidget = cell.firstChild as BlockWidget;
+        let position: number = 0;
+        let completed = { "done": false };
+        let paragraphInfo: ParagraphInfo = { 'paragraph':  null, 'offset': 0 };
+        while(block) {
+            position = this.getBlockLength(paragraphInfo, block as BlockWidget, position, completed, true, undefined, undefined);
+            block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+        }
+        return position;
+    }
+
+    private getBlockOffsetByElement(paragraphInfo: any, block: ParagraphWidget, targetElement: ElementBox, elementIndex: number, fieldResult?: FieldResultInfo): number {
+        let offset: number = 0;
+        let isDropdown: boolean = false;
+        let splittedWidget: ParagraphWidget[] = block.getSplitWidgets() as ParagraphWidget[];
+        for (let i: number = 0; i < splittedWidget.length; i++) {
+            for (let j: number = 0; j < splittedWidget[i].childWidgets.length; j++) {
+                let line: LineWidget = splittedWidget[i].childWidgets[j] as LineWidget;
+                for (let k: number = 0; k < line.children.length; k++) {
+                    let element: ElementBox = line.children[k] as ElementBox;
+                    if (element instanceof ListTextElementBox) {
+                        continue;
+                    }
+                    if (element instanceof FieldElementBox && element.fieldType == 0 && element.formFieldData instanceof DropDownFormField) {
+                        isDropdown = true;
+                    }
+                    if (isDropdown && element instanceof FieldElementBox && element.fieldType == 1) {
+                        if (element.previousNode instanceof TextElementBox) {
+                            fieldResult.length += element.previousNode.length;
+                            isDropdown = false;
+                        } 
+                    }
+                    if (element === targetElement) {
+                        return offset + elementIndex;
+                    }
+                    if (element instanceof ShapeElementBox || element instanceof FootnoteElementBox) {
+                        if (element instanceof ShapeElementBox) {
+                            if (element.textFrame.childWidgets.length > 0) {
+                                for (let m: number = 0; m < element.textFrame.childWidgets.length; m++) {
+                                    offset = this.getBlockLength(paragraphInfo, element.textFrame.childWidgets[m] as BlockWidget, offset, { done: false }, false, undefined, undefined);
+                                }
+                            }
+                        } else {
+                            if (element.bodyWidget.childWidgets.length > 0) {
+                                for (let m: number = 0; m < element.bodyWidget.childWidgets.length; m++) {
+                                    offset = this.getBlockLength(paragraphInfo, element.bodyWidget.childWidgets[m] as BlockWidget, offset, { done: false }, false, undefined, undefined);
+                                }
+                            }
+                        }
+                    }
+                    if (!element.skipformFieldLength) {
+                        offset += element.length;
+                    }
+                }
+            }
+        }
+        return offset;
+    }
+    /**
+     * This method is for collaborative editing.
+     * @private
+     */
+    public getTableRelativeValue(startPosition: TextPosition, endPosition: TextPosition): number {
+        // If start is in firset row first cell and end is in last row last cell or next table or next para. we need to minus the offset to 3. Else checking row.
+        // If start is first cell and end is in row last cell or other row last cell or other widgets. we need to minus the offset to 2. else return 0.
+        if (startPosition.currentWidget.paragraph.isInsideTable) {
+            if (this.isTableSelected()) {
+                return 3;
+            } else if (this.isRowSelect() && endPosition.paragraph.isInsideTable && startPosition.paragraph.associatedCell.ownerTable.equals(endPosition.paragraph.associatedCell.ownerTable)) {
+                return 2;
+            } else {
+                let table: TableWidget[] = startPosition.paragraph.associatedCell.ownerTable.getSplitWidgets() as TableWidget[];
+                let firstParagraph: ParagraphWidget = this.getFirstBlockInFirstCell(table[0]) as ParagraphWidget;
+                if (startPosition.paragraph.associatedCell.equals(firstParagraph.associatedCell)) {
+                    if (endPosition.paragraph.isInsideTable) {
+                        if (!startPosition.paragraph.associatedCell.ownerTable.equals(endPosition.paragraph.associatedCell.ownerTable)) {
+                            let length: number = this.isRowSelect() ? 2 : 3;
+                            let table: TableWidget = startPosition.paragraph.associatedCell.ownerTable;
+                            while (table.containerWidget instanceof TableCellWidget) {
+                                length += 3;
+                                table = table.containerWidget.ownerTable;
+                                if (table.equals(endPosition.paragraph.associatedCell.ownerTable)) {
+                                    break;
+                                }
+                            }
+                            return length;
+                        } else {
+                            return 0;
+                        }
+                    } else {
+                        return 3;
+                    }
+                } else {
+                    if (endPosition.currentWidget.paragraph.isInsideTable) {
+                        if (!startPosition.paragraph.associatedCell.ownerTable.equals(endPosition.paragraph.associatedCell.ownerTable)) {
+                            return 2;
+                        } else {
+                            return 0;
+                        }
+                    } else {
+                        return 2;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+    /**
+     * 
+     * @private
+     */
+    public isRowSelect(): boolean {
+        // This method wil return if start row child widgets equals to end row child widgets. 
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        if (isNullOrUndefined(start.paragraph.associatedCell) ||
+            isNullOrUndefined(end.paragraph.associatedCell) || start.paragraph.associatedCell.equals(end.paragraph.associatedCell) || this.isTableSelected(true)) {
+            return false;
+        }
+        let endTable = end.paragraph.associatedCell.ownerTable;
+        let isRowSelect: boolean = false;
+        if(endTable.containerWidget instanceof TableCellWidget) {
+            while(endTable.containerWidget instanceof TableCellWidget) {
+                endTable = endTable.containerWidget.ownerTable;
+                for(let i: number = 0; i < endTable.childWidgets.length; i++) {
+                    let row: TableRowWidget = endTable.childWidgets[i] as TableRowWidget;
+                    if((row.childWidgets[row.childWidgets.length - 1] as TableCellWidget).equals(endTable.containerWidget)) {
+                        isRowSelect = true;
+                    }
+                }
+    
+            }
+        } else {
+            for(let i: number = 0; i < endTable.childWidgets.length; i++) {
+                let row: TableRowWidget = endTable.childWidgets[i] as TableRowWidget;
+                if((row.childWidgets[row.childWidgets.length - 1] as TableCellWidget).equals(end.paragraph.associatedCell)) {
+                    isRowSelect = true;
+                }
+            }
+        }
+        let row: TableRowWidget[] = start.paragraph.associatedCell.ownerRow.getSplitWidgets() as TableRowWidget[];
+        let firstcell: TableCellWidget;
+        if (row[0].childWidgets.length > 0) {
+            firstcell = row[0].childWidgets[0] as TableCellWidget;
+        }
+        return start.paragraph.associatedCell.equals(firstcell) && isRowSelect;
+    }
+}
+
+/**
+ *  Specifies the settings for selection.
+ */
+export interface SelectionSettings {
+    /**
+     * Specifies selection left position
+     */
+    x: number;
+    /**
+     * Specifies selection top position
+     */
+    y: number;
+    /**
+     * Specifies whether to extend or update selection
+     */
+    extend?: boolean;
+}
+
+interface ClipInfo {
+    start?: number
+    end?: number
+}
