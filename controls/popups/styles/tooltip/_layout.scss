@@ -1,0 +1,98 @@
+@mixin tip-size($height, $left, $top, $width) {
+  height: $height;
+  left: $left;
+  top: $top;
+  width: $width;
+}
+
+@include export-module('tooltip-layout') {
+
+  .e-tooltip-popup-container {
+    position: relative;
+  }
+
+  .e-tooltip-wrap {
+    max-width: 350px;
+    min-width: 30px;
+    padding: 0;
+    position: absolute;
+    visibility: visible;
+
+    .e-arrow-tip {
+      overflow: hidden;
+      position: absolute;
+
+      &.e-tip-bottom {
+        @include tip-size($tooltip-tip-bottom-height, $tooltip-tip-bottom-left, $tooltip-tip-bottom-top, $tooltip-tip-bottom-width);
+      }
+
+      &.e-tip-top {
+        @include tip-size($tooltip-tip-top-height, $tooltip-tip-top-left, $tooltip-tip-top-top, $tooltip-tip-top-width);
+      }
+
+      &.e-tip-left {
+        @include tip-size($tooltip-tip-left-height, $tooltip-tip-left-left, $tooltip-tip-left-top, $tooltip-tip-left-width);
+      }
+
+      &.e-tip-right {
+        @include tip-size($tooltip-tip-right-height, $tooltip-tip-right-left, $tooltip-tip-right-top, $tooltip-tip-right-width);
+      }
+    }
+
+    .e-tooltip-close {
+      cursor: pointer;
+      float: right;
+      position: absolute;
+      right: -9px;
+      top: -9px;
+      z-index: inherit;
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+        border-radius: 9px;
+        border-width: 1px;
+        box-shadow: $shadow-sm;
+        box-sizing: border-box;
+        height: 16px;
+        width: 16px;
+      }
+      @if ($skin-name == 'tailwind3') {
+        height: 24px;
+        width: 24px;
+        right: -15px;
+        top: -15px;
+      }
+    }
+
+    .e-tip-content {
+      background-color: inherit;
+      height: 100%;
+      line-height: $tooltip-line-height;
+      overflow-wrap: break-word;
+      overflow-x: hidden;
+      padding: $tooltip-horizontal-padding $tooltip-vertical-padding;
+      position: relative;
+      white-space: normal;
+      width: 100%;
+      word-break: break-word;
+      z-index: 1;
+      @if $skin-name == 'bootstrap4' {
+        border-radius: inherit;
+      }
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+        font-weight: 500;
+      }
+    }
+
+    &.e-rtl {
+      .e-tooltip-close::before {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          font-size: 9px;
+          margin-right: 2px;
+        }
+        @if $skin-name == 'tailwind' {
+          font-size: 8px;
+          margin-right: 3px;
+        }
+      }
+    }
+  }
+}

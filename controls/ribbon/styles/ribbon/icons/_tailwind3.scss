@@ -1,0 +1,9 @@
+@include export-module('ribbon-tailwind3-icons') {
+  .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e729';
+      }
+    }
+  }
+}

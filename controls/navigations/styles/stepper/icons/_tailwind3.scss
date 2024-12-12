@@ -1,0 +1,5 @@
+@include export-module('stepper-tailwind3-icons') {
+  .e-step-indicator::before {
+    content: '\e8db';
+  }
+}

@@ -1,0 +1,745 @@
+@mixin padding-bottom-right-top-styles($bottom, $right, $top) {
+  padding-bottom: $bottom;
+  padding-right: $right;
+  padding-top: $top;
+}
+
+@mixin fontsize-padding-styles($fontsize, $padding) {
+  font-size: $fontsize;
+  padding: $padding;
+}
+
+@mixin textalign-width-styles($align, $width) {
+  text-align: $align;
+  width: $width;
+}
+
+@mixin margin-left-right($left, $right) {
+  margin-left: $left;
+  margin-right: $right;
+}
+
+@mixin border-left-width-styles($style, $width) {
+  border-left-style: $style;
+  border-left-width: $width;
+}
+
+@mixin border-right-width-styles($style, $width) {
+  border-right-style: $style;
+  border-right-width: $width;
+}
+
+@include export-module('pager-layout') {
+  
+  /*! Pager layout */
+  #{&}.e-pager {
+    border-style: $pager-border-type;
+    border-width: 1px;
+    display: inline-block;
+    @include fontsize-padding-styles($pager-font-size, $pager-padding);
+    white-space: normal;
+    width: 100%;
+
+    [class ^= 'e-'] {
+      box-sizing: border-box;
+    }
+
+    .e-pager-default.e-hide,
+    .e-pagesizes.e-hide,
+    .e-hide {
+      display: none;
+    }
+
+    div.e-parentmsgbar {
+      float: right;
+      @include padding-bottom-right-top-styles($pager-messagebar-padding-bottom, $pager-messagebar-padding-right, $pager-messagebar-padding-top);
+      @if $pager-skin == 'tailwind' {
+        line-height: 18px;
+      }
+      @if $pager-skin == 'fluent2' {
+        line-height: 20px;
+      }
+    }
+
+    .e-pagesizes {
+      display: inline;
+    }
+
+    .e-pagerdropdown {
+      display: inline-block;
+      height: $pager-dropdown-height;
+      @include margin-left-right($pager-dropdown-margin-left, $pager-dropdown-margin-right);
+      margin-top: $pager-dropdown-margin-top;
+      overflow: $pager-dropdown-overflow;
+      vertical-align: middle;
+      width: $pager-dropdown-width;
+    }
+
+    .e-pagerconstant {
+      @if $pager-skin == 'fluent' {
+        font-weight: 600;
+      }
+      display: inline-block;
+      @if $pager-skin == 'tailwind' {
+        line-height: 18px;
+      }
+      @if $pager-skin == 'fluent2' {
+        line-height: 20px;
+      }
+      margin: $pager-constant-margin;
+      overflow: hidden;
+      width: auto;
+    }
+
+    .e-icons {
+      font-size: $pager-icon-size;
+    }
+
+    .e-numericitem {
+      @if $pager-skin == 'fluent2' {
+        @include border-right-width-styles($pager-border-type, 0);
+        margin-left: 1px;
+        vertical-align: bottom;
+      }
+      @else {
+        @include border-right-width-styles($pager-border-type, $pager-border-size);
+      }
+      display: inline-block;
+      line-height: $pager-numeric-font-line-height;
+      margin-right: $pager-numericitem-margin-right;
+      min-width: $pager-numericitem-min-width;
+      padding: $pager-numericitem-padding;
+      text-align: center;
+      @if $pager-skin == 'material3' {
+        vertical-align: middle;
+      }
+
+      &.e-currentitem {
+        @if $pager-skin == 'tailwind' {
+          border: 1px solid $primary;
+        }
+      }
+  
+      &.e-currentitem,
+      &.e-currentitem:hover {
+        @if $pager-skin == 'tailwind' {
+          padding: 3.5px 11px 6.2px 10px;
+        }
+        @else if $pager-skin == 'bootstrap5' {
+          padding: 7.4px 10.5px 8.4px 9.5px;
+        }
+      }
+    }
+
+    div.e-pagermsgdiv {
+      padding-right: 6px;
+      padding-top: 4px;
+      text-align: right;
+    }
+
+    .e-firstpagedisabled,
+    .e-prevpagedisabled,
+    .e-nextpagedisabled,
+    .e-lastpagedisabled {
+      opacity: $pager-disabled-icons-opacity;
+    }
+
+    .e-spacing,
+    .e-numericitem:hover,
+    .e-currentitem {
+      border-radius: $pager-numericitem-border-radius;
+      cursor: pointer;
+      padding: $pager-numeric-icon-padding;
+      text-decoration: none;
+    }
+
+    .e-currentitem {
+      @if $pager-skin == 'fluent' {
+        border-bottom: $pager-active-item-border-bottom;
+      }
+      @if $pager-skin == 'bootstrap5' {
+        border: 3px solid $primary-light;
+      }
+      @if $pager-skin == 'material3' {
+        border-radius: 4px;
+      }
+      font-style: normal;
+      font-variant: normal;
+      font-weight: $pager-current-item-font-weight;
+    }
+
+    div,
+    a {
+      display: inline;
+      user-select: none;
+    }
+
+    .e-icons::before {
+      display: inline-block;
+    }
+
+    .e-pagercontainer {
+      .e-firstpage,
+      .e-prevpage,
+      .e-firstpagedisabled,
+      .e-prevpagedisabled,
+      .e-nextpage,
+      .e-lastpage,
+      .e-nextpagedisabled,
+      .e-lastpagedisabled {
+        @if $pager-skin == 'fluent2' {
+          border-radius: 5px;
+          @include border-right-width-styles($pager-border-type, 0);
+          margin-left: 1px;
+          &.e-focused {
+            border-radius: 5px;
+          }
+        }
+        @else {
+          @include border-right-width-styles($pager-border-type, $pager-border-size);
+        }
+        display: inline-block;
+        margin-right: $pager-navigationicon-right;
+        margin-top: $pager-navigationicon-top;
+        min-width: 26px;
+        padding: $pager-pagecontainer-icon-padding;
+        @if $pager-skin == 'tailwind' {
+          position: relative;
+          top: 3px;
+
+          &.e-focused {
+            border: 0;
+            border-right-style: none;
+            padding: 8.5px 7px 9.5px;
+          }
+        }
+        @else if $pager-skin == 'material3' {
+          vertical-align: middle;
+          &.e-focused {
+            border-radius: 4px;
+          }
+        }
+        @else if $pager-skin == 'tailwind3' {
+          vertical-align: sub;
+        }
+      }
+
+      .e-nextpage.e-focused,
+      .e-firstpage.e-focused  {
+        @if $pager-skin == 'tailwind' {
+          padding-right: 8px;
+        }
+      }
+
+      .e-prevpage.e-focused {
+        @if $pager-skin == 'tailwind' {
+          padding-left: 7px;
+          padding-right: 8px;
+        }
+      }
+
+      .e-lastpage,
+      .e-lastpagedisabled {
+        border-right: $pager-last-border-size;
+      }
+    }
+
+    .e-firstpage:hover,
+    .e-prevpage:hover,
+    .e-lastpage:hover,
+    .e-nextpage:hover {
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    a.e-nextprevitemdisabled {
+      display: none;
+      @include margin-left-right($pager-border-size, $pager-border-size);
+      padding-left: 5px;
+      padding-right: 5px;
+      text-decoration: none;
+    }
+
+    .e-next.e-icons.e-icon-next.e-nextpagedisabled.e-disable,
+    .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
+      margin-left: $pager-next-icon-margin-left;
+    }
+
+    .e-pagercontainer {
+      border-radius: $pager-container-border-radius;
+      border-style: $pager-border-type;
+      @if $pager-skin == 'fluent2' {
+        border-width: 0;
+      }
+      @else {
+        border-width: $pager-border-size;
+      }
+      display: inline-block;
+      margin: $pager-container-margin;
+      overflow: hidden;
+    }
+
+    .e-lastpage:hover {
+      border-radius: $pager-last-page-hover-border-radius;
+    }
+
+    .e-firstpage:hover {
+      border-radius: $pager-first-page-hover-border-radius;
+    }
+
+    .e-pagermessage,
+    .e-pagerexternalmsg {
+      display: block;
+      margin: $pager-external-msg-padding;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .e-mfirst,
+    .e-mprev,
+    .e-mnext,
+    .e-mlast {
+      display: none;
+    }
+
+    .e-mprev {
+      text-indent: -3px;
+    }
+
+    .e-mnext {
+      text-indent: -2px;
+    }
+
+    /* stylelint-disable */
+    .e-mfirst,
+    .e-mprev,
+    .e-mnext,
+    .e-mlast {
+      -webkit-tap-highlight-color: $pager-bg-color;
+    }
+
+    /* stylelint-enable */
+    .e-pp,
+    .e-np,
+    .e-pp:hover,
+    .e-np:hover {
+      @include fontsize-padding-styles($pager-tripledot-font-size, $pager-tripledot-padding);
+      font-weight: $pager-numeric-font-weight;
+      letter-spacing: $pager-letter-spacing;
+    }
+
+    .e-np.e-focused,
+    .e-pp.e-focused {
+      line-height: $pager-focus-tripledot-line-height;
+      padding: $pager-focus-tripledot-padding;
+    }
+    @if $pager-skin == 'material3' {
+      &.e-rtl .e-np.e-focused,
+      &.e-rtl .e-pp.e-focused {
+        padding: $pager-focus-tripledot-padding;
+      }
+    }
+    
+    &.e-adaptive {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: $pager-bigger-adaptive-pager-padding;
+
+      div.e-parentmsgbar {
+        margin: 0 5px;
+        margin-top: $pager-adaptive-pagermsgbar-margin-top;
+        flex-grow: 1;
+        min-width: 10px;
+        white-space: nowrap;
+      }
+      .e-pagesizes {
+        display: inline-flex;
+        width: auto;
+      }
+      .e-pagerdropdown {
+        margin: $pager-adaptive-dropdown-margin;
+        width: $pager-bigger-adaptive-dropdown-min-width;
+        min-width: $pager-bigger-adaptive-dropdown-min-width;
+        order: 2;
+        height: 40px;
+        padding-right: 5px;
+      }
+      .e-pagerconstant {
+        font-size: 12px;
+        position: relative;
+        top: $pager-bigger-adaptive-constant-top;
+        order: 1;
+        min-width: 52px;
+        @if $pager-skin == 'tailwind' {
+          max-height: 42px;
+        }
+        @else if $pager-skin == 'fluent2' {
+          max-height: 32px;
+        }
+        @else {
+          max-height: 34px;
+        }
+        @if $pager-skin == 'fluent2' {
+          line-height: 16px;
+        }
+        margin: 0 8px 0 10px;
+      }
+      .e-pagerconstant.e-page-all {
+        top: $pager-adaptive-constant-pagesizeall-top;
+        text-align: center;
+      }
+
+      .e-mfirst,
+      .e-mprev,
+      .e-mnext,
+      .e-mlast {
+        padding: 1% 2%;
+        width: 5%;
+      }
+
+      .e-mfirst,
+      .e-mlast {
+        width: calc(5% + 11px);
+      }
+    }
+
+    @media (max-width: 769px) {
+      @if $pager-skin == 'fluent2' {
+        padding: 11px 0;
+      }
+      @else {
+        padding: 13px 0;
+      }
+
+      div.e-parentmsgbar {
+        @include padding-bottom-right-top-styles(0, 0, 0);
+        box-sizing: border-box;
+        display: inline-block;
+        float: initial;
+        @include textalign-width-styles(center, calc(60% - 48px));
+      }
+
+      .e-pagesizes,
+      .e-pagecountmsg,
+      .e-pagercontainer {
+        display: none;
+      }
+
+      .e-icons {
+        font-size: $pager-mobile-icon-size;
+      }
+
+      .e-mfirst,
+      .e-mprev,
+      .e-mnext,
+      .e-mlast {
+        border: 0;
+        box-sizing: border-box;
+        display: inline-block;
+        padding: 1% 5%;
+      }
+
+      .e-mfirst {
+        margin-right: 4px;
+        @include textalign-width-styles(right, calc(10% + 11px));
+      }
+
+      .e-mprev {
+        margin: 0 4px;
+        @include textalign-width-styles(right, 10%);
+      }
+
+      .e-mnext {
+        margin: 0 4px;
+        @include textalign-width-styles(left, 10%);
+      }
+
+      .e-mlast {
+        margin-left: 4px;
+        @include textalign-width-styles(left, calc(10% + 11px));
+      }
+    }
+
+    &.e-rtl {
+      .e-numericitem {
+        &.e-currentitem,
+        &.e-currentitem:hover {
+          @if $pager-skin == 'tailwind' {
+            padding: 3.5px 11px 4px 10px;
+          }
+          @else if $pager-skin == 'bootstrap5' {
+            padding: 7px 10.5px 8px 9.5px;
+          }
+        }
+        &.e-currentitem {
+          @if $pager-skin == 'tailwind' {
+            border-left-color: $primary;
+            @include border-left-width-styles(solid, 1px);
+          }
+          @else if $pager-skin == 'bootstrap5' {
+            border-left-color: $primary-light;
+            @include border-left-width-styles(solid, 3px);
+          }
+        }
+      }
+      direction: rtl;
+      .e-next.e-icons.e-icon-next.e-nextpagedisabled.e-disable,
+      .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
+        @include margin-left-right(0, $pager-rtl-nxtpage-margin);
+        @if $pager-skin == 'tailwind' or $pager-skin == 'bootstrap5' {
+          @include border-left-width-styles(solid, 1px);
+          @include border-right-width-styles(solid, 1px);
+        }
+      }
+
+      & .e-pagercontainer,
+      & div,
+      & a {
+        float: initial;
+      }
+
+      & .e-parentmsgbar {
+        float: left;
+        margin-left: $pager-rtl-parentmsgbar-margin-left;
+        padding-top: $pager-rtl-parentmsgbar-padding-top;
+      }
+
+      & .e-pagerdropdown {
+        margin: $pager-rtl-pagerdropdown-margin;
+      }
+
+      & .e-pagerconstant {
+        margin: $pager-rtl-pagerconstant-margin-top;
+      }
+
+      & .e-pagerexternalmsg {
+        float: none;
+      }
+
+      & .e-pagercontainer {
+        float: none;
+        margin: $pager-container-rtl-margin;
+        padding: 0;
+      }
+
+      & .e-firstpage,
+      & .e-prevpage,
+      & .e-firstpagedisabled,
+      & .e-prevpagedisabled,
+      & .e-nextpage,
+      & .e-lastpage,
+      & .e-nextpagedisabled,
+      & .e-lastpagedisabled {
+        padding: $pager-rtl-navigation-icon-padding;
+      }
+
+      & .e-next.e-icons.e-icon-next.e-nextpage.e-focused {
+        @if $pager-skin == 'tailwind' {
+          border: 0;
+          padding: 6.5px 8px 6px;
+        }
+      }
+
+      & .e-prevpage.e-focused {
+        @if $pager-skin == 'tailwind' {
+          padding: 6.5px 8px 6px 7px;
+        }
+      }
+
+      & .e-lastpage.e-focused,
+      & .e-firstpage.e-focused {
+        @if $pager-skin == 'tailwind' {
+          padding: 6.5px 7px 6px;
+        }
+      }
+
+      & .e-firstpage::before,
+      & .e-firstpage:hover,
+      & .e-firstpagedisabled::before {
+        content: '\e701';
+      }
+
+      & .e-prevpage::before,
+      & .e-prevpage:hover,
+      & .e-prevpagedisabled::before {
+        content: '\e848';
+      }
+
+      & .e-nextpage::before,
+      & .e-nextpage:hover,
+      & .e-nextpagedisabled::before {
+        content: '\e84b';
+      }
+
+      & .e-lastpage::before,
+      & .e-lastpage:hover,
+      & .e-lastpagedisabled::before {
+        content: '\e716';
+      }
+
+      & .e-nextpage,
+      & .e-nextpagedisabled,
+      & .e-prevpage,
+      & .e-prevpagedisabled,
+      & .e-firstpage,
+      & .e-firstpagedisabled {
+        @if $pager-skin == 'tailwind' or $pager-skin == 'bootstrap5' or $pager-skin == 'fluent2' {
+          @include border-left-width-styles(none, 0);
+        }
+        @else {
+          @include border-left-width-styles($pager-border-type, $pager-border-size);
+        }
+      }
+
+      & .e-nextpage,
+      & .e-nextpagedisabled,
+      & .e-prevpage,
+      & .e-prevpagedisabled {
+        @if $pager-skin == 'tailwind' or $pager-skin == 'bootstrap5' {
+          @include border-left-width-styles(none, 0);
+        }
+        @else {
+          @include border-right-width-styles(none, 0);
+        }
+      }
+
+      & .e-firstpage,
+      & .e-firstpagedisabled {
+        border-right: medium none;
+      }
+
+      & .e-firstpage:hover {
+        border-radius: $pager-rtl-first-last-icon-hover-border-radius;
+      }
+
+      & .e-lastpage:hover {
+        border-radius: $pager-rtl-first-last-icon-hover-border-radius;
+      }
+
+      & .e-numericcontainer {
+        float: none;
+      }
+
+      & .e-numericitem {
+        @if $pager-skin == 'tailwind' or $pager-skin == 'bootstrap5' {
+          @if $pager-skin == 'bootstrap5' {
+            border-right-style: solid;
+          }
+          @else {
+            @include border-left-width-styles(none, 0);
+            @include border-right-width-styles(solid, 1px);
+          }
+        }
+        @else {
+          @if $pager-skin == 'fluent2' {
+            @include border-left-width-styles(none, 0);
+          }
+          @else {
+            @include border-left-width-styles($pager-border-type, $pager-border-size);
+            @include border-right-width-styles(none, 0);
+          }
+        }
+        min-width: 26px;
+      }
+
+      & .e-next.e-icons.e-icon-next.e-nextpagedisabled.e-disable,
+      & .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
+        @include margin-left-right(0, $pager-next-icon-margin-left);
+      }
+
+      & .e-spacing,
+      & .e-numericitem:hover,
+      & .e-currentitem {
+        margin: $pager-rtl-numeric-margin;
+        padding: $pager-activeitem-padding;
+      }
+
+      & .e-pp,
+      & .e-np,
+      & .e-pp:hover,
+      & .e-np:hover {
+        margin-top: $pager-tripledot-rtl-margin-top;
+        padding: $pager-tripledot-rtl-padding;
+      }
+
+      & .e-np.e-focused,
+      & .e-pp.e-focused {
+        @if $pager-skin == 'tailwind' {
+          padding: $pager-focus-tripledot-padding;
+        }
+      }
+
+      &.e-adaptive.e-rtl {
+        div.e-parentmsgbar {
+          margin: 0 5px;
+          margin-top: $pager-rtl-adaptive-pagermsgbar-margin-top;
+          padding-top: 0;
+        }
+        div.e-pagerconstant {
+          margin: $pager-rtl-adaptive-constant-top;
+        }
+        div.e-pagerconstant.e-page-all {
+          top: $pager-rtl-adaptive-constant-pagesizeall-top;
+        }
+        div.e-pagerdropdown {
+          min-width: 92px;
+          margin: $pager-rtl-adaptive-dropdown-margin;
+          padding: 0 0 0 5px;
+        }
+        .e-mfirst,
+        .e-mprev,
+        .e-mnext,
+        .e-mlast {
+          padding: 1% 2%;
+          width: 5%;
+        }
+
+        .e-mfirst,
+        .e-mlast {
+          width: calc(5% + 11px);
+        }
+      }
+
+      @media (max-width: 769px) {
+        .e-mfirst,
+        .e-mprev,
+        .e-mnext,
+        .e-mlast {
+          border: 0;
+        }
+
+        &.e-rtl div.e-parentmsgbar {
+          float: initial;
+          margin-left: 0;
+          margin-top: $pager-rtl-pagermsgbar-device-margin-top;
+        }
+
+        .e-parentmsgbar {
+          float: right;
+        }
+      }
+    }
+
+    &.sf-pager {
+      .e-pagercontainer {
+        font-size: 0;
+        .e-first,
+        .e-prev,
+        .e-next,
+        .e-last {
+          font-size: $pager-icon-size;
+        }
+      }
+      
+      .e-numericcontainer a {
+        font-size: $pager-font-size;
+      }
+      
+      .e-link,
+      .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
+        margin-left: 0;
+      }
+    }
+  }
+}

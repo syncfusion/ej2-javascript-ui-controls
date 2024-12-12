@@ -1,0 +1,17 @@
+@include export-module('chatui-bootstrap-icons') {
+  .e-chat-send::before {
+    content: '\e816';
+  }
+  .e-chat-check::before {
+    content: '\e97d';
+  }
+  .e-chat-error::before {
+    content: '\e7e9';
+  }
+  .e-chat-seen::before {
+    content: '\e16f';
+  }
+  .e-chat-scroll-down::before {
+    content: '\e304';
+  }
+}

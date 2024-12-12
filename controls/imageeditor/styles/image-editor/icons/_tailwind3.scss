@@ -1,0 +1,259 @@
+@include export-module('image-editor-tailwind3-icons') {
+  .e-image-editor {
+    & .e-upload-icon {
+      &::before {
+        content: '\e760';
+      }
+    }
+
+    & .e-zoom-in {
+      &::before {
+        content: '\e768';
+      }
+    }
+
+    & .e-zoom-out {
+      &::before {
+        content: '\e81b';
+      }
+    }
+
+    & .e-pan {
+      &::before {
+        content: '\e7b1';
+      }
+    }
+
+    & .e-select {
+      &::before {
+        content: '\e896';
+      }
+    }
+
+    & .e-transform {
+      &::before {
+        content: '\e8b0';
+      }
+    }
+
+    & .e-annotation {
+      &::before {
+        content: '\e730';
+      }
+    }
+
+    & .e-shapes {
+      &::before {
+        content: '\e728';
+      }
+    }
+
+    & .e-mouse {
+      &::before {
+        content: '\e74e';
+      }
+    }
+
+    & .e-btn-reset {
+      &::before {
+        content: '\e89b';
+      }
+    }
+
+    & .e-btn-save {
+      &::before {
+        content: '\e7c8';
+      }
+    }
+
+    & .e-close {
+      &::before {
+        content: '\e7e7';
+      }
+    }
+
+    & .e-check {
+      &::before {
+        content: '\e8b1';
+      }
+    }
+
+    & .e-text-font-color.e-template {
+      & .e-caret::before {
+        content: '\e76f';
+      }
+    }
+
+    & .e-stroke.e-template,
+    & .e-frame-stroke.e-template,
+    & .e-pen-stroke-color.e-template {
+      & .e-caret::before {
+        content: '\e739';
+      }
+    }
+
+    & .e-fill.e-template,
+    & .e-text-background-color.e-template {
+      & .e-caret {
+        &::before {
+          content: '\e783';
+        }
+      }
+    }
+
+    & .e-stroke-text-font-color.e-template {
+      & .e-caret {
+        &::before {
+          content: '\e908';
+        }
+      }
+    }
+  }
+}
+
+.e-image-editor,
+.e-dropdown-popup.e-image-popup {
+  & .e-custom {
+    &::before {
+      content: '\e8a9';
+    }
+  }
+  
+  & .e-circle {
+    &::before {
+      content: '\e7ca';
+    }
+  }
+  
+  & .e-square{
+    &::before {
+      content: '\e8aa';
+    }
+  }
+  
+  & .e-custom-a {
+    &::before {
+      content: '\e8ab';
+    }
+  }
+  
+  & .e-custom-b {
+    &::before {
+      content: '\e8ac';
+    }
+  }
+  
+  & .e-custom-c {
+    &::before {
+      content: '\e8ad';
+    }
+  }
+  
+  & .e-custom-d {
+    &::before {
+      content: '\e8ae';
+    }
+  }
+  
+  & .e-custom-e {
+    &::before {
+      content: '\e8af';
+    }
+  }
+
+  & .e-custom-f {
+    &::before {
+      content: '\e8dd';
+    }
+  }
+  
+  & .e-custom-g {
+    &::before {
+      content: '\e8de';
+    }
+  }
+  
+  & .e-custom-h {
+    &::before {
+      content: '\e8df';
+    }
+  }
+  
+  & .e-custom-i {
+    &::before {
+      content: '\e8e0';
+    }
+  }
+  
+  & .e-custom-j {
+    &::before {
+      content: '\e8e1';
+    }
+  }
+  
+  & .e-rectangle {
+    &::before {
+      content: '\e723';
+    }
+  }
+  
+  & .e-triangle {
+    &::before {
+      content: '\e89c';
+    }
+  }
+  
+  & .e-line {
+    &::before {
+      content: '\e819';
+    }
+  }
+  
+  & .e-free-pen {
+    &::before {
+      content: '\e7db';
+    }
+  }
+  
+  & .e-horizontal-flip {
+    &::before {
+      content: '\e8a3';
+    }
+  }
+  
+  & .e-vertical-flip {
+    &::before {
+      content: '\e8a4';
+    }
+  }
+
+  & .e-clock-wise {
+    &::before {
+      content: '\e8a6';
+    }
+  }
+
+  & .e-anti-clock-wise {
+    &::before {
+      content: '\e8a5';
+    }
+  }
+
+  & .e-add-text {
+    &::before {
+      content: '\e82e';
+    }
+  }
+
+  & .e-arrow {
+    &::before {
+      content: '\e669';
+    }
+  }
+  
+  & .e-path {
+    &::before {
+      content: '\e931';
+    }
+  }
+}

@@ -1,0 +1,196 @@
+@mixin stepper-text-label-colors($step-label-text-color) {
+  .e-text,
+  .e-label {
+    color: $step-label-text-color;
+  }
+}
+
+@include export-module('stepper-theme') {
+  .e-stepper {
+    .e-step-notstarted:not(.e-step-disabled) .e-step,
+    .e-step-notstarted:not(.e-step-disabled) .e-indicator,
+    .e-step-notstarted .e-icons.e-step-indicator {
+      border-color: $step-border-color;
+    }
+    .e-step-label-optional {
+      color: $step-optional-color;
+    }
+    .e-step,
+    .e-indicator {
+      color: $step-color;
+      background: $step-bg-color;
+    }
+    .e-step-indicator {
+      color: transparent;
+    }
+    .e-step-completed .e-step,
+    .e-step-inprogress .e-step,
+    .e-step-completed .e-indicator,
+    .e-step-inprogress .e-indicator,
+    .e-step-completed .e-step-indicator,
+    .e-step-inprogress .e-step-indicator {
+      background: $step-completed-bg-color;
+      color: $step-completed-color;
+    }
+    .e-step-selected .e-indicator {
+      background: $step-completed-bg-color;
+    }
+    .e-step-valid .e-indicator {
+      background: $step-valid-completed-bg-color;
+      color: $step-valid-completed-color;
+    }
+    .e-step-error {
+      .e-indicator {
+        background: $step-error-completed-bg-color;
+        color: $step-error-icon-color;
+      }
+      @include stepper-text-label-colors($step-error-completed-color);
+    }
+    .e-step-valid:not(.e-step-notstarted) .e-indicator:hover,
+    .e-step-error .e-indicator:hover {
+      color: $step-color;
+    }
+    .e-step-valid.e-step-text-only,
+    .e-step-valid.e-step-label-only {
+      .e-step-validation-icon {
+        color: $step-valid-icon-only-color;
+      }
+    }
+    .e-step-error.e-step-text-only,
+    .e-step-error.e-step-label-only {
+      .e-step-validation-icon {
+        color: $step-error-icon-only-color;
+      }
+    }
+    @include stepper-text-label-colors($stepper-text-color);
+    .e-step-selected:not(.e-step-error),
+    .e-step-completed:not(.e-step-error) {
+      @include stepper-text-label-colors($step-completed-bg-color);
+    }
+    .e-step-label:not(.e-step-item) .e-step-label-container {
+      background-color: $stepper-outline-color;
+    }
+    .e-step-text-container {
+      background-color: $stepper-outline-color;
+      border-color: transparent;
+    }
+    .e-step-disabled .e-indicator,
+    .e-step-disabled .e-step {
+      background: $step-disabled-bg-color;
+      color: $step-disabled-color;
+    }
+    .e-step-disabled .e-text,
+    .e-step-disabled .e-label,
+    .e-step-disabled .e-step-validation-icon {
+      color: $step-disabled-font-color;
+    }
+    &.e-vertical .e-step-text-only.e-step-text .e-step-label-optional,
+    &.e-vertical .e-step-label-only.e-step-label .e-step-label-optional,
+    &.e-vertical .e-step-item:not(.e-step-text):not(.e-step-label) .e-step-label-optional,
+    &.e-vertical.e-label-top .e-step-label-optional,
+    &.e-vertical.e-label-bottom .e-step-label-optional {
+      background-color: $stepper-outline-color;
+    }
+    .e-stepper-progressbar {
+      background-color: $step-progress-bg-color;
+      >.e-progressbar-value {
+        background-color: $step-progress-value-bg-color;
+      }
+    }
+    &:not(.e-steps-focus) .e-step-selected .e-step {
+      box-shadow: $step-selected-li-shadow;
+    }
+    .e-step-focus .e-step,
+    .e-step-label-only.e-step-focus .e-label,
+    .e-step-text-only.e-step-focus .e-text,
+    .e-step-template.e-step-focus,
+    &:not(.e-steps-focus) :focus-visible .e-step,
+    &:not(.e-steps-focus) .e-step-text-only:focus-visible .e-text,
+    &:not(.e-steps-focus) .e-step-label-only:focus-visible .e-label {
+      box-shadow: $step-keyboard-selected-li-shadow;
+    }
+
+    &:not(.e-steps-focus) .e-step-valid.e-step-selected .e-step,
+    .e-step-valid.e-step-focus .e-step,
+    .e-step-valid.e-step-label-only.e-step-focus .e-label,
+    .e-step-valid.e-step-text-only.e-step-focus .e-text,
+    .e-step-valid.e-step-template.e-step-focus {
+      box-shadow: $step-valid-li-shadow;
+    }
+
+    &:not(.e-steps-focus) .e-step-error.e-step-selected .e-step,
+    .e-step-error.e-step-focus .e-step,
+    .e-step-error.e-step-label-only.e-step-focus .e-label,
+    .e-step-error.e-step-text-only.e-step-focus .e-text,
+    .e-step-error.e-step-template.e-step-focus {
+      box-shadow: $step-error-li-shadow;
+    }
+
+    .e-step-container:not(.e-step-focus).e-step-notstarted .e-step,
+    .e-step-container:not(.e-step-focus).e-step-completed .e-step,
+    &.e-steps-focus .e-step-container:not(.e-step-focus).e-step-selected .e-step {
+      box-shadow: $step-li-shadow;
+    }
+
+    .e-step-notstarted:not(.e-step-disabled) .e-step:hover,
+    .e-step-notstarted:not(.e-step-disabled) .e-indicator:hover {
+      border-color: $step-hover-border-color;
+    }
+
+    .e-step-notstarted:not(.e-step-disabled) .e-step:active,
+    .e-step-notstarted:not(.e-step-disabled) .e-indicator:active {
+      border-color: $step-active-border-color;
+    }
+
+    &:not(.e-step-type-label) {
+      .e-indicator:hover,
+      .e-step:hover {
+        color: $step-hover-text-color;
+        background: $step-selected-hover-color;
+      }
+    }
+
+    &:not(.e-step-type-label) .e-step-notstarted .e-indicator:hover,
+    &:not(.e-step-type-label) .e-step-notstarted .e-step:hover {
+      color: $step-hover-not-text-color;
+    }
+
+    &:not(.e-step-type-label) {
+      .e-step-selected .e-indicator:active,
+      .e-step-selected .e-step:active {
+        background: $step-selected-active-color;
+      }
+      .e-step-valid.e-step-selected .e-indicator:active,
+      .e-step-valid.e-step-selected .e-step:active {
+        background: $step-valid-completed-bg-color;
+      }
+      .e-step-error.e-step-selected .e-indicator:active,
+      .e-step-error.e-step-selected .e-step:active {
+        background: $step-error-completed-bg-color;
+      }
+    }
+
+    &:not(.e-step-type-label) .e-step-notstarted .e-indicator:hover,
+    &:not(.e-step-type-label) .e-step-notstarted .e-step:hover {
+      background: $step-hover-color;
+    }
+
+    &:not(.e-step-type-label) .e-step-notstarted .e-indicator:active,
+    &:not(.e-step-type-label) .e-step-notstarted .e-step:active {
+      background: $step-active-color;
+    }
+
+    &:not(.e-step-type-label) {
+      .e-step-valid .e-indicator:hover,
+      .e-step-valid .e-step:hover {
+        color: $step-hover-text-color;
+        background: $step-valid-completed-bg-color;
+      }
+      .e-step-error .e-indicator:hover,
+      .e-step-error .e-step:hover {
+        color: $step-hover-text-color;
+        background: $step-error-completed-bg-color;
+      }
+    }
+  }
+}

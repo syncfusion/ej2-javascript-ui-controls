@@ -1,0 +1,254 @@
+@import 'mixin.scss';
+@include export-module('spreadsheet-ribbon-layout') {
+  .e-spreadsheet .e-ribbon {
+    border: $spreadsheet-ribbon-border;
+    position: relative;
+
+    & .e-tab {
+      @if $skin-name == 'highcontrast' {
+        border-width: 0;
+      }
+
+      & .e-hscroll .e-scroll-nav {
+        @if $skin-name == 'Material3' {
+          min-height: 40px;
+        }
+      }
+
+      & .e-content .e-toolbar {
+        @if $skin-name == 'material' {
+          border: 0;
+        }
+        @else {
+          border-left-width: 0;
+          border-right-width: 0;
+          @if $skin-name == 'fluent2' {
+            border-bottom-width: 0;
+          }
+          @if $skin-name == 'Material3' {
+            min-height: 40px;
+          }
+        }
+
+        & .e-toolbar-items .e-toolbar-item {
+          & .e-split-btn-wrapper {
+            @if $skin-name == 'Material3' {
+              box-shadow: none;
+            }
+          }
+        }
+      }
+
+      & .e-tab-header {
+        @if $skin-name != 'bootstrap4' and $skin-name != 'Material3' {
+          @include tab-header-layout;
+        }
+
+        & .e-hscroll {
+          display: inline-block !important; /* stylelint-disable-line declaration-no-important */
+          width: calc(100% - 28px);
+        }
+
+        & .e-toolbar-items .e-toolbar-item:nth-child(2) {
+          @if $skin-name == 'bootstrap' {
+            border-width: 0;
+          }
+          @if $skin-name == 'fabric' {
+            margin-right: 0;
+          }
+
+          & .e-tab-wrap {
+            @if $skin-name != 'Material3' {
+              padding: $file-menu-wrap-padding;
+            }
+            @if $skin-name == 'Material3' {
+              padding-left: $file-menu-wrap-padding;
+              padding-right: $file-menu-wrap-padding;
+            }
+            @if $skin-name == 'bootstrap4' {
+              border-width: 0;
+            }
+          }
+
+          & .e-text-wrap {
+            vertical-align: top;
+          }
+        }
+
+        & .e-indicator {
+          z-index: 1;
+        }
+        @if $skin-name == 'material' {
+          & .e-toolbar-item .e-tab-wrap {
+            padding: 0 12px;
+          }
+        }
+
+        & .e-toolbar-items .e-toolbar-item.e-hide {
+          display: none;
+        }
+      }
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        & .e-content .e-toolbar .e-toolbar-items {
+          height: $spreadsheet-ribbon-toolbar-items-height;
+        }
+      }
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        & .e-tab-header {
+          margin-top: 10px;
+        }
+
+        & .e-content .e-toolbar {
+          border-radius: 0;
+        }
+      }
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        & .e-content .e-item {
+          padding: 0;
+        }
+      }
+    }
+
+    @include default-props;
+
+    & .e-drop-icon {
+      cursor: pointer;
+      font-family: 'e-icons';
+      margin: $drop-icon-margin;
+      position: absolute;
+      right: 0;
+      text-align: center;
+      top: 0;
+      transform: rotate(180deg);
+      transition: transform 300ms ease;
+      width: 18px;
+      @if $skin-name != 'bootstrap4' {
+        font-size: $spreadsheet-ribbon-drop-icon-font-size;
+      }
+
+      &.e-disabled {
+        cursor: default;
+        pointer-events: none;
+      }
+
+      &:focus {
+        font-weight: bold;
+      }
+    }
+
+    &.e-collapsed {
+      & .e-tab .e-tab-header {
+        @if $skin-name == 'fluent2' {
+          border-bottom: 0;
+        }
+      }
+
+      & .e-content,
+      & .e-indicator,
+      & .e-tab-header .e-toolbar-item.e-active .e-text-wrap::before {
+        display: none;
+      }
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        & .e-tab .e-tab-header:not(.e-vertical) {
+          &::before {
+            border-width: 0;
+          }
+        }
+      }
+
+      & .e-drop-icon {
+        transform: rotate(0deg);
+      }
+    }
+    @if $skin-name == 'fabric' {
+      & .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator {
+        min-height: $spreadsheet-toolbar-item-separator-height;
+      }
+    }
+    @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+      .e-tab-header .e-menu-wrapper.e-file-menu ul.e-menu {
+        font-size: $tab-file-menu-font-size;
+      }
+    }
+
+    & .e-content .e-toolbar {
+      & .e-toolbar-items {
+        display: inline-block;
+      }
+      @if $skin-name == 'highcontrast' {
+        border-color: transparent;
+
+        & .e-toolbar-items .e-toolbar-item.e-overlay {
+          opacity: .5;
+        }
+      }
+
+      &.e-overlay .e-toolbar-items .e-toolbar-item.e-overlay {
+        opacity: 1;
+      }
+    }
+
+    & .e-menu-wrapper {
+      border-width: 0;
+      @if $skin-name == 'fluent2' {
+        &.e-file-menu .e-menu {
+          & .e-menu-item.e-selected,
+          & .e-menu-item.e-focused {
+            border-radius: 4px 0 0 4px;
+          }
+        }
+      }
+      &.e-file-menu.e-scrollable {
+        .e-menu {
+          @if $skin-name == 'Material3' {
+            overflow: hidden;
+          }
+        }
+      }
+      & ul {
+        &.e-menu {
+          padding: 0;
+        }
+        @if $skin-name != 'bootstrap4' and $skin-name != 'Material3' {
+          & .e-menu-item.e-menu-caret-icon {
+            height: $spreadsheet-ribbon-tab-menu-items-height;
+            line-height: $spreadsheet-ribbon-tab-menu-items-line-height;
+
+            & .e-caret {
+              @if $skin-name == 'FluentUI' {
+                line-height: $spreadsheet-file-drop-icon-line-height;
+              }
+              @else if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
+                font-size: $spreadsheet-file-drop-icon-font-size;
+                line-height: $spreadsheet-file-drop-icon-line-height;
+              }
+              @else {
+                line-height: $spreadsheet-ribbon-tab-menu-items-line-height;
+              }
+            }
+          }
+        }
+        @if $skin-name == 'Material3' {
+          & .e-menu-item.e-menu-caret-icon {
+            border-radius: 4px;
+            font-weight: 500;
+
+            &.e-selected {
+              background-color: $spreadsheet-file-menu-selected-bg;
+              color: $spreadsheet-file-menu-selected-color;
+
+              & .e-caret {
+                color: $spreadsheet-file-menu-selected-color;
+                font-weight: 500;
+              }
+            }
+
+            & .e-caret {
+              font-size: 16px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+@include export-module('chatui-highcontrast-icons') {
+  .e-chat-send::before {
+    content: '\e816';
+  }
+  .e-chat-check::before {
+    content: '\e963';
+  }
+  .e-chat-error::before {
+    content: '\e973';
+  }
+  .e-chat-seen::before {
+    content: '\e91a';
+  }
+  .e-chat-scroll-down::before {
+    content: '\e305';
+  }
+}

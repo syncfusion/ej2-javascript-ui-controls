@@ -1,0 +1,367 @@
+@mixin list-style($height, $line-height, $position) {
+  height: $height;
+  line-height: $line-height;
+  position: $position;
+}
+
+@mixin size($height, $width) {
+  height: $height;
+  width: $width;
+}
+
+@mixin text-style($font-size, $line-height) {
+  font-size: $font-size;
+  line-height: $line-height;
+}
+
+@mixin header($font-weight, $height) {
+  align-items: center;
+  display: flex;
+  font-weight: $font-weight;
+  height: $height;
+
+  .e-text.header,
+  .e-headertemplate-text.nested-header {
+    display: none;
+  }
+}
+
+@mixin checkbox-style($left, $right) {
+  .e-checkbox-left {
+    margin: $left;
+  }
+  .e-checkbox-right {
+    margin: $right;
+  }
+}
+
+@mixin list-checkbox-style($left, $right) {
+  &.e-checkbox-left {
+    margin: $left;
+  }
+  &.e-checkbox-right {
+    margin: $right;
+  }
+}
+
+@mixin icon-margin($margin-left, $margin-right) {
+  margin-left: $margin-left;
+  margin-right: $margin-right;
+}
+
+@include export-module('listview-layout') {
+  /* stylelint-disable property-no-vendor-prefix */
+
+  .e-listview {
+    -webkit-overflow-scrolling: touch;
+    border: $listview-border-size solid;
+    border-radius: $listview-root-border-radius;
+    display: block;
+    overflow: auto;
+    position: relative;
+    width: 100%;
+
+    &:not(.e-list-template) .e-list-item {
+      @include list-style($listview-item-height, $listview-item-line-height, relative);
+      @if $skin-name != 'fluent2' {
+        padding: $listview-item-padding;
+      }
+    }
+
+    @at-root {
+      & .e-list-item {
+        border-bottom: $listview-border-size solid;
+        cursor: pointer;
+        @if $skin-name == 'fluent2' {
+          border-radius: $listview-item-radius;
+          margin: $listview-item-margin-bottom;
+          padding: 0;
+        }
+        @if ($skin-name == 'tailwind') {
+          .e-text-content .e-list-text {
+            font-size: $listview-font-size;
+          }
+        }
+        &.e-disabled,
+        &.e-disabled * {
+          cursor: default;
+        }
+      }
+
+      & .e-list-parent {
+        margin: 0;
+        padding: 0;
+      }
+
+      & .e-icon-back {
+        @if ($skin-name == 'tailwind') {
+          @include size($listview-back-icon-size, $listview-back-icon-size);
+        }
+        @else {
+          margin-top: $listview-icon-back-margin;
+        }
+        @if ($skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+          margin-right: $listview-icon-back-margin-right;
+        }
+        @if ($skin-name == 'tailwind3') {
+          @include size($listview-back-icon-size, $listview-back-icon-size);
+          margin: 8px 8px 8px 0;
+        }
+      }
+
+      & .e-list-header {
+        @include header($listview-header-font-weight, $listview-header-height);
+        @if ($skin-name == 'tailwind') {
+          padding: 6px $listview-header-text-padding;
+          .e-headertext {
+            text-transform: uppercase;
+          }
+        }
+        @else {
+          @if ($skin-name != 'FluentUI' and $skin-name != 'Material3' and $skin-name != 'fluent2' ) {
+            border-bottom: 1px solid;
+          }
+          padding: 0 $listview-header-text-padding;
+        }
+
+        &.e-list-navigation .e-text {
+          cursor: pointer;
+        }
+
+        .e-text {
+          cursor: default;
+          text-indent: 0;
+        }
+      }
+
+      & .e-has-header > .e-view {
+        top: 45px;
+      }
+
+      & .e-back-button {
+        cursor: pointer;
+        @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI') {
+          margin-right: $listview-back-padding-right;
+        }
+        @else {
+          padding-right: $listview-back-padding-right;
+        }
+        @if ($skin-name == 'FluentUI') {
+          font-size: 12px;
+        }
+      }
+
+      & .e-list-group-item {
+        border-bottom: $listview-group-border-bottom solid $listview-border-bottom-color;
+        border-top: $listview-group-border-top solid;
+        height: $listview-groupheader-item-height;
+        line-height: $listview-groupheader-item-line-height;
+        font-weight: 600;
+        @if ($skin-name == 'tailwind') {
+          box-sizing: border-box;
+          font-weight: $font-weight-medium;
+          padding: $listview-header-padding;
+
+          .e-list-text {
+            text-transform: uppercase;
+          }
+        }
+        @else if $skin-name == 'fluent2' {
+          padding: $listview-header-padding;
+          margin: $listview-item-margin-bottom;
+        }
+        @else {
+          padding: $listview-item-padding;
+        }
+        @if ($skin-name == 'Material3') {
+          border-top: $listview-group-border-bottom solid $listview-border-bottom-color;
+          border-bottom: $listview-group-border-top solid;
+        }
+
+        .e-list-text {
+          cursor: default;
+          @if $skin-name == 'fluent2' {
+            padding: 0;
+          }
+          @if $skin-name == 'tailwind3' {
+            font-weight: 600;
+          }
+        }
+
+        &:first-child {
+          border: 0;
+          border-bottom: $listview-group-first-border-bottom solid $listview-border-bottom-color;
+        }
+      }
+
+      & .e-icon-collapsible {
+        cursor: pointer;
+        font-size: $listview-nested-icon-collapsible;
+        position: absolute;
+        @if ($skin-name == 'fluent2') {
+          right: 3px;
+        }
+        @else {
+          right: 0%;
+        }
+        top: 50%;
+        transform: translateY(-50%);
+        @if ($skin-name == 'tailwind') {
+          @include size($listview-icon-size, $listview-icon-size);
+        }
+      }
+
+      & .e-text-content {
+        height: 100%;
+        position: relative;
+        vertical-align: middle;
+
+        &.e-checkbox {
+          .e-list-text {
+            width: calc(100% - 40px);
+          }
+          &.e-checkbox-left .e-list-icon + .e-list-text {
+            width: calc(100% - 90px);
+          }
+          &.e-checkbox-right .e-list-icon + .e-list-text {
+            width: calc(100% - 80px);
+          }
+        }
+      }
+
+      & .e-text-content * {
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      & .e-list-item.e-checklist.e-has-child {
+        .e-text-content.e-checkbox.e-checkbox-right {
+          .e-list-icon + .e-list-text {
+            width: calc(100% - 92px);
+          }
+        }
+      }
+
+      & .e-checkbox {
+        @include checkbox-style($listview-checkbox-left-margin, $listview-checkbox-right-margin);
+      }
+
+      & .e-list-text {
+        cursor: pointer;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: 100%;
+        @if $skin-name == 'fluent2' {
+          padding: $listview-item-padding;
+        }
+        @if $skin-name == 'tailwind3' {
+          font-weight: 500;
+        }
+      }
+
+      & .e-list-icon + .e-list-text,
+      & .e-icon-wrapper .e-list-text,
+      & .e-icon-wrapper.e-text-content.e-checkbox .e-list-text {
+        width: calc(100% - 60px);
+      }
+
+      & .e-list-icon {
+        margin-right: $listview-icon-margin-right;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+          @include size($listview-icon-size, $listview-icon-size);
+        }
+        @else if ($skin-name == 'Material3') {
+          @include size(20px, 20px);
+        }
+        @else if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          @include size(18px, 18px);
+        }
+        @else {
+          @include size(30px, 30px);
+        }
+      }
+
+      &.e-virtualization .e-list-container{
+        overflow: unset;
+      }
+
+      & .e-list-container {
+        overflow: hidden;
+        position: relative;
+      }
+
+      & .e-text .e-headertext {
+        display: inline-block;
+        line-height: $listview-header-line-height;
+      }
+
+      &.e-rtl {
+        direction: rtl;
+
+        @if ($skin-name == 'FluentUI') {
+          & .e-back-button {
+            @include icon-margin(12px, 0);
+          }
+        }
+
+        &:not(.e-list-template) .e-list-item {
+          @if ($skin-name == 'tailwind') {
+            padding: $listview-rtl-item-padding;
+          }
+        }
+
+        & .e-list-icon {
+          @if ($skin-name == 'tailwind') {
+            @include icon-margin(8px, 0);
+          }
+          @else {
+            @include icon-margin(16px, 0);
+          }
+        }
+
+        & .e-icon-collapsible {
+          left: 0%;
+          right: initial;
+          top: 50%;
+          transform: translateY(-50%) rotate(180deg);
+        }
+
+        & .e-list-header .e-text {
+          cursor: pointer;
+        }
+
+        & .e-back-button {
+          transform: rotate(180deg);
+          @if ($skin-name == 'tailwind') {
+            @include icon-margin(8px, 0);
+          }
+        }
+
+        & .e-icon-back {
+          @if ($skin-name != 'tailwind') {
+            margin-top: $listview-rtl-icon-back-margin;
+          }
+          @if ($skin-name == 'tailwind3') {
+            margin-bottom: $listview-rtl-icon-back-margin;
+            margin-left: $listview-rtl-icon-margin-left;
+          }
+        }
+
+        & .e-checkbox {
+          @include checkbox-style($listview-rtl-checkbox-left-margin, $listview-rtl-checkbox-right-margin);
+        }
+      }
+      &.e-disabled,
+      &.e-disabled * {
+        cursor: default;
+      }
+
+      &.e-disabled .e-checkbox .e-icons{
+        cursor: default;
+      }
+    }
+  }
+}

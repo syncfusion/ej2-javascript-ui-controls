@@ -1,0 +1,90 @@
+@include export-module('tab-tailwind3-icons') {
+  #{&}.e-tab {
+
+    .e-tab-header {
+
+      .e-close-icon::before {
+        content: '\e7e7';
+        position: relative;
+      }
+    }
+
+    &.e-vertical-icon .e-tab-header {
+
+      @media screen and (max-width: 480px) {
+
+        .e-popup-up-icon::before {
+          content: '\e776';
+        }
+
+        .e-popup-down-icon::before {
+          content: '\e729';
+        }
+      }
+    }
+
+    &.e-vertical-tab {
+
+      .e-tab-header {
+
+        .e-popup-up-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\e776';
+          }
+        }
+
+        .e-popup-down-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\e729';
+          }
+        }
+      }
+
+      &.e-icon-tab {
+
+        .e-tab-header {
+
+          .e-popup-up-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\e776';
+            }
+          }
+
+          .e-popup-down-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\e729';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-tab-clone-element {
+
+    .e-close-icon::before {
+      content: '\e7e7';
+      position: relative;
+    }
+  }
+}

@@ -1,0 +1,478 @@
+@import 'ej2-buttons/styles/button/mixin.scss';
+@import 'group-button-mixin.scss';
+@include export-module('button-group-theme') {
+/* stylelint-disable */
+  .e-btn-group,
+  .e-css.e-btn-group {
+    &:not(.e-outline) {
+      @if $skin-name != 'Material3' {
+        box-shadow: $btn-box-shadow;
+      }
+    }
+
+    @if $skin-name == 'material' or $skin-name == 'Material3' {
+      .e-btn {
+        box-shadow: none;
+      }
+    }
+
+    .e-btn:hover {
+      box-shadow: none;
+    }
+
+    @if $skin-name == 'Material3' {
+      .e-btn:focus-visible,
+      input:focus-visible+label.e-btn { // only for keybord
+        box-shadow: $btn-keyboard-focus-box-shadow !important;
+        z-index: 1;
+
+        &.e-primary,
+        &.e-success,
+        &.e-info,
+        &.e-warning,
+        &.e-danger {
+          box-shadow: $btn-keyboard-focus-box-shadow !important;
+          z-index: 1;
+        }
+
+        &.e-outline {
+          box-shadow: $btn-keyboard-focus-box-shadow !important;
+          z-index: 1;
+          &.e-primary,
+          &.e-success,
+          &.e-info,
+          &.e-warning,
+          &.e-danger {
+            box-shadow: $btn-keyboard-focus-box-shadow !important;
+            z-index: 1;
+          }
+        }
+    }
+  }
+
+  @if $skin-name == 'fluent2' {
+    .e-btn:focus-visible,
+    input:focus-visible+label.e-btn { // only for keybord
+      box-shadow: $btn-keyboard-focus-box-shadow !important;
+    }
+
+    .e-outline.e-btn:active,
+    .e-outline.e-btn:focus,
+    input:focus+label.e-btn.e-outline {
+      background: transparent !important;
+    }
+  }
+
+    //Focus state for Normal and Outline GroupButton
+    .e-btn:focus,
+    input:focus-visible+label.e-btn,
+    input:focus+label.e-btn {
+      @include button-focus;
+      @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' and $skin-name != 'tailwind3' {
+        box-shadow: none;
+      }
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        border-color: $btn-focus-bgcolor;
+      }
+      outline-color: $btn-grp-outline-focus-color;
+      @if $skin-name == 'fabric' {
+        outline-offset: -2px;
+      }
+
+      @if $skin-name == 'highcontrast' {
+        outline-offset: -4px;
+      }
+
+      @if $skin-name == 'tailwind3' {
+        background: $btn-bgcolor;
+        color: $btn-color;
+        box-shadow: $btn-focus-box-shadow;
+      }
+
+      &.e-primary {
+        @include primary-focus;
+        @include box-shadow-theme;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          border-color: $btn-primary-focus-bgcolor;
+        }
+        outline-color: $btn-grp-outline-focus-primary-color;
+        @if $skin-name == 'tailwind3' {
+          background: $btn-primary-bgcolor;
+          color: $btn-primary-color;
+          box-shadow: $btn-focus-box-shadow;
+        }
+      }
+
+      &.e-success {
+        @include success-focus;
+        @include box-shadow-theme;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          border-color: $btn-success-focus-bgcolor;
+        }
+        outline-color: $btn-grp-outline-focus-success-color;
+        @if $skin-name == 'tailwind3' {
+          background: $btn-success-bgcolor;
+          color: $btn-success-color;
+          box-shadow: $btn-focus-box-shadow;
+        }
+      }
+
+      &.e-info {
+        @include info-focus;
+        @include box-shadow-theme;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          border-color: $btn-info-focus-bgcolor;
+        }
+        outline-color: $btn-grp-outline-focus-info-color;
+        @if $skin-name == 'tailwind3' {
+          background: $btn-info-bgcolor;
+          color: $btn-info-color;
+          box-shadow: $btn-focus-box-shadow;
+        }
+      }
+
+      &.e-warning {
+        @include warning-focus;
+        @include box-shadow-theme;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          border-color: $btn-warning-focus-bgcolor;
+        }
+        outline-color: $btn-grp-outline-focus-warning-color;
+        @if $skin-name == 'tailwind3' {
+          background: $btn-warning-bgcolor;
+          color: $btn-warning-color;
+          box-shadow: $btn-focus-box-shadow;
+        }
+      }
+
+      &.e-danger {
+        @include danger-focus;
+        @include box-shadow-theme;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          border-color: $btn-danger-focus-bgcolor;
+        }
+        outline-color: $btn-grp-outline-focus-danger-color;
+        @if $skin-name == 'tailwind3' {
+          background: $btn-danger-bgcolor;
+          color: $btn-danger-color;
+          box-shadow: $btn-focus-box-shadow;
+        }
+      }
+
+      &.e-link {
+        @include link-focus;
+        background-color: transparent;
+        border-color: transparent;
+        box-shadow: none;
+        outline: none;
+      }
+
+      &.e-outline {
+        @include outline-focus;
+        @include outline-box-shadow-theme;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          border-color: $btn-outline-focus-bgcolor;
+        }
+        @if $skin-name == 'tailwind3' {
+          background: $transparent;
+          color: $btn-color;
+          box-shadow: $btn-focus-box-shadow;
+        }
+
+        &.e-primary {
+          @include outline-primary-focus;
+          @include outline-box-shadow-theme;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            border-color: $btn-outline-primary-focus-bgcolor;
+          }
+          @if $skin-name == 'tailwind3' {
+            background: $transparent;
+            color: $btn-primary-bgcolor;
+            box-shadow: $btn-focus-box-shadow;
+          }
+        }
+
+        &.e-success {
+          @include outline-success-focus;
+          @include outline-box-shadow-theme;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            border-color: $btn-success-focus-bgcolor;
+          }
+          @if $skin-name == 'tailwind3' {
+            background: $transparent;
+            color: $btn-success-bgcolor;
+            box-shadow: $btn-focus-box-shadow;
+          }
+        }
+
+        &.e-info {
+          @include outline-info-focus;
+          @include outline-box-shadow-theme;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            border-color: $btn-info-hover-bgcolor;
+          }
+          @if $skin-name == 'tailwind3' {
+            background: $transparent;
+            color: $btn-info-bgcolor;
+            box-shadow: $btn-focus-box-shadow;
+          }
+        }
+
+        &.e-warning {
+          @include outline-warning-focus;
+          @include outline-box-shadow-theme;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            border-color: $btn-warning-hover-bgcolor;
+          }
+          @if $skin-name == 'tailwind3' {
+            background: $transparent;
+            color: $btn-warning-bgcolor;
+            box-shadow: $btn-focus-box-shadow;
+          }
+        }
+
+        &.e-danger {
+          @include outline-danger-focus;
+          @include outline-box-shadow-theme;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            border-color: $btn-danger-hover-bgcolor;
+          }
+          @if $skin-name == 'tailwind3' {
+            background: $transparent;
+            color: $btn-danger-bgcolor;
+            box-shadow: $btn-focus-box-shadow;
+          }
+        }
+      }
+    }
+
+    //Active/Checked state for Normal and Outline GroupButton
+    .e-btn:active,
+    input:active+label.e-btn,
+    input:checked+label.e-btn {
+      @include button-active;
+      @include Mat3-box-shadow-none;
+
+      &.e-primary {
+        @include primary-active;
+        @include Mat3-box-shadow-none;
+      }
+
+      &.e-success {
+        @include success-active;
+        @include Mat3-box-shadow-none;
+      }
+
+      &.e-info {
+        @include info-active;
+        @include Mat3-box-shadow-none;
+      }
+
+      &.e-warning {
+        @include warning-active;
+        @include Mat3-box-shadow-none;
+      }
+
+      &.e-danger {
+        @include danger-active;
+        @include Mat3-box-shadow-none;
+      }
+
+      &.e-outline {
+        @include outline-active;
+        @include Mat3-box-shadow-none;
+
+        &.e-primary {
+          @include outline-primary-active;
+          @include Mat3-box-shadow-none;
+        }
+
+        &.e-success {
+          @include outline-success-active;
+          @include Mat3-box-shadow-none;
+        }
+
+        &.e-info {
+          @include outline-info-active;
+          @include Mat3-box-shadow-none;
+        }
+
+        &.e-warning {
+          @include outline-warning-active;
+          @include Mat3-box-shadow-none;
+        }
+
+        &.e-danger {
+          @include outline-danger-active;
+          @include Mat3-box-shadow-none;
+        }
+      }
+    }
+
+    //Disabled state for Normal and Outline GroupButton
+    .e-btn:disabled,
+    input:disabled+label.e-btn {
+      @include disabled;
+      @if $skin-name != 'bootstrap4' {
+        border-color: $btn-border-color;
+      }
+
+      &.e-primary {
+        @include primary-disabled;
+        @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
+          border-color: $btn-primary-border-color;
+        }
+      }
+
+      &.e-success {
+        @include success-disabled;
+        @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
+          border-color: $btn-success-border-color;
+        }
+      }
+
+      &.e-info {
+        @include info-disabled;
+        @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
+          border-color: $btn-info-border-color;
+        }
+      }
+
+      &.e-warning {
+        @include warning-disabled;
+        @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
+          border-color: $btn-warning-border-color;
+        }
+      }
+
+      &.e-danger {
+        @include danger-disabled;
+        @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
+          border-color: $btn-danger-border-color;
+        }
+      }
+
+      &.e-link {
+        @include link-disabled;
+        @if $skin-name != 'bootstrap4' and $skin-name != 'tailwind3' {
+          border-color: $btn-link-border-color;
+        }
+      }
+
+      &.e-outline {
+        @include outline-disabled;
+        border-color: $btn-outline-border-color;
+
+        &.e-primary {
+          @include outline-primary-disabled;
+          @if $skin-name != 'tailwind3' {
+            border-color: $btn-primary-bgcolor;
+          }
+        }
+
+        &.e-success {
+          @include outline-success-disabled;
+          @if $skin-name != 'tailwind3' {
+            border-color: $btn-success-bgcolor;
+          }
+        }
+
+        &.e-info {
+          @include outline-info-disabled;
+          @if $skin-name != 'tailwind3' {
+            border-color: $btn-info-bgcolor;
+          }
+        }
+
+        &.e-warning {
+          @include outline-warning-disabled;
+          @if $skin-name != 'tailwind3' {
+            border-color: $btn-warning-bgcolor;
+          }
+        }
+
+        &.e-danger {
+          @include outline-danger-disabled;
+          @if $skin-name != 'tailwind3' {
+            border-color: $btn-danger-bgcolor;
+          }
+        }
+      }
+    }
+
+    //Normal ButtonGroup layout for highcontrast theme
+    @if $skin-name == 'highcontrast' {
+      &:not(.e-vertical):not(.e-rtl) {
+        .e-btn {
+          @include apply-border;
+        }
+      }
+
+      &.e-vertical:not(.e-rtl) {
+        .e-btn {
+          @include apply-border-vertical;
+        }
+      }
+
+      .e-btn:hover {
+        border-color: $btn-border-color;
+
+        &.e-primary {
+          border-color: $btn-primary-bgcolor;
+        }
+
+        &.e-success {
+          border-color: $btn-success-bgcolor;
+        }
+
+        &.e-info {
+          border-color: $btn-info-bgcolor;
+        }
+
+        &.e-warning {
+          border-color: $btn-warning-bgcolor;
+        }
+
+        &.e-danger {
+          border-color: $btn-danger-bgcolor;
+        }
+      }
+    }
+
+    &:not(.e-vertical):not(.e-rtl) {// Outline GroupButton - Horizontal orientation
+      .e-outline {
+        @if $skin-name != 'bootstrap' {
+          @include apply-border;
+        }
+      }
+      @include different-states;
+    }
+
+    &.e-vertical:not(.e-rtl) {// Outline GroupButton - Vertical Orientation
+      .e-outline {
+        @include apply-border-vertical;
+      }
+      @include different-states;
+    }
+
+    // RTL
+    &.e-rtl {
+      .e-btn {
+        @if $skin-name != 'bootstrap' and $skin-name != 'tailwind' and $skin-name !='tailwind-dark' {
+          &:not(:first-of-type):not(:last-of-type) {
+            border-left: transparent;
+            border-right: transparent;
+          }
+
+          &:first-of-type {
+            border-left: transparent;
+          }
+
+          &:last-of-type {
+            border-right: transparent;
+          }
+        }
+      }
+    }
+  }
+}

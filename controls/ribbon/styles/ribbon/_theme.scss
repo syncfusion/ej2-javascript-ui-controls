@@ -1,0 +1,535 @@
+@mixin ribbon-colors($bg-color, $color, $border-color) {
+  background: $bg-color;
+  color: $color;
+  border-color: $border-color;
+}
+
+@mixin ribbon-hscroll-interactions($rb-bg-color, $rb-border-color, $rb-color) {
+  border-color: $rb-border-color;
+  background: $rb-bg-color;
+
+  .e-nav-arrow {
+    color: $rb-color;
+  }
+}
+
+@mixin ribbon-button-icon-color($rb-btn-color) {
+  .e-btn-icon {
+    color: $rb-btn-color;
+  }
+}
+
+@mixin ribbon-gallery-text-icon-colors($rb-gallery-text-color, $rb-gallery-icon-color) {
+  .e-ribbon-gallery-text {
+    color: $rb-gallery-text-color;
+  }
+  .e-ribbon-gallery-icons {
+    color: $rb-gallery-icon-color;
+  }
+}
+
+@include export-module('ribbon-theme') {
+  .e-ribbon.e-rbn {
+    &.e-ribbon-container {
+      .e-ribbon-overlay {
+        background: $ribbon-tab-background-color;
+
+        .e-ribbon-skeleton {
+          &.e-skeleton.e-skeleton-text {
+            background-color: $ribbon-skeleton-bg-color;
+          }
+
+          &.e-skeleton.e-shimmer-wave::after {
+            background-image: $ribbon-skeleton-wave-color;
+          }
+        }
+      }
+    }
+    
+    .e-ribbon-tab {
+      .e-tab-header {
+        border-color: $ribbon-border-color;
+        background: $ribbon-tab-background-color;
+
+        .e-toolbar-item {
+          &.e-ribbon-contextual-tab {
+            background: $ribbon-contextual-tab-background;
+            .e-tab-wrap {
+              .e-tab-text {
+                color: $ribbon-contextual-tab-color;
+              }
+            }
+          }
+          
+          .e-tab-wrap {
+            .e-tab-text {
+              color: $ribbon-tab-text-color;
+            }
+
+            &:hover .e-tab-text {
+              color: $ribbon-tab-text-hover-color;
+            }
+          }
+
+          @if ($skin-name == 'fluent2') {
+            &.e-active::before {
+              background: $ribbon-active-tab-indicator-color;
+            }
+          }
+
+          &.e-active .e-tab-wrap .e-tab-text {
+            color: $ribbon-active-tab-color;
+          }
+        }
+
+        .e-indicator {
+          background: $ribbon-active-tab-indicator-color;
+        }
+      }
+
+      .e-hscroll .e-scroll-nav {
+        @include ribbon-hscroll-interactions($ribbon-hscroll-background-color, $ribbon-hscroll-border-color, $ribbon-hscroll-color);
+
+        &:hover {
+          @include ribbon-hscroll-interactions($ribbon-hscroll-hover-background-color, $ribbon-hscroll-hover-border-color, $ribbon-hscroll-hover-color);
+        }
+
+        &:active {
+          @include ribbon-hscroll-interactions($ribbon-hscroll-active-background-color, $ribbon-hscroll-active-border-color, $ribbon-hscroll-active-color);
+        }
+
+        &:focus {
+          @include ribbon-hscroll-interactions($ribbon-hscroll-focus-background-color, $ribbon-hscroll-focus-border-color, $ribbon-hscroll-focus-color);
+        }
+      }
+
+      .e-ribbon-file-menu,
+      .e-ribbon-backstage {
+        @include ribbon-colors($ribbon-tab-background-color, $ribbon-tab-text-color, $ribbon-border-color);
+
+        &.e-active {
+          color: $ribbon-active-file-menu-color;
+          background: $ribbon-active-file-menu-background;
+        }
+
+        &:hover:not(.e-active) {
+          color: $ribbon-tab-text-hover-color;
+        }
+
+        &:focus-visible {
+          color: $ribbon-tab-text-focus-color;
+        }
+      }
+
+      .e-ribbon-help-template {
+        border-color: $ribbon-border-color;
+        background: $ribbon-tab-background-color;
+      }
+
+      .e-ribbon-template {
+        &:focus-visible {
+          @include ribbon-colors($ribbon-items-focus-background-color, $ribbon-items-focus-color, $ribbon-items-focus-border-color);
+        }
+      }
+    }
+
+    .e-ribbon-tab.e-focused .e-tab-header {
+      .e-tab-wrap:focus {
+        .e-tab-text {
+          color: $ribbon-tab-text-focus-color;
+        }
+      }
+    }
+
+    .e-ribbon-collapse-btn {
+      @include ribbon-colors($ribbon-collapse-btn-background, $ribbon-items-icon-color, transparent);
+
+      &:hover,
+      &:focus-visible {
+        @include ribbon-colors($ribbon-items-focus-background-color,$ribbon-items-icon-focus-color, $ribbon-items-focus-border-color);
+      }
+    }
+  }
+
+  .e-ribbon-backstage-popup {
+    box-shadow: $ribbon-overflow-box-shadow;
+
+    .e-ribbon-backstage-wrapper {
+      background: $ribbon-backstage-menu-bg-color;
+    }
+
+    .e-btn {
+      background: $ribbon-backstage-btn-bg-color;
+      color: $ribbon-backstage-btn-color;
+      font-weight: $ribbon-backstage-close-btn-font-weight;
+      @if ($skin-name == 'material') {
+        text-transform: none;
+      }
+
+      &:focus {
+        @include ribbon-colors($ribbon-backstage-btn-focus-bg-color, $ribbon-backstage-btn-focus-color, $ribbon-backstage-btn-focus-border-color);
+      }
+
+      &:hover {
+        @include ribbon-colors($ribbon-backstage-btn-hover-bg-color, $ribbon-backstage-btn-hover-color, $ribbon-backstage-btn-hover-border-color);
+      }
+
+      &:hover:focus {
+        @include ribbon-colors($ribbon-backstage-btn-focus-bg-color, $ribbon-backstage-btn-focus-color, $ribbon-backstage-btn-focus-border-color);
+      }
+    }
+
+    .e-ribbon-backstage-menu {
+      &.e-menu-wrapper,
+      &.e-menu-container {
+        &:not(.e-menu-popup) {
+          background: $ribbon-backstage-menu-bg-color;
+        }
+      }
+
+      &.e-menu-wrapper ul.e-vertical,
+      &.e-menu-wrapper ul.e-ul {
+        &.e-menu {
+          background: $ribbon-backstage-menu-items-bg-color;
+        }
+
+        .e-menu-item {
+          color: $ribbon-backstage-items-color;
+
+          .e-menu-icon {
+            color: $ribbon-backstage-menu-icon-color;
+          }
+
+          &.e-separator {
+            background: $ribbon-backstage-separator-color;
+          }
+
+          &:focus {
+            @include ribbon-colors($ribbon-backstage-menu-hover-bg-color, $ribbon-backstage-menu-items-hover-color, $ribbon-backstage-menu-hover-border-color);
+
+            .e-menu-icon {
+              color: $ribbon-backstage-menu-icon-hover-color;
+            }
+          }
+
+          &.e-selected,
+          &:hover {
+            @include ribbon-colors($ribbon-backstage-menu-active-bg-color, $ribbon-backstage-menu-items-active-color, $ribbon-backstage-menu-active-border-color);
+
+            .e-menu-icon {
+              color: $ribbon-backstage-menu-icon-active-color;
+            }
+          }
+          &.e-selected:focus {
+            @include ribbon-colors($ribbon-backstage-menu-hover-bg-color, $ribbon-backstage-menu-items-hover-color, $ribbon-backstage-menu-hover-border-color);
+
+            .e-menu-icon {
+              color: $ribbon-backstage-menu-icon-hover-color;
+            }
+          }
+        }
+      }
+    }
+
+    .e-ribbon-backstage-template,
+    .e-ribbon-backstage-content {
+      background: $ribbon-header-bg-color;
+    }
+  }
+
+  .e-ribbon.e-rbn,
+  .e-ribbon-group-overflow-ddb {
+    background: $ribbon-header-bg-color;
+    border-color: $ribbon-border-color;
+
+    .e-ribbon-item:not(.e-disabled) {
+      .e-checkbox-wrapper {
+        .e-label {
+          color: $ribbon-text-color;
+        }
+
+        &.e-checkbox-disabled .e-label {
+          color: $ribbon-items-disabled-color;
+        }
+      }
+
+      .e-colorpicker-wrapper,
+      .e-split-btn-wrapper {
+        &.e-ribbon-hover,
+        &:not(.e-ribbon-hover):hover,
+        &.e-ribbon-open {
+          border-color: $ribbon-items-hover-background-color;
+        }
+      }
+
+      .e-split-btn-wrapper.e-vertical:hover .e-split-btn:not(:hover) {
+        border-color: transparent;
+      }
+    }
+
+    .e-ribbon-item {
+      .e-split-btn-wrapper.e-vertical:hover .e-split-btn:disabled {
+        border-color: transparent;
+      }
+
+      &:has(.e-ribbon-gallery-container) {
+        border-color: $ribbon-gallery-item-border-color;
+        background: $ribbon-gallery-wrapper-background-color;
+      }
+    }
+
+    .e-ribbon-item,
+    .e-ribbon-group-overflow,
+    &.e-ribbon-overflow {
+      .e-btn:not(.e-ribbon-file-menu),
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type),
+      .e-ribbon-group-of-btn {
+        @include ribbon-colors($ribbon-items-background-color, $ribbon-text-color, transparent);
+        @include ribbon-button-icon-color($ribbon-items-icon-color);
+
+        &:hover {
+          @include ribbon-colors($ribbon-items-hover-background-color, $ribbon-items-text-hover-color, $ribbon-items-hover-border-color);
+          @include ribbon-button-icon-color($ribbon-items-hover-color);
+        }
+
+        &.e-active {
+          background: $ribbon-items-active-background-color;
+          color: $ribbon-items-text-active-color;
+          @include ribbon-button-icon-color($ribbon-items-active-color);
+        }
+
+        &:active {
+          background: $ribbon-items-pressed-background-color;
+          color: $ribbon-items-text-active-color;
+          @include ribbon-button-icon-color($ribbon-items-active-color);
+        }
+
+        &:focus-visible {
+          @include ribbon-colors($ribbon-items-focus-background-color, $ribbon-items-text-focus-color, $ribbon-items-focus-border-color);
+          @include ribbon-button-icon-color($ribbon-items-focus-color);
+          box-shadow: $ribbon-items-focus-box-shadow;
+        }
+
+        &:disabled {
+          @include ribbon-button-icon-color($ribbon-items-disabled-color);
+          color: $ribbon-items-disabled-color;
+        }
+      }
+    }
+
+    .e-ribbon-group-header {
+      color: $ribbon-text-color;
+    }
+
+    .e-ribbon-launcher-icon {
+      border-color: transparent;
+
+      &:hover,
+      &:focus-visible {
+        @include ribbon-colors($ribbon-items-focus-background-color, $ribbon-items-icon-focus-color, $ribbon-items-focus-border-color);
+      }
+    }
+
+    .e-input-group {
+      border-color: $ribbon-input-group-border-color;
+      background: $ribbon-input-group-background-color;
+
+      input.e-input {
+        color: $ribbon-text-color;
+      }
+
+      &.e-control-wrapper {
+        .e-input-group-icon {
+          color: $ribbon-items-icon-color;
+
+          &:hover {
+            background: $ribbon-items-hover-background-color;
+            color: $ribbon-items-text-hover-color;
+          }
+        }
+      }
+
+      &.e-disabled,
+      &:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left).e-disabled {
+        border-color: $ribbon-items-disabled-color;
+      }
+    }
+
+    .e-ribbon-group::after {
+      border-color: $ribbon-group-border-color;
+    }
+  }
+
+  .e-ribbon-group-overflow-ddb {
+    .e-ribbon-item {
+      .e-ribbon-combobox-label,
+      .e-ribbon-colorpicker-label {
+        color: $ribbon-text-color;
+      }
+
+      .e-ribbon-template {
+        &:focus-visible {
+          @include ribbon-colors($ribbon-items-focus-background-color, $ribbon-items-focus-color, $ribbon-items-focus-border-color);
+        }
+      }
+    }
+  }
+
+  .e-ribbon-file-menu,
+  .e-ribbon-vertical-center,
+  .e-ribbon-group-overflow-ddb,
+  .e-ribbon-dropdown-group-button {
+    &.e-dropdown-popup {
+      background: $ribbon-popup-common-bg-color;
+      box-shadow: $ribbon-popup-common-box-shadow;
+      border-color: $ribbon-popup-common-border-color;
+
+      .e-btn:not(.e-ribbon-file-menu),
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-ribbon-group-of-btn {
+        background: transparent;
+      }
+    }
+  }
+
+  .e-ribbon-gallery-button {
+    border-color: $ribbon-gallery-item-border-color;
+    background: transparent;
+    color: $ribbon-gallery-button-icon-color;
+    &.e-gallery-button-active {
+      background: $ribbon-gallery-button-selected-color;
+      color: $ribbon-gallery-button-selected-icon-color;
+    }
+  }
+
+  .e-ribbon-gallery-item {
+    background: $ribbon-gallery-popup-item-background-color;
+    border-color: transparent;
+    @include ribbon-gallery-text-icon-colors($ribbon-gallery-item-text-color, $ribbon-gallery-icons-color);
+  }
+
+  .e-ribbon-gallery-popup.e-popup,
+  .e-dropdown-popup.e-ribbon-gallery-dropdown {
+    background: $ribbon-gallery-popup-background-color;
+    box-shadow: $ribbon-gallery-popup-box-shadow;
+
+    .e-ribbon-gallery-header {
+      color: $ribbon-gallery-header-color;
+    }
+  }
+
+  .e-ribbon-gallery-wrapper,
+  .e-ribbon-gallery-popup.e-popup,
+  .e-dropdown-popup.e-ribbon-gallery-dropdown {
+    .e-ribbon-gallery-item {
+      &:hover {
+        background: $ribbon-gallery-hover-background-color;
+        @if ($skin-name == 'fluent2') {
+          @include ribbon-gallery-text-icon-colors($content-text-color-hover, $content-text-color-hover);
+        }
+      }
+      &.e-ribbon-gallery-selected {
+        background: $ribbon-gallery-item-selected-color;
+        @include ribbon-gallery-text-icon-colors($ribbon-gallery-item-selected-text-color, $ribbon-gallery-item-selected-icons-color);
+      }
+      &.e-disabled {
+        background: $ribbon-gallery-item-disabled-color;
+        @include ribbon-gallery-text-icon-colors($ribbon-gallery-item-disabled-text-color, $ribbon-gallery-item-disabled-icons-color);
+      }
+      &:focus,
+      &:focus-visible {
+        border-color: $ribbon-gallery-item-focus-border-color;
+      }
+    }
+  }
+
+  .e-dropdown-popup.e-ribbon-dropdown-group-button {
+    @include ribbon-button-icon-color($ribbon-items-icon-color);
+    .e-btn.e-ribbon-group-button {
+      color: $ribbon-text-color;
+      background: $ribbon-group-button-dropdown-popup-background;
+
+      &.e-icon-btn:hover,
+      &.e-icon-btn:focus {
+        @include ribbon-button-icon-color($ribbon-group-button-icon-hover-color);
+        background: $ribbon-group-button-hover-background;
+      }
+      &:hover,
+      &:focus {
+        @include ribbon-button-icon-color($ribbon-group-button-icon-hover-color);
+        background: $ribbon-group-button-hover-background;
+        color: $ribbon-group-button-text-hover-color;
+      }
+      &.e-icon-btn.e-active {
+        @include ribbon-button-icon-color($ribbon-group-button-icon-active-color);
+        background: $ribbon-group-button-active-background;
+      }
+      &.e-active {
+        @include ribbon-button-icon-color($ribbon-group-button-icon-active-color);
+        background: $ribbon-group-button-selected-background;
+        color: $ribbon-group-button-text-active-color;
+      }
+      &.e-icon-btn:active,
+      &:active {
+        @include ribbon-button-icon-color($ribbon-group-button-icon-active-color);
+        background: $ribbon-group-button-pressed-background;
+      }
+    }
+  }
+
+  .e-ribbon-tooltip.e-tooltip-wrap {
+    &.e-popup {
+      background: $ribbon-tooltip-background-color;
+    }
+
+    .e-tip-content {
+      color: $ribbon-tooltip-text-color;
+    }
+
+    .e-arrow-tip .e-arrow-tip-inner.e-tip-top {
+      color: $ribbon-tooltip-background-color;
+    }
+  }
+
+  .e-ribbon-keytip {
+    background-color: $ribbon-keytip-background-color;
+    color: $ribbon-keytip-color;
+  }
+
+  .e-ribbon-menu {
+    &.e-menu-wrapper,
+    &.e-menu-container {
+      &:not(.e-menu-popup) {
+        background: $ribbon-menu-background-color;
+      }
+    }
+
+    &.e-menu-wrapper ul.e-vertical,
+    &.e-menu-wrapper ul.e-ul {
+      &.e-menu {
+        border-color: $ribbon-menu-border-color;
+        background: $ribbon-menu-items-background-color;
+      }
+
+      .e-menu-item {
+        color: $ribbon-text-color;
+
+        .e-menu-icon,
+        .e-caret {
+          color: $ribbon-menu-items-icon-color;
+        }
+
+        &.e-focused {
+          background: $ribbon-menu-hover-background-color;
+          color: $ribbon-menu-items-color;
+          @if ($skin-name == 'fluent2') {
+            .e-menu-icon {
+              color: $ribbon-menu-items-color;
+            }
+          }
+        }
+      }
+    }
+  }
+}

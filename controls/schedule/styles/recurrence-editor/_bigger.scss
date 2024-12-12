@@ -1,0 +1,133 @@
+@include export-module('recurrence-editor-bigger') {
+  .e-bigger {
+    .e-recurrenceeditor {
+      padding: 0;
+
+      .e-input-wrapper-side.e-form-left {
+        padding: 0 12px 11px 0;
+      }
+
+      .e-form-left {
+        padding: 0 12px 14px 0;
+      }
+
+      .e-recurrence-table .e-monthday-element {
+        padding-left: 50px;
+      }
+
+      .e-week-position {
+        min-width: $recurrence-week-position-bgr-min-width;
+        right: 0;
+      }
+
+      .e-day-position {
+        min-width: $recurrence-day-position-bgr-min-width;
+        padding-left: $recurrence-day-position-bgr-padding-left;
+      }
+
+      .e-input-wrapper-side.e-non-week > .e-month-expander-label {
+        font-size: $recurrence-label-font-bgr-size;
+        margin-bottom: $recurrence-month-label-bottom-bgr;
+        font-weight: $recurrence-label-font-weight;
+      }
+
+      .e-input-wrapper-side.e-end-on .e-end-on-left {
+        padding-right: $recurrence-end-bgr-padding-right;
+      }
+
+      .e-end-on-label {
+        margin-bottom: 0;
+      }
+
+      .e-days .e-week-expander-label {
+        font-size: $recurrence-label-font-bgr-size;
+        margin-bottom: 8px;
+      }
+
+      .e-input-wrapper-side.e-end-on .e-end-on-label {
+        font-size: $recurrence-label-font-bgr-size;
+        margin-bottom: 1px;
+      }
+
+      .e-month-expander tr:first-child .e-input-wrapper,
+      .e-year-expander {
+        margin-bottom: 11px;
+      }
+
+      .e-recurrence-table {
+        &.e-month-expand-wrapper td:first-child {
+          width: 30px;
+        }
+      }
+
+      @if $skin-name == 'fluent2' {
+        .e-recurrence-table {
+          &.e-month-expand-wrapper .e-radio + label {
+            margin: 0;
+          }
+        }
+      }
+
+      .e-days {
+        button {
+          height: 40px;
+          width: 40px;
+        }
+      }
+
+      &.e-rtl {
+
+        .e-form-left,
+        .e-input-wrapper-side.e-form-left {
+          padding: 0 0 10px 12px;
+        }
+
+        .e-form-right,
+        .e-input-wrapper-side.e-form-right {
+          padding: 0 12px 10px 0;
+        }
+
+        .e-recurrence-table .e-monthday-element,
+        .e-recurrence-table .e-day-position {
+          padding: 0 64px 0 0;
+        }
+
+        .e-input-wrapper-side.e-end-on .e-end-on-label,
+        .e-input-wrapper-side.e-non-week > .e-month-expander-label {
+          padding-right: 0;
+        }
+
+        .e-end-on-label {
+          margin-bottom: 5px;
+        }
+
+        .e-input-wrapper-side.e-end-on .e-end-on-left {
+          padding: 0 0 0 12px;
+        }
+
+        .e-input-wrapper.e-end-on-date,
+        .e-input-wrapper.e-end-on-count {
+          padding: 0 12px 0 0;
+        }
+
+        .e-recurrence-table .e-week-position {
+          left: 0;
+        }
+      }
+    }
+
+    .e-device {
+      .e-recurrence-table .e-monthday-element {
+        padding-left: 20px;
+      }
+
+      .e-recurrenceeditor {
+        &.e-rtl {
+          .e-recurrence-table .e-monthday-element {
+            padding: 0 20px 0 0;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,327 @@
+@mixin speeddial-popup-styles($padding, $li-margin, $li-text-margin, $speeddial-li-text-height, $li-icon-height, $li-icon-width, $li-icon-font-size, $ul-padding, $sd-li-margin, $speeddial-text-li-padding) {
+  .e-speeddial-ul {
+    padding: $padding;
+  }
+
+  &.e-speeddial-linear .e-speeddial-li {
+    margin: $li-margin;
+  }
+
+  .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
+    margin: $li-text-margin;
+  }
+
+  .e-speeddial-li.e-speeddial-text-li .e-speeddial-li-text {
+    @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+      font-size: $li-icon-font-size;
+      line-height: $speeddial-li-text-height;
+      padding: $speeddial-text-li-padding;
+    }
+    @if ($skin-name == 'tailwind3') {
+      height: 12px;
+      line-height: 12px;
+    }
+  }
+
+  .e-speeddial-li-text {
+    height: $speeddial-li-text-height;
+    line-height: $speeddial-li-text-height;
+    @if ($skin-name == 'tailwind3') {
+      font-size: $li-icon-font-size;
+    }
+  }
+
+  .e-speeddial-li-icon {
+    height: $li-icon-height;
+    width: $li-icon-width;
+    font-size: $li-icon-font-size;
+  }
+
+  &.e-speeddial-horz-right,
+  &.e-speeddial-horz-left {
+    .e-speeddial-ul {
+      padding: $ul-padding;
+    }
+
+    .e-speeddial-li {
+      margin: $sd-li-margin;
+    }
+  }
+}
+
+@mixin speeddial-top-bottom-position($direction) {
+  #{$direction}: $sd-offset;
+  
+  &.e-speeddial-radial {
+    .e-speeddial-li {
+      #{$direction}: 0;
+    }
+  
+    &.e-speeddial-middle .e-speeddial-li {
+      #{$direction}: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
+    }
+  }
+  
+  &.e-speeddial-middle,
+  &.e-speeddial-linear {
+    #{$direction}: var(--speeddialVertDist);
+  }
+}
+
+@mixin speeddial-left-right-position($direction) {
+  #{$direction}: var(--speeddialRadialHorzDist);
+
+  &.e-speeddial-radial {
+    .e-speeddial-li {
+      #{$direction}: 0;
+    }
+
+    &.e-speeddial-center .e-speeddial-li {
+      #{$direction}: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
+    }
+  }
+
+  &.e-speeddial-radial.e-speeddial-center,
+  &.e-speeddial-center {
+    #{$direction}: var(--speeddialRadialHorzDist);
+  }
+
+  &.e-speeddial-linear {
+    #{$direction}: var(--speeddialHorzDist);
+  }
+}
+
+@mixin speeddial-styles($sd-height, $sd-width, $sd-position) {
+  height: $sd-height;
+  width: $sd-width;
+  position: $sd-position;
+}
+
+@include export-module('speed-dial-layout') {
+  .e-speeddial-popup {
+    position: absolute;
+    z-index: 100000;
+    pointer-events: none;
+
+    &.e-speeddial-top {
+      @include speeddial-top-bottom-position(top);
+    }
+
+    &.e-speeddial-bottom {
+      @include speeddial-top-bottom-position(bottom);
+    }
+
+    &.e-speeddial-left {
+      @include speeddial-left-right-position(left);
+    }
+
+    &.e-speeddial-right {
+      @include speeddial-left-right-position(right);
+    }
+
+    &.e-speeddial-template {
+      outline: none;
+      pointer-events: auto;
+      z-index: 100001;
+    }
+
+    &.e-speeddial-linear .e-speeddial-li {
+      margin: $sd-vert-li-margin;
+    }
+
+    .e-speeddial-ul {
+      box-sizing: border-box;
+      display: inline-flex;
+      flex-direction: column;
+      list-style-type: none;
+      margin: $sd-ul-margin;
+      padding: $sd-vert-ul-padding;
+    }
+
+    .e-speeddial-li {
+      align-items: center;
+      cursor: pointer;
+      display: inline-flex;
+      pointer-events: auto;
+      position: relative;
+      z-index: 100001;
+
+      &:not(.e-speeddial-text-li) .e-speeddial-li-text {
+        margin: $sd-li-text-margin;
+      }
+
+      &.e-speeddial-text-li .e-speeddial-li-text {
+        @if ($skin-name == 'fluent2') {
+          border: 1px solid;
+          border-radius: 20px;
+          font-size: 12px;
+          line-height: 16px;
+          padding: 8px 16px;
+          box-sizing: content-box;
+        }
+        @if ($skin-name == 'tailwind3') {
+          height: 26px;
+          line-height: 26px;
+          border: 1px solid;
+          border-radius: 20px;
+          padding: 0 12px;
+        }
+      }
+    }
+
+    .e-speeddial-li-text {
+      border-radius: 2px;
+      padding: $sd-li-text-padding;
+      white-space: nowrap;
+      height: $sd-li-text-height;
+      line-height: $sd-li-text-height;
+      @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+        border: none;
+      }
+      @else {
+        border: 1px solid;
+      }
+      @if ($skin-name == 'tailwind3') {
+        font-weight: $font-weight-medium;
+      }
+    }
+
+    .e-speeddial-li-icon {
+      border-radius: $sd-li-icon-border-radius;
+      border: 1px solid;
+      font-size: $sd-li-icon-font-size;
+      height: $sd-li-icon-height;
+      width: $sd-li-icon-width;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &.e-speeddial-fixed {
+      position: fixed;
+    }
+
+    &.e-speeddial-vert-right .e-speeddial-li,
+    &.e-speeddial-horz-right .e-speeddial-ul,
+    &.e-speeddial-horz-left .e-speeddial-ul.e-speeddial-horz-top {
+      flex-direction: row-reverse;
+    }
+
+    &.e-speeddial-vert-bottom .e-speeddial-ul {
+      flex-direction: column-reverse;
+    }
+
+    &.e-speeddial-horz-right .e-speeddial-ul.e-speeddial-horz-top,
+    &.e-speeddial-horz-left .e-speeddial-ul {
+      flex-direction: row;
+    }
+
+    &.e-speeddial-horz-right,
+    &.e-speeddial-horz-left {
+      .e-speeddial-ul {
+        padding: $sd-horz-ul-padding;
+      }
+
+      .e-speeddial-li {
+        margin: $sd-horz-li-margin;
+      }
+    }
+
+    /* OVERFLOW CSS */
+    &.e-speeddial-overflow {
+      .e-speeddial-ul {
+        overflow: auto;
+        scroll-behavior: smooth;
+
+        /* Hide scrollbar for IE and Edge */
+        -ms-overflow-style: none;
+
+        /* Hide scrollbar for Firefox */
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          
+          /* Hide scrollbar for Chrome, Safari and Opera */
+          display: none;
+        }
+      }
+
+      &.e-speeddial-vert-overflow .e-speeddial-ul {
+        max-height: var(--speeddialOverflowLimit);
+      }
+
+      &.e-speeddial-horz-overflow .e-speeddial-ul {
+        max-width: var(--speeddialOverflowLimit);
+      }
+    }
+
+    &.e-speeddial-radial {
+      height: calc(var(--speeddialRadialOffset) + 2 * var(--speeddialRadialMinHeight));
+      width: calc(var(--speeddialRadialOffset) + 2 * var(--speeddialRadialMinWidth));
+
+      &.e-speeddial-middle {
+        height: calc(2 * var(--speeddialRadialOffset) + 2 * var(--speeddialRadialMinHeight));
+      }
+
+      &.e-speeddial-center {
+        width: calc(2 * var(--speeddialRadialOffset) + 2 * var(--speeddialRadialMinWidth));
+      }
+
+      &.e-speeddial-top-left {
+        border-bottom-right-radius: 100%;
+      }
+
+      &.e-speeddial-top-right {
+        border-bottom-left-radius: 100%;
+      }
+
+      &.e-speeddial-bottom-left {
+        border-top-right-radius: 100%;
+      }
+
+      &.e-speeddial-bottom-right {
+        border-top-left-radius: 100%;
+      }
+
+      .e-speeddial-ul {
+        @include speeddial-styles(inherit, inherit, relative);
+        border-radius: inherit;
+        padding: 0;
+      }
+
+      .e-speeddial-li {
+        position: absolute;
+        transform: rotate(var(--speeddialRadialAngle)) translate(var(--speeddialRadialOffset)) rotate(calc(-1 * var(--speeddialRadialAngle)));
+      }
+    }
+
+    &.e-speeddial-radial,
+    &.e-speeddial-horz-right,
+    &.e-speeddial-horz-left {
+      .e-speeddial-li-text {
+        position: absolute;
+        visibility: hidden;
+      }
+    }
+  }
+
+  .e-small.e-speeddial-popup,
+  .e-small .e-speeddial-popup {
+    @include speeddial-popup-styles($sd-small-vert-ul-padding, $sd-small-vert-li-margin, $sd-small-li-text-margin, $sd-small-li-text-height, $sd-small-li-icon-height, $sd-small-li-icon-width, $sd-small-li-icon-font-size, $sd-small-horz-ul-padding, $sd-small-horz-li-margin, 5px 16px);
+  }
+
+  .e-speeddial-overlay {
+    @include speeddial-styles(100%, 100%, absolute);
+    left: 0;
+    top: 0;
+    z-index: 99998;
+
+    &.e-speeddial-fixed {
+      @include speeddial-styles(100vh, 100vw, fixed);
+    }
+  }
+
+  .e-speeddial-hidden {
+    visibility: hidden;
+  }
+}

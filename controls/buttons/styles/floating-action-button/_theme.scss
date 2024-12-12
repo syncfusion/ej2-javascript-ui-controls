@@ -1,0 +1,27 @@
+@include export-module('floating-action-button-theme') {
+  .e-fab.e-btn {
+    box-shadow: $fab-box-shadow;
+
+    &:hover:not(:focus),
+    &:active,
+    &.e-active,
+    &:disabled {
+      box-shadow: $fab-box-shadow;
+    }
+
+    &:focus {
+      @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark' and $skin-name != 'tailwind3' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'bootstrap5-dark') {
+        box-shadow: $fab-box-shadow;
+      }
+      @if $skin-name == 'tailwind' {
+        box-shadow: $fab-focus-box-shadow;
+      }
+    }
+  }
+}
+
+@if $skin-name == 'tailwind3' {
+  .e-fab.e-btn:focus-visible {
+    box-shadow: $fab-focus-box-shadow !important; /* stylelint-disable-line declaration-no-important */
+  }
+}

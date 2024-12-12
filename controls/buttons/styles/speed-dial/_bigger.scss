@@ -1,0 +1,64 @@
+@mixin speeddial-popup-styles($padding, $li-margin, $li-text-margin, $speeddial-li-text-height, $li-icon-height, $li-icon-width, $li-icon-font-size, $ul-padding, $sd-li-margin, $speeddial-text-li-padding) {
+  .e-speeddial-ul {
+    padding: $padding;
+  }
+
+  &.e-speeddial-linear .e-speeddial-li {
+    margin: $li-margin;
+  }
+
+  .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
+    margin: $li-text-margin;
+  }
+
+  .e-speeddial-li.e-speeddial-text-li .e-speeddial-li-text {
+    @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+      font-size: $li-icon-font-size;
+      line-height: $speeddial-li-text-height;
+      padding: $speeddial-text-li-padding;
+    }
+    @if ($skin-name == 'tailwind3') {
+      height: 18px;
+      line-height: 18px;
+    }
+  }
+
+  .e-speeddial-li-text {
+    height: $speeddial-li-text-height;
+    line-height: $speeddial-li-text-height;
+    @if ($skin-name == 'tailwind3') {
+      font-size: $li-icon-font-size;
+    }
+  }
+
+  .e-speeddial-li-icon {
+    height: $li-icon-height;
+    width: $li-icon-width;
+    font-size: $li-icon-font-size;
+  }
+
+  &.e-speeddial-horz-right,
+  &.e-speeddial-horz-left {
+    .e-speeddial-ul {
+      padding: $ul-padding;
+    }
+
+    .e-speeddial-li {
+      margin: $sd-li-margin;
+    }
+  }
+}
+
+@include export-module('speed-dial-bigger') {
+  .e-bigger.e-speeddial-popup,
+  .e-bigger .e-speeddial-popup {
+    @include speeddial-popup-styles($sd-bigger-vert-ul-padding, $sd-bigger-vert-li-margin, $sd-bigger-li-text-margin, $sd-bigger-li-text-height, $sd-bigger-li-icon-height, $sd-bigger-li-icon-width, $sd-bigger-li-icon-font-size, $sd-bigger-horz-ul-padding, $sd-bigger-horz-li-margin, 10px 28px);
+  }
+
+  .e-bigger.e-small.e-speeddial-popup,
+  .e-bigger.e-small .e-speeddial-popup,
+  .e-bigger .e-small.e-speeddial-popup,
+  .e-small .e-bigger.e-speeddial-popup {
+    @include speeddial-popup-styles($sd-bigger-small-vert-ul-padding, $sd-bigger-small-vert-li-margin, $sd-bigger-li-text-margin, $sd-bigger-small-li-text-height, $sd-bigger-small-li-icon-height, $sd-bigger-small-li-icon-width, $sd-bigger-small-li-icon-font-size, $sd-bigger-small-horz-ul-padding, $sd-bigger-small-horz-li-margin, 8px 24px);
+  }
+}

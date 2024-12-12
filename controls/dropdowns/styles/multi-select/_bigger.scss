@@ -1,0 +1,2002 @@
+@include export-module('multiselect-bigger') {
+  .e-bigger .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon,
+  .e-bigger.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
+    @if $ddl-multiselect-skin-name != 'Material3' {
+      margin-top: $ddl-icon-margin-top-bigger;
+    }
+    @if $ddl-multiselect-skin-name == 'fluent2' {
+      padding: 11px;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper {
+    min-height: $ddl-control-bigger-height;
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips {
+    margin: $ddl-chip-margin-bigger;
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      padding: $ddl-chip-bigger-content-padding;
+    }
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-chip-bigger-font-size;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    padding: $ddl-chip-mobile-content-padding;
+  }
+
+  .e-bigger #{&}.e-multiselect.e-rtl .e-multi-select-wrapper .e-chips>.e-chipcontent {
+    padding: $ddl-rtl-chip-mobile-content-padding;
+  }
+
+  .e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      right: $ddl-close-icon-bigger-right;
+    }
+  }
+  
+  .e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      right: 41px;
+    }
+  }
+  
+  .e-bigger.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+  .e-bigger.e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+  .e-bigger.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'FluentUI' {
+      font-size: $ddl-bigger-chip-down-icon-font;
+      right: $ddl-close-icon-bigger-right;
+    }
+  }
+  
+  .e-bigger.e-small.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+  .e-bigger.e-small.e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+  .e-bigger.e-small.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'FluentUI' {
+      font-size: $ddl-biggersmall-chip-down-icon-font;
+      right: $ddl-close-icon-bigger-right;
+    }
+  }
+
+  .e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
+    @if $ddl-multiselect-skin-name == 'Fabric' or $ddl-multiselect-skin-name == 'highcontrast' {
+      right: 38px;
+    }
+  }
+
+  .e-bigger.e-small .e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'FluentUI' or $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      right: $ddl-close-down-icon-left;
+    }
+  }
+
+  .e-bigger.e-small .e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+  .e-bigger.e-small.e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon {
+    @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      left: 45px;
+      right: auto;
+    }
+  }
+
+  .e-small.e-bigger .e-multiselect.e-rtl .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small.e-bigger.e-multiselect.e-rtl .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      left: 12px;
+      right: auto;
+    }
+  }
+
+  .e-bigger .e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+  .e-bigger.e-multiselect.e-input-group.e-control-container.e-rtl .e-multi-select-wrapper.e-down-icon .e-clear-icon {
+    @if $ddl-multiselect-skin-name == 'Fabric' or $ddl-multiselect-skin-name == 'highcontrast' {
+      left: 38px;
+      right: auto;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name != 'Material3' {
+      margin-top: $ddl-closer-margin-top-bigger;
+    }
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      height: $ddl-bigger-clear-icon-height;
+      width: $ddl-bigger-clear-icon-width;
+    }
+    @if $ddl-multiselect-skin-name == 'FluentUI' {
+      font-size: $ddl-bigger-chip-down-icon-font;
+    }
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      margin-top: -2.3em;
+      font-size: $ddl-bigger-chip-down-icon-font;
+      top: 100%;
+      border-radius: $ddl-bigger-closer-hooker-border-radius;
+      width: $ddl-bigger-closer-hooker-width;
+      height: $ddl-bigger-closer-hooker-height;
+      line-height: 28px;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker:hover {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      background: $ddl-bigger-closer-hooker-bg-color;
+      border: 1px;
+    }
+  }
+  
+  .e-bigger.e-small .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-clear-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      height: $ddl-bigger-small-closer-hooker-height;
+      width: $ddl-bigger-small-closer-hooker-width;
+      margin-top: $ddl-closer-margin-top-bigger-small;
+    }
+  }
+  
+  .e-bigger .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-clear-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      width: $ddl-bigger-closer-hooker-width;
+      height: $ddl-bigger-closer-hooker-width;
+    }
+  }
+  
+  .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon,
+  .e-bigger.e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+    @if $ddl-multiselect-skin-name != 'fluent2' {
+      margin-top: $ddl-closer-margin-top-bigger;
+    }
+    @if $ddl-multiselect-skin-name == 'fluent2' {
+      margin-top: -2.5em;
+    }
+    @if $ddl-multiselect-skin-name == 'FluentUI' {
+      margin-top: $ddl-bigger-clear-margin-top;
+    }
+    @if $ddl-multiselect-skin-name == 'bootstrap' {
+      margin-top: -3.7em;
+    }
+    @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      margin-top: -2.15em;
+    }
+    @if $ddl-multiselect-skin-name == 'highcontrast' or $ddl-multiselect-skin-name == 'fabric' {
+      margin-top: -3.2em;
+    }
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      height: $ddl-bigger-clear-icon-height;
+      margin-top: $ddl-clear-margin-top;
+      width: $ddl-bigger-clear-icon-width;
+    }
+  }
+  
+  .e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-multiselect .e-down-icon .e-chips-close.e-close-hooker.e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-closer-hooker-font-bigger;
+      margin-top: $ddl-closer-margin-top;
+    }
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      margin-top: $ddl-closer-margin-top-bigger;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper input[type = 'text'],
+  .e-multi-select-wrapper.e-mob-wrapper input[type = 'text'] {
+    height: $ddl-input-height;
+    min-height: $ddl-input-height;
+  }
+  
+  .e-bigger .e-multi-select-wrapper input[type = 'text'] {
+    @if $ddl-multiselect-skin-name == 'bootstrap4' {
+      font-size: $ddl-chip-bigger-font-size;
+    }
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-chip-bigger-font-size;
+    }
+    height: $ddl-input-bigger-height;
+    min-height: $ddl-input-bigger-height;
+  }
+
+  .e-bigger .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+  .e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+    width: $ddl-bigger-search-wrapper-width;
+  }
+
+  .e-bigger.e-small .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+  .e-bigger.e-small.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+  .e-bigger .e-small.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+  .e-small .e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+    width: $ddl-bigger-small-search-wrapper-width;
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      width: $ddl-bigger-small-search-wrapper-width;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-delim-bigger-font-size;
+    }
+    line-height: $ddl-delimviewheight-bigger;
+    padding-left: $ddl-delimview-bigger-padding-left;
+  }
+  
+  .e-bigger .e-multi-select-wrapper .e-delim-values .e-remain {
+    @if $ddl-multiselect-skin-name == 'bootstrap4' {
+      padding-left: 12px;
+    }
+    @else if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      padding-left: 0;
+    }
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-chip-bigger-font-size;
+    }
+  }
+
+  .e-bigger.e-small .e-multi-select-wrapper .e-delim-values .e-remain {
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-chip-bigger-small-font-size;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before,
+  .e-bigger .e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
+    @if ($ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3') {
+      left: $ddl-chip-close-rtl-bigger-left;
+    }
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before,
+  .e-bigger.e-small .e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
+    @if ($ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3') {
+      left: $ddl-chip-close-rtl-small-bigger-left;
+    }
+  }
+
+  .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-list-item .e-checkbox-wrapper {
+    @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
+      padding-right: $ddl-bigger-multiselect-group-list-item-rtl-padding-right;
+    }
+  }
+
+  .e-bigger .e-popup.e-multi-select-list-wrapper .e-list-item .e-checkbox-wrapper,
+  .e-bigger.e-popup.e-multi-select-list-wrapper .e-list-item .e-checkbox-wrapper {
+    bottom: 1px;
+    @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      bottom: 2px;
+    }
+    margin-right: $ddl-bigger-check-right-margin;
+  }
+  
+  .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item .e-checkbox-wrapper,
+  .e-bigger.e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item .e-checkbox-wrapper {
+    bottom: 1px;
+    @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      bottom: 2px;
+    }
+    margin-right: $ddl-bigger-check-right-margin;
+  }
+
+  .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-dropdownbase.e-rtl.e-dd-group .e-list-group-item {
+    @if $ddl-multiselect-skin-name == 'highcontrast' or $ddl-multiselect-skin-name == 'fabric' {
+      padding-right: $ddl-list-padding-right;
+    }
+  }
+  
+  .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {
+    @if ($ddl-multiselect-skin-name != 'tailwind') {
+      padding-left: $ddl-multiselect-group-list-group-item-padding-left;
+    }
+  }
+  
+  .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group:not(.e-rtl) .e-dropdownbase.e-dd-group .e-list-item .e-checkbox-wrapper {
+    @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
+      padding-left: $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left;
+    }
+  }
+
+  .e-bigger.e-multi-select-list-wrapper .e-selectall-parent .e-all-text,
+  .e-bigger .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {
+    @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' or $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
+      font-size: $ddl-bigger-selectall-font-size;
+    }
+  }
+  
+  .e-bigger.e-small.e-multi-select-list-wrapper .e-selectall-parent .e-all-text,
+  .e-bigger.e-small .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-bigger-small-selectall-font-size;
+    }
+  }
+  
+  .e-bigger.e-multi-select-list-wrapper .e-selectall-parent,
+  .e-bigger .e-multi-select-list-wrapper .e-selectall-parent {
+    font-size: $ddl-chip-font-size;
+    line-height: $ddl-bigger-select-all-height;
+    text-indent: $ddl-bigger-check-right;
+  }
+  
+  .e-bigger .e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-selectall-parent,
+  .e-bigger.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-selectall-parent {
+    @if $ddl-multiselect-skin-name == 'FluentUI' {
+      font-size: $ddl-chip-font-size;
+      line-height: $ddl-bigger-select-all-height;
+      text-indent: $ddl-bigger-check-right;
+    }
+  }
+
+  .e-bigger.e-multi-select-list-wrapper .e-selectall-parent .e-checkbox-wrapper,
+  .e-bigger .e-multi-select-list-wrapper .e-selectall-parent .e-checkbox-wrapper {
+    bottom: 1px;
+    @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' {
+      bottom: 2px;
+    }
+    margin-right: $ddl-bigger-check-right-margin;
+  }
+
+  .e-bigger.e-small .e-multiselect .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      top: 3px;
+    }
+  }
+
+  .e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,
+  .e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus {
+    @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'bootstrap5.3' and $ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'Material3' {
+      padding: $ddl-bigger-filterbar-padding;
+    }
+  }
+
+  .e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group:not(.e-control-container) .e-clear-icon {
+    @if $ddl-multiselect-skin-name != 'Material3' {
+      padding-left: 8px;
+    }
+    @if $ddl-multiselect-skin-name == 'material' {
+      padding-right: 8px;
+    }
+  }
+
+  .e-bigger .e-checkbox .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name != 'highcontrast' {
+      line-height: $ddl-delimviewheight-check-bigger;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips-close {
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      height: $ddl-bigger-chip-close-square;
+      width: $ddl-bigger-chip-close-width;
+    }
+  }
+  
+  .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-bigger-chip-close-font;
+    }
+  }
+
+  .e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+    @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
+      height: $ddl-bigger-small-input-height;
+    }
+  }
+  
+  .e-bigger .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-bigger .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+    @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
+      height: $ddl-input-bigger-height;
+    }
+  }
+
+  .e-bigger.e-small.e-multi-select-list-wrapper .e-selectall-parent,
+  .e-bigger.e-small .e-multi-select-list-wrapper .e-selectall-parent {
+    line-height: $ddl-select-all-height-bigger-small;
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-chip-bigger-small-font-size;
+      text-indent: $ddl-bigger-small-check-right;
+    }
+  }
+  
+  .e-bigger.e-small .e-multiselect.e-control-container .e-multi-select-wrapper .e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      margin-top: $ddl-bigger-small-ddl-icon-top;
+      top: 100%;
+    }
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-control-container .e-multi-select-wrapper .e-ddl-icon,
+  .e-bigger.e-small.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
+    margin-top: $ddl-bigger-small-ddl-icon-top;
+  }
+  
+  .e-bigger.e-small .e-multi-select-wrapper .e-chips-close {
+    height: $ddl-bigger-small-chip-close-square;
+    width: $ddl-bigger-small-chip-close-width;
+    @if $ddl-multiselect-skin-name == 'bootstrap4' {
+      margin: 3px 10px 10px 0;
+    }
+  }
+  
+  .e-bigger.e-small .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      min-height: $ddl-bigger-small-close-hooker-height;
+      min-width: $ddl-bigger-small-close-hooker-width;
+    }
+  }
+  
+  .e-bigger.e-small .e-multi-select-wrapper {
+    min-height: $ddl-control-bigger-small-height;
+  }
+  
+  .e-bigger.e-small .e-multi-select-wrapper input[type = 'text'] {
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-chip-bigger-small-font-size;
+    }
+    height: $ddl-bigger-small-input-height;
+    min-height: $ddl-bigger-small-input-height;
+  }
+  
+  .e-small.e-bigger .e-multi-select-wrapper .e-delim-values {
+    font-size: $ddl-delim-bigger-small-font-size;
+    line-height: $ddl-delimviewheight-bigger-small;
+  }
+  
+  .e-bigger.e-small .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      right: $ddl-close-icon-bigger-small-right;
+    }
+  }
+
+  .e-bigger.e-small .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+    margin-top: $ddl-closer-margin-top-bigger-small;
+    @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'bootstrap5.3' and $ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'tailwind3' {
+      right: $ddl-chip-hooker-right;
+    }
+    @if $ddl-multiselect-skin-name == 'Material3' or $ddl-multiselect-skin-name == 'tailwind3' {
+      right: $ddl-chip-hooker-bigger-small-right;
+    }
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      font-size: $ddl-closer-hooker-font-bigger-small;
+      height: $ddl-bigger-small-clear-icon-height;
+      width: $ddl-bigger-small-clear-icon-width;
+    }
+    @if $ddl-multiselect-skin-name == 'FluentUI' {
+      font-size: $ddl-biggersmall-chip-down-icon-font;
+    }
+  }
+  
+  .e-small.e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    @if $ddl-multiselect-skin-name == 'bootstrap4' {
+      padding: $ddl-chip-bigger-content-padding;
+    }
+  }
+
+  .e-bigger .e-content-placeholder.e-multiselect.e-placeholder-multiselect,
+  .e-bigger.e-content-placeholder.e-multiselect.e-placeholder-multiselect {
+    background-size: 300px 40px;
+    min-height: 40px;
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: inherit;
+      min-height: $outline-multiselect-inner-input-height;
+      padding: 8px 12px 9px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger.e-small .e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger .e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
+  .e-small .e-bigger.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'] {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding: 8px 12px 9px;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: inherit;
+      min-height: $outline-multiselect-bigger-inner-input-height;
+    }
+  }
+
+  .e-bigger {
+    .e-multiselect.e-outline .e-multi-select-wrapper,
+    #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+        min-height: $outline-multiselect-bigger-height;
+        padding: $outline-multiselect-bigger-overall-padding;
+      }
+    }
+
+    .e-small {
+      #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+        @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+          min-height: $ddl-outline-multiselect-height;
+          padding: $outline-multiselect-overall-padding;
+        }
+      }
+    }
+
+    #{if(&, '&', '*')}.e-small {
+      .e-multiselect.e-outline .e-multi-select-wrapper,
+      #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+        @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+          min-height: $ddl-outline-multiselect-height;
+          padding: $outline-multiselect-overall-padding;
+        }
+      }
+    }
+  }
+
+  .e-small {
+    .e-bigger {
+      #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
+        @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+          min-height: $ddl-outline-multiselect-height;
+          padding: $outline-multiselect-overall-padding;
+        }
+      }
+    }
+
+    #{if(&, '&', '*')}.e-bigger {
+      .e-multiselect.e-outline .e-multi-select-wrapper {
+        @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+          min-height: $ddl-outline-multiselect-height;
+          padding: $outline-multiselect-overall-padding;
+        }
+      }
+    }
+  }
+
+  .e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-bigger .e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding-right: 0;
+    }
+  }
+
+  .e-rtl.e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+  .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-bigger .e-rtl.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+  .e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-rtl .e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+  .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+  .e-rtl.e-small.e-bigger .e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+  .e-rtl.e-small.e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+  .e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding-left: 0;
+    }
+  }
+
+  .e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper,
+  .e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper,
+  .e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding: $outline-rtl-multiselect-overall-padding;
+    }
+  }
+
+  .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper,
+  .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper,
+  .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding: $outline-rtl-multiselect-bigger-overall-padding;
+    }
+  }
+
+  .e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding-left: 0;
+    }
+  }
+
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding-right: 0;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $outline-multiselect-bigger-height;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $ddl-outline-multiselect-height;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 16px;
+      line-height: $outline-multiselect-bigger-height;
+      padding: $outline-multiselect-bigger-delimeter-padding;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 14px;
+      line-height: $ddl-outline-multiselect-height;
+      padding: $outline-multiselect-delimeter-padding;
+    }
+  }
+
+  .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding: $outline-rtl-multiselect-bigger-delimeter-padding;
+    }
+  }
+
+  .e-rtl.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-small .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
+  .e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      padding: $outline-rtl-multiselect-delimeter-padding;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $outline-multiselect-bigger-chip-height;
+      padding: $outline-multiselect-bigger-chip-padding;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $outline-multiselect-chip-height;
+      padding: $outline-multiselect-chip-padding;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: $outline-multiselect-chip-font-size;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: $outline-multiselect-bigger-chip-font-size;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-bigger .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 16px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 14px;
+    }
+  }
+
+  .e-small.e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper,
+  .e-small .e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper {
+    padding: 3px 12px 0 4px;
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper,
+  .e-bigger.e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper,
+  .e-bigger .e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper {
+    padding: 0;
+  }
+
+  .e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper,
+  .e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper,
+  .e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper,
+  .e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper {
+    padding: 11px 12px 0;
+  }
+
+  .e-bigger.e-filled.e-float-input .e-multi-select-wrapper,
+  .e-bigger .e-filled.e-float-input .e-multi-select-wrapper {
+    padding: 19px 12px 0 16px;
+  }
+
+  .e-bigger:not(.e-small).e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper {
+    padding-top: 3px;
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
+  .e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'] {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      min-height: $ddl-multiselect-filled-input-min-height;
+      padding-right: 10px;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'] {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      min-height: $ddl-multiselect-filled-input-min-height-bigger;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type = 'text'],
+  .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type = 'text'] {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      min-height: $ddl-multiselect-filled-float-input-min-height-bigger;
+    }
+  }
+
+  .e-bigger.e-filled:not(.e-small).e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-bigger .e-filled:not(.e-small).e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $ddl-multiselect-filled-input-min-height-bigger;
+    }
+  }
+
+  .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $ddl-multiselect-filled-float-input-min-height-bigger;
+    }
+  }
+
+  .e-bigger.e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-bigger.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher .e-bigger .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
+  .e-small .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $ddl-multiselect-filled-float-input-min-height;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-delimiter input[type = 'text'],
+  .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper.e-delimiter input[type = 'text'] {
+    padding: 5px 0;
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
+  .e-bigger.e-small .e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
+  .e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
+  .e-small .e-bigger.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      min-height: $ddl-multiselect-filled-float-input-min-height;
+    }
+  }
+
+  .e-small.e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+  .e-small.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+  .e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 13px;
+      line-height: $ddl-multiselect-filled-input-min-height;
+    }
+  }
+
+  .e-small.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+  .e-small.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+  .e-small .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 14px;
+      line-height: $ddl-multiselect-filled-float-input-min-height;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
+  .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 16px;
+      line-height: $ddl-multiselect-filled-input-min-height-bigger;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
+  .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      line-height: $ddl-multiselect-filled-float-input-min-height-bigger;
+    }
+  }
+
+  .e-bigger.e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-bigger.e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-small .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+    height: 28px;
+  }
+
+  .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
+    height: 24px;
+  }
+
+  .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+    height: 32px;
+  }
+
+  .e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
+    height: 18px;
+  }
+
+  .e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-bigger.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-small .e-bigger.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+    margin: 8px 8px 0 0;
+    padding: 0 8px;
+  }
+
+  .e-rtl.e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-bigger.e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-bigger.e-small .e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-bigger .e-small.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-small .e-bigger.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips {
+    margin: 8px 0 0 8px;
+    padding: 0 8px;
+  }
+
+  .e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips {
+    padding-left: 8px;
+  }
+
+  .e-small.e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-small .e-filled:not(.e-bigger).e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger.e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-small .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+      width: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+    }
+  }
+
+  .e-bigger.e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger.e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger .e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-small .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    font-size: 13px;
+    padding: 0 8px 0 0;
+  }
+
+  .e-bigger.e-small.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger.e-small .e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger .e-small.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-small .e-bigger.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    font-size: 12px;
+    padding: 0 4px 0 0;
+  }
+
+  .e-rtl.e-bigger.e-small.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-rtl.e-bigger.e-small .e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-rtl.e-bigger .e-small.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-rtl.e-small .e-bigger.e-filled.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    padding: 0 0 0 4px;
+  }
+
+  .e-bigger.e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger .e-filled.e-float-input.e-multiselect .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    font-size: 13px;
+  }
+
+  .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
+  .e-bigger .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: $ddl-multiselect-filled-chip-clear-icon-size;
+    }
+  }
+
+  .e-rtl.e-bigger.e-filled .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-bigger .e-filled .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-rtl.e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger.e-filled .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-filled .e-multi-select-wrapper .e-chips {
+    padding: 0 12px;
+  }
+
+  .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips,
+  .e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips {
+    padding-right: 8px;
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'bootstrap5.3' or $ddl-multiselect-skin-name == 'FluentUI' {
+      font-size: $ddl-bigger-chip-close-font;
+    }
+  }
+
+  .e-bigger.e-small .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'bootstrap4' {
+      left: $ddl-chip-close-bigger-left;
+      top: $ddl-chip-close-bigger-top;
+    }
+    font-size: $ddl-bigger-small-chip-close-font;
+  }
+
+  .e-bigger.e-small .e-multi-select-wrapper .e-chips {
+    height: $ddl-bigger-small-chip-height;
+  }
+  
+  .e-bigger.e-small .e-multi-select-wrapper .e-chips > .e-chipcontent {
+    font-size: $ddl-chip-bigger-small-font-size;
+  }
+
+  .e-small.e-bigger .e-multi-select-wrapper .e-close-hooker::before {
+    left: $ddl-chip-close-hooker-small-bigger-left;
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips {
+    height: $ddl-chip-mobile-height;
+  }
+
+  .e-bigger .e-multiselect.e-input-group .e-ddl-icon::before {
+    @if $skin-name == 'bootstrap4' {
+      font-size: 10px;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $skin-name == 'bootstrap4' {
+      font-size: 12px;
+      top: $ddl-bigger-close-top;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $skin-name == 'bootstrap4' {
+      top: 1px;
+    }
+  }
+
+  .e-small.e-bigger .e-multi-select-wrapper .e-close-hooker::before {
+    @if $skin-name == 'bootstrap4' {
+      top: 4px;
+    }
+  }
+
+  .e-small.e-bigger .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
+    @if $skin-name == 'bootstrap4' {
+      top: 5px;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-close-hooker::before {
+    @if $skin-name == 'bootstrap4' {
+      top: 11px;
+    }
+  }
+
+  .e-bigger .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
+    @if $skin-name == 'bootstrap4' {
+      top: 11px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      height: 38px;
+      margin-top: -55px;
+      right: 12px;
+      top: 100%;
+      width: 18px;
+    }
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      right: 48px;
+    }
+  }
+  
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      height: 40px;
+      margin-top: -55px;
+      right: 6px;
+      top: 100%;
+      width: 40px;
+    }
+  }
+  
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      right: 60px;
+    }
+  }
+
+  .e-rtl.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      left: 48px;
+      right: auto;
+    }
+  }
+  
+  .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      left: 60px;
+      right: auto;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      content: '\e208';
+      font-size: 20px;
+      height: 20px;
+      left: 0;
+      margin-top: -10px;
+      top: 50%;
+    }
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      content: '\e208';
+      font-size: 18px;
+      height: 18px;
+      left: 0;
+      margin-top: -9px;
+      top: 50%;
+    }
+  }
+
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 16px;
+    }
+  }
+  
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 14px;
+    }
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      margin: 10px 16px 10px 0;
+    }
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      margin: 6px 12px 8px 0;
+    }
+  }
+
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-rtl .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      margin: 10px 0 10px 16px;
+    }
+  }
+
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      margin: 6px 0 8px 12px;
+    }
+  }
+
+  .e-bigger.e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $skin-name == 'fluent2' {
+      height: 20px;
+      margin-top: -33px;
+      right: 18px;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-small.e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $skin-name == 'fluent2' {
+      height: 20px;
+      margin-top: -35px;
+      right: 45px;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $skin-name == 'fluent2' {
+      margin-top: -32px;
+    }
+  }
+
+  .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $skin-name == 'fluent2' {
+      height: 24px;
+      width: 24px;
+    }
+  }
+
+  .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $skin-name == 'fluent2' {
+      margin-top: -40px;
+    }
+  }
+  
+  .e-bigger.e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $skin-name == 'fluent2' {
+      margin-top: -32px;
+      right: 40px;
+    }
+  }
+  
+  .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $skin-name == 'fluent2' {
+      margin-top: -44px;
+    }
+  }
+
+  .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      height: $ddl-multiselect-filled-chip-clear-icon-size;
+      width: $ddl-multiselect-filled-chip-clear-icon-size;
+    }
+  }
+  
+  .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
+    @if $skin-name == 'fluent2' {
+      height: 16px;
+      width: 16px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      font-size: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+      height: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+      width: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+    }
+  }
+
+  .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      font-size: $ddl-multiselect-filled-chip-clear-icon-size;
+      height: $ddl-multiselect-filled-chip-clear-icon-size;
+      width: $ddl-multiselect-filled-chip-clear-icon-size;
+    }
+  }
+
+  .e-bigger.e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
+  .e-bigger.e-small .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
+  .e-bigger .e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
+  .e-small .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before {
+    @if $skin-name == 'fluent2' {
+      content: '\e208';
+      font-size: 16px;
+      height: 16px;
+      padding: 0;
+      text-align: center;
+      vertical-align: middle;
+      width: 16px;
+    }
+  }
+
+  .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
+  .e-bigger .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before {
+    @if $skin-name == 'fluent2' {
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-small.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      left: 10px;
+      right: auto;
+    }
+  }
+
+  .e-bigger.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      left: 12px;
+      right: auto;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      height: 24px;
+      margin: 12px -4px 8px -1px;
+      padding: 0;
+      width: 24px;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled.e-float-input .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper.e-float-input .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      margin: 0;
+    }
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-small.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-bigger.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      height: 20px;
+      margin: 0 0 8px;
+      padding: 0;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+    }
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small.e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+    }
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      height: 24px;
+      margin: 7px -4px 8px -1px;
+      padding: 0;
+      width: 24px;
+    }
+  }
+
+  .e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      content: '';
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: 38px;
+      margin-top: -55px;
+      right: 12px;
+      top: 100%;
+      width: 18px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      right: 48px;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' {
+      height: 54px;
+      margin-top: -55px;
+      right: 16px;
+      top: 100%;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      right: 60px;
+    }
+  }
+
+  .e-rtl.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      left: 48px;
+      right: auto;
+    }
+  }
+
+  .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      left: 60px;
+      right: auto;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      content: '\e208';
+      font-size: 20px;
+      height: 20px;
+      left: 0;
+      margin-top: -10px;
+      top: 50%;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      content: '\e208';
+      font-size: 18px;
+      height: 18px;
+      left: 0;
+      margin-top: -9px;
+      top: 50%;
+    }
+  }
+
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 16px;
+    }
+  }
+
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 14px;
+    }
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin: 10px 16px 10px 0;
+    }
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin: 6px 12px 8px 0;
+    }
+  }
+
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-rtl .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin: 10px 0 10px 16px;
+    }
+  }
+
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin: 6px 0 8px 12px;
+    }
+  }
+
+  .e-bigger.e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: 20px;
+      margin-top: -33px;
+      right: 18px;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-small.e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: 20px;
+      margin-top: -35px;
+      right: 45px;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin-top: -32px;
+    }
+  }
+
+  .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: 24px;
+      width: 24px;
+    }
+  }
+
+  .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin-top: -40px;
+    }
+  }
+
+  .e-bigger.e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-float-input.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin-top: -32px;
+      right: 40px;
+    }
+  }
+
+  .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-filled.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin-top: -44px;
+    }
+  }
+
+  .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: $ddl-multiselect-filled-chip-clear-icon-size;
+      width: $ddl-multiselect-filled-chip-clear-icon-size;
+    }
+  }
+
+  .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: 16px;
+      width: 16px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+      height: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+      width: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+    }
+  }
+
+  .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: $ddl-multiselect-filled-chip-clear-icon-size;
+      height: $ddl-multiselect-filled-chip-clear-icon-size;
+      width: $ddl-multiselect-filled-chip-clear-icon-size;
+    }
+  }
+
+  .e-bigger.e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
+  .e-bigger.e-small .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
+  .e-bigger .e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
+  .e-small .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before {
+    @if $ddl-multiselect-skin-name == 'material-dark' {
+      content: '\e208';
+      font-size: 16px;
+      height: 16px;
+      padding: 0;
+      text-align: center;
+      vertical-align: middle;
+      width: 16px;
+    }
+  }
+
+  .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
+  .e-bigger .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-small.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      left: 10px;
+      right: auto;
+    }
+  }
+
+  .e-bigger.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      left: 12px;
+      right: auto;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: 24px;
+      margin: 12px -4px 8px -1px;
+      padding: 0;
+      width: 24px;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled.e-float-input .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper.e-float-input .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      margin: 0;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-small.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-bigger.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: 20px;
+      margin: 0 0 8px;
+      padding: 0;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small.e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      height: 24px;
+      margin: 7px -4px 8px -1px;
+      padding: 0;
+      width: 24px;
+    }
+  }
+
+  .e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'material-dark' or $ddl-multiselect-skin-name == 'Material3' {
+      content: '';
+    }
+  }
+
+  @if $skin-name == 'bootstrap-dark' or $skin-name == 'tailwind' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'fluent2'{
+    .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+      height: $ddl-chip-hooker-square;
+      width: $ddl-chip-hooker-square;
+    }
+  }
+  @if $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap' {
+    .e-bigger.e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+      margin-top: -3.2em;
+    }
+  }
+  @if $skin-name == 'bootstrap4' {
+    .e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
+    .e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+      font-size: 14px;
+    }
+    .e-small.e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
+    .e-small.e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+      font-size: 12px;
+    }
+    .e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
+      font-size: 14px;
+    }
+  
+    .e-bigger .e-multi-select-wrapper .e-chips-close {
+      height: $ddl-bigger-chip-close-square;
+      width: $ddl-bigger-chip-close-width;
+    }
+    .e-bigger .e-ddl.e-popup .e-filter-parent .e-clear-icon {
+      display: flex;
+    }
+    .e-small.e-bigger .e-multi-select-wrapper .e-chips {
+      margin: 2px 4px 2px 0;
+    }
+    .e-bigger .e-multiselect .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+      height: $multiselect-closer-bigger-height;
+      margin-top: $multiselect-closer--bigger-margin-top;
+      right: $multiselect-closer-bigger-width;
+    }
+  
+    .e-bigger .e-multiselect .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+    .e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+    .e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
+      right: $multiselect-dropicon-closer-bigger-width;
+    }
+  
+    .e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper .e-clear-icon {
+      height: $multiselect-closer-bigger-height;
+      margin-top: $ddl-closer-margin-top-bigger;
+    }
+  }
+  @if $skin-name == 'fabric-dark' or $skin-name == 'fabric'{
+    .e-small.e-bigger .e-multi-select-wrapper .e-chips {
+      padding: 0;
+    }
+  
+    .e-small.e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
+      padding: 0 8px;
+    }
+  }
+  @if $skin-name == 'FluentUI' {
+    .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+    .e-bigger.e-multiselect.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
+      margin-top: -1.6em;
+    }
+  }
+  @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
+    #{&}.e-popup {
+      #{if(&, '&', '*')}.e-multi-select-list-wrapper {
+        #{if(&, '&', '*')}.e-ddl,
+        .e-bigger #{if(&, '&', '*')}.e-ddl {
+          #{if(&, '&', '*')}.e-checkbox .e-filter-parent .e-clear-icon {
+            padding-left: 0;
+          }
+        }
+      }
+    }
+  }
+}

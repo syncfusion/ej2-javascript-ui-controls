@@ -1,0 +1,561 @@
+@include export-module('color-picker-bigger') {
+  .e-bigger .e-colorpicker-wrapper,
+  .e-bigger.e-colorpicker-wrapper,
+  .e-bigger .e-colorpicker-container,
+  .e-bigger.e-colorpicker-container {
+    & .e-split-btn-wrapper {
+      @if $skin-name == 'Material3' {
+        box-shadow: none;
+      }
+      & .e-split-colorpicker.e-split-btn {
+        line-height: $cpicker-bigger-split-line-height;
+        @if $skin-name != 'tailwind3' {
+          padding: $cpicker-bigger-split-btn-padding;
+        }
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          background-color: $content-bg-color;
+          border: $cpicker-split-btn-border;
+        }
+
+        & .e-selected-color {
+          height: $cpicker-bigger-split-btn-icon-height;
+          width: $cpicker-bigger-split-btn-icon-width;
+        }
+      }
+
+      &.e-rtl {
+        & .e-split-colorpicker.e-split-btn {
+          @if $skin-name != 'tailwind3' {
+            padding: $cpicker-bigger-split-btn-padding;
+          }
+        }
+      }
+    }
+
+    .e-colorpicker-popup:not(.e-split-btn-wrapper):not(.e-dropdown-btn) {
+      line-height: 0;
+    }
+  }
+
+  .e-bigger {
+    & .e-container {
+      @if $skin-name == 'Material3' {
+        border-radius: $cpicker-bigger-popup-border-radius;
+        box-shadow: $cpicker-bigger-box-shadow;
+      }
+
+      & .e-slider-preview .e-colorpicker-slider .e-slider-container .e-slider {
+        @if $skin-name == 'bootstrap5.3' {
+          top: calc(50% - 6px);
+        }
+      }
+
+      & .e-switch-ctrl-btn .e-ctrl-btn {
+        margin: 2px 0;
+        @if $skin-name == 'bootstrap5.3' {
+          width: 85.913%;
+        }
+        @if $skin-name == 'tailwind3' {
+          font-size: 16px;
+        }
+      }
+
+      &.e-color-picker {
+        @if $skin-name == 'Material3' {
+          height: $cpicker-bigger-popup-container-height;
+          width: $cpicker-bigger-popup-container-width;
+        }
+        @else {
+          width: $cpicker-bigger-container-width;
+        }
+
+        & .e-switch-ctrl-btn .e-ctrl-btn .e-btn {
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            height: 38px;
+          }
+        }
+
+        & .e-switch-ctrl-btn {
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            padding: $cpicker-bigger-ctrl-btn-padding;
+          }
+          @if $skin-name == 'fluent2' {
+            padding: 13px 12px;
+          }
+          @if $skin-name == 'tailwind3' {
+            height: 64px;
+            align-content: center;
+          }
+        }
+
+        & .e-switch-ctrl-btn .e-mode-switch-btn {
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            height: 38px;
+          }
+          @if $skin-name == 'Material3' {
+            height: $cpicker-bigger-switch-btn-height;
+            width: $cpicker-bigger-switch-btn-width;
+          }
+        }
+      }
+
+      @media only screen and (max-width: 600px) {
+        @if $skin-name == 'material' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
+          &.e-color-picker {
+            width: 100% !important; /* stylelint-disable-line declaration-no-important */
+          }
+
+          &.e-colorpicker-popup {
+            width: calc(100% - 20px) !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+      }
+
+      & .e-palette {
+        & .e-tile {
+          @if $skin-name == 'Material3' {
+            height: $cpicker-tiles-height;
+          }
+          @else {
+            height: $cpicker-bigger-tile-size;
+          }
+          width: $cpicker-bigger-tile-size;
+        }
+
+        @media only screen and (max-width: 600px) {
+          @if $skin-name == 'Material3' {
+            & .e-tile {
+              width: 33px !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+        }
+      }
+
+      & .e-hsv-container {
+        & .e-handler {
+          @if $skin-name == 'bootstrap4' {
+            height: 12px;
+            width: 12px;
+          }
+          @if $skin-name == 'tailwind3' {
+            height: 20px;
+            width: 20px;
+          }
+        }
+
+        & .e-hsv-color {
+          height: $cpicker-bigger-container-height;
+        }
+      }
+
+      & .e-custom-palette {
+        &.e-palette-group {
+          height: $cpicker-bigger-container-width;
+        }
+      }
+
+      & .e-slider-preview {
+        padding: $cpicker-bigger-slider-wrapper-padding;
+
+        & .e-preview-container {
+          margin-left: $cpicker-bigger-preview-margin-left;
+          vertical-align: super;
+          width: $cpicker-bigger-preview-size;
+          @if $skin-name == 'tailwind3' {
+            height: 42px;
+            & .e-preview {
+              &.e-current {
+                height: 20px;
+              }
+              &.e-previous {
+                height: 21px;
+                top: 20px;
+              }
+            }
+          }
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            top: 5px;
+          }
+          @else if $skin-name == 'FluentUI' {
+            top: $cpicker-preview-container-top;
+          }
+          @else if $skin-name == 'tailwind3' {
+            top: 10px;
+          }
+          @else {
+            top: 0;
+          }
+        }
+
+        @media only screen and (max-width: 600px) {
+          & .e-preview-container {
+            @if $skin-name == 'material' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
+              margin-left: 4.6% !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+        }
+
+        & .e-colorpicker-slider {
+          width: $cpicker-bigger-slider-container-width;
+
+          & .e-slider-container {
+            height: $cpicker-bigger-slider-container-height;
+            @if $skin-name == 'bootstrap4' {
+              padding: 12px;
+            }
+
+            & .e-slider-track {
+              @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+                height: $cpicker-bigger-slider-height;
+              }
+              @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+                border-radius: 6px;
+              }
+              @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
+                height: 8px !important; /* stylelint-disable-line declaration-no-important */
+              }
+            }
+
+            & .e-opacity-slider {
+              & .e-opacity-empty-track {
+                @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+                  height: 12px;
+                }
+                @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
+                  height: 8px !important; /* stylelint-disable-line declaration-no-important */
+                }
+              }
+            }
+
+            & .e-handle {
+              border-radius: $cpicker-bigger-slider-handle-radius;
+              height: $cpicker-bigger-slider-handle-size;
+              top: $cpicker-bigger-slider-handle-top;
+              width: $cpicker-bigger-slider-handle-size;
+            }
+          }
+        }
+
+        & .e-switch-ctrl-btn {
+          @if $skin-name == 'bootstrap4' {
+            display: inline-block;
+            padding: 16px;
+            white-space: nowrap;
+            width: 100%;
+          }
+
+          & .e-ctrl-btn {
+            width: 90.6%;
+          }
+
+          & .e-cancel {
+            @if $skin-name == 'bootstrap4' {
+              margin-left: 10px;
+            }
+          }
+        }
+      }
+
+      &.e-color-palette {
+        & .e-palette {
+          +.e-switch-ctrl-btn {
+            padding: $cpicker-bigger-palette-ctrl-btn-padding;
+
+            & .e-mode-switch-btn {
+              @if $skin-name == 'Material3' {
+                height: $cpicker-bigger-switch-btn-height;
+                width: $cpicker-bigger-switch-btn-width;
+              }
+            }
+
+            & .e-ctrl-btn .e-btn {
+              @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+                line-height: 0;
+              }
+            }
+          }
+        }
+
+        & .e-clr-pal-rec-wpr {
+          padding: $cpicker-bigger-recent-color-wrap-pad;
+  
+          & .e-recent-clr-span {
+            display: block;
+            @if $skin-name == 'bootstrap4' {
+              font-weight: 600;
+            }
+            @else if $skin-name == 'bootstrap-dark' {
+              font-weight: normal;
+            }
+            @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
+              font-size: 14px;
+            }
+            @else {
+              font-size: 16px;
+            }
+            height: $cpicker-bigger-recent-color-span-hgt;
+            padding: $cpicker-bigger-recent-color-span-pad;
+            line-height: $cpicker-bigger-recent-color-span-line-hgt;
+          }
+  
+          & .e-palette.e-recent-palette {
+            padding: $cpicker-bigger-recent-color-tile-pad;
+  
+            & .e-tile {
+              @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'highcontrast-light' or $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
+                height: 24px !important; /* stylelint-disable-line declaration-no-important */
+              }
+              @else {
+                height: $cpicker-bigger-recent-color-tile-dim !important; /* stylelint-disable-line declaration-no-important */
+              }
+              width: $cpicker-bigger-recent-color-tile-dim !important; /* stylelint-disable-line declaration-no-important */
+              margin: $cpicker-bigger-recent-color-tile-margin;
+            }
+          }
+        }
+      }
+
+      & .e-input-container {
+        width: $cpicker-bigger-input-container;
+
+        & .e-float-input {
+          margin-right: $cpicker-bigger-label-margin;
+          @if $skin-name == 'tailwind3' {
+            .e-float-text {
+              font-weight: $font-weight-normal;
+              font-size: 16px !important; /* stylelint-disable-line declaration-no-important */
+              right: 0 !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+          &:first-child {
+            width: $cpicker-bigger-hex-label-width;
+
+            & input {
+              height: $cpicker-bigger-input-height;
+            }
+          }
+
+          &.e-numeric {
+            height: $cpicker-bigger-input-height;
+            width: $cpicker-bigger-label-width;
+
+            & input {
+              height: $cpicker-bigger-numeric-input-height;
+            }
+          }
+        }
+      }
+
+      @media only screen and (max-width: 600px) {
+        & .e-input-container {
+          @if $skin-name == 'fabric' {
+            width: 89.8%;
+          }
+        }
+      }
+
+      &.e-color-palette .e-mode-switch-btn {
+        @if $skin-name == 'bootstrap5.3' {
+          width: 13.306%;
+        }
+      }
+
+      & .e-css.e-value-switch-btn,
+      & .e-mode-switch-btn {
+        padding: $cpicker-bigger-switch-btn-padding;
+        width: $cpicker-bigger-switch-btn-width;
+        @if $skin-name == 'Material3' {
+          border: none;
+        }
+        @if $skin-name == 'bootstrap4' or $skin-name == 'fluent2' or $skin-name == 'tailwind3'{
+          height: $cpicker-bigger-switch-btn-width;
+        }
+        @if $skin-name == 'bootstrap5.3' {
+          height: 38px;
+        }
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          font-size: 22px;
+          line-height: 22px;
+        }
+        @else if $skin-name == 'tailwind3' {
+          font-size: 16px;
+          line-height: 16px;
+        }
+        @else {
+          font-size: 18px;
+          line-height: 18px;
+        }
+      }
+
+      & .e-mode-switch-btn {
+        margin-top: $cpicker-bigger-type-switch-btn-margin;
+      }
+
+      &.sf-colorpicker .e-input-container .e-float-input {
+        margin-right: $cpicker-blazor-bigger-input-margin;
+      }
+    }
+
+    & .e-hide-opacity,
+    &.e-hide-opacity {
+      & .e-container {
+        & .e-slider-preview {
+          padding: $cpicker-bigger-slider-wrapper-padding;
+
+          & .e-preview-container {
+            vertical-align: initial;
+          }
+        }
+
+        & .e-float-input {
+          &:first-child {
+            width: $cpicker-opacity-hidden-hex-width;
+          }
+
+          &.e-numeric {
+            width: $cpicker-bigger-opacity-hidden-numeric-width;
+          }
+        }
+      }
+    }
+
+    &.e-hide-hex-value,
+    & .e-hide-hex-value {
+      & .e-container {
+        & .e-float-input {
+          &.e-numeric {
+            width: $cpicker-bigger-hex-hidden-width;
+          }
+        }
+      }
+
+      &.e-hide-opacity .e-container {
+        & .e-float-input {
+          &.e-numeric {
+            width: $cpicker-hex-opacity-hidden-width;
+          }
+        }
+      }
+    }
+
+    &.e-hide-valueswitcher,
+    & .e-hide-valueswitcher {
+      & .e-container {
+        & .e-input-container {
+          width: 100%;
+        }
+
+        & .e-float-input {
+          &:last-child {
+            margin-right: 0;
+          }
+
+          &.e-numeric {
+            width: $cpicker-bigger-value-hidden-label-width;
+          }
+        }
+      }
+
+      &.e-hide-opacity .e-container {
+        & .e-float-input {
+          &:first-child {
+            width: $cpicker-value-opacity-hide-hex-label-width;
+          }
+
+          &.e-numeric {
+            width: $cpicker-bigger-value-opacity-hide-label-width;
+          }
+        }
+      }
+
+      &.e-hide-hex-value,
+      & .e-hide-hex-value {
+        & .e-container {
+          & .e-float-input {
+            &.e-numeric {
+              width: $cpicker-bigger-hex-hidden-width;
+            }
+          }
+        }
+
+        &.e-hide-opacity .e-container {
+          & .e-float-input {
+            &.e-numeric {
+              width: $cpicker-bigger-value-opacity-hex-hidden-width;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-rtl,
+  .e-bigger.e-rtl {
+    & .e-container {
+      & .e-slider-preview {
+        & .e-preview-container {
+          margin-left: 0;
+          margin-right: $cpicker-bigger-preview-margin-left;
+        }
+      }
+
+      & .e-selected-value {
+        & .e-float-input {
+          margin-left: $cpicker-bigger-label-margin;
+          margin-right: 0;
+        }
+      }
+
+      &.sf-colorpicker .e-selected-value .e-input-container .e-float-input {
+        margin-left: $cpicker-blazor-bigger-input-margin;
+      }
+    }
+
+    &.e-hide-valueswitcher {
+      & .e-container {
+        & .e-float-input {
+          &:last-child {
+            margin-left: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger.e-hide-switchable-value,
+  .e-bigger .e-hide-switchable-value {
+    & .e-container {
+      & .e-input-container {
+        & .e-float-input:first-child {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-popup.e-tooltip-wrap,
+  .e-bigger.e-popup.e-tooltip-wrap {
+    &.e-color-picker-tooltip {
+      min-width: 32px;
+
+      & .e-tip-content {
+        height: $cpicker-bigger-tooltip-preview-size;
+        width: $cpicker-bigger-tooltip-preview-size;
+      }
+    }
+  }
+
+  @if $skin-name == 'fluent2' {
+    .e-bigger .e-container .e-switch-ctrl-btn .e-ctrl-btn {
+      width: 87%;
+    }
+  
+    .e-bigger .e-container.e-color-picker .e-colorpicker-slider .e-slider-container:first-child {
+      margin-bottom: 4px !important; /* stylelint-disable-line declaration-no-important */
+    }
+  
+    .e-bigger .e-container .e-slider-preview .e-colorpicker-slider .e-slider-container .e-slider {
+      top: calc(50% - 25px) !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+}

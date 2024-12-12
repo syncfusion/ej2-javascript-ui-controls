@@ -1,0 +1,95 @@
+@include export-module('datetimepicker-theme') {
+
+  /*! datetimepicker theme */
+  .e-datetime-wrapper {
+    #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
+      @if $skin-name == 'bootstrap4' {
+        background: $datetime-icon-active-bg-color;
+        border-color: $datetime-active-border-color;
+      }
+      color: $datetime-list-active-icon-color;
+    }
+
+    #{if(&, '&', '*')}.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
+      color: $datetime-list-popup-icon-active-color;
+    }
+  }
+
+  .e-datetimepicker.e-popup {
+    border: $datetime-list-border-color;
+    border-radius: $datetime-popup-border-radius;
+    box-shadow: $datetime-popup-shadow;
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      @if $skin-name != 'Material3' {
+        background-color: $datetime-list-bg-color;
+      }
+      @if $skin-name == 'Material3' {
+        background: $datetime-list-bg-color;
+      }
+
+      #{if(&, '&', '*')} li.e-list-item {
+        border: $datetime-list-default-border-style;
+        color: $datetime-list-default-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover {
+        @if $skin-name == 'tailwind3' {
+          background: $datetime-list-hover-bg-color;
+          color: $datetime-list-hover-font-color;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-navigation {
+        @if $skin-name == 'tailwind3' {
+          background: $datetime-list-navigation-bg-color;
+          color: $datetime-list-navigation-font-color;
+          box-shadow: $datetime-list-navigation-box-shadow;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item:focus {
+        @if $skin-name == 'tailwind3' {
+          background: $datetime-list-focus-bg-color;
+          color: $datetime-list-focus-font-color;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover,
+      #{if(&, '&', '*')} .e-list-item.e-navigation,
+      #{if(&, '&', '*')} .e-list-item:focus {
+        @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+          background-color: $datetime-list-hover-bg-color;
+        }
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          background: $datetime-list-hover-bg-color;
+        }
+        border: $datetime-list-hover-border-color;
+        color: $datetime-list-hover-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active {
+        @if $skin-name != 'Material3' and $skin-name != 'tailwind3' {
+          background-color: $datetime-list-active-bg-color;
+        }
+        @if $skin-name == 'Material3' or $skin-name == 'tailwind3' {
+          background: $datetime-list-active-bg-color;
+        }
+        color: $datetime-list-active-font-color;
+        @if $skin-name == 'tailwind3' {
+          font-weight: 500;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
+        @if $skin-name != 'Material3' {
+          background-color: $datetime-list-active-hover-bg-color;
+        }
+        @if $skin-name == 'Material3' {
+          background: $datetime-list-active-hover-bg-color;
+        }
+        color: $datetime-list-active-hover-font-color;
+      }
+    }
+  }
+}

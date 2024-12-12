@@ -1,0 +1,164 @@
+@include export-module('spreadsheet-ribbon-theme') {
+  .e-spreadsheet .e-ribbon {
+    background-color: $spreadsheet-ribbon-header-bg-color;
+
+    & .e-tab {
+      & .e-tab-header {
+        @if $skin-name == 'Material3' {
+          background: $ribbon-tab-bg-color;
+        }
+        @else if $skin-name == 'tailwind3' {
+          background-color: $spreadsheet-ribbon-header-bg-color;
+        }
+        @else {
+          background-color: inherit;
+        }
+        @if $skin-name == 'bootstrap' {
+          &::before {
+            border-bottom-color: $spreadsheet-ribbon-border-color;
+          }
+
+          & .e-toolbar-item.e-active {
+            border-bottom-color: $spreadsheet-ribbon-content-bg-color;
+            border-left-color: $spreadsheet-ribbon-border-color;
+            border-right-color: $spreadsheet-ribbon-border-color;
+            border-top-color: $spreadsheet-ribbon-border-color;
+          }
+        }
+
+        .e-tab-wrap:focus {
+          @if $skin-name != 'Material3' and $skin-name != 'tailwind3' {
+            background: $spreadsheet-ribbon-focus-bg-color;
+          }
+          @if $spreadsheet-ribbon-skin == 'fabric' or $spreadsheet-ribbon-skin == 'highcontrast' {
+            border-color: $spreadsheet-ribbon-focused-wrap-focus-border-color;
+          }
+          @if $spreadsheet-ribbon-skin == 'bootstrap5' or $spreadsheet-ribbon-skin == 'bootstrap5.3'{
+            border: 1px solid $spreadsheet-ribbon-focused-wrap-focus-border-color;
+          }
+          @if $spreadsheet-ribbon-skin == 'highcontrast' {
+            border-style: solid;
+          }
+          @if $spreadsheet-ribbon-skin == 'bootstrap5' or $spreadsheet-ribbon-skin == 'bootstrap5.3' or $spreadsheet-ribbon-skin == 'FluentUI' {
+            .e-tab-icon {
+              color: $spreadsheet-ribbon-comb-icon-color;
+            }
+          }
+        }
+
+        .e-tab-wrap:focus .e-tab-icon,
+        .e-tab-wrap:focus .e-tab-text {
+          @if $skin-name != 'Material3' and $skin-name != 'bootstrap5.3' and $skin-name != 'tailwind3' {
+            color: $spreadsheet-ribbon-focus-text-color;
+          }
+        }
+      }
+      @if $skin-name == 'material' {
+        & .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator {
+          border-color: $separator-border-color;
+        }
+
+        & .e-tab-header:not(.e-vertical) .e-toolbar-item.e-active {
+          border: 0;
+        }
+      }
+      @if $skin-name == 'FluentUI' {
+        & .e-toolbar,
+        & .e-toolbar-items,
+        & .e-hscroll .e-scroll-nav.e-scroll-left-nav,
+        & .e-hscroll .e-scroll-nav.e-scroll-right-nav {
+          background-color: $spreadsheet-ribbon-header-bg-color;
+        }
+      }
+    }
+
+    & .e-drop-icon {
+      color: $expand-icon-color;
+    }
+
+    & .e-tab .e-content .e-toolbar {
+      border-bottom-color: $spreadsheet-ribbon-content-tbar-border-color;
+      border-top-color: $spreadsheet-ribbon-content-tbar-border-color;
+      @if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
+        box-shadow: none;
+      }
+    }
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+      & .e-tab {
+        & .e-tab-header .e-toolbar-item {
+          &.e-active {
+            background: $spreadsheet-ribbon-content-bg-color;
+          }
+        }
+
+        & .e-content .e-toolbar {
+          background: $spreadsheet-ribbon-content-bg-color;
+
+          & .e-toolbar-items,
+          & .e-toolbar-item .e-btn.e-tbar-btn:not(:hover):not(:focus),
+          & .e-toolbar-item.e-overlay {
+            background: transparent;
+          }
+        }
+      }
+    }
+
+    & .e-menu-wrapper {
+      background-color: transparent;
+      @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
+        &.e-file-menu .e-menu {
+          & .e-menu-item.e-selected {
+            background: $spreadsheet-file-menu-press-background;
+            color: $spreadsheet-file-menu-press-font-color;
+            & .e-caret {
+              color: $spreadsheet-file-menu-press-icon-color;
+            }
+          }
+        }
+      }
+      @if $skin-name == 'bootstrap4' {
+        & ul {
+          background-color: transparent;
+        }
+      }
+    }
+
+    & .e-tab,
+    & .e-tab.e-focused {
+      & .e-tab-header .e-toolbar-item.e-menu-tab:hover {
+        @if $skin-name == 'Material3' {
+          background: transparent;
+        }
+      }
+    }
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark' {
+      & .e-tab,
+      & .e-tab.e-focused {
+        & .e-tab-header .e-toolbar-item {
+          & .e-tab-wrap:focus {
+            border: 1px solid transparent;
+          }
+
+          & .e-tab-wrap:focus-visible,
+          & .e-tab-wrap:focus-visible:hover {
+            border: 1px solid $spreadsheet-ribbon-focused-wrap-focus-border-color;
+          }
+        }
+      }
+
+      & .e-tab .e-tab-header {
+        & .e-toolbar-item.e-active .e-tab-wrap,
+        & .e-toolbar-item.e-active .e-tab-wrap:hover {
+          border: 1px solid transparent;
+        }
+      }
+
+      & .e-tab:not(.e-focused),
+      & .e-tab:not(.e-focused)> {
+        & .e-tab-header .e-toolbar-item.e-active .e-tab-wrap:focus {
+          border: 1px solid transparent;
+        }
+      }
+    }
+  }
+}

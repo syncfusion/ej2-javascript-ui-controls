@@ -1,0 +1,761 @@
+/* stylelint-disable property-no-vendor-prefix */
+@mixin user-select {
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@mixin sibling-style {
+  @if $skin-name == 'material' {
+    border-radius: 10px;
+  }
+  @else {
+    border: 4px solid transparent;
+  }
+}
+
+@mixin sibling-before($position) {
+  @if $skin-name == 'material' {
+    @if $position == 'rtl' {
+      right: 6px;
+      top: 3px;
+    }
+    @else {
+      left: 6px;
+      top: 3px;
+    }
+  }
+  @else {
+    @if $position == 'rtl' {
+      right: 0;
+    }
+    @else {
+      left: 0;
+    }
+  }
+}
+
+@mixin big-icon-style($size) {
+  height: $size;
+  width: $size;
+}
+
+@include export-module('treeview-layout') {
+  @keyframes rotation {
+    from {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+
+    to {
+      -webkit-transform: rotate(359deg);
+      transform: rotate(359deg);
+    }
+  }
+
+  .e-treeview {
+    display: block;
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap;
+    @if $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
+      border: 1px solid;
+      border-color: $treeview-border-color;
+      border-radius: $treeview-radius;
+    }
+    @if $skin-name == 'tailwind3' {
+      background: $treeview-bg-color;
+    }
+
+    &.e-virtualization {
+      overflow: auto;
+
+      & .e-virtual-mask {
+        display: block;
+        margin-bottom: 20px;
+      }
+
+      & .e-ul {
+        overflow: unset;
+      }
+    }
+
+    & > .e-ul {
+      -webkit-overflow-scrolling: touch;
+      overflow: auto;
+    }
+
+    &.e-text-wrap {
+      .e-list-text {
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      &.e-ie-wrap {
+        .e-list-text {
+          word-break: break-all;
+        }
+      }
+
+      .e-editing {
+        .e-list-text,
+        .e-list-text .e-input-group {
+          max-width: $treeview-edit-wrap-width;
+        }
+      }
+
+      .e-checkbox-wrapper {
+        & + .e-list-text {
+          max-width: $treeview-check-wrap-width;
+        }
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          & + .e-list-text {
+            max-width: $treeview-check-icon-wrap-width;
+          }
+        }
+
+        & + .e-list-icon + .e-list-img {
+          & + .e-list-text {
+            max-width: $treeview-check-icon-img-wrap-width;
+          }
+        }
+      }
+
+      .e-list-icon,
+      .e-list-img {
+        & + .e-list-text {
+          max-width: $treeview-icon-wrap-width;
+        }
+      }
+
+      .e-list-icon + .e-list-img {
+        & + .e-list-text {
+          max-width: $treeview-icon-img-wrap-width;
+        }
+      }
+    }
+
+    @if ($skin-name == 'fluent2') {
+      .e-checkbox-wrapper .e-frame {
+        margin-right: 0;
+      }
+    }
+
+    .e-ul {
+      margin: 0;
+      padding: $treeview-root-ul-padding;
+    }
+
+    .e-node-collapsed .e-list-item .e-fullrow,
+    .e-display-none {
+      display: none;
+    }
+
+    .e-list-item {
+      list-style: none;
+      @if $skin-name != 'tailwind3' and $skin-name != 'tailwind' and $skin-name != 'Material3' and $skin-name != 'fluent2' {
+        padding: 2px 0;
+      }
+      @if $skin-name == 'fluent2' {
+        padding: 4px 0;
+      }
+
+      .e-ul {
+        margin: 2px 0 -2px;
+        padding: $treeview-child-ul-padding;
+        @if $skin-name == 'tailwind' {
+          margin: 2px 0 0;
+        }
+        @else if $skin-name == 'tailwind3' or $skin-name == 'Material3' {
+          margin: 0;
+        }
+      }
+
+      &.e-disable {
+
+        > .e-text-content,
+        > .e-fullrow {
+          -ms-touch-action: none;
+          opacity: .5;
+          pointer-events: none;
+          touch-action: none;
+        }
+      }
+
+      &.e-active {
+        @if $skin-name == 'tailwind' {
+          font-weight: $treeview-active-font-weight;
+        }
+      }
+
+      div.e-icons.interaction {
+        -webkit-transition: -webkit-transform .3s ease-in-out;
+        border-radius: 15px;
+        transition: -webkit-transform .3s ease-in-out;
+        transition: transform .3s ease-in-out;
+        transition: transform .3s ease-in-out, -webkit-transform .3s ease-in-out;
+      }
+
+      .e-icons.e-icon-collapsible {
+        -webkit-transform: rotate(90deg);
+        transform: rotate(90deg);
+      }
+
+      .e-icons.e-icons-spinner::before {
+        content: none;
+      }
+    }
+
+    .e-icons {
+      .e-spinner-pane {
+        position: relative;
+      }
+      .e-treeview-spinner {
+        position: absolute;
+      }
+    }
+
+    .e-icons-spinner {
+      position: relative;
+    }
+
+    .e-text-content {
+      @include user-select;
+      border: 1px solid;
+      cursor: pointer;
+      margin: 0;
+      padding: $treeview-text-wrap-padding;
+
+      @if $skin-name == 'Material3' or $skin-name == 'tailwind3' {
+        border: none;
+      }
+
+      + .e-sibling {
+        @if ($skin-name == 'tailwind') {
+          margin-top: -2px;
+        }
+        @else if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+          margin-top: 1px;
+        }
+        @else {
+          margin-top: -1px;
+        }
+      }
+    }
+
+    .e-fullrow {
+      @include user-select;
+      border: 1px solid;
+      box-sizing: border-box;
+      cursor: pointer;
+      height: $treeview-item-height;
+      left: 0;
+      overflow: hidden;
+      position: absolute;
+      width: 100%;
+      @if $skin-name == 'fluent2' {
+        border-radius: $treeview-radius;
+        width: calc(100% - 8px);
+        margin-left: 4px;
+      }
+    }
+
+    .e-checkbox-wrapper {
+      margin: $treeview-check-margin;
+      pointer-events: all;
+      position: relative;
+
+      & + .e-list-icon,
+      & + .e-list-img {
+        margin: $treeview-check-image-margin;
+      }
+
+      & + .e-list-text {
+        padding: $treeview-check-text-padding;
+      }
+
+      .e-ripple-container {
+        bottom: $ripple-size;
+        height: $ripple-height;
+        left: $ripple-size;
+        right: $ripple-size;
+        top: $ripple-size;
+        width: $ripple-width;
+      }
+    }
+
+    .e-list-text {
+      box-sizing: border-box;
+      display: inline-block;
+      line-height: $treeview-text-height;
+      margin: $treeview-text-margin;
+      @if $skin-name == 'Material3' {
+        min-height: $treeview-item-height;
+      }
+      @else if $skin-name != 'bootstrap4' {
+        min-height: $treeview-text-height;
+      }
+      @else if $skin-name == 'bootstrap4' {
+        min-height: 30px;
+      }
+      @if $skin-name == 'tailwind3' {
+        font-weight: $treeview-font-weight;
+      }
+      padding: $treeview-text-padding;
+      text-decoration: none;
+      vertical-align: middle;
+
+      .e-input-group {
+        height: $treeview-input-height;
+        @if ($skin-name == 'FluentUI') {
+          margin-top: 3px;
+        }
+        @else if($skin-name == 'tailwind') {
+          margin-bottom: 3px;
+        }
+        @else if($skin-name == 'bootstrap5') {
+          margin-bottom: 2px;
+        }
+        @else {
+          margin-bottom: 0;
+        }
+        min-width: 150px;
+        vertical-align: bottom;
+        @if ($skin-name == 'fluent2') {
+          border-color: $treeview-input-border-color;
+        }
+        @if $skin-name != 'material' {
+          .e-input {
+            height: 28px;
+          }
+        }
+      }
+      @if ($skin-name == 'fluent2') {
+        .e-input-group:hover {
+          border-color: $treeview-input-border-color;
+          border-bottom-color: $treeview-input-border-color;
+        }
+      }
+    }
+
+    .e-navigable-text {
+      @if ($skin-name != 'Material3') {
+        padding: $treeview-text-padding;
+      }
+      @else {
+        padding: 0;
+      }
+    }
+
+    .e-list-icon,
+    .e-list-img {
+      display: inline-block;
+      height: $treeview-image-size;
+      margin: $treeview-image-margin;
+      vertical-align: middle;
+      width: $treeview-image-size;
+
+      & + .e-list-icon,
+      & + .e-list-img {
+        margin: $treeview-icon-image-margin;
+      }
+
+      & + .e-list-text {
+        padding: $treeview-image-text-padding;
+      }
+
+      & + .e-navigable-text {
+        padding: $treeview-image-text-padding;
+      }
+    }
+
+    .e-icon-collapsible,
+    .e-icon-expandable {
+      display: inline-block;
+      height: $treeview-icon-size;
+      margin: $treeview-icon-margin;
+      vertical-align: middle;
+      width: $treeview-icon-size;
+
+      &::before {
+        display: inline-block;
+        padding: $treeview-icon-padding;
+      }
+    }
+
+    .e-load {
+      -webkit-animation: rotation .5s infinite linear;
+      animation: rotation .5s infinite linear;
+    }
+
+    .e-sibling {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+        width: 144px;
+      }
+      @else {
+        @include sibling-style;
+        height: 6px;
+        margin-top: -5px;
+        width: 6px;
+      }
+
+      &::before {
+        @include sibling-before(ltr);
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+          height: 2px;
+          top: -1.5px;
+        }
+        @else {
+          height: 1px;
+          width: 144px;
+        }
+      }
+    }
+
+    .e-sibling,
+    .e-sibling::before {
+      position: absolute;
+      z-index: 2;
+    }
+
+    .e-popup {
+      @include user-select;
+      font-weight: normal;
+      position: absolute;
+      z-index: 99999;
+
+      .e-content {
+        border-radius: 4px;
+        border-style: solid;
+        border-width: 1px;
+        font-size: 14px;
+        padding: 4px;
+      }
+
+      .e-icons {
+        border: 1px solid transparent;
+        cursor: pointer;
+        display: inline-block;
+        height: 26px;
+        line-height: 18px;
+        padding: 4px;
+        width: 26px;
+      }
+
+      .e-downtail {
+        &::before,
+        &::after {
+          border: 10px solid transparent;
+          content: '';
+          height: 0;
+          left: 8px;
+          position: absolute;
+          width: 0;
+        }
+
+        &::after {
+          bottom: -18px;
+        }
+      }
+    }
+
+    &.e-fullrow-wrap {
+
+      .e-text-content {
+        pointer-events: none;
+        position: relative;
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable,
+      .e-input,
+      .e-list-url {
+        pointer-events: auto;
+      }
+    }
+
+    & .e-navigable {
+
+      .e-text-content {
+        align-items: center;
+        display: flex;
+      }
+
+      .e-list-url {
+        @if ($skin-name != 'Material3' and $skin-name != 'tailwind3') {
+          padding: 0;
+        }
+        width: 100%;
+      }
+
+      .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
+        @if $skin-name == 'bootstrap4' {
+          padding: $treeview-navigable-icon-image-margin-reverse;
+        }
+        @else {
+          padding: $treeview-icon-image-margin;
+        }
+
+        .e-list-icon,
+        .e-list-img {
+          margin: $treeview-navigable-icon-image-anchor-margin;
+        }
+
+        .e-list-icon + .e-list-img {
+          margin: $treeview-rtl-icon-image-margin;
+        }
+      }
+
+      .e-anchor-wrap {
+        padding: $treeview-check-margin;
+      }
+
+      .e-nav-wrapper {
+        padding: 0;
+      }
+
+      .e-checkbox-wrapper + .e-list-text .e-nav-wrapper:not(:has(.e-list-icon)) {
+        padding: 0;
+      }
+
+      .e-list-icon,
+      .e-list-img {
+        @if $skin-name == 'bootstrap4' {
+          margin: $treeview-navigable-icon-image-margin;
+        }
+        @else {
+          margin: $treeview-rtl-icon-image-margin;
+        }
+      }
+    }
+
+    &.e-drag-item {
+      overflow: visible;
+      z-index: 10000;
+
+      .e-text-content {
+        float: left;
+
+        @if ($skin-name == 'Material3') {
+          .e-list-img {
+            margin: $treeview-drag-icon-img-margin;
+          }
+        }
+
+        .e-list-text {
+          @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
+            padding: 0 $treeview-drag-icon-padding;
+          }
+          @if $skin-name == 'fluent2' {
+            line-height: 20px;
+            padding: 5px 12px 7px 8px;
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'FluentUI') {
+            @if ($skin-name == 'fluent2') {
+              margin: 0;
+            }
+            @else {
+              margin: $treeview-drag-icon-margin;
+            }
+          }
+          @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
+            box-sizing: content-box;
+            padding-left: $treeview-drag-icon-padding;
+            @if ($skin-name == 'FluentUI') {
+              padding-top: 8px;
+            }
+          }
+        }
+      }
+
+      .e-icon-collapsible::before,
+      .e-icon-expandable::before {
+        font-size: $treeview-drag-icon-font-size;
+        @if ($skin-name != 'bootstrap5' or $skin-name == 'bootstrap5.3' and $skin-name != 'FluentUI') {
+          padding: $treeview-drag-icon-padding;
+        }
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {
+          padding-right: $treeview-drag-icon-padding-right;
+        }
+      }
+
+      .e-drop-count {
+        border: $treeview-drop-count-border-size solid;
+        border-radius: 15px;
+        box-sizing: content-box;
+        font-size: $treeview-drop-count-font-size;
+        @if $skin-name == 'bootstrap4' {
+          line-height: 1.5;
+          min-width: 10px;
+          padding: 0 5px;
+        }
+        @else {
+          line-height: normal;
+          min-width: 12px;
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
+            padding: 1px 3px 2px;
+          }
+          @else {
+            padding: 3px 5px 4px;
+          }
+        }
+        margin-left: -12px;
+        position: absolute;
+        text-align: center;
+        top: -10px;
+      }
+    }
+
+    &.e-dragging {
+
+      .e-text-content,
+      .e-fullrow {
+        cursor: default;
+      }
+    }
+
+    &.e-rtl {
+
+      & .e-navigable {
+
+        .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
+
+          @if $skin-name == 'bootstrap4' {
+            padding: $treeview-navigable-icon-image-margin;
+          }
+          @else {
+            padding: $treeview-rtl-icon-image-margin;
+          }
+
+          .e-list-icon,
+          .e-list-img {
+            margin: $treeview-navigable-icon-image-anchor-margin-reverse;
+          }
+
+          .e-list-icon + .e-list-img {
+            margin: $treeview-icon-image-margin;
+          }
+        }
+
+        .e-anchor-wrap {
+          padding: $treeview-rtl-check-margin;
+        }
+
+        .e-nav-wrapper {
+          padding: 0;
+        }
+
+        .e-list-icon,
+        .e-list-img,
+        .e-list-icon + .e-list-img {
+          @if $skin-name == 'bootstrap4' {
+            margin: $treeview-navigable-icon-image-margin-reverse;
+          }
+          @else {
+            margin: $treeview-icon-image-margin;
+          }
+        }
+      }
+
+      .e-ul {
+        padding: $treeview-rtl-root-ul-padding;
+      }
+
+      .e-list-item {
+
+        .e-ul {
+          padding: $treeview-rtl-child-ul-padding;
+        }
+      }
+
+      .e-text-content {
+        padding: $treeview-rtl-text-wrap-padding;
+      }
+
+      .e-checkbox-wrapper {
+        margin: $treeview-rtl-check-margin;
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          margin: $treeview-rtl-check-image-margin;
+        }
+      }
+
+      .e-list-icon,
+      .e-list-img {
+        margin: $treeview-rtl-image-margin;
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          margin: $treeview-rtl-icon-image-margin;
+        }
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        margin: $treeview-rtl-icon-margin;
+      }
+
+      .e-sibling::before {
+        @include sibling-before(rtl);
+      }
+
+      &.e-drag-item {
+
+        .e-icons.e-drop-next {
+          transform: rotate(180deg);
+        }
+
+        .e-text-content {
+          float: right;
+        }
+
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {
+            margin: $treeview-rtl-drag-margin;
+          }
+        }
+
+        .e-drop-count {
+          margin-right: -12px;
+        }
+      }
+
+      div.e-icons {
+        transform: rotate(180deg);
+      }
+    }
+
+    &.e-disabled {
+      .e-fullrow,
+      .e-icons,
+      .e-text-content,
+      .e-list-img,
+      .e-list-icon {
+        cursor: auto;
+      }
+
+      .e-list-url {
+        cursor: default;
+        pointer-events: none;
+      }
+    }
+
+    &.e-interaction.e-fullrow-wrap {
+      .e-text-content {
+        pointer-events: auto;
+      }
+    }
+  }
+  /* stylelint-enable property-no-vendor-prefix */
+}

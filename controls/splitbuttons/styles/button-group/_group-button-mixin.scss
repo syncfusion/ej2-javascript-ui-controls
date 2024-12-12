@@ -1,0 +1,93 @@
+@mixin apply-border {
+  &:not(:first-of-type):not(:last-of-type) {
+    border-left: transparent;
+    border-right: transparent;
+  }
+
+  &:first-of-type {
+    border-right: transparent;
+  }
+
+  &:last-of-type {
+    border-left: transparent;
+  }
+}
+
+@mixin apply-border-vertical {
+  &:not(:first-of-type):not(:last-of-type) {
+    border-bottom: transparent;
+    border-top: transparent;
+  }
+
+  &:first-of-type {
+    border-bottom: transparent;
+  }
+
+  &:last-of-type {
+    border-top: transparent;
+  }
+}
+
+@mixin different-states {
+  // Outline focus
+  .e-btn:focus,
+  input:focus + label.e-btn {
+    &.e-outline {
+      border-color: $btn-grp-outline-focus-border-color;
+      outline-color: $btn-grp-outline-focus-color;
+
+      &.e-primary {
+        border-color: $btn-grp-outline-primary-focus-border-color;
+        outline-color: $btn-grp-outline-focus-primary-color;
+      }
+
+      &.e-success {
+        border-color: $btn-grp-outline-success-focus-border-color;
+        outline-color: $btn-grp-outline-focus-success-color;
+      }
+
+      &.e-info {
+        border-color: $btn-grp-outline-info-focus-border-color;
+        outline-color: $btn-grp-outline-focus-info-color;
+      }
+
+      &.e-warning {
+        border-color: $btn-grp-outline-warning-focus-border-color;
+        outline-color: $btn-grp-outline-focus-warning-color;
+      }
+
+      &.e-danger {
+        border-color: $btn-grp-outline-danger-focus-border-color;
+        outline-color: $btn-grp-outline-focus-danger-color;
+      }
+    }
+  }
+}
+
+@mixin disabled {
+  background-color: $btn-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-disabled-color;
+}
+
+@mixin box-shadow-theme {
+  @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' and $skin-name != 'tailwind3' {
+    box-shadow: none;
+  }
+  @if $skin-name == 'fabric' {
+    border-color: transparent;
+  }
+}
+
+@mixin outline-box-shadow-theme {
+  @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' and $skin-name != 'tailwind3' {
+    box-shadow: none;
+  }
+}
+
+@mixin Mat3-box-shadow-none {
+  @if $skin-name == 'Material3' {
+    box-shadow: none;
+  }
+}

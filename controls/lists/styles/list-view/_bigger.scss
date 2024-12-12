@@ -1,0 +1,394 @@
+@mixin list-style($height, $line-height, $position) {
+  height: $height;
+  line-height: $line-height;
+  position: $position;
+}
+
+@mixin size($height, $width) {
+  height: $height;
+  width: $width;
+}
+
+@mixin text-style($font-size, $line-height) {
+  font-size: $font-size;
+  line-height: $line-height;
+}
+
+@mixin header($font-weight, $height) {
+  align-items: center;
+  display: flex;
+  font-weight: $font-weight;
+  height: $height;
+
+  .e-text.header,
+  .e-headertemplate-text.nested-header {
+    display: none;
+  }
+}
+
+@mixin checkbox-style($left, $right) {
+  @if $skin-name != 'fluent2' {
+    .e-checkbox-left {
+      margin: $left;
+    }
+    .e-checkbox-right {
+      margin: $right;
+    }
+  }
+}
+
+@mixin list-checkbox-style($left, $right) {
+  &.e-checkbox-left {
+    margin: $left;
+  }
+  &.e-checkbox-right {
+    margin: $right;
+  }
+}
+
+@mixin icon-margin($margin-left, $margin-right) {
+  margin-left: $margin-left;
+  margin-right: $margin-right;
+}
+
+@mixin avatar-size($height, $width, $top, $left, $right) {
+  height: $height;
+  width: $width;
+  top: $top;
+  left: $left;
+  right: $right;
+}
+
+@include export-module('listview-bigger') {
+  .e-bigger #{&}.e-listview,
+  #{&}.e-listview.e-bigger {
+    @if ($skin-name == 'bootstrap4') {
+      font-size: 16px;
+    }
+
+    .e-list-item {
+      border-bottom: $listview-border-bottom solid $listview-border-bottom-color;
+      border-left: $listview-border-left solid $listview-border-left-color;
+      border-right: $listview-border-right solid $listview-border-right-color;
+      border-top: $listview-border-top solid $listview-border-top-color;
+      @if ($skin-name == 'tailwind3') {
+        padding: $listview-touch-item-padding;
+      }
+      @if ($skin-name == 'tailwind') {
+        .e-text-content .e-list-text {
+          font-size: $listview-touch-item-font-size;
+        }
+      }
+      @if $skin-name == 'fluent2' {
+        .e-list-text {
+          padding: $listview-touch-item-padding;
+        }
+      }
+    }
+
+    &:not(.e-list-template) .e-list-item {
+      @include list-style($listview-touch-item-height, $listview-touch-item-line-height, relative);
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap4') {
+        padding: $listview-touch-item-padding;
+      }
+    }
+
+    .e-text-content {
+      font-size: $listview-touch-item-font-size;
+    }
+
+    .e-list-group-item {
+      height: $listview-touch-groupheader-height;
+      line-height: $listview-touch-groupheader-line-height;
+      @if ($skin-name == 'bootstrap4') {
+        padding: 12px 20px;
+      }
+      @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI') {
+        padding: $listview-template-padding;
+      }
+      @if ($skin-name == 'FluentUI' or $skin-name == 'bootstrap4') {
+        font-size: 16px;
+      }
+      @if ($skin-name == 'tailwind3') {
+        padding-top: 9px;
+      }
+
+      .e-text-content {
+        @if ($skin-name == 'tailwind' or $skin-name == 'Material3') {
+          @include text-style($listview-touch-header-font-size, $listview-touch-groupheader-line-height);
+        }
+      }
+    }
+
+    .e-list-header {
+      @include header($listview-touch-header-font-weight, $listview-touch-header-height);
+      @if ($skin-name == 'bootstrap4') {
+        @include text-style(20px, 1.2);
+        padding: 0 0 0 20px;
+      }
+      @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI') {
+        @include text-style($text-sm, $listview-item-line-height);
+        padding: $listview-template-padding;
+      }
+      @if ($skin-name == 'tailwind3') {
+        padding: 0 16px;
+      }
+
+      .e-text {
+        font-size: $listview-touch-header-font-size;
+      }
+    }
+
+    .e-back-button {
+      @if ($skin-name == 'bootstrap4') {
+        margin-top: -3px;
+        padding-right: 12px;
+      }
+      @if ($skin-name == 'tailwind') {
+        margin-right: $listview-touch-icon-margin-right;
+      }
+    }
+
+    .e-list-icon {
+      @if ($skin-name == 'bootstrap4') {
+        margin-right: 12px;
+      }
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3') {
+        @include size($listview-touch-item-size, $listview-touch-item-size);
+        margin-right: $listview-touch-icon-margin-right;
+      }
+    }
+
+    .e-icon-collapsible {
+      @if ($skin-name == 'bootstrap4') {
+        font-size: 12px;
+      }
+      @else if $skin-name == 'fluent2' {
+        font-size: 14px;
+
+        &::before {
+          padding: 5px;
+        }
+      }
+      @if ($skin-name == 'tailwind') {
+        font-size: $listview-touch-item-size;
+        @include size($listview-touch-item-size, $listview-touch-item-size);
+      }
+      @if ($skin-name == 'tailwind3') {
+        font-size: 22px;
+      }
+    }
+
+    .e-listview-checkbox {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap4') {
+        @include list-checkbox-style($listview-touch-checkbox-left-margin, $listview-touch-checkbox-right-margin);
+      }
+      @if ($skin-name == 'FluentUI') {
+        &.e-checkbox-left {
+          border: 0;
+          padding: 0;
+          margin: $listview-touch-checkbox-left-margin;
+        }
+      }
+      @if $skin-name == 'tailwind3' {
+        margin: $listview-touch-checkbox-left-margin;
+      }
+    }
+
+    & .e-icon-back {
+      @if $skin-name == 'tailwind3' {
+        margin: 10px 12px 10px 0;
+        @include size($listview-icon-size, $listview-icon-size);
+        &::before {
+          font-size: $listview-touch-back-icon-font-size;
+        }
+      }
+    }
+
+    &.e-rtl {
+      @if ($skin-name == 'FluentUI') {
+        &.e-list-template {
+          .e-list-wrapper {
+            &.e-list-avatar {
+              .e-avatar {
+                margin: $listview-template-avatar-rtl-margin;
+              }
+            }
+          }
+        }
+      }
+      @if ($skin-name == 'tailwind') {
+        &:not(.e-list-template) .e-list-item {
+          padding: $listview-rtl-touch-item-padding;
+        }
+
+        & .e-list-icon {
+          margin-left: 12px;
+        }
+
+        & .e-back-button {
+          @include icon-margin(12px, 0);
+        }
+      }
+      @if ($skin-name == 'Material3') {
+        & .e-list-icon {
+          @include icon-margin($listview-touch-icon-margin-right, $listview-rtl-icon-back-margin);
+        }
+        & .e-icon-back {
+          @include icon-margin($listview-icon-back-margin-right, $listview-rtl-icon-back-margin);
+        }
+      }
+
+      @if $skin-name == 'tailwind3' {
+        & .e-list-icon {
+          margin-right: 12px;
+        }
+        & .e-icon-back {
+          margin: 0 12px;
+        }
+      }
+
+      .e-listview-checkbox {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap4') {
+          @include list-checkbox-style($listview-touch-rtl-checkbox-left-margin, $listview-touch-rtl-checkbox-right-margin);
+        }
+      }
+
+      @if ($skin-name == 'tailwind') {
+        &.e-list-template {
+          .e-list-wrapper {
+            &.e-list-avatar {
+              .e-avatar {
+                margin: 8px 16px 8px 24px;
+              }
+            }
+
+            &.e-list-avatar:not(.e-list-badge),
+            &.e-list-badge.e-list-avatar {
+              padding-right: $listview-touch-template-avatar-padding-left;
+            }
+          }
+        }
+      }
+    }
+
+    @if ($skin-name == 'tailwind3') {
+      .e-list-wrapper {
+        &.e-list-avatar {
+          .e-avatar {
+            @include avatar-size($listview-touch-template-avatar-size, $listview-touch-template-avatar-size, -5px, $listview-template-avatar-left, null);
+            margin: 10px 10px 10px 0;
+          }
+        }
+
+        &.e-list-multi-line {
+          padding: $listview-touch-template-multiline-padding;
+          &.e-list-avatar {
+            .e-avatar {
+              top: -3px;
+            }
+          }
+          .e-list-item-header,
+          .e-list-content {
+            @include text-style($listview-touch-template-multiline-header-font-size, $listview-touch-template-multiline-header-line-height);
+          }
+          .e-list-content {
+            padding-top: 3px;
+          }
+        }
+      }
+    }
+
+    @if ($skin-name == 'tailwind') {
+      &.e-list-template {
+        .e-list-header {
+          padding: 8px 16px;
+        }
+
+        .e-list-wrapper {
+          &.e-list-multi-line {
+            padding: $listview-touch-template-multiline-padding;
+
+            .e-list-item-header,
+            .e-list-content {
+              @include text-style($listview-touch-template-multiline-header-font-size, $listview-touch-template-multiline-header-line-height);
+              font-weight: $font-weight-normal;
+            }
+          }
+
+          &:not(.e-list-multi-line) {
+            &.e-list-badge:not(.e-list-avatar) {
+              padding: 0 12px 0 16px;
+
+              .e-list-content {
+                padding: 14px 0;
+              }
+            }
+          }
+
+          &.e-list-avatar {
+            .e-avatar {
+              @include size($listview-touch-template-avatar-size, $listview-touch-template-avatar-size);
+              margin: $listview-touch-template-avatar-margin;
+            }
+          }
+
+          &.e-list-avatar:not(.e-list-badge),
+          &.e-list-badge.e-list-avatar {
+            padding-left: $listview-touch-template-avatar-padding-left;
+          }
+
+          &:not(.e-list-multi-line) {
+            .e-list-content {
+              font-size: 16px;
+              padding: 12px 0;
+            }
+          }
+        }
+      }
+    }
+
+    & .e-text-content.e-checkbox .e-list-text {
+      @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+        width: calc(100% - 60px);
+      }
+      @else {
+        width: calc(100% - 40px);
+      }
+    }
+
+    @if ($skin-name == 'FluentUI') {
+      &.e-list-template {
+        .e-list-wrapper {
+          &:not(.e-list-multi-line) {
+            padding: $listview-template-touch-padding;
+          }
+
+          &.e-list-multi-line {
+            padding: $listview-template-multiline-touch-padding;
+
+            .e-list-item-header {
+              @include text-style($listview-template-touch-font-size, 24px);
+            }
+
+            .e-list-content {
+              @include text-style($listview-template-multiline-header-font-size, 22px);
+            }
+          }
+
+          &.e-list-avatar {
+            .e-avatar {
+              @include size($listview-template-avatar-touch-size, $listview-template-avatar-touch-size);
+            }
+          }
+
+          &:not(.e-list-multi-line) {
+            .e-list-content {
+              @include text-style($listview-template-touch-font-size, 24px);
+            }
+          }
+        }
+      }
+    }
+  }
+}

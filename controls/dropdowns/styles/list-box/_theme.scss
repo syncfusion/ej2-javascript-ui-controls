@@ -1,0 +1,327 @@
+@mixin avatar {
+  height: $listbox-template-avatar-size;
+  left: $listbox-template-avatar-left;
+  position: absolute;
+  width: $listbox-template-avatar-size;
+}
+
+@include export-module('listbox-theme') {
+  .e-small .e-listbox-wrapper.e-filter-list .e-list-parent,
+  .e-small .e-listbox-container.e-filter-list .e-list-parent {
+    height: $listbox-filter-small-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
+    height: $listbox-filterselect-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-list-parent {
+    height: $listbox-filter-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-selectall-parent + .e-hidden-select + .e-listbox + .e-list-parent {
+    height: $listbox-ej2-filterselect-height !important;/* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-listbox-wrapper,
+  .e-listbox-container:not(.e-listboxtool-container):not(.e-sortableclone),
+  .e-listboxtool-container.e-listbox-container .e-ul {
+    border: 1px solid $listbox-border-color;
+  }
+
+  .e-listbox-wrapper,
+  .e-listbox-container,
+  .e-listboxtool-wrapper {
+    font-family: $listbox-font-family;
+    font-size: $listbox-font-size;
+    @if $skin-name == 'tailwind3' {
+      .e-filter-parent {
+        background: $listbox-groupheader-bg;
+        box-shadow: none;
+        .e-input-group {
+          .e-input-filter {
+            color: $placeholder-text-color;
+          }
+        }
+      }
+    }
+    @at-root {
+      & .e-list-header {
+        background-color: $listbox-header-bg;
+        border-color: $listbox-header-border;
+        color: $listbox-header-text-color;
+        font-size: $listbox-header-font-size;
+      }
+
+      &.e-filter-list .e-list-parent {
+        height: $listbox-filter-height;
+      }
+
+      &.e-filter-list .e-selectall-parent + .e-list-parent {
+        height: $listbox-filterselect-height !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      & .e-selectall-parent + .e-list-parent {
+        height: $listbox-select-height !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      // & .e-icons {
+      //   @if $skin-name != 'bootstrap5' {
+      //     color: $listbox-icon-color;
+      //   }
+      // }
+
+      & .e-list-item {
+        background-color: $listbox-background;
+        border-bottom: $listbox-border-bottom solid $listbox-border-bottom-color;
+        border-left: $listbox-border-left solid $listbox-border-left-color;
+        border-right: $listbox-border-right solid $listbox-border-right-color;
+        border-top: $listbox-border-top solid $listbox-border-top-color;
+        color: $listbox-text-color;
+      }
+
+      & .e-list-item:hover:not(.e-selected):not(.e-disabled),
+      & .e-list-item:hover.e-selected.e-checklist:not(.e-disabled) {
+        background-color: $listbox-item-hover-bg;
+        border-color: $listbox-hover-border-color;
+        color: $listbox-text-hover-color;
+      }
+
+      & .e-list-item.e-selected.e-checklist {
+        background-color: $listbox-background;
+        color: $listbox-text-color;
+      }
+
+      & .e-list-item.e-focused,
+      & .e-list-item.e-focused.e-selected.e-checklist,
+      & .e-list-item.e-selected {
+        background-color: $listbox-item-active-bg;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          color: $listbox-text-selected-color;
+        }
+        @else {
+          color: $listbox-text-active-color;
+        }
+      }
+
+      & .e-list-item.e-focused .e-checkbox-wrapper .e-frame.e-check,
+      & .e-list-item.e-focused .e-css.e-checkbox-wrapper .e-frame.e-check {
+        @if $skin-name != 'fluent2' {
+          background-color: $checkmark-bgcolor;
+          border-color: $checkmark-border-color;
+          color: $checkmark-color;
+        }
+      }
+
+      & .e-list-group-item {
+        background-color: $listbox-groupheader-bg;
+        border-color: $listbox-header-border;
+        color: $listbox-groupheader-text-color;
+        font-size: $listbox-groupheader-font-size;
+      }
+
+      & .e-selectall-parent {
+        background-color: $listbox-background;
+        border-bottom: 1px solid $select-all-border-color;
+        color: $listbox-text-color;
+      }
+
+      & .e-sortableclone.e-ripple .e-ripple-element {
+        background-color: transparent;
+      }
+    }
+
+    &.e-list-template {
+      .e-list-wrapper {
+        height: inherit;
+        position: relative;
+
+        &:not(.e-list-multi-line) {
+          padding: $listbox-template-padding;
+        }
+
+        &.e-list-multi-line {
+          padding: $listbox-template-multiline-padding;
+
+          .e-list-item-header {
+            color: $listbox-template-multiline-header-color;
+            display: block;
+            font-size: $listbox-template-multiline-header-font-size;
+            font-weight: 500;
+            margin: 0;
+            overflow: hidden;
+            padding: $listbox-template-multiline-header-padding;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .e-list-content {
+            color: $listbox-template-multiline-content-color;
+            display: block;
+            font-size: $listbox-template-multiline-content-font-size;
+            margin: 0;
+            padding: $listbox-template-multiline-content-padding;
+            word-wrap: break-word;
+          }
+
+          .e-list-content:not(.e-text-overflow) {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+
+        &.e-list-avatar {
+          .e-avatar {
+            @include avatar;
+            left: $listbox-template-avatar-left;
+          }
+        }
+
+        &.e-list-avatar:not(.e-list-badge) {
+          padding-left: $listbox-template-avatar-padding-left;
+          padding-right: $listbox-template-avatar-padding-right;
+        }
+
+        &.e-list-avatar-right:not(.e-list-badge) {
+          padding-left: $listbox-template-avatar-rightposition-padding-left;
+          padding-right: $listbox-template-avatar-rightposition-padding-right;
+
+          .e-avatar {
+            @include avatar;
+            right: $listbox-template-avatar-rightposition-right;
+          }
+        }
+
+        &.e-list-multi-line.e-list-avatar,
+        &.e-list-multi-line.e-list-avatar-right:not(.e-list-badge) {
+          .e-avatar {
+            top: $listbox-template-multiline-avatar-top;
+          }
+        }
+
+        &.e-list-badge {
+          .e-badge {
+            font-size: $listbox-template-badge-font-size;
+            height: $listbox-template-badge-height;
+            line-height: $listbox-template-badge-line-height;
+            padding: 0;
+            position: absolute;
+            right: $listbox-template-badge-right;
+            top: 50%;
+            transform: translateY(-50%);
+            width: $listbox-template-badge-width;
+          }
+        }
+
+        &.e-list-badge.e-list-avatar {
+          padding-left: $listbox-template-avatar-badge-padding-left;
+          padding-right: $listbox-template-avatar-badge-padding-right;
+        }
+
+        &.e-list-badge:not(.e-list-avatar) {
+          padding-left: $listbox-template-badgewithoutavatar-padding-left;
+          padding-right: $listbox-template-badgewithoutavatar-padding-right;
+        }
+
+        &:not(.e-list-multi-line) {
+          .e-list-content {
+            display: block;
+            margin: 0;
+            overflow: hidden;
+            padding: $listbox-template-item-padding;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+
+      .e-list-item {
+        &.e-list-item:hover .e-list-item-header,
+        &.e-list-item:hover .e-list-content {
+          color: $listbox-text-hover-color;
+        }
+
+        &.e-selected .e-list-item-header,
+        &.e-selected .e-list-content {
+          color: $listbox-text-active-color;
+        }
+      }
+    }
+
+    &.e-rtl {
+      &.e-list-template .e-list-wrapper {
+        &.e-list-avatar {
+          .e-avatar {
+            left: inherit;
+            right: $listbox-template-avatar-left;
+          }
+        }
+
+        &.e-list-avatar:not(.e-list-badge) {
+          padding-left: $listbox-template-avatar-padding-right;
+          padding-right: $listbox-template-avatar-padding-left;
+        }
+
+        &.e-list-avatar-right:not(.e-list-badge) {
+          padding-left: $listbox-template-avatar-rightposition-padding-right;
+          padding-right: $listbox-template-avatar-rightposition-padding-left;
+
+          .e-avatar {
+            left: $listbox-template-avatar-rightposition-right;
+            right: inherit;
+          }
+        }
+
+        &.e-list-badge {
+          .e-badge {
+            left: $listbox-template-badge-right;
+            right: inherit;
+          }
+        }
+
+        &.e-list-badge.e-list-avatar {
+          padding-left: $listbox-template-avatar-badge-padding-right;
+          padding-right: $listbox-template-avatar-badge-padding-left;
+        }
+
+        &.e-list-badge:not(.e-list-avatar) {
+          padding-left: $listbox-template-badgewithoutavatar-padding-right;
+          padding-right: $listbox-template-badgewithoutavatar-padding-left;
+        }
+      }
+    }
+  }
+
+  .e-listbox-wrapper.e-sortableclone,
+  .e-listbox-container.e-sortableclone {
+    @if $skin-name == 'fluent2' or $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
+      & .e-list-item {
+        background-color: $listbox-dragged-item-bg-color !important; /* stylelint-disable-line declaration-no-important */
+        color: $listbox-dragged-item-text-color !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+  }
+
+  .e-listbox-container {
+    @at-root {
+      &.e-filter-list .e-list-parent,
+      &.e-filter-list .e-selectall-parent + .e-list-parent,
+      & .e-selectall-parent + .e-list-parent {
+        height: 100%;
+      }
+
+      &.e-filter-list .e-list-wrap {
+        height: $listbox-mat-filter-height !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      &.e-filter-list .e-selectall-parent + .e-list-wrap {
+        height: $listbox-filterselect-height !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      & .e-selectall-parent + .e-list-wrap {
+        height: $listbox-select-height !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+  }
+}

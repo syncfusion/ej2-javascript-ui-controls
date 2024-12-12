@@ -1,0 +1,134 @@
+@include export-module('timepicker-theme') {
+  .e-time-wrapper {
+    #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
+      @if $timepicker-skin-name == 'bootstrap4' or $timepicker-skin-name == 'bootstrap5' or $timepicker-skin-name == 'bootstrap5.3' {
+        background: $timepicker-icon-active-bg-color;
+        border-color: $timepicker-active-border-color;
+      }
+      color: $timepicker-list-active-icon-color;
+    }
+
+    #{if(&, '&', '*')}.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
+      color: $timepicker-list-popup-icon-active-color;
+      @if $timepicker-skin-name == 'Material3' {
+        border: $timepicker-icon-active-border;
+        border-radius: $timepicker-icon-active-border-radius;
+        background: $timepicker-icon-active-bg-color;
+      }
+    }
+  }
+
+  #{&}.e-timepicker.e-popup {
+    @if $timepicker-skin-name != 'Material3' {
+      background-color: $timepicker-list-bg-color;
+    }
+    @if $timepicker-skin-name == 'Material3' {
+      background: $timepicker-list-bg-color;
+    }
+    border: $timepicker-list-border-color;
+    border-radius: $timepicker-popup-border-radius;
+    box-shadow: $timepicker-popup-shadow;
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      @if $timepicker-skin-name != 'Material3' {
+        background-color: $timepicker-list-bg-color;
+      }
+      @if $timepicker-skin-name == 'Material3' {
+        background: $timepicker-list-bg-color;
+      }
+
+      #{if(&, '&', '*')} li.e-list-item {
+        border: $timepicker-list-default-border-style;
+        color: $timepicker-list-default-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-disabled {
+        color: $timepicker-disable-text;
+        opacity: $timepicker-disable-opacity;
+        pointer-events: none;
+        touch-action: none;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover {
+        @if $skin-name == 'tailwind3' {
+          background: $timepicker-list-hover-bg-color;
+          color: $timepicker-list-hover-font-color;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-navigation {
+        @if $skin-name == 'tailwind3' {
+          background: $timepicker-list-navigation-bg-color;
+          color: $timepicker-list-navigation-font-color;
+          box-shadow: $timepicker-list-navigation-box-shadow;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item:focus {
+        @if $skin-name == 'tailwind3' {
+          background: $timepicker-list-focus-bg-color;
+          color: $timepicker-list-focus-font-color;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover,
+      #{if(&, '&', '*')} .e-list-item.e-navigation,
+      #{if(&, '&', '*')} .e-list-item:focus {
+        @if $timepicker-skin-name != 'Material3' {
+          background-color: $timepicker-list-hover-bg-color;
+        }
+        @if $timepicker-skin-name == 'Material3' {
+          background: $timepicker-list-hover-bg-color;
+        }
+        border: $timepicker-list-hover-border-color;
+        color: $timepicker-list-hover-font-color;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active {
+        @if $timepicker-skin-name != 'Material3' and $timepicker-skin-name != 'tailwind3' {
+          background-color: $timepicker-list-active-bg-color;
+        }
+        @if $timepicker-skin-name == 'Material3' {
+          background: $timepicker-list-active-bg-color;
+        }
+        color: $timepicker-list-active-font-color;
+        @if $skin-name == 'tailwind3' {
+          font-weight: 500;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
+        @if $timepicker-skin-name != 'Material3' {
+          background-color: $timepicker-list-active-hover-bg-color;
+        }
+        @if $timepicker-skin-name == 'Material3' {
+          background: $timepicker-list-active-hover-bg-color;
+        }
+        color: $timepicker-list-active-hover-font-color;
+      }
+    }
+  }
+
+  .e-small #{&}.e-timepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-timepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      #{if(&, '&', '*')} .e-list-item {
+        color: $timepicker-list-small-font-color;
+      }
+    }
+  }
+
+  .e-timepicker-mob-popup-wrap .e-timepicker.e-popup-expand,
+  .e-datetimepicker.e-popup-expand {
+
+    #{if(&, '&', '*')} .e-model-header {
+      background-color: $modal-header-bg-color;
+      color: $modal-header-text-color;
+
+      #{if(&, '&', '*')} .e-popup-close {
+        color: $modal-header-text-color;
+        font-weight: 500;
+      }
+    }
+  }
+}

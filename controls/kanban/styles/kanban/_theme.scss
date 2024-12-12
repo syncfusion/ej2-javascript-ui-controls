@@ -1,0 +1,176 @@
+@include export-module('kanban-theme') {
+
+  /*! kanban component theme */
+  .e-kanban {
+    background: $kanban-bg-color;
+
+    .e-kanban-table {
+      .e-header-cells {
+        background: $kanban-column-bg-color;
+
+        .e-header-text {
+          color: $kanban-header-text-color;
+        }
+
+        .e-item-count {
+          color: $kanban-header-item-count-color;
+        }
+
+        .e-limits {
+          color: $kanban-header-limits-color;
+        }
+
+        .e-column-expand,
+        .e-column-collapse {
+          border: 1px solid transparent;
+          color: $kanban-icons-color;
+
+          &:hover,
+          &:focus {
+            background: $kanban-col-expand-collapse-bg-color;
+            border: $kanban-col-expand-collapse-border;
+            border-radius: $kanban-icons-border-radius;
+            box-shadow: $kanban-col-expand-collapse-box-shadow;
+            color: $kanban-col-expand-collapse-color;
+          }
+        }
+      }
+
+      &.e-content-table {
+        .e-content-row:not(.e-swimlane-row) td {
+          background: $kanban-column-bg-color;
+        }
+
+        .e-content-row {
+
+          &.e-swimlane-row {
+
+            .e-swimlane-text,
+            .e-item-count {
+              color: $kanban-default-font-color;
+            }
+          }
+
+          .e-show-add-button {
+
+            &:hover {
+              background: $kanban-dropped-clone-bg-color;
+            }
+
+            .e-show-add-icon {
+              color: $kanban-dropped-clone-border-color;
+            }
+          }
+        }
+
+        .e-card {
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+            background: $kanban-card-bg-color;
+          }
+
+          &.e-selection {
+            background: $kanban-card-selection-bg-color;
+          }
+
+          .e-card-header {
+            color: $kanban-default-font-color;
+          }
+
+          .e-card-content {
+            color: $kanban-content-font;
+          }
+
+          .e-card-tag {
+            &.e-card-label {
+              background: $kanban-tags-bg-color;
+              color: $kanban-tags-color;
+            }
+            @if ($skin-name == 'tailwind3') {
+              font-weight: $kanban-tags-font-weight;
+            }
+          }
+        }
+
+        .e-target-multi-clone {
+          .e-column-key {
+            &.e-multi-active {
+              background: $kanban-dropped-clone-bg-color;
+              border-color: $kanban-dropped-clone-border-color;
+            }
+
+            &.e-multi-bottom-border {
+              border-bottom-color: $kanban-dropped-clone-border-color;
+            }
+
+            &.e-multi-active:first-child {
+              border-color: $kanban-dropped-clone-border-color;
+            }
+          }
+        }
+      }
+    }
+
+    .e-frozen-swimlane-row {
+      background: $kanban-bg-color;
+
+      .e-swimlane-header {
+        .e-swimlane-text {
+          color: $kanban-default-font-color;
+        }
+
+        .e-item-count {
+          color: $kanban-swl-frozen-header-item-count-color;
+        }
+      }
+    }
+
+    @if $skin-name == 'fluent2' {
+      .e-card {
+        background: $kanban-column-bg-color;
+      }
+    }
+  }
+
+  .e-kanban-dialog.e-dialog {
+    .e-kanban-form-wrapper table {
+      textarea {
+        background: $kanban-text-area-bg-color;
+        color: $kanban-text-area-color;
+        min-width: 70%;
+
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'tailwind' {
+          font-weight: normal;
+        }
+
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+          border-color: $kanban-dialog-text-areas-border-color;
+          border-radius: 4px;
+          outline: none;
+          padding: 4px 8px 4px 12px;
+        }
+
+        &:focus {
+          box-shadow: $kanban-dialog-text-area-focus-shadow;
+        }
+      }
+    }
+  }
+
+  .e-card-virtual-skeleton-wrapper,
+  .e-card-skeleton-wrapper {
+    background: $kanban-column-bg-color;
+  }
+}
+@if $skin-name == 'fluent2' {
+  .e-kanban-dialog .e-dialog-delete,
+  .e-kanban-dialog .e-dialog-edit.e-primary,
+  .e-kanban-dialog .e-dialog-cancel{
+    border: 1px solid;
+    border-color: $secondary-border-color-hover;
+  }
+
+  .e-kanban-dialog .e-dialog-edit.e-primary{
+    background: $primary-bg-color-hover;
+    color: $primary-border-color-hover;
+  }
+}

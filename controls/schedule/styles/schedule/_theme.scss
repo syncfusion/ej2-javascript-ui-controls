@@ -1,0 +1,585 @@
+@mixin schedule-select-cell-focus-styles {
+  @if $skin-name == 'fluent2' {
+    &:focus {
+      background: $content-bg-color-focus;
+    }
+
+    &:focus-visible {
+      background: $schedule-select-focus-bg-color;
+      box-shadow: $schedule-select-focus-box-shadow;
+    }
+  }
+  
+  @if $skin-name == 'bootstrap5.3' {
+    &:focus {
+      background: $schedule-select-focus-bg-color;
+    }
+
+    &:focus-visible {
+      background: $schedule-workhour-bg-color;
+      box-shadow: $schedule-select-focus-box-shadow;
+    }
+  }
+}
+
+@mixin more-indicator-hover-styles {
+  @if $skin-name =='fluent2' {
+    .e-more-indicator {
+      color: $schedule-hover-font-color;
+    }
+  }
+}
+
+@include export-module('schedule-theme') {
+  .e-schedule {
+    background: $schedule-header-bg-color;
+    border: $border-size $border-type $schedule-content-border-color;
+
+    .e-date-header-wrap {
+      border-color: $schedule-header-border-color;
+      border-style: $border-type;
+      border-width: 0;
+      position: relative;
+    }
+
+    .e-header-calendar {
+      @if ($skin-name == 'Material3') {
+        background: $schedule-calendar-background;
+      }
+      @else {
+        background-color: $schedule-calendar-background;
+      }
+      box-shadow: $schedule-calendar-shadow;
+    }
+
+    .e-vertical-view {
+      .e-date-header-wrap table tbody td:first-child,
+      .e-content-wrap table td:first-child {
+        border-left-width: 0;
+      }
+
+      .e-date-header-wrap {
+        .e-all-day-cells {
+          background: $schedule-header-bg-color;
+
+          &:hover {
+            background: $schedule-hover-bg-color;
+            @include more-indicator-hover-styles;
+          }
+        }
+      }
+
+      .e-left-indent-wrap table tbody td {
+        background: $schedule-header-bg-color;
+        border-color: $schedule-header-border-color;
+        border-style: $border-type;
+        border-width: 0 1px 1px 0;
+        color: $schedule-header-font-color;
+
+        &.e-header-cells {
+          border-bottom-width: 0;
+
+          &.e-week-number {
+            color: $schedule-secondary-content-font-color;
+            font-size: $schedule-date-header-wrap-nrml-font-size;
+            padding-top: 10px;
+            text-align: center;
+            vertical-align: top;
+          }
+        }
+
+        &.e-resource-cells {
+          border-bottom-color: transparent;
+        }
+      }
+
+      .e-date-header-wrap table tbody td {
+        background: $schedule-header-bg-color;
+        border-color: $schedule-header-border-color;
+        border-style: $border-type;
+        border-width: $schedule-vertical-work-cells-border;
+        color: $schedule-header-font-color;
+        text-align: left;
+
+        &.e-header-cells {
+          border-bottom-width: 0;
+        }
+      }
+
+      .e-time-cells-wrap table td {
+        background: $schedule-time-cells-bg-color;
+        border-color: $schedule-content-border-color;
+        border-style: $border-type;
+        border-width: 0 1px 1px 0;
+        color: $schedule-time-cells-font-color;
+      }
+
+      .e-time-cells-wrap table td {
+        border-bottom-color: transparent;
+      }
+
+      .e-time-cells-wrap .e-time-cells {
+        border-bottom-color: $schedule-time-cells-border-bottom-color;
+      }
+
+      .e-header-cells {
+        background: $schedule-header-bg-color;
+
+        &.e-current-day {
+          color: $schedule-active-font-color;
+          font-weight: $schedule-current-day-font-weight;
+        }
+      }
+
+      .e-work-cells {
+        background: $schedule-work-cells-bg-color;
+        border-color: $schedule-content-border-color;
+        border-style: $border-type;
+        border-width: $schedule-vertical-work-cells-border;
+        padding: 0;
+
+        &:hover {
+          background: $schedule-hover-bg-color;
+          color: $schedule-hover-font-color;
+        }
+      }
+
+      .e-alternate-cells {
+        border-bottom-style: $schedule-alternate-cell-border;
+      }
+
+      .e-work-hours {
+        background: $schedule-workhour-bg-color;
+      }
+
+      .e-all-day-cells {
+        background: $schedule-header-bg-color;
+
+        &.e-current-day {
+          color: $schedule-active-font-color;
+        }
+
+        &.e-selected-cell {
+          background: $schedule-select-bg-color;
+          color: $schedule-hover-font-color;
+          @include more-indicator-hover-styles;
+
+          &:hover {
+            background: $schedule-select-bg-color;
+            color: $schedule-selected-cell-hover-font-color;
+          }
+          @include schedule-select-cell-focus-styles;
+        }
+      }
+
+      .e-selected-cell {
+        background: $schedule-select-bg-color;
+        color: $schedule-hover-font-color;
+
+        &:hover {
+          background: $schedule-select-bg-color;
+          color: $schedule-selected-cell-hover-font-color;
+        }
+        @include schedule-select-cell-focus-styles;
+      }
+
+      .e-clone-time-indicator,
+      .e-current-time {
+        color: $schedule-active-font-color;
+      }
+
+      .e-current-timeline {
+        border-top: 1px $border-type $schedule-active-border-color;
+      }
+
+      .e-previous-timeline {
+        border-top: 1px $schedule-alternate-cell-border $schedule-active-border-color;
+      }
+
+      &.e-by-date {
+        .e-date-header-wrap table tbody td {
+          &.e-header-cells {
+            border-bottom-width: 1px;
+          }
+        }
+      }
+    }
+
+    .e-month-view {
+      .e-date-header-wrap table td:first-child,
+      .e-content-wrap table td:first-child {
+        border-left-width: 0;
+      }
+    }
+
+    .e-month-view,
+    .e-month-agenda-view {
+      .e-date-header-wrap table td {
+        background: $schedule-header-bg-color;
+        border-color: $schedule-header-border-color;
+        border-style: $border-type;
+        border-width: $schedule-month-work-cells-border;
+        color: $schedule-header-font-color;
+        font-size: $schedule-month-date-header-cell-font-size;
+        text-align: $schedule-month-date-header-cell-text-align;
+        text-transform: $schedule-month-date-header-cell-text-transform;
+
+        &.e-current-day {
+          color: $schedule-active-font-color;
+          font-weight: $schedule-current-day-font-weight;
+        }
+      }
+
+      .e-work-cells {
+        background: $schedule-work-cells-bg-color;
+        border-color: $schedule-content-border-color;
+        border-style: $border-type;
+        border-width: $schedule-month-work-cells-border;
+        color: $schedule-primary-content-font-color;
+        padding: 0;
+
+        &:hover {
+          background: $schedule-hover-bg-color;
+          color: $schedule-work-cell-hover-color;
+          @include more-indicator-hover-styles;
+        }
+      }
+
+      .e-work-days {
+        background: $schedule-workhour-bg-color;
+      }
+
+      .e-other-month {
+        color: $schedule-secondary-content-font-color;
+      }
+
+      .e-current-date .e-date-header {
+        background: $schedule-current-date-bg-color;
+        border-radius: 50%;
+        color: $schedule-current-date-header-font-color;
+        min-width: 20px;
+        padding: 0 4px;
+        width: fit-content;
+      }
+
+      .e-selected-cell {
+        background: $schedule-select-bg-color;
+        color: $schedule-select-font-color;
+
+        .e-date-header {
+          color: $schedule-selected-date-header-cell-font-color;
+        }
+
+        .e-more-indicator {
+          color: $schedule-select-font-color;
+        }
+
+        &:hover {
+          background: $schedule-select-bg-color;
+        }
+        @include schedule-select-cell-focus-styles;
+      }
+    }
+
+    .e-month-agenda-view {
+      .e-content-wrap .e-table-container {
+        overflow: auto;
+      }
+      
+      .e-date-header-wrap table td {
+        border-width: $schedule-month-agenda-header-cells-border;
+        text-align: center;
+      }
+
+      .e-work-cells {
+        border-width: $schedule-month-agenda-work-cells-border;
+      }
+
+      .e-current-date .e-date-header {
+        min-width: 24px;
+      }
+    }
+
+    .e-timeline-view,
+    .e-timeline-month-view {
+      .e-date-header-wrap table td:first-child,
+      .e-content-wrap table td:first-child {
+        border-left-width: 0;
+      }
+
+      .e-date-header-wrap table td {
+        background: $schedule-header-bg-color;
+        border-color: $schedule-header-border-color;
+        border-style: $border-type;
+        border-width: $schedule-timeline-work-cells-border;
+        color: $schedule-header-font-color;
+
+        &.e-current-day {
+          color: $schedule-active-font-color;
+          font-weight: $schedule-current-day-font-weight;
+        }
+      }
+
+      .e-work-cells {
+        background: $schedule-work-cells-bg-color;
+        border-color: $schedule-content-border-color;
+        border-style: $border-type;
+        border-width: $schedule-timeline-work-cells-border;
+        color: $schedule-primary-content-font-color;
+        padding: 0;
+
+        &:hover:not(.e-resource-group-cells) {
+          background: $schedule-hover-bg-color;
+          color: $schedule-hover-font-color;
+        }
+      }
+
+      &.e-virtual-mask .e-work-cells:hover {
+        background: $schedule-disable-dates-color;
+      }
+
+      .e-work-days {
+        background: $schedule-workhour-bg-color;
+      }
+
+      .e-resource-group-cells {
+        background: $schedule-work-cells-bg-color;
+      }
+
+      .e-selected-cell {
+        background: $schedule-select-bg-color;
+        color: $schedule-select-font-color;
+
+        &:hover:not(.e-resource-group-cells)  {
+          background: $schedule-select-bg-color;
+        }
+      }
+    }
+
+    .e-timeline-view {
+      .e-work-hours {
+        background: $schedule-workhour-bg-color;
+      }
+
+      .e-resource-group-cells {
+        background: $schedule-work-cells-bg-color;
+      }
+
+      .e-selected-cell {
+        background: $schedule-select-bg-color;
+        color: $schedule-hover-font-color;
+
+        &:hover {
+          background: $schedule-select-bg-color;
+        }
+        @include schedule-select-cell-focus-styles;
+      }
+
+      .e-alternate-cells {
+        border-left-style: $schedule-alternate-cell-border;
+      }
+
+      .e-header-row .e-time-cells {
+        border-left-width: 0;
+      }
+
+      .e-clone-time-indicator,
+      .e-current-time {
+        color: $schedule-active-font-color;
+        font-size: $schedule-current-time-nrml-font-size;
+      }
+
+      .e-current-timeline {
+        border-left: 1px $border-type $schedule-active-border-color;
+      }
+    }
+
+    .e-timeline-year-view {
+      .e-work-cells {
+        background: $schedule-work-cells-bg-color;
+        border-color: $schedule-content-border-color;
+        border-style: $border-type;
+        border-width: 0 $border-size $border-size 0;
+        color: $schedule-primary-content-font-color;
+        padding: 0;
+    
+        &:hover:not(.e-other-month) {
+          background: $schedule-hover-bg-color;
+          color: $schedule-hover-font-color;
+        }
+    
+        &.e-work-days {
+          background: $schedule-workhour-bg-color;
+        }
+    
+        &.e-other-month {
+          color: $schedule-secondary-content-font-color;
+        }
+    
+        &.e-current-day .e-date-header {
+          background: $schedule-current-date-bg-color;
+          border-radius: 50%;
+          color: $schedule-current-day-active-color;
+          margin: 2px;
+          width: 20px;
+        }
+    
+        &.e-selected-cell {
+          background: $schedule-select-bg-color;
+          color: $schedule-select-font-color;
+    
+          .e-date-header {
+            color: $schedule-select-font-color;
+          }
+    
+          .e-more-indicator {
+            color: $schedule-select-font-color;
+          }
+    
+          &:hover {
+            background: $schedule-select-bg-color;
+          }
+          @include schedule-select-cell-focus-styles;
+        }
+    
+        &.e-disable-dates {
+          background: $schedule-disable-dates-color;
+    
+          .e-date-header {
+            cursor: default;
+            opacity: .35;
+    
+            &:hover {
+              text-decoration: none;
+            }
+          }
+    
+          &:hover {
+            background: $schedule-disable-dates-color;
+          }
+        }
+      }
+    
+      &.e-virtual-mask .e-work-cells {
+        background: $schedule-disable-dates-color;
+        box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
+    
+        &:hover {
+          background: $schedule-disable-dates-color;
+        }
+      }
+    }
+
+    #{if(&, '&', '*')}.e-rtl {
+      .e-vertical-view {
+        .e-date-header-wrap table tbody td:first-child,
+        .e-content-wrap table td:first-child {
+          border-right-width: 0;
+        }
+
+        .e-date-header-wrap table tbody td {
+          text-align: right;
+        }
+
+        .e-date-header-wrap table tbody td,
+        .e-work-cells {
+          border-width: $schedule-rtl-vertical-work-cells-border;
+        }
+
+        .e-left-indent-wrap .e-header-cells,
+        .e-date-header-wrap .e-header-cells {
+          border-bottom-width: 0;
+        }
+
+        .e-left-indent-wrap table tbody td,
+        .e-time-cells-wrap table tbody td {
+          border-width: 0 0 1px 1px;
+        }
+      }
+
+      .e-month-view {
+        .e-date-header-wrap table td:first-child,
+        .e-content-wrap table td:first-child {
+          border-right-width: 0;
+        }
+
+        .e-date-header-wrap table td {
+          text-align: right;
+          border-width: $schedule-rtl-month-work-cells-border;
+        }
+      }
+
+      .e-month-view,
+      .e-month-agenda-view {
+        .e-work-cells {
+          border-width: $schedule-rtl-month-work-cells-border;
+        }
+      }
+
+      .e-month-agenda-view {
+        .e-work-cells {
+          border-width: $schedule-rtl-month-agenda-work-cells-border;
+        }
+      }
+
+      .e-timeline-view,
+      .e-timeline-month-view {
+        .e-date-header-wrap table td:first-child,
+        .e-content-wrap table td:first-child {
+          border-right-width: 0;
+        }
+
+        .e-date-header-wrap table td:last-child,
+        .e-content-wrap table td:last-child {
+          border-left-width: 0;
+        }
+
+        .e-date-header-wrap table td,
+        .e-content-wrap table td {
+          border-width: $schedule-rtl-timeline-work-cells-border;
+        }
+      }
+
+      .e-timeline-view {
+        .e-alternate-cells {
+          border-right-style: $schedule-alternate-cell-border;
+        }
+
+        .e-header-row .e-time-cells {
+          border-right-width: 0;
+        }
+      }
+    }
+  }
+
+  .e-tooltip-wrap.e-schedule-error {
+    background: $schedule-val-error-bg-color;
+    border-color: $schedule-val-error-bg-color;
+    z-index: 1000;
+
+    .e-arrow-tip.e-tip-top {
+      left: 44%;
+    }
+
+    .e-arrow-tip-inner.e-tip-top,
+    .e-arrow-tip-outer.e-tip-top {
+      border-bottom: 8px solid $schedule-val-error-bg-color;
+      color: $schedule-val-error-bg-color;
+    }
+
+    .e-arrow-tip-outer.e-tip-bottom,
+    .e-arrow-tip-inner.e-tip-bottom {
+      border-top: 8px solid $schedule-val-error-bg-color;
+      color: $schedule-val-error-bg-color;
+    }
+
+    .e-tip-content {
+      padding: $schedule-tip-content-padding;
+    }
+
+    .e-tip-content,
+    .e-tip-content label {
+      color: $schedule-val-error-color;
+    }
+  }
+}

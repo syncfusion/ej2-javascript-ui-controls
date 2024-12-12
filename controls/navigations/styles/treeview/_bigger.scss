@@ -1,0 +1,406 @@
+@mixin big-icon-style($size) {
+  height: $size;
+  width: $size;
+}
+
+@include export-module('treeview-bigger') {
+  .e-bigger .e-treeview,
+  .e-treeview.e-bigger {
+
+    @if $skin-name == 'tailwind3' {
+      border-radius: $treeview-bigger-radius;
+    }
+
+    @if $skin-name == 'bootstrap4' {
+      .e-ul,
+      .e-list-item .e-ul {
+        padding-left: 16px;
+      }
+    }
+
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2' {
+      .e-ul {
+        padding: $treeview-big-root-ul-padding;
+      }
+
+      .e-list-item {
+        .e-ul {
+          padding: $treeview-big-child-ul-padding;
+        }
+
+        .e-text-content {
+          padding: $treeview-big-text-wrap-padding;
+        }
+
+        .e-list-icon,
+        .e-list-img {
+          @if $skin-name == 'fluent2' {
+            @include big-icon-style($treeview-big-img-size);
+          }
+          @else {
+            @include big-icon-style($treeview-big-icon-font-size);
+          }
+        }
+
+        .e-small.e-css.e-checkbox-wrapper {
+          & .e-frame {
+            height: 20px;
+            line-height: 17px;
+            width: 20px;
+          }
+
+          & .e-check,
+          & .e-stop {
+            font-size: 12px;
+          }
+
+          & .e-stop {
+            line-height: 17px;
+          }
+        }
+
+        .e-checkbox-wrapper + .e-list-text {
+          padding: $treeview-big-check-text-padding;
+        }
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        @include big-icon-style($treeview-big-icon-font-size);
+        margin: $treeview-big-icon-margin;
+      }
+
+      &.e-drag-item {
+
+        @if $skin-name == 'FluentUI' {
+          .e-icon-expandable,
+          .e-icon-collapsible {
+            padding-left: 24px;
+            padding-top: 10px;
+          }
+        }
+
+        .e-drop-count {
+          padding: 3px 5px 4px;
+        }
+      }
+    }
+
+    .e-navigable {
+
+      .e-list-text {
+        @if ($skin-name != 'Material3' and $skin-name != 'tailwind3') {
+          padding: 0;
+        }
+        width: 100%;
+      }
+
+      .e-checkbox-wrapper {
+        + .e-list-text {
+          padding: 0;
+        }
+
+        + .e-list-url .e-anchor-wrap {
+          @if $skin-name == 'bootstrap4' {
+            padding: $treeview-check-image-margin;
+          }
+  
+          .e-list-icon,
+          .e-list-img {
+            margin: $treeview-navigable-icon-image-anchor-margin-bigger;
+          }
+        }
+      }
+
+      .e-anchor-wrap {
+        @if $skin-name == 'bootstrap4' {
+          padding: $treeview-navigable-check-margin-bigger;
+        }
+        @else {
+          padding: $treeview-icon-image-margin;
+        }
+      }
+
+      .e-list-icon,
+      .e-list-img,
+      .e-list-icon + .e-list-img {
+
+        @if $skin-name == 'bootstrap4' {
+          margin: $treeview-rtl-check-image-margin;
+        }
+        @else {
+          margin: $treeview-rtl-icon-image-margin;
+        }
+      }
+    }
+
+    .e-fullrow {
+      height: $treeview-big-item-height;
+    }
+
+    &.e-text-wrap {
+      .e-checkbox-wrapper {
+        & + .e-list-text {
+          max-width: $treeview-big-check-wrap-width;
+        }
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          & + .e-list-text {
+            max-width: $treeview-big-check-icon-wrap-width;
+          }
+        }
+
+        & + .e-list-icon + .e-list-img {
+          & + .e-list-text {
+            max-width: $treeview-big-check-icon-img-wrap-width;
+          }
+        }
+      }
+
+      .e-list-icon,
+      .e-list-img {
+        & + .e-list-text {
+          max-width: $treeview-big-icon-wrap-width;
+        }
+      }
+
+      .e-list-icon + .e-list-img {
+        & + .e-list-text {
+          max-width: $treeview-big-icon-img-wrap-width;
+        }
+      }
+    }
+
+    .e-list-text {
+      line-height: $treeview-big-text-height;
+      @if $skin-name != 'bootstrap4' {
+        min-height: $treeview-big-text-height;
+      }
+      @else if $skin-name == 'bootstrap4' {
+        min-height: 38px;
+      }
+      @if $skin-name == 'tailwind3' {
+        padding: $treeview-big-text-padding;
+      }
+
+      .e-input-group {
+        height: $treeview-big-input-height;
+
+        @if $skin-name != 'material' {
+          .e-input {
+            height: 36px;
+          }
+        }
+      }
+    }
+
+    .e-checkbox-wrapper {
+      margin: $treeview-big-check-margin;
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {
+        & + .e-list-text {
+          padding: $treeview-big-check-text-padding;
+        }
+      }
+
+      & + .e-list-icon,
+      & + .e-list-img {
+        margin: $treeview-big-check-image-margin;
+      }
+    }
+
+    .e-list-icon,
+    .e-list-img {
+      margin: $treeview-big-image-margin;
+      @if $skin-name == 'bootstrap4' {
+        font-size: $treeview-big-image-font-size;
+      }
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+        & + .e-list-text {
+          padding: $treeview-big-image-text-padding;
+        }
+      }
+
+      & + .e-list-icon,
+      & + .e-list-img {
+        margin: $treeview-big-icon-image-margin;
+      }
+    }
+
+    .e-icon-collapsible,
+    .e-icon-expandable {
+      @if $skin-name == 'bootstrap4' {
+        height: $treeview-big-icon-size;
+        margin: $treeview-big-icon-margin;
+        width: $treeview-big-icon-size;
+      }
+
+      @if $skin-name == 'tailwind3' {
+        height: $treeview-big-icon-size;
+        width: $treeview-big-icon-size;
+      }
+
+      &::before {
+        @if $skin-name != 'tailwind3' {
+          padding: $treeview-big-icon-padding;
+        }
+      }
+    }
+
+    &.e-drag-item {
+
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+
+        .e-text-content {
+          padding-left: $treeview-big-drag-item-text-padding-left;
+        }
+
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          font-size: $treeview-big-drag-icon-font-size;
+          @if ($skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
+            margin: $treeview-big-drag-icon-margin;
+          }
+
+          &::before {
+            @if ($skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
+              padding: $treeview-big-drag-before-icon-padding;
+            }
+            @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+              font-size: $treeview-big-drag-icon-font-size;
+            }
+          }
+        }
+
+        @if $skin-name == 'bootstrap4' {
+          .e-drop-count {
+            border: $treeview-big-drop-count-border-size solid;
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        .e-ul {
+          padding: $treeview-big-rtl-root-ul-padding;
+        }
+
+        .e-list-item {
+          .e-ul {
+            padding: $treeview-big-rtl-child-ul-padding;
+          }
+
+          .e-text-content {
+            padding: $treeview-big-rtl-text-wrap-padding;
+          }
+        }
+      }
+
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'bootstrap4' {
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          margin: $treeview-big-rtl-icon-margin;
+        }
+      }
+
+      &.e-drag-item {
+
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+
+          .e-text-content {
+            padding-left: 0;
+            padding-right: $treeview-big-drag-item-text-padding-left;
+          }
+        }
+      }
+
+      .e-navigable {
+
+        .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
+
+          @if $skin-name == 'bootstrap4' {
+            padding: $treeview-navigable-rtl-margin-reverse;
+          }
+
+          .e-list-icon,
+          .e-list-img {
+            margin: $treeview-navigable-icon-image-anchor-margin-reverse-bigger;
+          }
+        }
+
+        .e-anchor-wrap {
+          @if $skin-name == 'bootstrap4' {
+            padding: $treeview-navigable-check-margin-bigger-reverse;
+          }
+          @else {
+            padding: $treeview-rtl-icon-image-margin;
+          }
+        }
+
+        .e-list-icon,
+        .e-list-img,
+        .e-list-icon + .e-list-img {
+          @if $skin-name == 'bootstrap4' {
+            margin: $treeview-check-image-margin;
+          }
+          @else {
+            margin: $treeview-icon-image-margin;
+          }
+        }
+      }
+
+      .e-checkbox-wrapper {
+        margin: $treeview-big-rtl-check-margin;
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          margin: $treeview-big-rtl-check-image-margin;
+        }
+      }
+
+      .e-list-icon,
+      .e-list-img {
+        margin: $treeview-big-rtl-image-margin;
+
+        & + .e-list-icon,
+        & + .e-list-img {
+          margin: $treeview-big-rtl-icon-image-margin;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-treeview,
+  .e-treeview.e-bigger {
+    .e-list-text {
+      font-size: $treeview-big-font-size;
+      @if $skin-name == 'bootstrap4' {
+        color: $treeview-big-text-color;
+      }
+    }
+
+    .e-icon-collapsible,
+    .e-icon-expandable {
+      &::before {
+        font-size: $treeview-big-icon-font-size;
+      }
+    }
+
+    &.e-drag-item {
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        @if $skin-name == 'bootstrap4' {
+          padding: $treeview-big-drag-icon-padding;
+        }
+      }
+
+      .e-list-text {
+        @if $skin-name == 'bootstrap4' {
+          padding: $treeview-big-drag-text-padding;
+        }
+      }
+    }
+  }
+}

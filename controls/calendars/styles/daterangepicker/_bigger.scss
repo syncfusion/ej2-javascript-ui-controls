@@ -1,0 +1,971 @@
+@include export-module('daterangepicker-bigger') {
+
+  .e-bigger #{&}.e-daterangepicker.e-range-modal,
+  #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker.e-range-modal {
+    @if $skin-name != 'Material3' {
+      background-color: $range-overlay;
+    }
+    @if $skin-name == 'Material3' {
+      background: $range-overlay;
+    }
+    height: 100%;
+    left: 0;
+    opacity: .5;
+    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+  }
+
+  .e-bigger #{&}.e-daterangepicker,
+  #{if(&, '&', '*')}.e-bigger#{&}.e-daterangepicker,
+  #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker {
+    #{if(&, '&', '*')}.e-popup {
+      @if $skin-name == 'material' or $skin-name == 'bootstrap'{
+        background-color: $range-background;
+      }
+      @if $skin-name == 'Material3' {
+        background: $range-background;
+      }
+
+      #{if(&, '&', '*')} .e-start-label,
+      #{if(&, '&', '*')} .e-end-label {
+        @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          font-size: $range-bigger-header-label-size;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-day-span {
+        @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+          font-size: $range-bigger-indicator-label-size;
+        }
+      }
+
+      #{if(&, '&', '*')}.e-preset-wrapper {
+        max-width: $range-bigger-max-width;
+        min-width: $range-width-auto;
+
+        #{if(&, '&', '*')} .e-presets {
+          max-height: $range-value-none;
+        }
+      }
+      #{if(&, '&', '*')} .e-range-header {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+          margin: $range-control-bigger-header-margin;
+        }
+
+        @if $skin-name == 'tailwind' {
+          padding: $range-control-bigger-header-margin;
+        }
+        width: $range-control-header-width;
+
+        #{if(&, '&', '*')} .e-change-icon {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' {
+            font-size: $range-bigger-change-icon-size;
+          }
+        }
+
+        #{if(&, '&', '*')} .e-start-end {
+          align-items: $range-align-center;
+          cursor: $range-cursor-pointer-style;
+          display: $range-flex-style;
+          height: $range-device-header-container-height;
+          justify-content: $range-align-center;
+          user-select: $range-browser-select-none;
+          width: $range-device-header-container-width;
+
+          #{if(&, '&', '*')} .e-start-btn,
+          #{if(&, '&', '*')} .e-end-btn {
+            border: $range-btn-border-value;
+            box-shadow: $range-box-shadow-none;
+            font-size: $range-calendar-btn-font-size;
+            font-weight: $range-range-btn-font-weight;
+            height: $range-btn-height;
+            line-height: $range-device-btn-line-height;
+            max-width: $range-header-btn-max-width;
+            overflow: $range-visibility-hidden;
+            padding: $range-sart-end-btn-padding;
+            text-overflow: $range-text-overflow;
+            width: $range-btn-width;
+          }
+          #{if(&, '&', '*')} .e-end-btn {
+            border-left: $range-value-zero;
+            border-radius: $range-btn-right-radius;
+          }
+          #{if(&, '&', '*')} .e-start-btn {
+            border-radius: $range-btn-left-radius;
+          }
+          #{if(&, '&', '*')} .e-start-btn:hover,
+          #{if(&, '&', '*')} .e-end-btn:hover:not([disabled]) {
+            box-shadow: $range-box-shadow-none;
+          }
+          #{if(&, '&', '*')} .e-start-btn.e-active,
+          #{if(&, '&', '*')} .e-start-btn.e-active:active,
+          #{if(&, '&', '*')} .e-end-btn.e-active,
+          #{if(&, '&', '*')} .e-end-btn.e-active:active:not([disabled]),
+          #{if(&, '&', '*')} .e-start-btn.e-active:hover,
+          #{if(&, '&', '*')} .e-end-btn.e-active:hover {
+            box-shadow: $range-box-shadow-none;
+          }
+          #{if(&, '&', '*')} .e-start-btn,
+          #{if(&, '&', '*')} .e-end-btn {
+            max-width: $range-header-btn-bigger-max-width;
+          }
+        }
+      }
+      #{if(&, '&', '*')} .e-presets {
+        max-height: $range-bigger-presets-height;
+
+        #{if(&, '&', '*')}.e-preset-wrapper {
+          max-height: $range-value-none;
+        }
+
+        #{if(&, '&', '*')} ul {
+          max-width: $range-value-none;
+
+          #{if(&, '&', '*')} li.e-list-item {
+            font-size: $range-presets-bigger-list-font-size;
+            height: $range-preset-bigger-list-height;
+            line-height: $range-preset-bigger-list-height;
+            padding: $range-device-list-item-padding;
+          }
+        }
+      }
+    }
+    #{if(&, '&', '*')} .e-calendar {
+      max-width: $range-calendar-bigger-max;
+      @if ($skin-name != 'FluentUI') {
+        padding: $range-bigger-calendar-popup-padding;
+      }
+
+      #{if(&, '&', '*')} .e-content table {
+        @if ($skin-name != 'FluentUI') {
+          padding: $range-calendar-bigger-table-padding;
+        }
+      }
+      #{if(&, '&', '*')} .e-header {
+        @if ($skin-name == 'FluentUI') {
+          padding: 8px 16px;
+        }
+        
+        #{if(&, '&', '*')} .e-next,
+        #{if(&, '&', '*')} .e-prev {
+          height: $range-bigger-nav-icon-height;
+          width: $range-bigger-nav-icon-width;
+
+          #{if(&, '&', '*')} span {
+            padding: $range-icon-bigger-padding;
+          }
+        }
+
+        #{if(&, '&', '*')} .e-title {
+          cursor: $range-cursor-pointer-style;
+          line-height: $range-bigger-nav-icon-height;
+        }
+        #{if(&, '&', '*')}.e-month,
+        #{if(&, '&', '*')}.e-year,
+        #{if(&, '&', '*')}.e-decade {
+          @if ($skin-name != 'FluentUI') {
+            padding: $range-e-bigger-header-padding;
+          }
+        }
+      }
+    }
+    #{if(&, '&', '*')} .e-footer {
+      height: $range-bigger-footer-height;
+
+      #{if(&, '&', '*')} .e-btn {
+        height: $range-btn-bigger-height;
+        line-height: $range-btn-bigger-line-height;
+        overflow: $range-visibility-hidden;
+      }
+      #{if(&, '&', '*')} .e-btn.e-apply {
+        margin: $range-bigger-footer-margin;
+      }
+    }
+    #{if(&, '&', '*')}.e-rtl.e-popup {
+      #{if(&, '&', '*')} .e-range-header .e-start-end {
+        #{if(&, '&', '*')} .e-end-btn {
+          border: $range-btn-border-value;
+          border-radius: $range-btn-left-radius;
+          border-right: $range-value-zero;
+        }
+        #{if(&, '&', '*')} .e-start-btn {
+          border-radius: $range-btn-right-radius;
+        }
+      }
+      #{if(&, '&', '*')} .e-footer {
+        #{if(&, '&', '*')}.e-btn.e-cancel {
+          margin: $range-bigger-rtl-footer-margin;
+        }
+        #{if(&, '&', '*')} .e-btn.e-apply {
+          margin-left: $range-value-zero;
+        }
+      }
+    }
+    #{if(&, '&', '*')}.e-device {
+      #{if(&, '&', '*')}.e-popup {
+        max-width: $range-device-max-width;
+
+        #{if(&, '&', '*')} .e-range-header {
+          margin: $range-device-control-header-margin;
+          padding: $range-device-control-header-padding;
+
+          #{if(&, '&', '*')} .e-day-span {
+            @if $skin-name == 'tailwind' {
+              height: $range-device-indicator-height;
+              line-height: $range-device-indicator-height;
+            }
+            margin: $range-device-indicator-margin;
+            
+            @if $skin-name == 'fluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap4' {
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-daterangepicker.e-bigger .e-calendar .e-month .e-selected span.e-day {
+    @if $skin-name == 'FluentUI' {
+      height: 29px;
+      width: 29px;
+      line-height: 29px;
+    }
+  }
+
+  
+  .e-bigger .e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker,
+  .e-bigger.e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker {
+    background-size: 250px 40px;
+    min-height: 40px;
+  }
+
+  .e-bigger .e-calendar .e-content.e-month td.e-today.e-range-hover span.e-day {
+    @if $skin-name == 'FluentUI' {
+      line-height: $range-bigger-today-hover-line-height;
+    }
+  }
+  
+  .e-bigger .e-calendar .e-content.e-month td.e-other-month.e-today.e-range-hover span.e-day {
+    @if $skin-name == 'FluentUI' {
+      line-height: $range-bigger-other-hover-line-height;
+    }
+  }
+
+  .e-bigger #{&}.e-daterangepicker,
+  #{if(&, '&', '*')}.e-bigger#{&}.e-daterangepicker,
+  #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker {
+    @if $skin-name == 'material' {
+      background-color: initial;
+    }
+    @else if $skin-name == 'Material3' {
+      background: initial;
+    }
+    @else if $skin-name == 'bootstrap-dark' {
+      background-color: $range-background;
+    }
+    @else {
+      background-color: $range-bg-color;
+    }
+    padding: $range-popup-padding;
+
+    #{if(&, '&', '*')} .e-calendar th {
+      color: $range-calendar-light-color;
+    }
+    #{if(&, '&', '*')} .e-start-btn,
+    #{if(&, '&', '*')} .e-end-btn {
+      background: $range-bg-color;
+      @if $skin-name == 'bootstrap4' {
+        color: $range-button-font-color;
+      }
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3'{
+        color: $range-button-font-color;
+      }
+    }
+    #{if(&, '&', '*')} .e-start-btn.e-active,
+    #{if(&, '&', '*')} .e-start-btn.e-active:active,
+    #{if(&, '&', '*')} .e-end-btn.e-active,
+    #{if(&, '&', '*')} .e-end-btn.e-active:active:not([disabled]),
+    #{if(&, '&', '*')} .e-start-btn.e-active:hover,
+    #{if(&, '&', '*')} .e-end-btn.e-active:hover {
+      background: $range-primary-color;
+      color: $range-primary-font-color;
+    }
+  }
+
+  .e-daterangepicker.e-bigger.e-small .e-calendar .e-month .e-selected span.e-day {
+    @if $skin-name == 'FluentUI' {
+      height: 25px;
+      width: 25px;
+      line-height: 25px;
+    }
+  }
+
+  .e-bigger.e-small #{&}.e-daterangepicker {
+    #{if(&, '&', '*')}.e-popup {
+      border: $range-popup-border;
+      border-radius: $range-popup-border-radius;
+      box-shadow: $range-box-shadow;
+      max-height: $range-max-height;
+      max-width: $range-max-width;
+
+      #{if(&, '&', '*')}.e-daterange-day-header-lg {
+        max-width: $range-lg-day-header-format-width;
+      }
+      #{if(&, '&', '*')}.e-preset-wrapper {
+        min-width: $range-preset-min-width;
+
+        #{if(&, '&', '*')} .e-presets {
+          max-height: $range-value-none;
+        }
+      }
+      #{if(&, '&', '*')} .e-range-header {
+        background: $range-header-bg-color;
+        padding: $range-control-header-margin;
+        width: $range-control-header-width;
+        @if $skin-name == 'tailwind' {
+          border-radius: $range-popup-header-border-radius;
+        }
+        @if $skin-name == 'Material3' {
+          border-top-left-radius: $range-popup-border-radius;
+        }
+
+        #{if(&, '&', '*')} .e-start-label,
+        #{if(&, '&', '*')} .e-end-label {
+          cursor: $range-cursor-default-style;
+          display: $range-inline-block-style;
+          font-size: $range-header-label-size;
+          overflow: $range-visibility-hidden;
+          text-align: $range-align-center;
+          text-decoration: $range-value-none;
+          text-overflow: $range-text-overflow;
+          user-select: $range-browser-select-none;
+          white-space: $range-text-nowrap;
+          width: $range-start-end-label-width;
+          @if $skin-name == 'Material3' {
+            font-weight: $font-weight-medium;
+          }
+        }
+        #{if(&, '&', '*')} .e-change-icon {
+          font-size: $range-font-size;
+          font-weight: $range-font-weight-bold;
+          text-align: $range-align-center;
+          width: $range-change-icon-width;
+        }
+        #{if(&, '&', '*')} .e-day-span {
+          direction: $range-direction-left;
+          font-size: $range-calendar-small-font-size;
+          height: $range-day-span-height;
+          margin: $range-indicator-margin;
+          text-align: $range-align-center;
+          user-select: $range-browser-select-none;
+          width: $range-indicator-label-width;
+        }
+        #{if(&, '&', '*')} .e-start-end {
+          align-items: $range-align-center;
+          display: $range-flex-style;
+          height: $range-start-end-container-height;
+        }
+      }
+      #{if(&, '&', '*')} .e-separator {
+        @if ($skin-name != 'FluentUI') {
+          height: $range-separator-height;
+          margin: $range-separator-margin;
+        }
+      }
+      #{if(&, '&', '*')} .e-calendar {
+        border: $range-calendar-border;
+        margin: $range-calendar-margin;
+        @if ($skin-name != 'FluentUI') {
+          padding: $range-calendar-popup-padding;
+        }
+        @if $skin-name == 'fluent2' {
+          box-shadow: none;
+        }
+
+        #{if(&, '&', '*')} .e-content table {
+          @if ($skin-name != 'FluentUI') {
+            padding: $range-calendar-normal-table-padding;
+          }
+        }
+        #{if(&, '&', '*')} .e-header {
+          #{if(&, '&', '*')} .e-title {
+            cursor: $range-cursor-pointer-style;
+            line-height: $range-normal-nav-icon-height;
+            @if ($skin-name != 'FluentUI') {
+              width: $range-control-header-width;
+              float: $range-float-none;
+              font-weight: $range-font-weight-normal;
+              margin-left: $range-value-zero;
+            }
+          }
+          #{if(&, '&', '*')}.e-month,
+          #{if(&, '&', '*')}.e-year,
+          #{if(&, '&', '*')}.e-decade {
+            @if ($skin-name != 'FluentUI') {
+              padding: $range-calendar-header-padding;
+            }
+          }
+          #{if(&, '&', '*')} .e-next {
+            @if ($skin-name != 'FluentUI' and $skin-name != 'fluent2') {
+              float: $range-float-right;
+            }
+          }
+          #{if(&, '&', '*')} .e-prev {
+            @if ($skin-name != 'FluentUI' and $skin-name != 'fluent2') {
+              float: $range-float-left;
+            }
+          }
+          #{if(&, '&', '*')} .e-next,
+          #{if(&, '&', '*')} .e-prev {
+            height: $range-normal-nav-icon-height;
+            width: $range-normal-nav-icon-width;
+          }
+          #{if(&, '&', '*')} .e-next span,
+          #{if(&, '&', '*')} .e-prev span {
+            padding: $range-icon-normal-padding;
+          }
+        }
+        #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover {
+          border-radius: $range-hover-start-radius;
+        }
+        #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover {
+          border-radius: $range-hover-end-radius;
+        }
+        #{if(&, '&', '*')} .e-start-date.e-selected {
+          @if ($skin-name == 'FluentUI') {
+            border-radius: $range-hover-start-radius;
+          }
+        }
+        #{if(&, '&', '*')} .e-end-date.e-selected {
+          @if ($skin-name == 'FluentUI') {
+            border-radius: $range-hover-end-radius;
+          }
+        }
+        #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover span.e-day,
+        #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover span.e-day {
+          border: $range-calendar-hover-border;
+        }
+      }
+      #{if(&, '&', '*')} .e-footer {
+        align-items: $range-align-center;
+        @if ($skin-name != 'FluentUI') {
+          border-top: $range-border-value;
+        }
+        clear: $range-float-clear;
+        display: $range-flex-style;
+        flex-direction: $range-flex-direction-row-reverse;
+        height: $range-footer-height;
+        @if $skin-name == 'tailwind' {
+          border-radius: $range-popup-footer-border-radius;
+        }
+      }
+      #{if(&, '&', '*')} .e-footer .e-btn {
+        font-weight: $range-btn-font-weight;
+        height: $range-btn-normal-height;
+        line-height: $range-btn-normal-line-height;
+        overflow: $range-visibility-hidden;
+        padding: $range-btn-padding;
+        text-overflow: $range-text-overflow;
+        @if $skin-name == 'fluent2' {
+          border: $footer-btn-border;
+        }
+      }
+      #{if(&, '&', '*')} .e-footer .e-btn.e-apply {
+        margin: $range-normal-footer-margin;
+      }
+      #{if(&, '&', '*')} .e-date-range-container {
+        float: $range-float-left;
+
+        #{if(&, '&', '*')}.e-range-border {
+          border-right: $range-border-value;
+        }
+      }
+      #{if(&, '&', '*')} .e-calendar-container {
+        display: $range-flex-style;
+
+        #{if(&, '&', '*')} .e-left-container,
+        #{if(&, '&', '*')} .e-right-container {
+          float: $range-float-left;
+        }
+        #{if(&, '&', '*')} .e-left-container {
+          @if $skin-name != 'FluentUI' {
+            border-right: $range-border-value;
+          }
+          @if $skin-name == 'tailwind' {
+            border-right: $range-container-border-value;
+          }
+        }
+      }
+      #{if(&, '&', '*')} .e-presets {
+        max-height: $range-presets-height;
+        overflow: auto;
+        width: $range-width-auto;
+
+        #{if(&, '&', '*')} .e-list-item {
+          border-radius: $range-list-border-radius;
+          cursor: $range-cursor-pointer-style;
+          line-height: $range-list-item-height;
+          overflow: $range-visibility-hidden;
+          padding: $range-list-item-padding;
+          white-space: $range-text-nowrap;
+          text-overflow: $range-text-overflow;
+        }
+        #{if(&, '&', '*')} .e-list-parent {
+          margin: $range-value-zero;
+          max-width: $range-presets-width;
+          padding: $range-value-zero;
+        }
+        #{if(&, '&', '*')} .e-text-content {
+          line-height: $range-list-item-line-height;
+        }
+        #{if(&, '&', '*')} .e-ul {
+
+          #{if(&, '&', '*')} li.e-list-item {
+            font-size: $range-presets-normal-list-font-size;
+            height: $range-preset-normal-list-height;
+            line-height: $range-preset-normal-list-height;
+            &.e-active:first-child {
+              @if $skin-name == 'Material3' {
+                border-top-right-radius: $range-popup-border-radius;
+                border-top-left-radius: $range-popup-border-radius;
+              }
+            }
+          }
+        }
+      }
+      #{if(&, '&', '*')} .e-hide-range {
+        display: $range-display-none;
+      }
+    }
+    #{if(&, '&', '*')}.e-rtl {
+      #{if(&, '&', '*')} .e-date-range-container {
+        float: $range-float-right;
+
+        #{if(&, '&', '*')}.e-range-border {
+          border-left: $range-border-value;
+          border-right: $range-value-zero;
+        }
+        #{if(&, '&', '*')} .e-left-container {
+          @if $skin-name != 'FluentUI' {
+            border-left: $range-border-value;
+            border-right: $range-value-zero;
+          }
+          @if $skin-name == 'tailwind' {
+            border-left: $range-container-border-value;
+          }
+        }
+        #{if(&, '&', '*')} .e-calendar {
+          #{if(&, '&', '*')} .e-next {
+            float: $range-float-left;
+          }
+          #{if(&, '&', '*')} .e-prev {
+            @if ($skin-name != 'FluentUI') {
+              float: $range-float-right;
+            }
+          }
+          #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover {
+            border-radius: $range-hover-end-radius;
+            @if ($skin-name == 'FluentUI') {
+              box-shadow: $selected-range-box-shadow;
+            }
+          }
+          #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover {
+            border-radius: $range-hover-start-radius;
+            @if ($skin-name == 'FluentUI') {
+              box-shadow: $selected-range-box-shadow;
+            }
+          }
+        }
+      }
+      #{if(&, '&', '*')} .e-footer {
+        flex-direction: $range-flex-direction-row;
+        justify-content: $range-flex-justify-content;
+
+        #{if(&, '&', '*')} .e-btn.e-cancel {
+          margin: $range-normal-rtl-footer-margin;
+        }
+        #{if(&, '&', '*')} .e-btn.e-apply {
+          margin-left: $range-value-zero;
+        }
+      }
+    }
+  }
+
+  .e-bigger.e-small #{&}.e-daterangepicker #{&}.e-calendar {
+    max-width: $calendar-bigger-small-max-width;
+  }
+
+  .e-bigger.e-small #{&}.e-daterangepicker,
+  .e-bigger.e-small#{&}.e-daterangepicker {
+    #{if(&, '&', '*')}.e-popup {
+      background: $range-background;
+
+      #{if(&, '&', '*')} .e-calendar {
+        @if $skin-name != 'Material3' {
+          background-color: $range-background;
+        }
+        @if $skin-name == 'Material3' {
+          background: $range-background;
+        }
+
+        #{if(&, '&', '*')} .e-header .e-title,
+        #{if(&, '&', '*')} .e-header .e-title:hover {
+          color: $range-calendar-header-dark-color;
+          text-decoration: none;
+          @if $skin-name == 'fluent2' {
+            width: 72%;
+          }
+        }
+        #{if(&, '&', '*')} .e-content .e-range-hover {
+          @if $skin-name != 'Material3' {
+            background-color: $range-hover-color;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-hover-color;
+          }
+          color: $range-calendar-dark-color;
+        }
+        #{if(&, '&', '*')} .e-content .e-start-date.e-selected,
+        #{if(&, '&', '*')} .e-content .e-end-date.e-selected {
+          @if $skin-name == 'FluentUI' {
+            background-color: $range-hover-color;
+            color: $range-calendar-dark-color;
+          }
+        }
+        #{if(&, '&', '*')} .e-content.e-month .e-today.e-range-hover span {
+          @if $skin-name != 'tailwind' and $skin-name != 'Material3' {
+            background-color: $range-today-color;
+            border: $range-today-border-color;
+            color: $range-calendar-today-color;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-today-color;
+            border: $range-today-border-color;
+            color: $range-calendar-today-color;
+          }
+          @if $skin-name == 'FluentUI' {
+            box-shadow: $range-today-hover-box-shadow;
+          }
+        }
+        #{if(&, '&', '*')} .e-content .e-range-hover span {
+          @if $skin-name != 'tailwind' and $skin-name != 'Material3' {
+            background: $range-hover-color;
+            border: $range-calendar-selection-border;
+            color: $range-calendar-dark-color;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-hover-bg-color;
+            border: $range-calendar-selection-border;
+            color: $range-calendar-dark-color;
+          }
+        }
+
+        #{if(&, '&', '*')} .e-content .e-range-hover:not(.e-other-month) span {
+          @if $skin-name == 'tailwind' {
+            background: $range-hover-color;
+            border: $range-calendar-selection-border;
+            color: $range-calendar-dark-color;
+          }
+        }
+        #{if(&, '&', '*')} .e-range-hover:not(.e-selected):hover span.e-day,
+        #{if(&, '&', '*')} .e-range-hover.e-focused-date:not(.e-selected) span.e-day,
+        #{if(&, '&', '*')} .e-range-hover.e-focused-date.e-today span.e-day {
+          @if $skin-name != 'tailwind' and $skin-name != 'Material3' {
+            background-color: $range-hover-content-color;
+            border: $range-calendar-hover-border-color;
+            color: $range-calendar-dark-color;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-hover-content-color;
+            border: $range-calendar-hover-border-color;
+            color: $range-calendar-dark-color;
+          }
+        }
+        #{if(&, '&', '*')} .e-range-hover.e-today:hover span.e-day,
+        #{if(&, '&', '*')} .e-range-hover.e-focused-date.e-today span.e-day,
+        #{if(&, '&', '*')} .e-range-hover.e-start-date.e-selected.e-today span.e-day,
+        #{if(&, '&', '*')} .e-range-hover.e-end-date.e-selected.e-today span.e-day {
+          @if $skin-name != 'tailwind' {
+            border: $range-calendar-active-border;
+          }
+        }
+        #{if(&, '&', '*')} .e-range-hover.e-selected.e-today:hover span.e-day {
+          @if $skin-name != 'tailwind' {
+            border: $range-calendar-today-start-color;
+          }
+        }
+        #{if(&, '&', '*')} .e-content .e-other-month.e-range-hover,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-today.e-range-hover span,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-range-hover span,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-range-hover:hover span.e-day,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-selected,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-selected span {
+          @if $skin-name != 'tailwind' and $skin-name != 'Material3' {
+            background-color: $range-other-hover-color;
+            border: $range-calendar-other-month-border;
+            color: $range-other-month-date;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-other-hover-color;
+            border: $range-calendar-other-month-border;
+            color: $range-other-month-date;
+          }
+        }
+        #{if(&, '&', '*')} .e-content .e-other-month.e-range-hover,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-today.e-range-hover span,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-range-hover span,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-range-hover:hover span.e-day {
+          @if $skin-name == 'tailwind' {
+            background-color: $range-other-hover-color;
+            border: $range-calendar-other-month-border;
+            color: $range-other-month-date;
+          }
+        }
+        #{if(&, '&', '*')} .e-content .e-other-month.e-range-hover,
+        #{if(&, '&', '*')} .e-content .e-other-month.e-selected {
+          @if $skin-name != 'tailwind' and $skin-name != 'Material3' {
+            background-color: $range-other-hover-color;
+            border: $range-calendar-other-normal-border;
+            color: $range-other-month-date;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-other-hover-color;
+            border: $range-calendar-other-normal-border;
+            color: $range-other-month-date;
+          }
+        }
+        #{if(&, '&', '*')} .e-content .e-other-month.e-range-hover {
+          @if $skin-name == 'tailwind' {
+            background-color: $range-other-hover-color;
+            border: $range-calendar-other-normal-border;
+            color: $range-other-month-date;
+          }
+        }
+        #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover span.e-day,
+        #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover span.e-day {
+          @if $skin-name != 'Material3' and $skin-name != 'fluent2' {
+            background-color: $range-selection-bg;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-selection-bg;
+          }
+          @if $skin-name == 'fluent2' {
+            background: $range-selection-bg;
+            border-radius: $range-selected-hover-radius;
+          }
+          color: $range-active-font-color;
+          @if ($skin-name == 'FluentUI') {
+            border-radius: $range-selected-hover-radius;
+            box-shadow: $range-value-none;
+          }
+        }
+        #{if(&, '&', '*')} .e-start-date.e-selected span.e-day,
+        #{if(&, '&', '*')} .e-end-date.e-selected span.e-day {
+          @if ($skin-name == 'FluentUI') {
+            background-color: $range-selection-bg;
+            border-radius: $range-selected-hover-radius;
+            box-shadow: $range-value-none;
+            color: $range-active-font-color;
+          }
+          @if ($skin-name == 'fluent2') {
+            background: $range-selection-bg;
+            border-radius: $range-selected-hover-radius;
+            color: $range-active-font-color;
+          }
+        }
+        #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover.e-other-month span.e-day,
+        #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover.e-other-month span.e-day {
+          @if ($skin-name == 'tailwind') {
+            background-color: $range-selection-bg;
+            color: $range-active-font-color;
+          }
+        }
+        #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover.e-today span.e-day {
+          @if $skin-name != 'Material3' {
+            background-color: $range-selection-bg;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-selection-bg;
+          }
+          color: $range-active-font-color;
+        }
+        #{if(&, '&', '*')} .e-other-month.e-selected span {
+          color: $range-primary-font-color;
+        }
+      }
+      #{if(&, '&', '*')} .e-presets {
+        @if $skin-name != 'Material3' {
+          background-color: $range-presets-bg;
+        }
+        @if $skin-name == 'Material3' {
+          background: $range-presets-bg;
+        }
+        color: $range-preset-normal-font-color;
+
+        #{if(&, '&', '*')} .e-list-item.e-active {
+          @if $skin-name != 'Material3' {
+            background-color: $range-presets-bg-color;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-presets-bg-active-color;
+          }
+          color: $range-presets-font-color;
+        }
+        #{if(&, '&', '*')} .e-list-item.e-hover {
+          @if $skin-name != 'Material3' {
+            background-color: $range-presets-hover-bg;
+          }
+          @if $skin-name == 'Material3' {
+            background: $range-presets-hover-bg;
+          }
+          color: $range-list-hover-color;
+        }
+      }
+      #{if(&, '&', '*')} .e-start-label,
+      #{if(&, '&', '*')} .e-end-label {
+        color: $range-calendar-header-text-color;
+      }
+      #{if(&, '&', '*')} .e-change-icon {
+        color: $range-change-icon-color;
+      }
+      #{if(&, '&', '*')} .e-day-span {
+        color: $range-calendar-medium-color;
+      }
+      #{if(&, '&', '*')} .e-separator {
+        @if $skin-name != 'Material3' {
+          background-color: $range-separator-color;
+        }
+        @if $skin-name == 'Material3' {
+          background: $range-separator-color;
+        }
+        @if $skin-name == 'fluent2' {
+          display: none;
+        }
+      }
+      #{if(&, '&', '*')} .e-footer {
+        @if $skin-name != 'Material3' {
+          background-color: $range-footer-background;
+        }
+        @if $skin-name == 'Material3' {
+          background: $range-footer-background;
+          border-bottom-left-radius: $range-popup-border-radius;
+          border-bottom-right-radius: $range-popup-border-radius;
+        }
+
+        #{if(&, '&', '*')} .e-cancel.e-flat:not(:hover) {
+          @if $skin-name == 'tailwind' {
+            /* stylelint-disable property-no-vendor-prefix */
+            -webkit-tap-highlight-color: transparent;
+            background-color: $range-cancel-flat-btn-bgcolor;
+            border-color: $range-cancel-flat-btn-border-color;
+            box-shadow: $range-cancel-flat-btn-box-shadow;
+            color: $range-cancel-flat-btn-color;
+          }
+        }
+
+        #{if(&, '&', '*')} .e-apply.e-flat.e-primary:not(:hover):not(:disabled) {
+          @if $skin-name == 'tailwind' {
+            -webkit-tap-highlight-color: transparent;
+            background-color: $range-apply-btn-primary-bgcolor;
+            border-color: $range-apply-btn-primary-border-color;
+            color: $range-apply-btn-primary-color;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger.e-small .e-calendar .e-content.e-month td.e-today.e-range-hover span.e-day {
+    @if $skin-name == 'FluentUI' {
+      line-height: $range-today-hover-line-height;
+    }
+  }
+  
+
+  .e-bigger.e-small .e-calendar .e-content.e-month td.e-today.e-other-month.e-range-hover span.e-day {
+    @if $skin-name == 'FluentUI' {
+      line-height: $range-other-hover-line-height;
+    }
+  }
+
+  .e-bigger {
+    #{if(&, '&', '*')} .e-input-group-icon.e-range-icon,
+    #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-range-icon,
+    #{if(&, '&', '*')} .e-control-wrapper .e-input-group-icon.e-range-icon {
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'material-dark' or $skin-name == 'material' or $skin-name == 'tailwind3' {
+        font-size: $range-bigger-icon-font-size;
+        margin: $range-icon-bigger-margin;
+        min-height: $range-bigger-icon-container-min-height;
+        min-width: $range-bigger-icon-container-min-width;
+        outline: none;
+      }
+      @if $skin-name == 'fluent2' or $skin-name == 'Material3' {
+        font-size: $range-bigger-icon-font-size;
+        margin: $range-icon-bigger-margin;
+        min-height: $range-icon-bigger-container-min-height;
+        min-width: $range-icon-bigger-container-min-width;
+        outline: none;
+        border-radius: $range-icon-bigger-border-radius;
+      }
+      @if $skin-name == 'fluent2' {
+        padding: 6px 12px 6px 6px;
+      }
+      @if $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap' or $skin-name == 'fabric-dark' or $skin-name == 'fabric'  or $skin-name == 'highcontrast-light' or $skin-name == 'highcontrast' {
+        font-size: $range-bigger-icon-font-size;
+        margin: $range-icon-bigger-margin;
+        outline: none;
+      }
+    }
+  }
+
+  .e-small.e-bigger .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-bigger-small-icon-font-size;
+    @if $skin-name == 'fluent2' or $skin-name == 'Material3' {
+      min-width: $range-bigger-small-icon-container-min-width;
+      min-height: $range-bigger-small-icon-container-min-height;
+      border-radius: $range-bigger-small-icon-border-radius;
+      margin: $zero-value;
+    }
+    @if $skin-name == 'Material3' {
+      padding: $zero-value;
+    }
+  }
+
+  .e-bigger .e-date-range-wrapper.e-outline .e-input-group-icon.e-range-icon,
+  .e-date-range-wrapper.e-control-wrapper.e-bigger.e-outline .e-input-group-icon.e-range-icon,
+  .e-bigger .e-date-range-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-range-icon {
+    @if $skin-name == 'fluent2' or $skin-name == 'material-dark'  or $skin-name == 'material' or $skin-name == 'Material3' {
+      min-height: $zero-value;
+      min-width: 24px;
+    }
+  }
+
+  .e-bigger.e-small .e-outline.e-date-range-wrapper .e-input-group-icon.e-range-icon,
+  .e-bigger.e-small.e-outline.e-date-range-wrapper .e-input-group-icon.e-range-icon,
+  .e-date-range-wrapper.e-control-wrapper.e-bigger.e-small.e-outline .e-input-group-icon.e-range-icon,
+  .e-bigger.e-small .e-date-range-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-range-icon {
+    @if $skin-name == 'fluent2' or $skin-name == 'material-dark' or $skin-name == 'material' or $skin-name == 'Material3' {
+      min-height: $zero-value;
+      min-width: 20px;
+    }
+  }
+
+  .e-daterangepicker.e-popup.e-bigger .e-calendar .e-header .e-title,
+  .e-daterangepicker.e-popup.e-device .e-calendar .e-header .e-title {
+    @if $skin-name == 'FluentUI' {
+      width: 72%;
+    }
+  }
+  
+  .e-daterangepicker.e-popup.e-bigger.e-small .e-calendar .e-header .e-title {
+    @if $skin-name == 'FluentUI' {
+      width: 70%;
+    }
+  }
+}

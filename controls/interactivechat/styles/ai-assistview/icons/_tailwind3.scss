@@ -1,0 +1,35 @@
+@include export-module('aiassist-tailwind3-icons') {
+  .e-assist-send::before {
+    content: '\e71d';
+  }
+  .e-assistview-icon::before {
+    content: '\e903';
+  }
+  .e-assist-user::before {
+    content: '\e7b4';
+  }
+  .e-assist-like::before {
+    content: '\e905';
+  }
+  .e-assist-dislike::before {
+    content: '\e906';
+  }
+  .e-assist-copy::before {
+    content: '\e77c';
+  }
+  .e-assist-edit::before {
+    content: '\e730';
+  }
+  .e-assist-check::before {
+    content: '\e8b1';
+  }
+  .e-assist-stop::before {
+    content: '\e919';
+  }
+  .e-assist-like-filled::before {
+    content: '\e917';
+  }
+  .e-assist-dislike-filled::before {
+    content: '\e918';
+  }
+}

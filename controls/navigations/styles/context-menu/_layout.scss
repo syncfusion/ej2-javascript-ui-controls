@@ -1,0 +1,174 @@
+@import 'layout-mixin.scss';
+@include export-module('contextmenu-layout') {
+  .e-contextmenu-wrapper,
+  .e-contextmenu-container {
+    @at-root {
+      & ul {
+        @include ul-layout;
+        @include ul-size;
+        border: $cmenu-ul-border;
+        border-radius: $cmenu-ul-border-radius;
+        box-shadow: $cmenu-sub-ul-box-shadow;
+        display: none;
+        min-width: $cmenu-min-width;
+        position: absolute;
+
+        &.e-contextmenu {
+          box-shadow: $cmenu-parent-ul-box-shadow;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' or $skin-name == 'Material3' {
+            padding: 4px 0;
+          }
+        }
+
+        &.e-ul {
+          font-family: $font-family;
+        }
+
+        & .e-menu-item  {
+          @include li-layout;
+          @include li-size;
+
+          & .e-menu-icon {
+            @if $skin-name == 'fluent2' {
+              margin-bottom: 1px;
+            }
+          }
+
+          & .e-caret {
+            font-size: $cmenu-caret-font-size;
+          }
+
+          & .e-previous {
+            margin-right: $cmenu-back-icon-margin;
+          }
+
+          &.e-disabled {
+            cursor: auto;
+            pointer-events: none;
+            @if $skin-name == 'tailwind3' {
+              color: $flyout-text-color-disabled;
+            }
+          }
+
+          &.e-separator {
+            @if $skin-name == 'fluent2' {
+              padding: 0 !important;  /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible {
+            @if $skin-name == 'fluent2' {
+              border-radius: 4px;
+              background-color: $content-bg-color;
+              box-shadow: $shadow-focus-ring1;
+            }
+            @if $skin-name == 'tailwind3' {
+              box-shadow: $shadow-focus-ring2;
+              background: $flyout-bg-color;
+            }
+          }
+        }
+
+        .e-menu-item .e-checkbox-wrapper {
+          width: max-content;
+        }
+      }
+    }
+
+    &.e-sfcontextmenu {
+      position: absolute;
+
+      & .e-menu-vscroll {
+        position: absolute;
+      }
+
+      & ul {
+        white-space: nowrap;
+
+        &.e-transparent {
+          background: transparent;
+          border: 0;
+          box-shadow: none;
+          height: 1px;
+          left: 0;
+          min-width: 0;
+          padding: 0;
+          top: 0;
+          width: 0;
+        }
+
+        &.e-transparent .e-menu-item {
+          height: 0;
+          padding: 0;
+        }
+
+        &.e-transparent .e-menu-item.e-separator {
+          border: 0;
+          margin: 0;
+        }
+      }
+    }
+
+    &:not(.e-menu-container) {
+      & .e-menu-vscroll.e-vscroll {
+        box-shadow: $cmenu-parent-ul-box-shadow;
+
+        & .e-vscroll-bar {
+          height: 100%;
+          width: inherit;
+        }
+
+        & .e-scroll-nav {
+          height: 16px;
+        }
+
+        &:not(.e-scroll-device) {
+          padding: 16px 0;
+        }
+
+        & ul {
+          box-shadow: none;
+          margin-top: -12px;
+          width: inherit;
+        }
+      }
+    }
+  }
+
+  .e-rtl.e-contextmenu-wrapper .e-menu-item,
+  .e-rtl.e-contextmenu-container .e-menu-item {
+    @include rtl-li-layout;
+    @include rtl-li-size;
+  }
+
+  .e-contextmenu-wrapper .e-menu-item,
+  .e-contextmenu-container .e-menu-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .e-small .e-contextmenu-wrapper ul .e-menu-item .e-caret,
+  .e-small .e-contextmenu-wrapper ul .e-menu-icon {
+    @if $skin-name == 'fluent2' {
+      font-size: 12px;
+    }
+  }
+
+  .e-small .e-contextmenu-wrapper ul .e-menu-item,
+  .e-small.e-contextmenu-wrapper ul .e-menu-item {
+    @if $skin-name == 'tailwind3' {
+      font-size: $cmenu-small-font-size;
+      height: $cmenu-small-li-height;
+      line-height: $cmenu-small-li-height;
+      .e-caret,
+      .e-menu-icon {
+        font-size: $cmenu-small-font-size;
+        line-height: $cmenu-small-li-height;
+      }
+      &.e-separator {
+        height: auto;
+      }
+    }
+  }
+}

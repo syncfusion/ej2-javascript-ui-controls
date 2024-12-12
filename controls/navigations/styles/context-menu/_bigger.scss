@@ -1,0 +1,111 @@
+@mixin bigger-rtl-blank-icon {
+  padding-left: $cmenu-caret-blank-icon;
+
+  &.e-menu-caret-icon {
+    padding-left: $cmenu-caret-li-padding;
+  }
+}
+
+@mixin bigger-ul-size {
+  font-size: $cmenu-bigger-font-size;
+  padding: $cmenu-ul-bigger-padding;
+  white-space: nowrap;
+}
+
+@mixin bigger-li-size {
+  height: $cmenu-bigger-li-height;
+  line-height: $cmenu-bigger-li-height;
+  @if $skin-name == 'fluent2' {
+    height: 40px;
+    line-height: 21px;
+    padding: 9px;
+  }
+
+  &.e-menu-caret-icon {
+    @if $skin-name == 'fluent2' {
+      padding: 9px 36px 9px 9px;
+    }
+  }
+
+  & .e-menu-icon {
+    font-size: $cmenu-icon-bigger-font-size;
+    line-height: $cmenu-bigger-li-height;
+    @if $skin-name == 'tailwind' {
+      margin-right: $cmenu-icon-bigger-margin-right;
+    }
+  }
+
+  & .e-caret {
+    line-height: $cmenu-bigger-li-height;
+    @if $skin-name == 'fluent2' {
+      margin: 3px 0;
+    }
+  }
+
+  &.e-separator {
+    height: auto;
+    line-height: normal;
+  }
+}
+
+@include export-module('contextmenu-bigger') {
+  .e-bigger .e-contextmenu-wrapper ul,
+  .e-bigger.e-contextmenu-wrapper ul,
+  .e-bigger .e-contextmenu-container ul,
+  .e-bigger.e-contextmenu-container ul {
+    @include bigger-ul-size;
+    box-shadow: $cmenu-parent-ul-box-shadow;
+    max-width: $cmenu-bigger-max-width;
+    min-width: $cmenu-bigger-min-width;
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or  $skin-name == 'Material3' {
+      padding: 8px 0;
+    }
+
+    & .e-menu-item  {
+      @include bigger-li-size;
+
+      & .e-menu-icon {
+        @if $skin-name == 'fluent2' {
+          margin-bottom: 2px;
+        }
+      }
+
+      & .e-caret {
+        font-size: $cmenu-bigger-caret-font-size;
+        @if $skin-name == 'fluent2' {
+          padding: 0;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-blankicon,
+  .e-bigger.e-contextmenu-wrapper.e-rtl ul .e-blankicon,
+  .e-bigger .e-contextmenu-container.e-rtl ul .e-blankicon,
+  .e-bigger.e-contextmenu-container.e-rtl ul .e-blankicon {
+    @if $skin-name != 'FluentUI' {
+      @include bigger-rtl-blank-icon;
+    }
+  }
+
+  .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-menu-item.e-menu-caret-icon {
+    @if $skin-name == 'fluent2' {
+      padding: 9px 9px 9px 36px;
+    }
+  }
+
+  .e-bigger .e-small .e-contextmenu-wrapper ul .e-menu-item,
+  .e-bigger .e-small.e-contextmenu-wrapper ul .e-menu-item {
+    @if $skin-name == 'tailwind3' {
+      height: $cmenu-bigger-small-li-height;
+      font-size: $cmenu-bigger-font-size;
+      line-height: $cmenu-bigger-small-li-height;
+      &.e-separator {
+        height: auto;
+      }
+      .e-menu-icon {
+        line-height: $cmenu-bigger-small-li-height;
+      }
+    }
+  }
+}

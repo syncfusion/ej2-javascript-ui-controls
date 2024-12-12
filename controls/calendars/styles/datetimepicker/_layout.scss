@@ -1,0 +1,186 @@
+@include export-module('datetimepicker-layout') {
+  // datetimepicker layout
+  .e-input-group.e-control-wrapper.e-datetime-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-datetime-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
+  .e-datetime-wrapper {
+    /* stylelint-disable property-no-vendor-prefix */
+    -webkit-tap-highlight-color: transparent;
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      font-size: $datetime-icon-normal-font-size;
+    }
+
+    #{if(&, '&', '*')}.e-control-wrapper {
+      box-sizing: border-box;
+    }
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons.e-disabled,
+    #{if(&, '&', '*')} .e-date-icon.e-icons.e-disabled {
+      pointer-events: none;
+    }
+
+    #{if(&, '&', '*')} .e-clear-icon {
+      box-sizing: content-box;
+      @if $skin-name == 'fluent2' or $skin-name == 'fluent2-dark' {
+        box-sizing: border-box;
+      }
+    }
+
+    #{if(&, '&', '*')} span {
+      cursor: pointer;
+    }
+
+    #{if(&, '&', '*')} .e-input-group-icon.e-date-icon,
+    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
+      font-size: $datetime-icon-normal-font-size;
+      margin: $datetime-date-icon-margin;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' {
+        min-height: $datetime-normal-min-height;
+        min-width: $datetime-normal-min-width;
+        @if $skin-name == 'Material3' {
+          border-radius: $datetime-normal-border-radius;
+        }
+      }
+      outline: none;
+    }
+
+    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
+      border: $datetime-time-icon-border;
+      border-style: $datetime-time-icon-border-style;
+      margin: $datetime-time-icon-margin;
+    }
+  }
+
+  .e-datetime-wrapper:not(.e-outline) {
+    #{if(&, '&', '*')}.e-rtl .e-input-group-icon.e-time-icon {
+      margin: $datetime-time-rtl-icon-margin;
+    }
+  }
+
+  .e-control.e-datetimepicker.e-popup-wrapper.e-popup-container.e-popup-expand.e-popup.e-popup-open .e-datetime-mob-popup-wrap {
+    align-items: normal;
+  }
+
+  .e-datetime-mob-popup-wrap {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    left: 0;
+    max-height: 100%;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1002;
+  
+    .e-datetimepicker.e-popup.e-lib.e-control.e-popup-open {
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
+      position: relative;
+      top: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+
+  #{&}.e-datetimepicker.e-time-modal {
+    @if $skin-name != 'Material3' {
+      background-color: $datetime-default-overlay;
+    }
+    @if $skin-name == 'Material3' {
+      background: $datetime-default-overlay;
+    }
+    height: 100%;
+    left: 0;
+    opacity: .5;
+    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+  }
+
+  #{&}.e-datetimepicker.e-popup {
+    border-style: solid;
+    border-width: 1px;
+    overflow: auto;
+
+    #{if(&, '&', '*')} .e-content {
+      position: relative;
+    }
+
+    #{if(&, '&', '*')} .e-list-parent.e-ul {
+      margin: 0;
+      @if $skin-name != 'Material3' {
+        padding: $datetime-list-normal-padding 0;
+      }
+      @else {
+        padding: 0;
+      }
+
+      #{if(&, '&', '*')} .e-list-item {
+        color: $datetime-list-default-font-color;
+        cursor: default;
+        font-size: $datetime-list-normal-font-size;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      #{if(&, '&', '*')} .e-list-item.e-hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  #{&}.e-datetimepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+      line-height: $datetime-list-normal-line-height;
+      text-indent: $datetime-list-normal-text-indent;
+    }
+  }
+
+  .e-small #{&}.e-datetimepicker.e-popup,
+  #{if(&, '&', '*')}.e-small#{&}.e-datetimepicker.e-popup {
+    #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+      font-size: $datetime-list-small-font-size;
+      line-height: $datetime-list-small-line-height;
+      text-indent: $datetime-list-small-text-indent;
+    }
+  }
+
+  .e-small.e-datetime-wrapper,
+  #{if(&, '&', '*')}.e-small .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      font-size: $datetime-icon-small-font-size;
+    }
+
+    #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
+      @if $skin-name == 'Material3' {
+        min-height: $datetime-small-min-height;
+        min-width: $datetime-small-min-width;
+        border-radius: $datetime-small-icon-border-radius;
+        margin: $datetime-time-small-icon-margin;
+      }
+    }
+  }
+
+  .e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker {
+    background-size: 250px 33px;
+    min-height: 33px;
+  }
+
+  .e-datetimepicker.e-popup-expand.e-popup {
+    position: $modal-datetime-position;
+
+    #{if(&, '&', '*')} .e-datetime-mob-popup-wrap {
+      position: $modal-datetime-wrapper-position;
+      width: $modal-datetime-wrapper-width;
+    }
+  }
+}

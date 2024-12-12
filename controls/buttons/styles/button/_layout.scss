@@ -1,0 +1,346 @@
+@mixin icon-left-right {
+  @if $skin-name == 'bootstrap4' {
+    padding: 0 $btn-bigger-icon-top-bottom-padding;
+  }
+  @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    line-height: 0;
+  }
+}
+
+@mixin icon-top-bottom {
+  display: block;
+  margin-top: 0;
+  width: auto;
+}
+
+@mixin top-bottom-icon-btn {
+  @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    line-height: 0;
+  }
+  @else {
+    line-height: 1;
+  }
+}
+
+@mixin mat3-border-radius {
+  @if $skin-name == 'Material3' {
+    border-radius: 4px;
+  }
+}
+
+@mixin fluent-focus-visible {
+  @if $skin-name == 'FluentUI' {
+    outline: none !important; /* stylelint-disable-line declaration-no-important */
+  }
+}
+
+@include export-module('button-layout') {
+  .e-btn,
+  .e-css.e-btn {
+    /* stylelint-disable property-no-vendor-prefix */
+    -webkit-font-smoothing: antialiased;
+    border: $btn-border;
+    border-radius: $btn-border-radius;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-block;
+    font-family: $font-family;
+    font-size: $btn-font-size;
+    font-weight: $btn-font-weight;
+    justify-content: center;
+    line-height: $btn-text-line-height;
+    outline: none;
+    padding: $btn-padding;
+    text-align: center;
+    text-decoration: none;
+    text-transform: $btn-text-transform;
+    user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    @if $skin-name == 'Material3' {
+      letter-spacing: .15px;
+    }
+    @at-root {
+      &:disabled {
+        cursor: default;
+      }
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+      }
+
+      &::-moz-focus-inner {
+        border: 0;
+        padding: 0;
+      }
+
+      & .e-btn-icon {
+        display: inline-block;
+        font-size: $btn-icon-font-size;
+        margin-top: $btn-icon-margin-top;
+        vertical-align: middle;
+        width: $btn-icon-btn-width;
+
+        &.e-icon-left {
+          margin-left: $btn-icon-margin;
+          width: $btn-icon-width;
+          @include icon-left-right;
+        }
+
+        &.e-icon-right {
+          width: $btn-icon-width;
+          margin-right: $btn-icon-margin;
+          @include icon-left-right;
+        }
+
+        &.e-icon-top {
+          padding-bottom: $btn-icon-top-bottom-padding;
+          @include icon-top-bottom;
+        }
+
+        &.e-icon-bottom {
+          padding-top: $btn-icon-top-bottom-padding;
+          @include icon-top-bottom;
+        }
+      }
+
+      &.e-icon-btn {
+        @if $skin-name != 'tailwind3' {
+          padding: $btn-icon-padding;
+        }
+        @if $skin-name == 'fluent2' {
+          line-height: 14px;
+        }
+        @include mat3-border-radius;
+      }
+
+      &.e-top-icon-btn,
+      &.e-bottom-icon-btn {
+        @include top-bottom-icon-btn;
+        padding: $btn-top-icon-padding;
+      }
+
+      &.e-round {
+        border-radius: 50%;
+        height: $btn-round-height;
+        line-height: 1;
+        padding: 0;
+        width: $btn-round-width;
+
+        & .e-btn-icon {
+          font-size: $btn-round-font-size;
+          line-height: $btn-round-icon-line-height;
+          margin-top: 0;
+          width: auto;
+        }
+      }
+
+      &.e-round-corner {
+        @if $skin-name == 'Material3' {
+          border-radius: 25px;
+          padding: $btn-padding;
+        }
+      }
+
+      &.e-rtl {
+        & .e-icon-right {
+          margin-left: $btn-icon-margin;
+          margin-right: 0;
+        }
+
+        & .e-icon-left {
+          margin-left: 0;
+          margin-right: $btn-icon-margin;
+        }
+      }
+
+      &.e-flat {
+        border: $btn-flat-border;
+      }
+
+      &.e-small {
+        font-size: $btn-small-font-size;
+        line-height: $btn-small-text-line-height;
+        padding: $btn-small-padding;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+          border-radius: 2px;
+        }
+
+        &.e-round-corner {
+          @if $skin-name == 'Material3' {
+            border-radius: 25px;
+            padding: $btn-small-padding;
+          }
+        }
+
+        & .e-btn-icon {
+          font-size: $btn-small-icon-font-size;
+          width: $btn-icon-small-width;
+
+          &.e-icon-left {
+            margin-left: $btn-small-icon-margin;
+            width: $btn-small-icon-width;
+            @include icon-left-right;
+          }
+
+          &.e-icon-right {
+            margin-right: $btn-small-icon-margin;
+            width: $btn-small-icon-width;
+            @include icon-left-right;
+          }
+
+          &.e-icon-top {
+            padding-bottom: $btn-small-icon-top-bottom-padding;
+            width: auto;
+          }
+
+          &.e-icon-bottom {
+            padding-top: $btn-small-icon-top-bottom-padding;
+            width: auto;
+          }
+        }
+
+        &.e-icon-btn {
+          padding: $btn-small-icon-padding;
+          @include mat3-border-radius;
+        }
+
+        &.e-top-icon-btn,
+        &.e-bottom-icon-btn {
+          @include top-bottom-icon-btn;
+          padding: $btn-top-icon-padding;
+        }
+
+        &.e-round {
+          height: $btn-round-small-height;
+          line-height: 1;
+          padding: 0;
+          width: $btn-round-small-width;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
+            border-radius: 50%;
+          }
+
+          & .e-btn-icon {
+            font-size: $btn-small-round-font-size;
+            line-height: $btn-small-round-icon-line-height;
+            width: auto;
+          }
+        }
+
+        &.e-rtl {
+          & .e-icon-right {
+            margin-left: $btn-small-icon-margin;
+            margin-right: 0;
+          }
+
+          & .e-icon-left {
+            margin-left: 0;
+            margin-right: $btn-small-icon-margin;
+          }
+        }
+      }
+
+      &.e-block {
+        display: block;
+        width: 100%;
+      }
+    }
+  }
+
+  .e-small .e-btn,
+  .e-small.e-btn,
+  .e-small .e-css.e-btn,
+  .e-small.e-css.e-btn {
+    font-size: $btn-small-font-size;
+    line-height: $btn-small-text-line-height;
+    padding: $btn-small-padding;
+    @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+      border-radius: 2px;
+    }
+
+    &.e-round-corner {
+      @if $skin-name == 'Material3' {
+        border-radius: 25px;
+        padding: $btn-small-padding;
+      }
+    }
+
+    & .e-btn-icon {
+      font-size: $btn-small-icon-font-size;
+      width: $btn-icon-small-width;
+
+      &.e-icon-left {
+        margin-left: $btn-small-icon-margin;
+        width: $btn-small-icon-width;
+        @include icon-left-right;
+      }
+
+      &.e-icon-right {
+        margin-right: $btn-small-icon-margin;
+        width: $btn-small-icon-width;
+        @include icon-left-right;
+      }
+
+      &.e-icon-top {
+        padding-bottom: $btn-small-icon-top-bottom-padding;
+        width: auto;
+      }
+
+      &.e-icon-bottom {
+        padding-top: $btn-small-icon-top-bottom-padding;
+        width: auto;
+      }
+    }
+
+    &.e-icon-btn {
+      padding: $btn-small-icon-padding;
+      @if $skin-name == 'fluent2' {
+        line-height: 14px;
+      }
+      @include mat3-border-radius;
+    }
+
+    &.e-top-icon-btn,
+    &.e-bottom-icon-btn {
+      @include top-bottom-icon-btn;
+      padding: $btn-top-icon-padding;
+    }
+
+    &.e-round {
+      height: $btn-round-small-height;
+      line-height: 1;
+      padding: 0;
+      width: $btn-round-small-width;
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or or $skin-name == 'Material3' {
+        border-radius: 50%;
+      }
+
+      & .e-btn-icon {
+        font-size: $btn-small-round-font-size;
+        line-height: $btn-small-round-icon-line-height;
+        width: auto;
+      }
+    }
+
+    &.e-rtl {
+      & .e-icon-right {
+        margin-left: $btn-small-icon-margin;
+        margin-right: 0;
+      }
+
+      & .e-icon-left {
+        margin-left: 0;
+        margin-right: $btn-small-icon-margin;
+      }
+    }
+  }
+
+  @if $skin-name == 'fluent2' {
+    .e-btn.e-icon-btn .e-btn-icon,
+    .e-small .e-btn.e-icon-btn .e-btn-icon {
+      font-size: 14px;
+      line-height: 14px;
+    }
+  }
+}

@@ -1,0 +1,117 @@
+@mixin bigger-tab-header-layout {
+  & .e-tab .e-tab-header {
+    height: $bigger-spread-ribbon-tab-text-wrap-height;
+    min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+    @if $skin-name == 'Material3' {
+      height: 47px;
+      min-height: 47px;
+    }
+
+    & .e-toolbar-item:not(.e-separator) {
+      height: $bigger-spread-ribbon-tab-text-wrap-height;
+      min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+      @if $skin-name == 'Material3' {
+        height: 48px;
+        min-height: 48px;
+      }
+
+      & .e-tab-wrap {
+        height: $bigger-spread-ribbon-tab-text-wrap-height;
+        @if $skin-name == 'Material3' {
+          height: 48px;
+        }
+      }
+      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        &.e-active .e-text-wrap,
+        & .e-text-wrap {
+          height: 39px;
+        }
+      }
+      @else {
+        & .e-text-wrap {
+          height: $bigger-spread-ribbon-tab-text-wrap-height;
+          @if $skin-name == 'Material3' {
+            height: 48px;
+          }
+        }
+      }
+    }
+
+    & .e-toolbar-items {
+      height: $bigger-spread-ribbon-tab-text-wrap-height;
+      min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+      @if $skin-name == 'Material3' {
+        height: 48px;
+        min-height: 48px;
+      }
+
+      & .e-scroll-nav {
+        height: $bigger-spread-ribbon-tab-text-wrap-height;
+        min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+        @if $skin-name == 'Material3' {
+          height: 48px;
+          min-height: 48px;
+        }
+        @if $skin-name == 'fluent2' {
+          & .e-nav-left-arrow::before,
+          & .e-nav-right-arrow::before {
+            font-size: $bigger-spread-sheet-tab-nav-arrow-font;
+          }
+        }
+      }
+    }
+  }
+}
+
+@include export-module('spreadsheet-ribbon-bigger') {
+  .e-bigger .e-spreadsheet .e-ribbon,
+  .e-bigger.e-spreadsheet .e-ribbon {
+    & .e-menu-wrapper.e-file-menu ul.e-menu {
+      padding: 0;
+
+      & .e-menu-item.e-menu-caret-icon {
+        @if $skin-name != 'Material3' {
+          height: $bigger-spread-ribbon-tab-menu-items-height;
+          line-height: $bigger-spread-ribbon-tab-menu-items-line-height;
+        }
+
+        & .e-caret {
+          @if $skin-name == 'FluentUI' {
+            line-height: 44px;
+          }
+          @else if $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
+            font-size: $bigger-spread-file-drop-icon-font-size;
+            line-height: $bigger-spread-ribbon-tab-menu-items-line-height;
+          }
+          @else {
+            line-height: $bigger-spread-ribbon-tab-menu-items-line-height;
+          }
+        }
+      }
+      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'Material3' {
+        font-size: $bigger-tab-file-menu-font-size;
+      }
+    }
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+      & .e-tab .e-content .e-toolbar .e-toolbar-items {
+        height: 46px;
+      }
+    }
+
+    & .e-drop-icon {
+      font-size: $bigger-spreadsheet-ribbon-drop-icon-font-size;
+      margin: $bigger-drop-icon-margin;
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        line-height: 8px;
+      }
+    }
+    @if $skin-name == 'material' {
+      & .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
+        padding: 0 16px;
+      }
+    }
+    @if $skin-name != 'Material3' {
+      @include bigger-tab-header-layout;
+    }
+  }
+}

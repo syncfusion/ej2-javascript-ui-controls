@@ -1,0 +1,1683 @@
+@mixin position($position, $top, $left) {
+  position: $position;
+  top: $top;
+  left: $left;
+}
+
+@mixin size($height, $width) {
+  height: $height;
+  width: $width;
+}
+
+@mixin tick-position($position) {
+  @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+    background-position-x: $position;
+  }
+  @else {
+    background-position: $position center;
+  }
+}
+
+@mixin tick-background-position($position) {
+  @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+    background-position: $position center;
+  }
+  @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+    background-position-x: $position;
+  }
+}
+
+@mixin alignment($size, $pos, $type) {
+  @if $type == 'horizontal' {
+    height: $size;
+    top: $pos;
+  }
+  @else {
+    width: $size;
+    left: $pos;
+  }
+}
+
+@mixin handle-transform($ms-transform, $transform) {
+  /* stylelint-disable */
+  -ms-transform: $ms-transform;
+  -webkit-transform: $ms-transform;
+  transform: $transform;
+  /* stylelint-enable */
+}
+
+@mixin cursor-grabbing {
+  /* stylelint-disable */
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+  /* stylelint-enable */
+}
+
+@mixin cursor-grab {
+  /* stylelint-disable */
+  cursor: -webkit-grab;
+  cursor: grab;
+  /* stylelint-enable */
+}
+
+@mixin button-style($bg-image, $size, $top, $left) {
+  .e-button-icon {
+    background-image: $bg-image;
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: inline-block;
+    @include size($size, $size);
+    @include position(absolute, $top, $left);
+  }
+}
+
+@mixin button-position($left, $right, $margin-top, $top) {
+  left: $left;
+  right: $right;
+  margin-top: $margin-top;
+  top: $top;
+}
+
+@mixin v-button-position($top, $bottom, $margin-right, $right) {
+  top: $top;
+  bottom: $bottom;
+  margin-right: $margin-right;
+  right: $right;
+}
+
+@mixin button-icon($color, $content, $font-size) {
+  .e-button-icon {
+    font-family: 'e-icons';
+
+    &::before {
+      color: $color;
+      content: $content;
+      font-size: $font-size;
+    }
+  }
+}
+
+@mixin bg-border($bg-color, $border) {
+  background-color: $bg-color;
+  border-color: $border;
+}
+
+@mixin slider-transform($rotation) {
+  transform: rotate($rotation);
+  .e-tip-content {
+    transform: rotate(-$rotation);
+  }
+}
+
+@include export-module('slider-layout') {
+  /* stylelint-disable property-no-vendor-prefix */
+
+  .e-control-wrapper.e-slider-container {
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    box-sizing: border-box;
+    display: inline-block;
+    height: $slider-wrap-height;
+    line-height: normal;
+    outline: none;
+    position: relative;
+    user-select: none;
+
+    &.e-material-slider .e-slider .e-handle {
+      &.e-material-handle {
+        cursor: default;
+        transition: transform .4s cubic-bezier(.25, .8, .25, 1);
+        z-index: 3;
+      }
+  
+      &.e-tab-handle,
+      &.e-handle-start.e-tab-handle {
+        &::after {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            background-color: transparent;
+          }
+        }
+      }
+    }
+
+    &:hover,
+    &:active {
+      .e-scale .e-tick {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          visibility: visible;
+        }
+      }
+    }
+
+    &::after {
+      content: $skin-name;
+      display: none;
+    }
+
+    .e-slider {
+      box-sizing: border-box;
+      cursor: $slider-cursor;
+      display: block;
+      outline: 0 none;
+      padding: 0;
+      position: relative;
+
+      .e-handle {
+        border-radius: $slider-border-radius-handle;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'fluent2') {
+          box-shadow: $slider-handle-box-shadow;
+        }
+        box-sizing: border-box;
+        cursor: $slider-handle-hover-cursor;
+        @include size($slider-handle-height, $slider-handle-width);
+        outline: none;
+        position: absolute;
+        touch-action: none;
+        transition: left 300ms ease-out, right 300ms ease-out, bottom 300ms ease-out, transform 300ms ease-out;
+        z-index: 10;
+
+        &.e-large-thumb-size {
+          transform: scale(1.5);
+        }
+
+        &.e-handle-active {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            @include bg-border($slider-active-handle-bg-color, $slider-hover-handle-color);
+          }
+          @else if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+            @include bg-border($slider-handle-active-bg-color, $slider-handle-active-border-color);
+          }
+          @if ($skin-name == 'bootstrap4') {
+            box-shadow: $slider-handle-active-box-shadow;
+          }
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            @include cursor-grabbing;
+          }
+        }
+
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          @include cursor-grab;
+
+          &.e-handle-start {
+            background-color: $slider-handle-start-background;
+            border: $slider-start-handle-border-size;
+          }
+
+          &::after {
+            -moz-box-sizing: content-box;
+            -webkit-box-sizing: content-box;
+            @include handle-transform(scale(0), scale(0));
+            border: 0 solid;
+            border-radius: 50%;
+            box-sizing: content-box;
+            content: '';
+            @include size(32px, 32px);
+            @include position($slider-handle-after-position, calc(50% - 16px), calc(50% - 16px));
+            opacity: .26;
+            transition: transform .4s cubic-bezier(.25, .8, .25, 1);
+            z-index: -1;
+          }
+        }
+
+        &.e-tab-handle {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            &.e-handle-start::after {
+              background-color: $slider-tab-background;
+              opacity: .38;
+            }
+
+            &::after {
+              @include handle-transform(scale(1), scale(1));
+              background-color: $slider-color;
+            }
+          }
+
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI') {
+            border-color: $slider-tab-border-color;
+          }
+
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+            @include bg-border($slider-tab-background, $slider-tab-border-color);
+            box-shadow: $slider-tab-active-box-shadow;
+          }
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3') {
+            @if $skin-name == 'Material3' {
+              background: $slider-tab-background;
+            }
+            @else {
+              background-color: $slider-tab-background;
+              @if ($skin-name != 'tailwind3') {
+                border: $slider-tab-border;
+              }
+            }
+            box-shadow: $slider-tab-active-box-shadow;
+          }
+        }
+      }
+
+      .e-tab-track {
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+          background-color: $slider-tab-track-color;
+        }
+      }
+    }
+
+    &.e-rtl {
+      &.e-horizontal {
+        .e-slider {
+          .e-handle {
+            margin: $rtl-slider-h-handle-margin;
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              top: calc(50% - 8px);
+            }
+            @else if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              top: calc(50% - 6px);
+            }
+          }
+        }
+
+        .e-scale {
+          &.e-h-scale {
+            .e-tick.e-first-tick {
+              @include tick-position(right);
+              @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+                left: 0;
+              }
+            }
+
+            .e-tick.e-last-tick {
+              @include tick-position(left);
+            }
+          }
+        }
+
+        .e-slider-button {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI') {
+            margin-top: -8px;
+          }
+          @else if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+            margin-top: -7px;
+          }
+          @else if ($skin-name == 'tailwind'  or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+            margin-top: -13px;
+
+            .e-button-icon::before {
+              font-size: 18px;
+            }
+          }
+        }
+      }
+
+      &.e-vertical {
+        direction: ltr;
+      }
+    }
+
+    &.e-disabled {
+      @if ($skin-name == 'tailwind') {
+        opacity: 1;
+      }
+      @if ($theme-name == 'fluent2') {
+        opacity: 1;
+      }
+      @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+        opacity: .5;
+      }
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        &.e-material-slider .e-slider .e-handle.e-handle-first {
+          background-color: $grey-600;
+        }
+
+        &:hover {
+          .e-scale .e-tick {
+            visibility: hidden;
+          }
+        }
+
+        .e-slider {
+          .e-range {
+            background: $slider-disabled-bg-color;
+          }
+
+          .e-handle {
+            background: $grey-600;
+            transform: scale(.5) !important;/* stylelint-disable-line declaration-no-important */
+
+            &.e-handle-first {
+              background-color: $grey-600;
+              border: 0;
+            }
+
+            &::after {
+              @include handle-transform(scale(0), scale(1));
+              background: transparent;
+              border: 7px solid $slider-material-tooltip-content-color;
+              border-radius: 50%;
+              box-sizing: border-box;
+              content: '';
+              @include size(26px, 26px);
+              @include position(absolute, calc(50% - 13px), calc(50% - 13px));
+              opacity: 1;
+              transition: none;
+              z-index: -1;
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        .e-slider {
+          .e-range {
+            background: $slider-disabled-bg-color;
+          }
+
+          .e-handle {
+            border-color: $slider-disabled-bg-color;
+          }
+        }
+      }
+
+      .e-btn {
+        cursor: default;
+      }
+
+      .e-slider {
+        .e-handle {
+          cursor: default;
+
+          &.e-handle-disable {
+            display: $slider-disabled-handle-show;
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap4') {
+        .e-slider {
+          .e-range {
+            background-color: $slider-disabled-range-color;
+          }
+
+          .e-handle {
+            @include bg-border($slider-disabled-handle-color, $slider-disabled-handle-color);
+          }
+
+          .e-slider-track {
+            background-color: $slider-disabled-track-color;
+          }
+        }
+
+        .e-scale .e-tick {
+          .e-tick-value {
+            color: $slider-button-bg-color;
+          }
+        }
+
+        .e-slider-button {
+          @include bg-border($slider-disabled-bg-color, $white);
+        }
+      }
+    }
+
+    @if ($skin-name == 'bootstrap4') {
+      &:not(.e-disabled) {
+        .e-slider-button {
+          &:hover {
+            @include bg-border(darken($gray-600, 7.5%), darken($gray-600, 10%));
+          }
+
+          &:active {
+            @include bg-border(darken($gray-600, 10%), darken($gray-600, 12%));
+          }
+        }
+      }
+    }
+
+    &.e-horizontal {
+      @include size(48px, 100%);
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        .e-first-button {
+          @include button-position(0, null, $slider-btn-center-align, 50%);
+          @include button-style($slider-button-hleft-bg-image, 7px, calc(50% - 3.6px), calc(50% - 4.6px));
+        }
+
+        .e-second-button {
+          @include button-position(null, 0, $slider-btn-center-align, 50%);
+          @include button-style($slider-button-hright-bg-image, 7px, calc(50% - 3.6px), calc(50% - 2.6px));
+        }
+      }
+      @else if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light') {
+        .e-first-button {
+          @include button-position(0, null, $slider-btn-center-align, 50%);
+
+          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind3' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'FluentUI' and $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name !='tailwind3') {
+            @include button-style($slider-button-hleft-bg-image, 8px, calc(50% - 4px), calc(50% - 5px));
+          }
+          @else if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+            @include button-icon($slider-button-icon-bg-color,'\e738', 17px);
+            @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+              @include button-icon($slider-button-icon-bg-color,'\e738', 14px);
+            }
+            @else if ($skin-name == 'Material3') {
+              @include button-icon($slider-button-icon-bg-color,'\e738', 16px);
+            }
+          }
+          @else {
+            .e-button-icon::before {
+              font-size: 17px;
+              @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3') {
+                color: $slider-button-icon-bg-color;
+                content: '\e765';
+              }
+              @else {
+                content: '\e761';
+              }
+            }
+          }
+        }
+
+        .e-second-button {
+          @include button-position(null, 0, $slider-btn-center-align, 50%);
+
+          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind3' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'FluentUI' and $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'tailwind3') {
+            @include button-style($slider-button-hright-bg-image, 8px, calc(50% - 4px), calc(50% - 3px));
+          }
+          @else if($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+            @include button-icon($slider-button-icon-bg-color, '\e75c', 17px);
+            @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+              @include button-icon($slider-button-icon-bg-color, '\e75c', 14px);
+            }
+            @else if ($skin-name == 'Material3') {
+              @include button-icon($slider-button-icon-bg-color, '\e75c', 16px);
+            }
+          }
+          @else {
+            .e-button-icon::before {
+              font-size: 18px;
+              @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3') {
+                color: $slider-button-icon-bg-color;
+                content: '\e748';
+              }
+              @else {
+                content: '\e707';
+              }
+            }
+          }
+        }
+      }
+      @else {
+        .e-first-button {
+          @include button-position(0, null, $slider-btn-center-align, 50%);
+          @include button-icon($slider-button-icon-color, '\e829', 8px);
+          .e-button-icon::before {
+            font-weight: 600;
+            @include position(absolute, calc(50% - 4px), calc(50% - 5px));
+          }
+        }
+
+        .e-second-button {
+          @include button-position(null, 0, $slider-btn-center-align, 50%);
+          @include button-icon($slider-button-icon-color, '\e830', 8px);
+          .e-button-icon::before {
+            font-weight: 600;
+            @include position(absolute, calc(50% - 4px), calc(50% - 3px));
+          }
+        }
+      }
+
+      &.e-slider-btn {
+        padding: $slider-button-horizon-padding;
+      }
+
+      .e-slider {
+        @include size(32px, 100%);
+        position: relative;
+        top: calc(50% - 16px);
+      }
+
+      .e-slider-track {
+        @include size($slider-container-height, 100%);
+        left: 0;
+        position: absolute;
+        overflow: hidden;
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          background: $slider-handle-start-border-color;
+          top: calc(50% - 1px);
+        }
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+          background: $slider-track-color;
+          top: calc(50% - 2px);
+          @if $skin-name == 'fluent2' or $skin-name == 'FluentUI' {
+            border-radius: $slider-radius;
+          }
+        }
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' or $skin-name == 'Material3-dark') {
+          background: $slider-track-color;
+          @if ($skin-name == 'bootstrap5.3') {
+            border-radius: 6px;
+          }
+          @else {
+            border-radius: 4px;
+          }
+          top: calc(50% - 4px);
+        }
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          top: calc(50% - 3px);
+        }
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+          background: $slider-handle-start-border-color;
+          border: 1px solid $slider-track-border-color;
+          border-radius: 4px;
+          top: calc(50% - 5px);
+        }
+        @if $skin-name == 'bootstrap4' {
+          background: $slider-handle-start-border-color;
+          border-radius: 6px;
+        }
+      }
+
+      .e-handle {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          margin-left: -6px;
+          top: calc(50% - 6px);
+        }
+        @else if ($skin-name == 'bootstrap4') {
+          margin-left: -7px;
+          top: calc(50% - 7px);
+        }
+        @else if($skin-name == 'Material3') {
+          margin-left: -10px;
+          top: calc(50% - 12px);
+        }
+        @else if $skin-name == 'fluent2' {
+          margin-left: -10px;
+          top: calc(50% - 10px);
+        }
+        @else {
+          @if ($skin-name == 'tailwind') {
+            margin-left: -6px;
+          }
+          @else {
+            margin-left: -8px;
+          }
+          top: calc(50% - 8px);
+        }
+      }
+
+      &.e-scale-both {
+        .e-handle {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            margin-left: -8px;
+            top: calc(50% - 7px);
+          }
+        }
+
+        .e-range {
+          height: $slider-range-height;
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            top: calc(50% - 2px);
+          }
+        }
+      }
+
+      .e-range {
+        height: $slider-range-height;
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          top: calc(50% - 1px);
+        }
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or or $skin-name == 'fluent2') {
+          top: calc(50% - 2px);
+        }
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          top: calc(50% - 3px);
+        }
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'Material3') {
+          top: calc(50% - 4px);
+        }
+      }
+
+      .e-limits {
+        background-color: $slider-limit-bar-color;
+        position: absolute;
+        @include alignment($slider-limit-bar-horizontal-height, $slider-limit-bar-top, 'horizontal');
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'fluent2') {
+          border-radius: 4px;
+        }
+        @if ($skin-name == 'FluentUI') {
+          border-radius: 2px;
+        }
+        @if ($skin-name == 'bootstrap5.3') {
+          border-radius: 6px;
+        }
+      }
+    }
+
+    &.e-vertical {
+      @include size(inherit, 48px);
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+        padding: 28px 0;
+      }
+      @else if ($skin-name == 'FluentUI') {
+        padding: 32px 0;
+      }
+      @else if ($skin-name == 'bootstrap4') {
+        padding: 30px 0;
+      }
+      @else {
+        padding: 38px 0;
+      }
+
+      .e-slider {
+        @include size(100%, 32px);
+        @if ($skin-name == 'FluentUI') {
+          left: calc(50% - 15px);
+        }
+        @else {
+          left: calc(50% - 16px);
+        }
+        position: relative;
+      }
+
+      .e-slider-track {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+          background: $slider-track-color;
+        }
+        @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light' and $skin-name != 'FluentUI' and $skin-name != 'Material3' and $skin-name != 'fluent2') {
+          background: $slider-handle-start-border-color;
+        }
+        bottom: 0;
+        height: 100%;
+        position: absolute;
+        overflow: hidden;
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+          @if ($skin-name == 'tailwind') {
+            left: calc(50%);
+          }
+          @else if ($skin-name == 'tailwind3') {
+            left: calc(50% - 4px);
+          }
+          @else {
+            left: calc(50% - 2px);
+          }
+          width: 4px;
+        }
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+          @include alignment(8px, calc(50% - 4px), 'vertical');
+        }
+        @else if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+          border: 1px solid $slider-track-border-color;
+          border-radius: 3px;
+          @include alignment(10px, calc(50% - 5px), 'vertical');
+        }
+        @else if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          @include alignment(6px, calc(50% - 3px), 'vertical');
+        }
+        @else if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          @include alignment(2px, calc(50% - 1px), 'vertical');
+        }
+        @if ($skin-name == 'tailwind' $skin-name == 'tailwind3' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+          border-radius: 4px;
+        }
+        @else if ($skin-name == 'bootstrap4') {
+          border-radius: 6px;
+        }
+        @else if ($skin-name == 'FluentUI') {
+          border-radius: 2px;
+        }
+        @else if ($skin-name == 'bootstrap5.3') {
+          border-radius: 6px;
+        }
+      }
+
+      &.e-small-size {
+        &.e-slider-btn {
+          height: 100%;
+          padding: $slider-button-vertical-padding;
+
+          .e-slider {
+            @include size(100%, $slider-height);
+          }
+        }
+      }
+
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        .e-first-button {
+          @include v-button-position(null, 0, $slider-btn-center-align, 50%);
+          @include button-style($slider-button-vdown-bg-image, 8px, calc(50% - 2.7px), calc(50% - 3.8px));
+        }
+
+        .e-second-button {
+          @include v-button-position(0, null, $slider-btn-center-align, 50%);
+          @include button-style($slider-button-vup-bg-image, 8px, calc(50% - 4.7px), calc(50% - 3.8px));
+        }
+      }
+      @else if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light') {
+        .e-first-button {
+          @include v-button-position(null, 0, $slider-btn-center-align, 50%);
+          @if $skin-name == 'Material3' {
+            margin-right: $slider-btn-vertical-center-align;
+          }
+
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'FluentUI' and $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'tailwind3') {
+            @include button-style($slider-button-vdown-bg-image, 8px, calc(50% - 3.6px), calc(50% - 4px));
+          }
+          @else if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+            @include button-icon($slider-button-icon-bg-color, '\e734', 14px);
+            @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+              @include button-icon($slider-button-icon-bg-color, '\e734', 18px);
+            }
+            @else if ($skin-name == 'Material3') {
+              @include button-icon($slider-button-icon-bg-color, '\e734', 16px);
+            }
+            .e-button-icon::before {
+              @if $skin-name == 'fluent2' {
+                @include position(absolute, 3px, 4px);
+              }
+            }
+          }
+          @else {
+            .e-button-icon::before {
+              font-size: 18px;
+              content: '\e729';
+              @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3') {
+                color: $slider-button-icon-bg-color;
+              }
+            }
+          }
+        }
+
+        .e-second-button {
+          @include v-button-position(0, null, $slider-btn-center-align, 50%);
+          @if $skin-name == 'Material3' {
+            margin-right: $slider-btn-vertical-center-align;
+          }
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'FluentUI' and $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'tailwind3') {
+            @include button-style($slider-button-vup-bg-image, 8px, calc(50% - 4.5px), calc(50% - 4px));
+          }
+          @else if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
+            @include button-icon($slider-button-icon-bg-color, '\e7dd', 14px);
+            @if ($skin-name == 'bootstrap5') {
+              @include button-icon($slider-button-icon-bg-color, '\e7dd', 18px);
+            }
+            @if ($skin-name == 'bootstrap5.3') {
+              @include button-icon($slider-button-icon-bg-color, '\e7dd', 18px);
+            }
+            @else if ($skin-name == 'Material3') {
+              @include button-icon($slider-button-icon-bg-color, '\e7dd', 16px);
+            }
+            .e-button-icon::before {
+              @if $skin-name == 'fluent2' {
+                @include position(absolute, 3px, 4px);
+              }
+            }
+          }
+          @else {
+            .e-button-icon::before {
+              font-size: 18px;
+              @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3') {
+                color: $slider-button-icon-bg-color;
+                content: '\e776';
+              }
+              @else {
+                content: '\e7a0';
+              }
+            }
+          }
+        }
+      }
+      @else {
+        .e-first-button {
+          @include v-button-position(null, 0, $slider-btn-center-align, 50%);
+          @include button-icon($slider-button-icon-color, '\e829', 9px);
+
+          .e-button-icon::before {
+            font-weight: 600;
+            @include position(absolute, calc(50% - 4px), calc(50% - 4.15px));
+            transform: rotate(-90deg);
+          }
+        }
+
+        .e-second-button {
+          @include v-button-position(0, null, $slider-btn-center-align, 50%);
+          @include button-icon($slider-button-icon-color, '\e829', 9px);
+
+          .e-button-icon::before {
+            font-weight: 600;
+            @include position(absolute, calc(50% - 5.8px), calc(50% - 5.5px));
+            transform: rotate(90deg);
+          }
+        }
+      }
+
+      &.e-scale-both {
+        .e-slider {
+          .e-handle {
+            margin-bottom: $slider-v-handle-margin;
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              left: calc(50% - 9px);
+            }
+          }
+        }
+      }
+
+      .e-slider {
+        .e-handle {
+          margin-bottom: $slider-v-handle-margin;
+          @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+            left: calc(50% - 6px);
+          }
+          @else if($skin-name == 'bootstrap4') {
+            left: calc(50% - 7px);
+          }
+          @else if($skin-name == 'tailwind') {
+            left: calc(50% - 4px);
+          }
+          @else if($skin-name == 'Material3' or $skin-name == 'fluent2') {
+            left: calc(50% - 10px);
+          }
+          @else {
+            left: calc(50% - 8px);
+          }
+        }
+
+        .e-range {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+            @include alignment(8px, calc(50% - 4px), 'vertical');
+          }
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3') {
+            @include alignment(6px, calc(50% - 3px), 'vertical');
+          }
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2' ) {
+            @include alignment(4px, calc(50% - 2px), 'vertical');
+          }
+          @if ($skin-name == 'tailwind') {
+            @include alignment(4px, calc(50%), 'vertical');
+          }
+          @if ($skin-name == 'tailwind3') {
+            @include alignment(4px, calc(50% - 4px), 'vertical');
+          }
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            @include alignment(6px, calc(50% - 3px), 'vertical');
+          }
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            @include alignment(2px, calc(50% - 1px), 'vertical');
+          }
+        }
+
+        .e-limits {
+          background-color: $slider-limit-bar-color;
+          position: absolute;
+          @include alignment($slider-limit-bar-vertical-width, $slider-limit-bar-left, 'vertical');
+          @if ($skin-name == 'bootstrap5' or $skin-name == 'fluent2') {
+            border-radius: 4px;
+          }
+          @if ($skin-name == 'FluentUI') {
+            border-radius: 2px;
+          }
+          @if ($skin-name == 'bootstrap5.3') {
+            border-radius: 6px;
+          }
+        }
+      }
+    }
+
+    .e-range {
+      border-radius: $slider-range-border-radius;
+      position: absolute;
+      transition: left 300ms ease-out, right 300ms ease-out, bottom 300ms ease-out, width 300ms ease-out, height 300ms ease-out;
+
+      &.e-drag-horizontal,
+      &.e-drag-vertical {
+        cursor: pointer;
+      }
+    }
+
+    .e-tick-before {
+      &.e-scale {
+        &.e-h-scale {
+          .e-tick {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              @include alignment($tick-after-height, $tick-after-top, 'horizontal');
+              background-position: bottom;
+            }
+            @else if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              @include alignment($tick-after-height, $tick-after-top, 'horizontal');
+            }
+            @else {
+              background-position: bottom;
+              @include alignment(50%, 1px, 'horizontal');
+            }
+          }
+
+          .e-large {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              @include alignment($largetick-before-height, $largetick-before-top, 'horizontal');
+            }
+            @else if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              @include alignment($largetick-before-height, $largetick-before-top, 'horizontal');
+            }
+          }
+        }
+
+        &.e-v-scale {
+          .e-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              @include alignment($tick-after-height, $tick-after-left, 'vertical');
+            }
+            @else {
+              background-position: right;
+              @include alignment(50%, 1px, 'vertical');
+            }
+          }
+
+          .e-large {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              @include alignment($largetick-before-height, $largetick-before-left, 'vertical');
+            }
+          }
+        }
+      }
+    }
+
+    .e-tick-after {
+      &.e-scale {
+        &.e-h-scale {
+          .e-tick {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              @include alignment($tick-before-height, $tick-before-top, 'horizontal');
+              background-position-x: center;
+            }
+            @else if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              @include alignment($tick-before-height, $tick-before-top, 'horizontal');
+            }
+            @else {
+              background-position-x: center;
+              @include alignment(50%, calc(50% - 1px), 'horizontal');
+            }
+          }
+
+          .e-large {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              @include alignment($largetick-after-height, $largetick-after-top, 'horizontal');
+            }
+            @else if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              @include alignment($largetick-after-height, $largetick-after-top, 'horizontal');
+            }
+          }
+        }
+
+        &.e-v-scale {
+          .e-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              @include alignment($tick-before-height, $tick-before-left, 'vertical');
+            }
+            @else {
+              background-position: left;
+              @include alignment(50%, calc(50% - 1px), 'vertical');
+            }
+          }
+
+          .e-large {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              @include alignment($largetick-after-height, $largetick-after-left, 'vertical');
+            }
+          }
+        }
+      }
+    }
+
+    &.e-scale-before {
+      .e-scale {
+        &.e-v-scale {
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            right: 9px;
+          }
+        }
+      }
+    }
+
+    &.e-scale-after {
+      .e-scale {
+        &.e-v-scale {
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            right: 9px;
+          }
+        }
+      }
+    }
+
+    .e-tick-both {
+      &.e-scale {
+        &.e-h-scale {
+          .e-tick {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              @include alignment(calc(100% - 6px), -11px, 'horizontal');
+            }
+            @else if ($skin-name == 'bootstrap4') {
+              @include alignment(16px, -8px, 'horizontal');
+            }
+            @else if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+              @include alignment(18px, -11px, 'horizontal');
+            }
+            @else if ($skin-name == 'Material3') {
+              @include alignment(18px, -13px, 'horizontal');
+            }
+            @else if ($skin-name == 'tailwind') {
+              @include alignment(16px, -16px, 'horizontal');
+            }
+            @else if ($skin-name == 'tailwind3') {
+              @include alignment(16px, -12px, 'horizontal');
+            }
+            @else if ($skin-name == 'FluentUI') {
+              @include alignment(30px, -17px, 'horizontal');
+            }
+            @else if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
+              @include alignment(calc(100% - 3px), -12.5px, 'horizontal');
+            }
+            @else if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              @include alignment(calc(100% - 6px), -12px, 'horizontal');
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position: center;
+              height: 12px;
+            }
+          }
+
+          .e-large {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              @include alignment(100%, -8px, 'horizontal');
+            }
+            @else if ($skin-name == 'bootstrap4') {
+              @include alignment(22px, -5px, 'horizontal');
+            }
+            @else if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+              @include alignment(26px, -7px, 'horizontal');
+            }
+            @else if ($skin-name == 'tailwind') {
+              @include alignment(24px, -12px, 'horizontal');
+            }
+            @else if ($skin-name == 'tailwind3') {
+              @include alignment(24px, -9px, 'horizontal');
+            }
+            @else if ($skin-name == 'FluentUI') {
+              @include alignment(38px, -13px, 'horizontal');
+            }
+            @else if ($skin-name == 'Material3') {
+              @include alignment(26px, -10px, 'horizontal');
+            }
+            @else if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              @include alignment(calc(100% + 3px), -9px, 'horizontal');
+            }
+            @else if ($skin-name == 'material-dark' or $skin-name == 'material') {
+              height: 20px;
+              top: 4px;
+            }
+          }
+        }
+
+        &.e-v-scale {
+          .e-tick {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              background-position: center;
+              width: 100%;
+            }
+            @if ($skin-name == 'bootstrap4') {
+              background-position: center;
+              @include alignment(calc(100% - 12px), 6px, 'vertical');
+            }
+            @if ($skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'bootstrap5.3') {
+              background-position: center;
+              @include alignment(18px, 5px, 'vertical');
+            }
+            @if ($skin-name == 'tailwind') {
+              @include alignment(16px, 6px, 'vertical');
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position: center;
+              width: 100%;
+            }
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+              @include alignment(calc(100% - 2px), 0, 'vertical');
+            }
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              @include alignment(calc(100% - 6px), 2px, 'vertical');
+            }
+          }
+
+          .e-large {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              width: 100%;
+            }
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+              @include alignment(calc(100% - 6px), 3px, 'vertical');
+            }
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'bootstrap5.3') {
+              @include alignment(26px, 1px, 'vertical');
+            }
+            @if ($skin-name == 'tailwind') {
+              @include alignment(24px, 3px, 'vertical');
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              width: 100%;
+            }
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              @include alignment(calc(100% + 3px), -2px, 'vertical');
+            }
+          }
+        }
+      }
+    }
+
+    .e-scale {
+      box-sizing: content-box;
+      font-family: $slider-scale-font-family;
+      @include size(28px, 100%);
+      @if $skin-name == 'fluent2' {
+        @include size(20px, 100%);
+      }
+      line-height: normal;
+      list-style: none outside none;
+      margin: 0;
+      outline: 0 none;
+      padding: 0;
+      position: absolute;
+      top: $slider-scale-top;
+      z-index: 1;
+      @if ($skin-name != 'material' and $skin-name != 'material-dark' and $skin-name != 'fluent2') {
+        font-size: $slider-scale-font-size;
+        margin-top: $slider-center-align;
+      }
+
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        z-index: -1;
+
+        &.e-tick-both {
+          top: 12px;
+        }
+      }
+
+      .e-tick {
+        @if ($theme-name == 'bootstrap5-dark' or $theme-name == 'tailwind-dark' or $theme-name == 'fluentui-dark') {
+          background-image: $slider-scale-tick-image-dark;
+        }
+        @else {
+          background-image: $slider-scale-tick-image;
+        }
+        cursor: $slider-cursor;
+        outline: none;
+        position: relative;
+        user-select: none;
+        @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+          background-position: center center;
+        }
+
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'material-dark') {
+          &.e-large {
+            @if ($skin-name != 'bootstrap4') {
+              background-image: $slider-scale-tick-image-dark;
+            }
+            @else {
+              background-image: $slider-small-scale-tick-image;
+            }
+          }
+        }
+
+        .e-tick-value {
+          color: $slider-tick-font-color;
+          font-family: $slider-scale-font-family;
+          font-size: $slider-scale-font-size;
+          outline: none;
+          position: absolute;
+          user-select: none;
+          white-space: nowrap;
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3') {
+            line-height: 1.5;
+          }
+          @if ($skin-name == 'tailwind') {
+            line-height: 18px;
+          }
+        }
+      }
+
+      &.e-v-scale {
+        @include size(100%, 28px);
+        @if ($skin-name == 'tailwind') {
+          left: calc(50% - 12px);
+        }
+        @else {
+          left: calc(50% - 14px);
+        }
+        top: 0;
+        @if $skin-name == 'fluent2' {
+          @include alignment(20px, calc(50% - 10px), 'vertical');
+        }
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+          margin-top: -2px;
+        }
+
+        .e-tick {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            background-repeat: no-repeat;
+          }
+          @else {
+            background-repeat: repeat-x;
+          }
+
+          &.e-first-tick {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position-y: top;
+            }
+            @else {
+              background-position-y: center;
+            }
+          }
+
+          &.e-last-tick {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position-y: bottom;
+            }
+            @else {
+              background-position-y: bottom;
+              margin-top: 2px;
+              @if ($skin-name == 'tailwind') {
+                margin-top: 3px;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-h-scale {
+        @if ($skin-name == 'tailwind') {
+          &.e-tick-after {
+            top: 3px;
+          }
+
+          &.e-tick-before {
+            top: 15px;
+          }
+        }
+
+        .e-tick {
+          display: inline-block;
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            background-repeat: repeat-y;
+          }
+
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            background-repeat: repeat-y;
+            @include alignment(100%, 0, 'horizontal');
+          }
+
+          .e-tick-value {
+            &.e-tick-before,
+            &.e-tick-both:first-child {
+              top: -18px;
+            }
+
+            &.e-tick-after,
+            &.e-tick-both {
+              bottom: -20px;
+            }
+          }
+
+          &.e-first-tick {
+            @include tick-background-position(left);
+          }
+
+          &.e-last-tick {
+            @include tick-background-position(right);
+          }
+        }
+      }
+    }
+
+    .e-scale .e-tick {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        visibility: hidden;
+      }
+
+      .e-tick-value {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          visibility: visible;
+        }
+      }
+    }
+
+    &.e-horizontal {
+      &.e-scale-both {
+        .e-scale {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            top: 12px;
+          }
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+            top: 15px;
+          }
+        }
+
+        .e-slider-track {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            border-color: $slider-track-border-color;
+            border-radius: 1px;
+            border-style: solid;
+            border-width: 5px 0;
+            @include alignment(14px, calc(50% - 3px), 'horizontal');
+            margin-top: -4px;
+          }
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            border-color: $slider-track-border-color;
+            border-radius: 4px;
+            border-style: solid;
+            border-width: 4px;
+            @include alignment(14px, calc(50% - 6px), 'horizontal');
+          }
+        }
+      }
+    }
+
+    &.e-vertical {
+      &.e-scale-both {
+        .e-scale {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            right: 12px;
+          }
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            right: 11px;
+          }
+        }
+
+        .e-slider-track {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            border-color: $slider-track-border-color;
+            border-radius: 1px;
+            border-style: solid;
+            border-width: 0 5px;
+            margin-left: -7px;
+            @include alignment(14px, calc(50% - 1px), 'vertical');
+          }
+        }
+
+        .e-range {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            margin-left: -1px;
+          }
+        }
+      }
+    }
+
+    &.e-scale-both {
+      &.e-vertical {
+        &.e-small-size,
+        .e-scale {
+          &.e-h-scale {
+            @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' {
+              margin-left: -7px;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-vertical {
+      &.e-scale-both {
+        .e-scale.e-v-scale {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+            right: 10px;
+          }
+        }
+      }
+    }
+
+    .e-scale.e-v-scale {
+      @if ($skin-name == 'tailwind') {
+        &.e-tick-after {
+          left: calc(50% - 17px);
+        }
+
+        &.e-tick-before {
+          left: calc(50% - 7px);
+        }
+      }
+
+      .e-tick {
+        .e-tick-value {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            &.e-tick-before {
+              right: 26px;
+            }
+
+            &.e-tick-after {
+              left: 27px;
+            }
+
+            &.e-tick-both {
+              right: 41px;
+
+              &:first-child {
+                left: 39px;
+              }
+            }
+          }
+          @else {
+            &.e-tick-before {
+              right: 17px;
+            }
+
+            &.e-tick-after {
+              left: 19px;
+            }
+
+            &.e-tick-both {
+              @if $skin-name == 'bootstrap4' {
+                right: 30px;
+              }
+              @else {
+                right: 44px;
+              }
+
+              &:first-child {
+                @if $skin-name == 'bootstrap4' {
+                  left: 30px;
+                }
+                @else {
+                  left: 42px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-slider-tooltip.e-tooltip-wrap.e-popup {
+    @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' or $skin-name == 'Material3-dark') {
+      background-color: $slider-handle-bg-color;
+      border: 0;
+      border-radius: 8px;
+      @include cursor-grab;
+      opacity: 1;
+
+      &.e-popup.e-popup-close {
+        display: block;
+        opacity: 0;
+      }
+
+      &.e-material-tooltip-start {
+        background-color: $slider-handle-border-color;
+
+        @if $skin-name != 'Material3' and $skin-name != 'Material3-dark' {
+          .e-arrow-tip-inner {
+            color: $grey-black;
+            opacity: 0;
+          }
+        }
+
+        .e-arrow-tip-outer {
+          &.e-tip-bottom {
+            border-top-color: $slider-handle-border-color;
+          }
+          &.e-tip-top {
+            border-bottom-color: $slider-handle-border-color;
+          }
+          &.e-tip-right {
+            border-left-color: $slider-handle-border-color;
+          }
+          &.e-tip-left {
+            border-right-color: $slider-handle-border-color;
+          }
+        }
+      }
+
+      &.e-tooltip-active {
+        @include cursor-grabbing;
+      }
+
+      .e-arrow-tip {
+        visibility: visible;
+      }
+
+      .e-tip-content {
+        background-color: transparent;
+        @include size(16px, 100%);
+        overflow: hidden;
+        padding: 0 8px;
+        @if $skin-name != 'Material3' and $skin-name != 'Material3-dark' {
+          text-align: center;
+        }
+        @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
+          top: calc(50% - 8px);
+          position: relative;
+          line-height: 16px;
+        }
+        @else {
+          top: calc(50% - 10px);
+          left: calc(50% - 36px);
+        }
+
+        &.e-material-tooltip-show {
+          color: $slider-material-tooltip-content-color;
+        }
+
+        &.e-material-tooltip-hide {
+          color: transparent;
+        }
+      }
+
+      .e-arrow-tip-inner {
+        color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer {
+        &.e-tip-bottom {
+          border-top-color: $slider-handle-bg-color;
+        }
+        &.e-tip-top {
+          border-bottom-color: $slider-handle-bg-color;
+        }
+        &.e-tip-right {
+          border-left-color: $slider-handle-bg-color;
+        }
+        &.e-tip-left {
+          border-right-color: $slider-handle-bg-color;
+        }
+      }
+
+      &.e-tooltip-wrap.e-popup.e-material-default {
+        background-color: $slider-handle-bg-color;
+        border: 0;
+        border-bottom-left-radius: 50%;
+        border-bottom-right-radius: 0%;
+        border-top-left-radius: 50%;
+        border-top-right-radius: 50%;
+        @include cursor-grab;
+        opacity: 1;
+
+        &.e-material-tooltip-start {
+          background-color: $slider-handle-border-color;
+        }
+
+        &.e-tooltip-active {
+          @include cursor-grabbing;
+        }
+
+        .e-arrow-tip {
+          visibility: hidden;
+        }
+
+        &.e-slider-horizontal-before {
+          @include slider-transform(45deg);
+        }
+
+        &.e-slider-horizontal-after {
+          @include slider-transform(225deg);
+        }
+
+        &.e-slider-vertical-before {
+          @include slider-transform(-45deg);
+        }
+
+        &.e-slider-vertical-after {
+          @include slider-transform(-225deg);
+        }
+
+        .e-tip-content {
+          background-color: transparent;
+          @include size(16px, 100%);
+          overflow: hidden;
+          padding: 0;
+          text-align: center;
+          @if $skin-name == 'material' or $skin-name == 'material-dark' {
+            top: calc(50% - 8px);
+          }
+          @else {
+            top: calc(50% - 10px);
+            left: calc(50% - 16px);
+          }
+
+          &.e-material-tooltip-show {
+            color: $slider-material-tooltip-content-color;
+          }
+
+          &.e-material-tooltip-hide {
+            color: transparent;
+          }
+        }
+      }
+    }
+    @else {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        background-color: $slider-active-handle-bg-color;
+        border: 1px solid $slider-hover-handle-color;
+      }
+
+      .e-tip-content {
+        padding: $slider-tooltip-padding;
+        text-align: center;
+
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+          color: $slider-button-icon-color;
+        }
+      }
+    }
+  }
+
+  .e-slider-horizantal-color {
+    @include alignment(100%, 0, 'horizontal');
+    position: absolute;
+  }
+
+  .e-slider-vertical-color {
+    position: absolute;
+    @include alignment(100%, -1px, 'vertical');
+  }
+
+  .e-slider-hover .e-scale .e-tick {
+    @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+      visibility: visible;
+    }
+  }
+  /* stylelint-enable property-no-vendor-prefix */
+}

@@ -1,0 +1,352 @@
+$sheet-skin: $skin-name !default;
+$spreadsheet-border-width: 1px;
+$select-all-size: 26px !default;
+$select-all-hover-bg-color: $content-bg-color-hover !default;
+$select-all-active-bg-color: $primary !default;
+$cell-background: $white !default;
+$cell-color: $black !default;
+$cell-border-color: $spreadsheet-gridline !default;
+$hdr-cell-border-color: $border-light !default;
+$dlg-error-color: $danger !default;
+$agg-clr: $content-text-color-alt2;
+$header-cell-bg-color: $content-bg-color !default;
+$header-cell-color: $content-text-color-alt2 !default;
+$spreadsheet-border-color: $spreadsheet-gridline !default;
+$spreadsheet-separator-border-color: $border-light !default;
+$spreadsheet-border: $spreadsheet-border-width solid $border-light !default;
+$select-all-bg-color: $content-bg-color-alt3 !default;
+$header-cell-font-size: $text-xs !default;
+$content-cell-padding: 0 2px !default;
+$open-dlg-file-alert-span-font-size: $text-xs !default;
+$goto-dlg-btn-font-size: $text-xs !default;
+$numformat-ddb-preview-font-size: $text-xs !default;
+$aggregate-list-font-size: $text-base !default;
+$header-cell-font-weight: $font-weight-normal !default;
+$spreadsheet-tbar-btn-icon-font-size: $font-icon-16 !default;
+$spreadsheet-tbar-dropdown-btn-icon-font-size: $font-icon-12 !default;
+$spreadsheet-cpicker-font-color-font-size: $font-icon-16 !default;
+$spreadsheet-cpicker-fill-color-font-size: $font-icon-16 !default;
+$aggregate-list-font-size: $font-icon-16 !default;
+$bigger-spreadsheet-tbar-btn-icon-font-size: $font-icon-18 !default;
+$bigger-spreadsheet-cpicker-font-color-font-size: $font-icon-18 !default;
+$spreadsheet-drop-icon-font-size: $font-icon-16 !default;
+$define-name-input-height: 24px !default;
+$define-name-input-padding: 0 0 0 8px !default;
+$cfmain-header-font-size: $text-sm !default;
+$spreadsheet-border-cpicker-width: 320px !default;
+$spreadsheet-edit-selection-font-color: $primary-text-color !default;
+
+//selection
+$selection-bg-color: rgba(15, 108, 189, .12) !default;
+$selection-border-color: $primary-outline !default;
+$selection-border-width: 1px !default;
+$hdr-selection-bg-color: $content-bg-color-selected !default;
+$hdr-selection-border: 1px solid !default;
+$spreadsheet-hdr-selection-border-color: $border-dark !default;
+$hdr-selection-color: $content-text-color-selected !default;
+$hdr-hover-font-color: $content-text-color-hover !default;
+$hdr-hover-bg-color: $content-bg-color-hover !default;
+$copy-indicator-t-b: $spreadsheet-indicator !default;
+$copy-indicator-l-r: $spreadsheet-indicator !default;
+
+//Tab
+$sheets-btn-height: 34px !default;
+$msheets-btn-height: 46px !default;
+$sheet-tab-panel-bg-color: $content-bg-color-alt1 !default;
+$sheet-tab-bg-color: transparent !default;
+$sheet-tab-active-bg-color: $content-bg-color-alt1 !default;
+$sheet-tab-color: $content-text-color-alt2 !default;
+$sheet-tab-hover-bg-color: $hdr-selection-bg-color !default;
+$sheet-tab-indicator-color: $primary !default;
+$sheet-tab-btn-icon-color: $icon-color !default;
+$sheet-tab-btn-icon-hover-color: $icon-color-hover !default;
+$sheet-tab-btn-icon-active-color: $icon-color-pressed !default;
+$tab-text-color: $content-text-color !default;
+$select-icon-color: $icon-color !default;
+$sheet-tab-btn-icon-line-height: 16px !default;
+$sheet-tab-btn-icon-font-size: $font-icon-16 !default;
+$bigger-spreadsheet-sheet-tab-icon-font: $font-icon-18 !default;
+$sheet-tab-aggr-bg-color-hover: $content-bg-color-hover !default;
+$sheet-tab-aggr-bg-color-selected: $content-bg-color-selected !default;
+$sheet-tab-aggr-btn-active-color: $content-text-color-selected !default;
+
+//Formula bar
+$formula-bar-font-size: $text-sm !default;
+$formula-bar-padding: 0 4px !default;
+$bigger-formula-bar-font-size: $text-base !default;
+$name-box-width: 92px !default;
+$namebox-icon-size: $font-icon-14 !default;
+$namebox-icon-min-height: 14px !default;
+$formula-textarea-width: calc(100% - 146px) !default;
+$formula-bar-color: $content-text-color-alt2 !default;
+$mformula-bar-height: 42px !default;
+$expand-icon-margin: 4px !default;
+$expand-icon-line-height: 24px !default;
+$formula-bar-bg-color: $content-bg-color-alt1 !default;
+$formula-submit-btn-icon-font-size: $font-icon-14 !default;
+$name-box-icon-font-size: $font-icon-14 !default;
+$formula-bar-drop-icon-font-size: $font-icon-12 !default;
+$formula-bar-btn-icon-font-size: $font-icon-16 !default;
+$bigger-name-box-ddl-icon-font-size: $font-icon-16 !default;
+$bigger-insert-function-btn-icon-font-size: $font-icon-16 !default;
+$bigger-formula-bar-drop-icon-font-size: $font-icon-16 !default;
+$formula-bar-btn-icon-line-height: 24px !default;
+$spreadsheet-formula-bar-height: 24px !default;
+$spreadsheet-formula-bar-expanded-height: 71px !default;
+$spreadsheet-formula-bar-expanded-separator-height: 60px !default;
+$bigger-name-box-ddl-input-height: 30px !default;
+$bigger-formula-bar-drop-icon-line-height: 30px !default;
+$bigger-insert-function-height: 89px !default;
+
+//Insert dialog box
+$dlg-list-border: $spreadsheet-border !default;
+$dlg-description-font-weight: $font-weight-medium !default;
+$dlg-content-padding: 18px !default;
+$dlg-content-padding-bottom: 0 !default;
+$dlg-category-margin-bottom: 4px !default;
+$dlg-min-height: 498px !default;
+$function-dlg-header-content-font-size: $text-base !default;
+$dlg-category-content-font-size: $text-sm !default;
+$dlg-description-content-font-size: $text-sm !default;
+$dlg-category-content-font-weight: $font-weight-normal !default;
+
+//Ribbon
+$fontsize-btn-width: 52px !default;
+$bigger-fontsize-btn-width: 64.51px !default;
+$align-ddb-item-height: 40px !default;
+$align-ddb-ul-padding: 8px !default;
+$align-ddb-item-padding: 0 12px !default;
+$align-ddb-item-margin: 0 !default;
+$ctrl-btn-padding: 16px !default;
+$spreadsheet-ribbon-btn-width: 30px !default;
+$spreadsheet-ribbon-btn-height: 30px !default;
+$spreadsheet-ribbon-btn-padding: 1.5px !default;
+$spreadsheet-ribbon-btn-text-width: 80px !default;
+$spreadsheet-ribbon-cpicker-padding-bottom: 1px !default;
+$spreadsheet-ribbon-cpicker-line-height: 27px !default;
+$bigger-spreadsheet-ribbon-btn-height: 34px !default;
+$bigger-spreadsheet-ribbon-btn-padding: 6px !default;
+$cpicker-btn-width: 32px !default;
+$bigger-cpicker-btn-width: 40px !default;
+$menu-extension-padding: 12px !default;
+$spreadsheet-ribbon-item-hover-border-color: transparent !default;
+$spreadsheet-ribbon-item-active-border-color: transparent !default;
+$spreadsheet-ribbon-item-active-background-color: $content-bg-color-selected !default;
+$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
+$normal-btn-padding: 8px !default;
+$bigger-cpicker-btn-line-height: $bigger-spreadsheet-ribbon-btn-height - 4 !default;
+$bigger-cpicker-btn-padding-bottom: 0 !default;
+$bigger-spreadsheet-ribbon-btn-line-height: $bigger-spreadsheet-ribbon-btn-height !default;
+$spreadsheet-ribbon-toolbar-item-height: 44px !default;
+$bigger-spreadsheet-toolbar-item-separator-height: 32px !default;
+$bigger-spreadsheet-chart-icon-size: 36px !default;
+$bigger-data-validation-toolbar-font-size: $text-base !default;
+$bigger-toolbar-dropdown-font-size: $font-icon-14 !default;
+$spreadsheet-ribbon-item-hover-color: $content-text-color-hover !default;
+
+//Sorting
+$sort-error-bg-color: $danger-light;
+$sort-error-font-color: $danger-bg-color;
+$sort-dlg-listwrapper-text-font-size: $text-sm !default;
+$sort-dlg-error-font-size: $text-xs !default;
+$sort-dlg-row-padding: 4px 0 12px !default;
+
+//Hyperlink
+$hyper-doc-border-color: $border-light !default;
+$hyperlink-dlg-header-content-font-size: $text-lg !default;
+$hyperlink-dlg-content-header-font-size: $text-sm !default;
+$hyperlink-dlg-content-text-font-size: $text-sm !default;
+$link-dialog-tab-text-font-size: $text-sm !default;
+$hyperlink-dlg-refcont-border: 1px solid $hyper-doc-border-color !default;
+$hyperlink-dlg-refcont-margin: 4px 0 0 0 !default;
+$hyperlink-dlg-content-padding-top: 12px !default;
+$hyperlink-dlg-content-margin: 0 0 12px 0 !default;
+
+//Filtering
+$filter-icon-margin-bottom: 0 !default;
+$filter-icon-bigger-margin-bottom: 3px !default;
+$filter-selectall-padding: 16.5px !default;
+$filter-selectall-bigger-padding: 41.5px !default;
+$filter-icon-font-size: $font-icon-14 !default;
+$filter-icon-before-font-size: $font-icon-18 !default;
+$bigger-filter-icon-font-size: $font-icon-22 !default;
+$filter-list-hover-bg-color: $content-bg-color-hover !default;
+$spreadsheet-filter-btn-bottom: 0 !default;
+$spreadsheet-filter-btn-width: 20px !default;
+$filter-icon-hover-bg-color: $cell-background !default;
+$filter-icon-active-bg-color: $cell-background !default;
+$spreadsheet-filter-icon-color: $black !default;
+
+//Find And Replace
+$find-tool-dlg-width: 348px !default;
+$find-tool-dlg-height: 40px !default;
+$find-dlg-width: 468px !default;
+$bigger-find-tool-dlg-width: 419px !default;
+$bigger-find-tool-dlg-height: 50px !default;
+$bigger-find-goto-dlg-height: 256px !default;
+$find-popup-border-top-color: $border-light !default;
+$find-popup-border-color: $border-light !default;
+$find-popup-box-shadow: none !default;
+$find-dlg-alert-span-font-size: $text-xs !default;
+$bigger-find-dlg-btn-font-size: $text-xs !default;
+$find-dlg-header-font-weight: $font-weight-normal !default;
+$find-dlg-exactmatchcheckbox-padding: 12px 5px 12px !default;
+$find-dlg-header-padding-top: 12px !default;
+$find-dialog-header-padding-bottom: 4px !default;
+
+//Protect Sheet
+$protect-dlg-height: 470px !default;
+$protect-dlg-width: 332px !default;
+$protect-sheet-dlg-password-header-font-size: $text-sm !default;
+$unprotect-sheet-dlg-header-font-size: $text-lg !default;
+$unprotectsheet-alert-span-font-size: $text-xs !default;
+$protect-unprotect-dlg-alert-span-padding-top: 4px !default;
+$unprotectsheet-content-header-font-size: $text-sm !default;
+$reenterpwd-dlg-content-header-font-size: $text-sm !default;
+$reenterpwd-dlg-alert-span-font-size: $text-xs !default;
+$protect-checkbox-label-font-size: $text-sm !default;
+$protectworkbook-dlg-header-font-size: $text-lg !default;
+$protectworkbook-dlg-alert-span-font-size: $text-xs !default;
+$protectworkbook-dlg-content-header-font-size: $text-sm !default;
+$unprotectworkbook-dlg-content-header-font-size: $text-sm !default;
+$importprotectworkbook-dlg-content-header-font-size: $text-sm !default;
+$protectworkbook-dlg-pwd-alert-span-font-size: $text-sm !default;
+$protectworkbook-dlg-pwd-content-font-size: $text-sm !default;
+$protect-content-font-size: $text-sm !default;
+$protect-content-height: 37px !default;
+$protectworkbook-dlg-alert-span-padding-top: 4px !default;
+$bigger-protectworkbook-dlg-pwd-content-line-height: 28px !default;
+$bigger-protectworkbook-dlg-pwd-content-margin-bottom: 4px !default;
+
+//Conditional Formatting
+$ele-color: $content-bg-color-alt3;
+$ele-hover-color: $content-bg-color-hover;
+$dark-ele-color: $content-bg-color-alt2;
+$dark-ele-hover-color: $content-bg-color-alt3;
+$cf-dlg-content-font-weight: $font-weight-normal !default;
+$cf-menu-icon-font-size: $font-icon-16 !default;
+$cf-dlg-input-height: 40px !default;
+$cf-dlg-header-margin-top: 12px !default;
+$cf-databar-icon-bg-color: $flyout-bg-color-hover !default;
+$cf-iconsets-icon-hover-bg-color: $flyout-bg-color-hover !default;
+$cf-iconsets-icon-bg-color: $content-bg-color !default;
+
+//Formula selection
+$vborder-selection: $spreadsheet-selection-1;
+$pborder-selection: $spreadsheet-selection-2;
+$cborder-selection: $spreadsheet-selection-3;
+$gborder-selection: $spreadsheet-selection-4;
+$oborder-selection: $spreadsheet-selection-5;
+$bborder-selection: $spreadsheet-selection-6;
+
+//Freeze pane
+$freezepane-color: $spreadsheet-gridline !default;
+$spreadsheet-frozen-column-width: 1px !default;
+$spreadsheet-frozen-border: 2px solid $freezepane-color !default;
+$mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
+
+//Custom Format
+$custom-listview-color: $border-light;
+$custom-format-dlg-input-margin-right: 12px !default;
+$custom-format-dlg-input-width: 80% !default;
+$custom-format-dlg-sample-margin: 16px 0 4px !default;
+$expand-icon-color: $icon-color !default;
+
+//File Name Dialog
+$open-dlg-width: 360px !default;
+$file-menu-extension-font-size: $text-sm !default;
+$open-dlg-file-alert-span-padding-top: 4px !default;
+$open-dlg-header-line-height: 20px !default;
+$open-dlg-header-padding-bttom: 4px !default;
+
+//chart icon color
+$chart-icon-color: $primary-bg-color-hover !default;
+$spreadsheet-chart-icon-bg-color: $flyout-bg-color-hover !default;
+$chart-text-content-color: $flyout-text-color !default;
+
+//Data Validation
+$bigger-validation-list-width: 26px !default;
+$validation-dlg-content-header-font-size: $text-sm !default;
+$validation-dlg-content-input-font-size: $text-sm !default;
+$validation-dlg-error-font-size: $text-xs !default;
+$validationerror-dlg-content-font-size: $text-sm !default;
+$validation-list-icon-bottom: 5px !default;
+$validation-list-icon-height: 18px !default;
+$validation-list-icon-min-height: 0 !default;
+$validation-dlg-error-padding-top: 4px !default;
+$validation-dlg-content-margin-bottom: 24px !default;
+$validation-dlg-content-input-margin-top: 4px !default;
+$validation-dlg-content-valid-input-height: 34px !default;
+
+//Chart
+$title-dlg-content-header-font-size: $text-base !default;
+$title-dlg-content-input-font-size: $text-sm !default;
+$spreadsheet-switch-row-column-icon-font-size: $font-icon-16 !default;
+$spreadsheet-addchart-icon-font-size: $font-icon-16 !default;
+$spreadsheet-chart-icon-font-size: $font-icon-26 !default;
+$bigger-spreadsheet-chart-icon-font-size: 36px !default;
+$bigger-spreadsheet-addchart-icon-font-size: $font-icon-26 !default;
+
+//Mixins
+$spreadsheet-ribbon-tab-text-wrap-height: 44px !default;
+$open-dialog-extension-font-size: $text-sm !default;
+$spreadsheet-cf-header-margin-bottom: 4px !default;
+$spreadsheet-cfmain-header-margin-bottom: 12px !default;
+$spreadsheet-sort-template-item-padding: 0 !default;
+$find-tool-dlg-icon-size: $font-icon-14 !default;
+$hyperlink-dlg-content-header-line-height: 20px !default;
+$dlg-description-content-padding-top: 12px !default;
+$dlg-category-formula-description-padding: 8px 0 0 !default;
+$protect-dlg-password-header-line-height: 20px !default;
+$protect-dlg-protect-check-margin-top: 16px !default;
+$protect-dlg-protect-content-padding: 16px 0 0 !default;
+$protect-option-list-margin-top: 4px !default;
+$reenterpwd-dlg-content-header-line: 20px !default;
+$reenterpwd-dlg-content-input-margin-top: 4px !default;
+$protectworkbook-dlg-content-header-line: 20px !default;
+$protectworkbook-dlg-password-content-padding1: 0 !default;
+$protectworkbook-dlg-password-content-padding2: 12px 0 0 !default;
+$validation-dlg-content-header-padding-top: 12px !default;
+$validation-dlg-content-header-line: 20px !default;
+$validation-dlg-content-padding: 6px !default;
+$validation-dropdown-icon-size: $font-icon-14 !default;
+$aggregate-list-font-weight: $font-weight-normal !default;
+$spreadsheet-sort-dlg-error-bottom: -12px !default;
+$bigger-spread-ribbon-tab-text-wrap-height: 56px !default;
+$bigger-spread-ribbon-tab-menu-items-height: 56px !default;
+$bigger-spread-ribbon-tab-menu-items-line-height: 56px !default;
+$bigger-formula-bar-height: 30px !default;
+$bigger-formula-bar-line-height: 30px !default;
+$bigger-insert-function-icon-height: 30px !default;
+$bigger-spreadsheet-sheet-tab-icon-height: 40px !default;
+$bigger-spreadsheet-sheet-tab-sheetlist-icon-height: 42px !default;
+$bigger-spreadsheet-dlg-label-font-size: $text-base !default;
+$bigger-spreadsheet-dlg-error-font-size: $text-sm !default;
+$bigger-spreadsheet-cf-main-margin: 0 0 16px !default;
+$bigger-spreadsheet-cf-sub-margin: 0 !default;
+$bigger-spreadsheet-cf-header2-margin: 16px !default;
+$bigger-spreadsheet-custom-sample-margin: 16px 0 4px !default;
+$bigger-spreadsheet-dlg-error-padding-top: 4px !default;
+$bigger-spreadsheet-sort-dlg-list-padding: 32px !default;
+$bigger-spreadsheet-sort-row-padding: 4px 0 16px !default;
+$bigger-spreadsheet-dlg-label-padding-bottom: 4px !default;
+$bigger-find-replace-casecheck-padding-bottom: 0 !default;
+$bigger-find-replace-casecheck-padding-top: 8px !default;
+$bigger-find-replace-exactmatch-padding: 8px 0 0 !default;
+$bigger-hyperlink-dlg-content-padding: 16px !default;
+$bigger-hyperlink-dlg-content-margin: 0 0 16px !default;
+$bigger-hyperlink-dlg-header-line-height: 22px !default;
+$bigger-function-dlg-description-padding-top: 16px !default;
+$bigger-protect-sheet-password-content-padding: 4px 0 !default;
+$bigger-protect-sheet-password-header-line: 22px !default;
+$bigger-protect-content-padding: 18px 0 0 !default;
+$bigger-spreadsheet-protect-dlg-error-padding-top: 4px !default;
+$bigger-protect-password-content-padding: 4px 0 0 !default;
+$bigger-protect-password-content-padding2: 16px 0 0 !default;
+$bigger-data-validation-content-padding-top: 16px !default;
+$spreadsheet-ribbon-toolbar-btn-hover-color: $content-bg-color-hover !default;
+$spreadsheet-ribbon-toolbar-btn-hover-active-color: $toolbar-icon-color !default;
+$spreadsheet-ribbon-toolbar-btn-hover-text-color: $content-text-color-hover !default;
+$spreadsheet-ribbon-toolbar-btn-active-text-color: $content-text-color-selected !default;
+$spreadsheet-ribbon-item-pressed-background-color: $content-bg-color-pressed !default;
+$spreadsheet-ribbon-item-pressed-border-color: transparent !default;

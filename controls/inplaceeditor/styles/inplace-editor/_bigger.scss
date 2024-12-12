@@ -1,0 +1,195 @@
+@include export-module('inplace-editor-bigger') {
+  .e-bigger .e-inplaceeditor,
+  .e-inplaceeditor.e-bigger {
+    .e-editable-value-wrapper {
+      padding: $editor-big-value-container-padding;
+
+      .e-editable-value {
+        font-size: $editor-big-value-text-font-size;
+        margin: $editor-big-value-margin;
+      }
+
+      .e-editable-overlay-icon {
+        right: $editor-big-overlay-icon-left-right;
+        width: $editor-big-overlay-icon-container-size;
+
+        &::before {
+          font-size: $editor-big-overlay-icon-size;
+        }
+      }
+
+      .e-spinner-pane .e-spinner-inner {
+        right: $editor-big-value-container-spin-padding;
+      }
+    }
+
+    .e-editable-value-container {
+      padding: $editor-big-value-container-padding;
+
+      .e-editable-value {
+        font-size: $editor-big-value-text-font-size;
+        margin: $editor-big-value-margin;
+      }
+
+      .e-editable-overlay-icon {
+        right: $editor-big-overlay-icon-left-right;
+        width: $editor-big-overlay-icon-container-size;
+
+        &::before {
+          font-size: $editor-big-overlay-icon-size;
+        }
+      }
+
+      .e-spinner-pane .e-spinner-inner {
+        right: $editor-big-value-container-spin-padding;
+      }
+    }
+
+    .e-editable-action-buttons {
+
+      .e-btn-save {
+        margin: $editor-big-btn-save-margin;
+        @if $skin-name == 'tailwind3' {
+          padding: 7px 11px;
+        }
+      }
+
+      .e-btn-cancel {
+        margin: $editor-big-btn-cancel-margin;
+        @if $skin-name == 'tailwind3' {
+          padding: 7px 11px;
+        }
+      }
+    }
+
+    &.e-rtl {
+      .e-editable-value-wrapper {
+        .e-editable-value {
+          margin: $editor-rtl-big-value-margin;
+        }
+
+        .e-editable-overlay-icon {
+          left: $editor-big-overlay-icon-left-right;
+          right: auto;
+        }
+
+        .e-spinner-pane,
+        .e-spinner-pane .e-spinner-inner {
+          left: $editor-big-value-container-spin-padding;
+        }
+      }
+
+      .e-editable-value-container {
+        .e-editable-value {
+          margin: $editor-rtl-big-value-margin;
+        }
+
+        .e-editable-overlay-icon {
+          left: $editor-big-overlay-icon-left-right;
+          right: auto;
+        }
+
+        .e-spinner-pane,
+        .e-spinner-pane .e-spinner-inner {
+          left: $editor-big-value-container-spin-padding;
+        }
+      }
+
+      .e-editable-action-buttons {
+        .e-btn-save {
+          margin: $editor-rtl-big-btn-save-margin;
+        }
+
+        .e-btn-cancel {
+          margin: $editor-rtl-big-btn-cancel-margin;
+        }
+      }
+    }
+  }
+  .e-bigger .e-inplaceeditor,
+  .e-inplaceeditor.e-bigger,
+  .e-bigger .e-inplaceeditor-tip,
+  .e-inplaceeditor-tip.e-bigger {
+    width: auto;
+
+    .e-input-group + .e-editable-loading {
+      @if $skin-name == 'material' {
+        .e-spinner-inner {
+          top: 45%;
+        }
+      }
+    }
+
+    .e-editable-action-buttons {
+      .e-btn-save,
+      .e-btn-cancel {
+        .e-btn-icon.e-icons {
+          @if $skin-name == 'bootstrap4' {
+            font-size: 16px;
+          }
+        }
+      }
+    }
+  }
+  .e-bigger .e-inplaceeditor-tip,
+  .e-inplaceeditor-tip.e-bigger {
+    &.e-tooltip-wrap {
+      .e-tip-content {
+        @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
+          padding: 0;
+        }
+
+        .e-editable-wrapper {
+          padding: $editor-big-tip-wrapper-padding;
+        }
+
+        .e-editable-container {
+          padding: $editor-big-tip-wrapper-padding;
+        }
+
+        .e-editable-title + .e-editable-wrapper {
+          padding: $editor-big-wrapper-title-with-padding;
+        }
+
+        .e-editable-title + .e-editable-container {
+          padding: $editor-big-wrapper-title-with-padding;
+        }
+      }
+    }
+
+    .e-editable-title {
+      font-size: $editor-big-tip-title-font-size;
+      min-height: $editor-big-tip-title-container-size;
+      padding: $editor-big-tip-title-padding;
+    }
+
+    &.e-rtl {
+      &.e-tooltip-wrap .e-tip-content {
+        .e-editable-title {
+          padding: $editor-rtl-big-tip-title-padding;
+        }
+      }
+    }
+  }
+  .e-bigger .e-content-placeholder.e-inplaceeditor.e-placeholder-inplaceeditor,
+  .e-bigger.e-content-placeholder.e-inplaceeditor.e-placeholder-inplaceeditor {
+    background-size: 150px 70px;
+    min-height: 70px;
+  }
+  @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
+
+    .e-bigger .e-inplaceeditor .e-editable-value-wrapper,
+    .e-inplaceeditor.e-bigger .e-editable-value-wrapper {
+      min-height: 38px;
+    }
+
+    .e-bigger .e-inplaceeditor-tip.e-tooltip-wrap.e-popup .e-editable-title,
+    .e-bigger.e-inplaceeditor-tip.e-tooltip-wrap.e-popup .e-editable-title {
+      font-size: $editor-big-tip-title-font-size;
+    }
+
+    .e-bigger .e-inplaceeditor .e-editable-action-buttons .e-btn-icon.e-icons .e-bigger.e-inplaceeditor .e-editable-action-buttons .e-btn-icon.e-icons {
+      font-size: 22px;
+    }
+  }
+}

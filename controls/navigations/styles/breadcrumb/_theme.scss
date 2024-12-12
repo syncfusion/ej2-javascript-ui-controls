@@ -1,0 +1,296 @@
+@include export-module('breadcrumb-theme') {
+  .e-breadcrumb {
+    .e-breadcrumb-item {
+      .e-breadcrumb-text {
+        color: $breadcrumb-item-color;
+
+        &:hover,
+        &:focus {
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-hover-color;
+            border-radius: 4px;
+          }
+          @else if $skin-name != 'bootstrap5.3' {
+            color: $breadcrumb-item-hover-color;
+          }
+          @if $skin-name == 'fluent2' {
+            background-color: $content-bg-color-hover;
+            color: $breadcrumb-item-hover-color !important; /* stylelint-disable-line declaration-no-important */
+            border-radius: 4px;
+
+            & .e-breadcrumb-icon {
+              color: $toolbar-icon-color;
+            }
+          }
+        }
+
+        &:focus {
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-focus-color;
+          }
+        }
+
+        &:active {
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-active-color;
+            border-radius: 4px;
+          }
+          @else if $skin-name != 'bootstrap5.3' {
+            color: $breadcrumb-item-active-color;
+          }
+          @else if $skin-name == 'tailwind3' {
+            color: $breadcrumb-item-hover-color;
+          }
+        }
+      }
+
+      @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
+        &:not([data-active-item]):not(.e-breadcrumb-separator) {
+          &:hover {
+            background: $breadcrumb-item-hover-bgcolor;
+          }
+
+          &:active {
+            background: $breadcrumb-item-active-bgcolor;
+          }
+        }
+      }
+
+      @if $breadcrumb-skin == 'material' or $breadcrumb-skin == 'bootstrap' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'tailwind' {
+        &.e-icon-item {
+          &:hover {
+            background: $breadcrumb-collapsed-icon-hover-bgcolor;
+            color: $breadcrumb-collapsed-icon-hover-color;
+          }
+
+          &:active {
+            background: $breadcrumb-collapsed-icon-active-bgcolor;
+            color: $breadcrumb-collapsed-icon-hover-color;
+          }
+
+          @if $breadcrumb-skin == 'material' or $breadcrumb-skin == 'bootstrap' {
+            .e-breadcrumb-text:focus {
+              background: $breadcrumb-collapsed-icon-focus-bgcolor;
+              color: $breadcrumb-collapsed-icon-hover-color;
+            }
+          }
+        }
+      }
+
+      @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
+        .e-breadcrumb-text:focus {
+          border: $breadcrumb-item-focus-border;
+        }
+      }
+
+      @if $breadcrumb-skin == 'bootstrap5.3' {
+        .e-breadcrumb-text:focus {
+          box-shadow: $keyboard-focus-shadow;
+          border-radius: 4px;
+        }
+      }
+
+      @if $skin-name == 'tailwind3' {
+        .e-breadcrumb-text {
+          &:focus {
+            box-shadow: none;
+          }
+          &:focus-visible {
+            box-shadow: $shadow-focus-ring2;
+          }
+        }
+        &.e-disabled {
+          .e-breadcrumb-text {
+            &:focus,
+            &:focus-visible {
+              box-shadow: none;
+              background: none;
+            }
+          }
+        }
+      }
+
+      &[data-active-item] {
+        .e-breadcrumb-text {
+          color: $breadcrumb-last-item-font-color;
+          font-weight: $breadcrumb-last-item-font-weight;
+        }
+      }
+
+      .e-breadcrumb-icon {
+        color: $breadcrumb-icon-color;
+      }
+
+      @if $breadcrumb-skin == 'highcontrast' {
+        &:hover,
+        .e-breadcrumb-text:focus {
+          .e-breadcrumb-icon {
+            color: $breadcrumb-icon-hover-color;
+          }
+        }
+
+        &:active:not([data-active-item]) {
+          .e-breadcrumb-icon {
+            color: $breadcrumb-icon-active-color;
+          }
+        }
+      }
+
+      @if $breadcrumb-skin == 'bootstrap' {
+        &.e-icon-item {
+          &:hover,
+          &:active,
+          .e-breadcrumb-text:focus {
+            .e-breadcrumb-icon {
+              color: $breadcrumb-icon-interaction-color;
+            }
+          }
+        }
+      }
+    }
+
+    .e-breadcrumb-separator {
+      color: $breadcrumb-separator-color;
+    }
+
+    .e-breadcrumb-collapsed,
+    .e-breadcrumb-menu {
+      color: $breadcrumb-collapsed-icon-color;
+
+      &:hover {
+        background: $breadcrumb-collapsed-icon-hover-bgcolor;
+        @if $breadcrumb-skin != 'fluent2' {
+          color: $breadcrumb-collapsed-icon-hover-color;
+        }
+      }
+
+      &:active {
+        background: $breadcrumb-collapsed-icon-active-bgcolor;
+        @if $skin-name == 'FluentUI' {
+          color: $breadcrumb-collapsed-icon-active-color;
+        }
+        @else if $breadcrumb-skin != 'fluent2' {
+          color: $breadcrumb-collapsed-icon-hover-color;
+        }
+      }
+
+      &:focus {
+        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $skin-name == 'FluentUI' {
+          border: $breadcrumb-collapsed-icon-focus-border;
+          color: $breadcrumb-collapsed-icon-focus-color;
+        }
+        @else {
+          background: $breadcrumb-collapsed-icon-focus-bgcolor;
+          @if $breadcrumb-skin != 'fluent2' {
+            color: $breadcrumb-collapsed-icon-hover-color;
+          }
+        }
+      }
+      &:focus-visible {
+        @if $skin-name == 'tailwind3' {
+          box-shadow: $shadow-focus-ring2;
+        }
+      }
+    }
+
+    &.e-disabled .e-breadcrumb-item .e-breadcrumb-text,
+    & .e-disabled.e-breadcrumb-item .e-breadcrumb-text,
+    &.e-disabled .e-breadcrumb-separator {
+      color: $breadcrumb-disabled-item-color;
+      @if $breadcrumb-skin == 'fluent2' {
+        background-color: $content-bg-color-disabled;
+      }
+      @if $skin-name == 'tailwind3' {
+        color: $content-text-color-disabled;
+      }
+
+      .e-breadcrumb-icon {
+        color: $breadcrumb-disabled-item-color;
+        @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' {
+          color: $breadcrumb-disabled-icon-color;
+        }
+        @if $skin-name == 'tailwind3' {
+          color: $icon-color-disabled;
+        }
+      }
+    }
+  }
+
+  .e-breadcrumb-popup {
+    background: $breadcrumb-popup-bgcolor;
+
+    .e-breadcrumb-text {
+      color: $breadcrumb-popup-item-color;
+
+      &:hover {
+        background: $breadcrumb-popup-item-hover-bgcolor;
+        color: $breadcrumb-popup-item-hover-color;
+      }
+
+      &:active {
+        @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'bootstrap5.3' {
+          background: $breadcrumb-popup-item-active-color;
+          color: $breadcrumb-popup-item-text-active-color;
+        }
+        @if $skin-name == 'tailwind3' {
+          background: $flyout-bg-color-pressed;
+        }
+      }
+
+      &:focus-visible {
+        @if $skin-name == 'tailwind3' {
+          box-shadow: $shadow-focus-ring2;
+        }
+      }
+    }
+
+    .e-breadcrumb-item .e-breadcrumb-text:focus {
+      background: $breadcrumb-popup-item-hover-bgcolor;
+      color: $breadcrumb-popup-item-hover-color;
+    }
+
+    @if $breadcrumb-skin == 'fluent2' {
+      .e-breadcrumb-item .e-breadcrumb-text:active {
+        background: $flyout-bg-color-selected;
+        color: $flyout-text-color-selected;
+      }
+  
+      .e-breadcrumb-item.e-disabled .e-breadcrumb-text {
+        color: $flyout-text-color-disabled;
+      }
+  
+      .e-breadcrumb-item.e-disabled {
+        opacity: 1 !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+  }
+
+  @if $breadcrumb-skin == 'fluent2' {
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:focus .e-breadcrumb-icon,
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:active .e-breadcrumb-icon,
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:hover .e-breadcrumb-icon {
+      color: $toolbar-icon-color !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-breadcrumb .e-disabled.e-breadcrumb-item.e-icon-item .e-breadcrumb-text {
+      background-color: transparent !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+
+  @if $skin-name == 'tailwind3' {
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item:hover,
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item:active,
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item:focus {
+      background: transparent;
+    }
+    
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:focus .e-breadcrumb-icon,
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:hover .e-breadcrumb-icon {
+      color: $content-text-color-alt3;
+    }
+
+    .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text:active .e-breadcrumb-icon {
+      color: $primary;
+    }
+  }
+}

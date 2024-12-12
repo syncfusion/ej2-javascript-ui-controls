@@ -1,0 +1,35 @@
+.e-tooltip-wrap {
+
+  /*! Tooltip icons */
+  .e-tooltip-close::before {
+    content: '\e7e7';
+    @if ($skin-name == 'tailwind3.3') {
+      font-size: 8px;
+      left: calc(50% - 4px);
+      top: calc(50% - 4.5px);
+    }
+    
+    @else {
+      font-size: 14px;
+      left: calc(50% - 7px);
+      top: calc(50% - 7px);
+    }
+    position: absolute;
+  }
+
+  .e-arrow-tip-inner.e-tip-right::before {
+    content: '\e87e';
+  }
+
+  .e-arrow-tip-inner.e-tip-top::before {
+    content: '\e87a';
+  }
+
+  .e-arrow-tip-inner.e-tip-bottom::before {
+    content: '\e70d';
+  }
+
+  .e-arrow-tip-inner.e-tip-left::before {
+    content: '\e87d';
+  }
+}

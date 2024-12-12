@@ -1,0 +1,120 @@
+@include export-module('chatui-theme') {
+  .e-chat-ui {
+    border-color: $chat-border-color;
+    background-color: $chat-bg-color;
+    .e-chat-content {
+      color: $chat-text-color;
+    }
+    .e-right .e-text {
+      background-color: $chat-right-bg-color;
+      color: $chat-right-text-color;
+    }
+    .e-left .e-text {
+      color: $chat-left-text-color;
+      background-color: $chat-left-bg-color;
+      &:active,
+      &:focus {
+        color: $chat-left-text-color-active;
+        background-color: $chat-left-bg-color-active;
+      }
+      &:hover {
+        color: $chat-left-text-color-hover;
+        background-color: $chat-left-bg-color-hover;
+      }
+    }
+    .e-chat-send {
+      color: $chat-send-icon-color;
+      &.disabled {
+        color: $chat-send-icon-disabled-color;
+      }
+    }
+    .e-message-wrapper {
+      &::-webkit-scrollbar-thumb {
+        background: $chat-scrollbar-color;
+      }
+      .e-message-header {
+        color: $message-header-color;
+      }
+      .e-time {
+        color: $message-time-color;
+      }
+    }
+    .e-chat-header {
+      border-bottom-color: $chat-border-color;
+      background-color: $chat-header-bg-color;
+      border-color: $chat-header-bg-color;
+      color: $chat-header-color;
+      .e-toolbar,
+      .e-toolbar-items,
+      .e-tbar-btn {
+        background: $chat-header-bg-color;
+        .e-tbar-btn-text,
+        .e-btn-icon {
+          color: $chat-header-color;
+        }
+      }
+    }
+    .e-timebreak {
+      &::before,
+      &::after {
+        background-color: $timebreak-border-color;
+      }
+    }
+    .e-timestamp {
+      background-color: $timebreak-bg-color;
+      color: $timebreak-color;
+      border-color: $timestamp-border-color;
+    }
+    .e-chat-error {
+      color: $chat-error-color;
+    }
+    .e-chat-seen {
+      color: $chat-seen-color;
+    }
+    .e-footer {
+      textarea::-webkit-scrollbar-thumb {
+        background: $chat-scrollbar-color;
+      }
+      // To override the default border style of the textarea component for the Material and Material3 themes.
+      .e-input-group.e-multi-line-input {
+        @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
+          border: 1px solid $chat-border-color !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+    .e-suggestions {
+      li {
+        color: $chat-suggestion-li-color;
+        border-color: $chat-suggestion-li-border-color;
+      }
+    }
+    .e-message-icon,
+    .e-user-icon {
+      color: $sender-icon-color;
+      background-color: $sender-icon-bg-color;
+    }
+    .e-indicator {
+      background: $chat-left-bg-color;
+      animation: blink 1s infinite;
+    }
+    .e-user-text {
+      color: $typing-user-color;
+    }
+
+    @keyframes blink {
+      50% {
+        background: $message-header-color;
+        height: .2rem;
+      }
+    }
+    @if ($skin-name == 'highcontrast') {
+      .e-message-group.e-left .e-text {
+        &:not(:focus),
+        &:not(:active),
+        &:not(:hover) {
+          border: 1px solid rgba(150, 150, 150, 1);
+        }
+      }
+    }
+  }
+}

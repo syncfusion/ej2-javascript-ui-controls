@@ -1,0 +1,474 @@
+@mixin rowcell-container {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@mixin grid-wrap {
+  display: inline-block;
+  white-space: normal;
+  word-wrap: break-word;
+}
+@mixin display-align {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+@mixin drop-bottom-child {
+  box-shadow: 0 1px 0 0 $childborder-color;
+  position: relative;
+  z-index: 1;
+}
+@mixin childborder {
+  border-bottom: $treegrid-rowdrag-childborder-border;
+  border-top: $treegrid-rowdrag-childborder-border;
+  box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+}
+@mixin dropbottom {
+  border-bottom: $treegrid-rowdd-topbottom-border;
+  box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+}
+@mixin droptop {
+  border-top: $treegrid-rowdd-topbottom-border;
+  box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+}
+@include export-module('tree-layout') {
+
+  .e-treegrid {
+    .e-icons.e-none::before {
+      content: '';
+    }
+    
+    .e-grid.e-default.e-draggable:not(.e-rtl) tr td.e-rowdragdrop.e-childborder:first-child:not(.e-dropbottom) {
+      border-left: $treegrid-rowdrag-childborder-border;
+    }
+
+    .e-grid:not(.e-grid-min-height) .e-gridcontent tr.e-row.e-summaryrow .e-rowcell:empty {
+      height: auto;
+    }
+    
+    .e-gridheader {
+      .e-headercell .e-css.e-hierarchycheckbox {
+        height: 20px;
+        @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+          padding-top: 0;
+        }
+        @if $skin-name == 'fluent2' or $skin-name == 'fluent2-dark'{
+          position: relative;
+          bottom: 8px;
+        }
+        vertical-align: middle;
+      }
+    }
+
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      text-align: center;
+      vertical-align: $treegrid-right-arrow-icon-vertical-align;
+    }
+
+    span.e-icons.e-treegridcollapse{
+      @if $skin-name == 'highcontrast'{
+        text-align: center;
+        vertical-align: middle;
+      }
+    }
+
+    tr.e-childrow-hidden{
+      display: none;
+    }
+    
+    .e-rowcell:not(.e-gridclip) {
+      .e-treecolumn-container {
+        display: block;
+        @include rowcell-container;
+
+        span.e-treecell {
+          display: contents;
+          @include rowcell-container;
+        }
+      }
+    }
+
+    .e-templatecell .e-treecolumn-container span {
+      vertical-align: middle;
+    }
+
+    .e-treegridexpand:hover::before,
+    .e-treegridcollapse:hover::before {
+      color: $treegrid-right-arrow-hover-color;
+    }
+
+    @if $skin-name == 'fluent2' {
+      .e-selectionbackground.e-active .e-treegridexpand::before,
+      .e-selectionbackground.e-active .e-treegridcollapse::before,
+      .e-gridhover .e-gridcontent td.e-rowcell:hover .e-treegridexpand::before,
+      .e-gridhover .e-gridcontent td.e-rowcell:hover .e-treegridcollapse::before,
+      .e-selectionbackground.e-active .e-treegridexpand:hover::before,
+      .e-selectionbackground.e-active .e-treegridcollapse:hover::before,
+      .e-gridhover .e-gridcontent td.e-rowcell:hover .e-treegridexpand:hover::before,
+      .e-gridhover .e-gridcontent td.e-rowcell:hover .e-treegridcollapse:hover::before {
+        color: $icon-color-pressed;
+      }
+    }
+
+    .e-rowcell.e-treerowcell.e-treegridcheckbox {
+      @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        padding-left: $treegrid-treecell-padding;
+      }
+    }
+
+    .e-row[aria-expanded = 'true'] .e-treecell {
+      @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        font-size: 14px;
+        font-weight: bold;
+      }
+    }
+
+    .e-rtl {
+      .e-treegridcollapse {
+        transform: scale(-1);
+      }
+    }
+
+    .e-treegridexpand {
+      transform: rotate(90deg);
+    }
+
+    .e-treerowexpanded:not(.e-hiddenrow) {
+      display: table-row;
+    }
+
+    .e-treerowcollapsed {
+      display: none;
+    }
+
+    .e-treecheckbox-container {
+      display: block;
+      @include rowcell-container;
+
+      :not(.e-treecheckbox) {
+        white-space: nowrap;
+      }
+    }
+
+    .e-treecheckbox {
+      @include rowcell-container;
+      vertical-align: middle;
+    }
+
+    .e-treecolumn-container {
+      span {
+        @include display-align;
+      }
+    }
+
+    .e-templatecell .e-treecolumn-container span {
+      vertical-align: middle;
+    }
+    
+    .e-cloneproperties .e-treecolumn-container {
+      span {
+        vertical-align: text-top;
+      }
+    }
+
+    .e-cloneproperties .e-rowcell:not(.e-gridclip) .errorValue .e-treecolumn-container {
+      display: table-row;
+    }
+
+    .e-hierarchycheckbox .e-frame {
+      @if $skin-name == 'bootstrap' or $skin-name == 'boostrap-dark' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        font-size: 10px;
+        height: 16px;
+        line-height: 11px;
+        padding: 2px 0;
+        width: 16px;
+      }
+      @else {
+        height: $cbox-height;
+        width: $cbox-width;
+      }
+    }
+
+    .e-checkselection {
+      .e-frozenheader .e-rowcell,
+      .e-movableheader .e-rowcell,
+      .e-frozencontent .e-rowcell,
+      .e-movablecontent .e-rowcell {
+        line-height: 21px;
+      }
+    }
+
+    .e-treegridexpand,
+    .e-treegridcollapse {
+      color: $treegrid-right-arrow-icon-color;
+      cursor: pointer;
+      font-size: $treegrid-right-arrow-icon-font-size;
+      height: $treegrid-right-arrow-icon-height;
+      padding: $treegrid-right-arrow-icon-padding;
+      text-align: center;
+      vertical-align: text-bottom;
+      width: $treegrid-right-arrow-icon-width;
+    }
+
+    .e-treecell {
+      display: table-cell;
+      @if $skin-name == 'bootstrap5' or $skin-name == 'boostrap5-dark' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' or $theme-name == 'fluent2' {
+        line-height: 19px;
+      }
+      @else {
+        line-height: normal;
+      }
+    }
+
+    .e-grid {
+      &.e-wrap .e-rowcell .e-treecolumn-container,
+      &.e-wrap .e-rowcell .e-treecheckbox-container {
+        white-space: nowrap;
+      }
+
+      &.e-wrap .e-rowcell .e-treecolumn-container .e-treecell {
+        @include grid-wrap;
+      }
+      &.e-wrap .e-cloneproperties .e-rowcell .e-treecolumn-container .e-treecell {
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: break-word;
+      }
+
+      &.e-wrap .e-rowcell .e-treecheckbox-container .e-treecheckbox {
+        @include grid-wrap;
+      }
+      &.e-wrap .e-treecolumn-container {
+        span {
+          vertical-align: middle;
+        }
+      }
+    }
+
+    #{if(&, '&', '*')}.e-grid.e-print-grid-layout .e-icons {
+      display: inline-block;
+    }
+
+    .e-treecheckselect,
+    .e-treeselectall {
+      margin: 0;
+      opacity: 0;
+      position: absolute;
+      width: 0;
+    }
+
+    .e-detailheadercell,
+    .e-headercontent .e-table .e-detail-intent,
+    .e-gridcontent .e-table .e-detail-intent,
+    .e-table .e-detailrow .e-detailindentcell,
+    .e-table .e-detailrowexpand,
+    .e-table .e-detailrowcollapse,
+    tr.e-detailrow.e-childrow-hidden {
+      display: none;
+    }
+
+    .e-icons.e-errorelem {
+      padding-left: 10px;
+      @include display-align;
+    }
+
+    .e-errorelem::before {
+      color: $error-elem-color;
+      content: $error-elem-content;
+      transform: rotate(180deg);
+    }
+
+    .e-gridcontent {
+      td.e-childborder {
+        border-color: $childborder-color;
+        border-width: $treegrid-rowdd-childborder-width;
+        @include drop-bottom-child;
+        &.e-leftfreeze {
+          position: sticky;
+        }
+      }
+
+      td.e-rowcell.e-childborder.e-dragborder,
+      td.e-rowcell.e-dropbottom.e-dragborder td.e-rowdragdrop.e-dropbottom.e-dragborder {
+        box-shadow: 0 1px 0 0 $childborder-color;
+      }
+
+      td.e-rowcell.e-dragborder,
+      tr.e-row:first-child .e-rowcell.e-dragborder,
+      .e-rowdragdrop.e-dragborder {
+        box-shadow: 0 0 0 0;
+      }
+
+      td.e-childborder:first-child {
+        border-left: $treegrid-rowdrag-childborder-border;
+        @include drop-bottom-child;
+      }
+
+      td.e-rowcell.e-childborder:last-child,
+      td.e-lastrowcell.e-childborder:last-child {
+        border-right: $treegrid-rowdrag-childborder-border;
+      }
+
+      td.e-lastrowcell.e-childborder {
+        border-width: $treegrid-lastrowdd-childborder-width;
+      }
+
+      td.e-lastrowcell.e-childborder:first-child {
+        border-left: $treegrid-rowdrag-childborder-border;
+      }
+
+      td.e-dropbottom:first-child,
+      td.e-rowcell.e-dropbottom,
+      td.e-dropbottom {
+        @include drop-bottom-child;
+        &.e-leftfreeze {
+          position: sticky;
+        }
+      }
+
+      td.e-droptop:first-child,
+      td.e-rowcell.e-droptop {
+        border-top-color: $childborder-color;
+        border-width: $treegrid-rowdd-childborder-width;
+      }
+
+      td.e-lastrowcell.e-dropbottom {
+        border-bottom-color: $childborder-color;
+      }
+
+      td.e-rowdragdrop.e-droptop.e-dragborder {
+        box-shadow: 0 0 0 0;
+      }
+
+      .e-gridheader .e-firstrow-dragborder {
+        height: 1px;
+      }
+
+      .e-lastrow-dragborder {
+        height: 0;
+      }
+    }
+
+    .e-gridheader .e-firstrow-dragborder,
+    .e-droptop .e-lastrow-dragborder,
+    .e-gridheader .e-firstrow-dragborder tr:first-child.e-dropbottom {
+      height: 0;
+    }
+
+    .e-treegrid-relative {
+      position: relative;
+    }
+
+    .e-gridheader .e-firstrow-border,
+    .e-gridcontent .e-lastrow-border {
+      background-color: $childborder-color;
+      bottom: 0;
+      display: none;
+      height: 1px;
+      position: absolute;
+      z-index: 1;
+    }
+
+    .e-gridcontent .e-rowcell{
+      @if $skin-name == 'fluent2' or $skin-name == 'fluent2-dark'{
+        line-height: 17px;
+      }
+    }
+
+    .e-grid .e-gridcontent {
+      tr.e-row:first-child {
+        td.e-rowcell.e-childborder,
+        td.e-rowdragdrop.e-childborder {
+          @include childborder;
+        }
+
+        td.e-rowcell.e-droptop,
+        td.e-rowdragdrop.e-droptop {
+          border-top: $treegrid-rowdd-topbottom-border;
+        }
+      }
+
+      td.e-rowcell {
+        &.e-childborder {
+          @include childborder;
+        }
+      }
+
+      td.e-rowdragdrop {
+        &.e-childborder {
+          @include childborder;
+        }
+      }
+
+      td.e-rowcell {
+        &.e-dropbottom {
+          @include dropbottom;
+        }
+        &.e-droptop {
+          @include droptop;
+        }
+      }
+
+      td.e-rowdragdrop {
+        &.e-dropbottom {
+          @include dropbottom;
+        }
+        &.e-droptop {
+          @include droptop;
+        }
+      }
+    }
+
+    .e-grid.e-rtl {
+      .e-gridheader .e-firstrow-dragborder,
+      .e-droptop .e-lastrow-dragborder {
+        height: 0;
+      }
+
+      .e-gridcontent {
+        td.e-childborder {
+          border-color: $childborder-color;
+          border-width: $treegrid-rtl-rowdd-childborder-width;
+          position: relative;
+          z-index: 1;
+          &.e-leftfreeze {
+            position: sticky;
+          }
+        }
+
+        td.e-rowcell.e-dragborder,
+        tr.e-row:first-child .e-rowcell.e-dragborder,
+        .e-rowdragdrop.e-dragborder {
+          box-shadow: 0 0 0 0;
+        }
+
+        td.e-childborder:first-child {
+          border-right: $treegrid-rowdrag-childborder-border;
+          @include drop-bottom-child;
+        }
+
+        td.e-rowcell.e-childborder:last-child,
+        td.e-lastrowcell.e-childborder:first-child {
+          border-left: $treegrid-rowdrag-childborder-border;
+        }
+
+        td.e-lastrowcell.e-childborder {
+          border-width: $treegrid-lastrowdd-childborder-width;
+        }
+
+        td.e-lastrowcell.e-childborder:last-child {
+          border-right: $treegrid-rowdrag-childborder-border;
+        }
+
+        td.e-droptop:first-child,
+        td.e-rowcell.e-droptop {
+          border-top-color: $childborder-color;
+          border-width: $treegrid-rowdd-childborder-width;
+        }
+
+        td.e-lastrowcell.e-dropbottom {
+          border-bottom-color: $childborder-color;
+        }
+      }
+    }
+  }
+}

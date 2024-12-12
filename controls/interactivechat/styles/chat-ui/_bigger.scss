@@ -1,0 +1,101 @@
+@include export-module('chatui-bigger') {
+  .e-bigger.e-chat-ui,
+  .e-bigger .e-chat-ui {
+    .e-chat-content {
+      height: calc(100% - $chat-bigger-header-height);
+    }
+    .e-chat-header {
+      height: $chat-bigger-header-height;
+    }
+    .e-chat-send {
+      font-size: $chat-send-icon-size-bigger;
+      bottom: $chat-send-icon-bigger-bottom;
+    }
+    .e-message-header {
+      font-size: $message-header-bigger-size;
+    }
+    .e-message-icon {
+      height: 40px;
+      width: 40px;
+    }
+    .e-user-icon {
+      height: 32px;
+      width: 32px;
+    }
+    .e-left {
+      &:not(.e-message-item-template) {
+        padding-left: calc(40px + $user-icon-bigger-gap);
+      }
+    }
+    .e-message-icon {
+      top: 25px;
+    }
+    .e-user-text {
+      margin-left: 22px;
+      font-size: $typing-user-font-size-bigger;
+    }
+    .e-user-icon {
+      margin-right: -18px;
+    }
+    .e-text {
+      font-size: $chat-text-font-size-bigger;
+      padding: $chat-text-padding-bigger;
+    }
+    .e-time {
+      font-size: $message-time-bigger-size;
+    }
+    .e-status-text {
+      font-size: $typing-user-font-size-bigger;
+    }
+    .e-status-icon {
+      height: 18px;
+      width: 18px;
+      font-size: $chat-status-icon-bigger-size;
+    }
+    .e-footer {
+      .e-clear-icon:not(.e-clear-icon-hide) {
+        padding-bottom: $chat-clear-icon-bigger-bottom;
+      }
+      .e-input-group.e-control-wrapper.e-multi-line-input {
+        .e-textarea {
+          min-height: 38px;
+          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
+            padding: 6px 12px 6px 16px;
+            min-height: 28px;
+          }
+        }
+        &.e-rtl .e-textarea {
+          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
+            padding: 6px 16px 6px 12px;
+          }
+        }
+      }
+    }
+    .e-timestamp {
+      font-size: $timebreak-font-size-bigger;
+      padding: $timebreak-padding-bigger;
+    }
+    .e-suggestions {
+      li {
+        font-size: $timebreak-font-size-bigger;
+        padding: $chat-suggesstions-li-padding-bigger;
+      }
+    }
+    &.e-rtl {
+      .e-left {
+        &:not(.e-message-item-template) {
+          padding-right: calc(40px + $user-icon-bigger-gap);
+          padding-left: unset;
+        }
+      }
+      .e-user-text {
+        margin-right: 22px;
+        margin-left: unset;
+      }
+      .e-user-icon {
+        margin-left: -18px;
+        margin-right: unset;
+      }
+    }
+  }
+}

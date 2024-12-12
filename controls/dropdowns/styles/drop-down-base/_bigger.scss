@@ -1,0 +1,198 @@
+@include export-module('dropdownbase-bigger') {
+  
+  .e-bigger .e-dropdownbase,
+  .e-dropdownbase.e-bigger {
+    min-height: 45px;
+    @at-root {
+      #{if(&, '&', '*')} .e-list-item {
+        line-height: $ddl-line-height;
+        text-indent: $ddl-bigger-text-indent;
+        @if $skin-name == 'tailwind3' {
+          min-height: $ddl-line-height;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        line-height: $ddl-line-height;
+        @if $skin-name != 'tailwind' {
+          text-indent: $ddl-bigger-text-indent;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-item .e-list-icon {
+        @if $skin-name == 'fluent2' {
+          font-size: 18px;
+        }
+        @else {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+
+  .e-bigger.e-ddl .e-dropdownbase.e-nodata,
+  .e-bigger .e-ddl .e-dropdownbase.e-nodata {
+    @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind') {
+      font-size: $ddl-bigger-list-nodata-font-size;
+    }
+  }
+
+  .e-bigger.e-small.e-ddl .e-dropdownbase.e-nodata,
+  .e-bigger.e-small .e-ddl .e-dropdownbase.e-nodata {
+    @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind') {
+      font-size: $ddl-bigger-small-list-nodata-font-size;
+    }
+  }
+
+  .e-bigger .e-dropdownbase.e-dd-group .e-list-item {
+    padding-left: $ddl-group-list-bigger-padding-left;
+    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+      text-indent: 0;
+    }
+  }
+
+  .e-small.e-bigger .e-dropdownbase.e-dd-group .e-list-item {
+    padding-left: $ddl-group-list-bigger-small-padding-left;
+    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+      text-indent: 0;
+    }
+  }
+
+  .e-bigger.e-rtl,
+  .e-bigger .e-rtl,
+  .e-rtl .e-bigger {
+    #{if(&, '&', '*')} .e-dropdownbase {
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-list-header-bigger-padding-left;
+        }
+      }
+
+      #{if(&, '&', '*')}.e-dd-group .e-list-item {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-group-list-bigger-padding-left;
+        }
+      }
+    }
+  }
+
+  .e-small.e-bigger.e-rtl,
+  .e-small.e-bigger .e-rtl,
+  .e-rtl .e-small.e-bigger,
+  .e-small .e-rtl.e-bigger,
+  .e-bigger .e-rtl.e-small {
+    #{if(&, '&', '*')} .e-dropdownbase {
+      #{if(&, '&', '*')} .e-list-item {
+        padding-left: $ddl-list-rtl-padding-left;
+        padding-right: $ddl-list-rtl-padding-right;
+      }
+
+      #{if(&, '&', '*')}.e-dd-group .e-list-item {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-group-list-bigger-small-padding-left;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-list-header-bigger-small-padding-left;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-dropdownbase {
+    @at-root {
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        font-size: $ddl-bigger-list-header-font-size;
+        padding-left: $ddl-list-header-bigger-padding-left;
+      }
+    }
+  }
+
+  .e-bigger.e-small .e-dropdownbase,
+  .e-dropdownbase.e-bigger.e-small  {
+    @at-root {
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        font-size: $ddl-bigger-small-list-header-font-size;
+      }
+    }
+  }
+
+  .e-bigger.e-small .e-dropdownbase,
+  .e-dropdownbase.e-small.e-bigger {
+    @at-root {
+      #{if(&, '&', '*')} .e-list-item {
+        color: $ddl-bigger-small-list-font-color;
+        line-height: $ddl-bigger-small-line-height;
+        min-height: $ddl-bigger-small-line-height;
+        text-indent: $ddl-bigger-small-list-text-indent;
+      }
+
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        line-height: $ddl-bigger-small-line-height;
+        min-height: $ddl-bigger-small-line-height;
+        padding-left: $ddl-list-header-bigger-small-padding-left;
+      }
+
+      #{if(&, '&', '*')} .e-list-item .e-list-icon {
+        font-size: $ddl-bigger-small-icon-font-size;
+      }
+    }
+  }
+
+  .e-bigger .e-dropdownbase .e-list-group-item,
+  .e-bigger .e-fixed-head,
+  .e-bigger.e-dropdownbase .e-list-group-item,
+  .e-bigger.e-fixed-head {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
+      font-size: $text-sm;
+    }
+  }
+
+  .e-bigger.e-small .e-dropdownbase .e-list-group-item,
+  .e-bigger.e-small .e-fixed-head,
+  .e-bigger.e-small.e-dropdownbase .e-list-group-item,
+  .e-bigger.e-small.e-fixed-head {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
+      font-size: $text-xs;
+    }
+  }
+
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon {
+    @if $skin-name == 'tailwind' or $skin-name == 'fluent2' {
+      padding: 0 12px 0 0;
+    }
+  }
+
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
+    @if $skin-name == 'tailwind' or $skin-name == 'fluent2' {
+      padding: 0 8px 0 0;
+    }
+  }
+
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon,
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
+    @if $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'FluentUI' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
+      padding: 0 12px 0 0;
+    }
+  }
+
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon {
+    @if $skin-name == 'bootstrap4' {
+      font-size: 16px;
+    }
+  }
+
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
+    @if $skin-name == 'material-dark' or $skin-name == 'material' or $skin-name == 'Material3' {
+      padding: 0 16px 0 0;
+    }
+  }
+}

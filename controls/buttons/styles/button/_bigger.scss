@@ -1,0 +1,296 @@
+@mixin icon-left-right {
+  @if $skin-name == 'bootstrap4' {
+    padding: 0 $btn-bigger-icon-top-bottom-padding;
+  }
+  @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    line-height: 0;
+  }
+}
+
+@mixin mat3-border-radius {
+  @if $skin-name == 'Material3' {
+    border-radius: 4px;
+  }
+}
+
+@mixin top-bottom-icon-btn {
+  @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    line-height: 0;
+  }
+  @else {
+    line-height: 1;
+  }
+}
+
+@include export-module('button-bigger') {
+  .e-bigger.e-small .e-btn,
+  .e-bigger .e-small.e-btn,
+  .e-bigger.e-small .e-css.e-btn,
+  .e-bigger .e-small.e-css.e-btn {
+    font-size: $btn-bigger-small-font-size;
+    line-height: $btn-bigger-small-text-line-height;
+    padding: $btn-bigger-small-padding;
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      border-radius: 4px;
+    }
+
+    &.e-round-corner {
+      @if $skin-name == 'Material3' {
+        border-radius: 25px;
+        padding: $btn-bigger-small-padding;
+      }
+    }
+
+    & .e-btn-icon {
+      font-size: $btn-bigger-small-icon-font-size;
+      width: $btn-icon-bigger-small-width;
+
+      &.e-icon-left {
+        margin-left: $btn-bigger-small-icon-margin;
+        width: $btn-bigger-small-icon-width;
+        @include icon-left-right;
+      }
+
+      &.e-icon-right {
+        margin-right: $btn-bigger-small-icon-margin;
+        width: $btn-bigger-small-icon-width;
+        @include icon-left-right;
+      }
+
+      &.e-icon-top {
+        padding-bottom: $btn-small-icon-top-bottom-padding;
+        width: auto;
+      }
+
+      &.e-icon-bottom {
+        padding-top: $btn-small-icon-top-bottom-padding;
+        width: auto;
+      }
+    }
+
+    &.e-icon-btn {
+      padding: $btn-bigger-small-icon-padding;
+      @if $skin-name == 'fluent2' {
+        line-height: 16px;
+      }
+      @include mat3-border-radius;
+    }
+
+    &.e-top-icon-btn,
+    &.e-bottom-icon-btn {
+      @include top-bottom-icon-btn;
+      padding: $btn-top-icon-bigger-padding;
+    }
+
+    &.e-round {
+      height: $btn-round-bigger-small-height;
+      line-height: 1;
+      padding: 0;
+      width: $btn-round-bigger-small-width;
+
+      & .e-btn-icon {
+        font-size: $btn-bigger-small-round-font-size;
+        line-height: $btn-bigger-small-round-icon-line-height;
+        width: auto;
+      }
+    }
+
+    &.e-rtl {
+      & .e-icon-right {
+        margin-left: $btn-bigger-small-icon-margin;
+        margin-right: 0;
+      }
+
+      & .e-icon-left {
+        margin-left: 0;
+        margin-right: $btn-bigger-small-icon-margin;
+      }
+    }
+  }
+
+  .e-bigger .e-btn,
+  .e-bigger.e-btn,
+  .e-bigger .e-css.e-btn,
+  .e-bigger.e-css.e-btn {
+    font-size: $btn-bigger-font-size;
+    line-height: $btn-bigger-text-line-height;
+    padding: $btn-bigger-padding;
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      border-radius: 4px;
+    }
+    @else if $skin-name == 'bootstrap5.3' {
+      border-radius: 6px;
+    }
+
+    &.e-round-corner {
+      @if $skin-name == 'Material3' {
+        border-radius: 25px;
+        padding: $btn-bigger-padding;
+      }
+    }
+
+    & .e-btn-icon {
+      font-size: $btn-bigger-icon-font-size;
+      width: $btn-icon-bigger-width;
+
+      &.e-icon-left {
+        margin-left: $btn-bigger-icon-margin;
+        width: $btn-bigger-icon-width;
+        @include icon-left-right;
+      }
+
+      &.e-icon-right {
+        margin-right: $btn-bigger-icon-margin;
+        width: $btn-bigger-icon-width;
+        @include icon-left-right;
+      }
+
+      &.e-icon-top {
+        padding-bottom: $btn-bigger-icon-top-bottom-padding;
+        width: auto;
+      }
+
+      &.e-icon-bottom {
+        padding-top: $btn-bigger-icon-top-bottom-padding;
+        width: auto;
+      }
+    }
+
+    &.e-icon-btn {
+      @if $skin-name != 'tailwind3' {
+        padding: $btn-bigger-icon-padding;
+      }
+      @if $skin-name == 'fluent2' {
+        line-height: 16px;
+      }
+      @include mat3-border-radius;
+    }
+
+    &.e-top-icon-btn,
+    &.e-bottom-icon-btn {
+      @include top-bottom-icon-btn;
+      padding: $btn-top-icon-bigger-padding;
+    }
+
+    &.e-round {
+      height: $btn-round-bigger-height;
+      line-height: 1;
+      padding: 0;
+      width: $btn-round-bigger-width;
+      @if $skin-name == 'tailwind' or $skin-name == 'Material3' or $skin-name == 'bootstrap5.3' {
+        border-radius: 50%;
+      }
+
+      & .e-btn-icon {
+        font-size: $btn-bigger-round-font-size;
+        line-height: $btn-bigger-round-icon-line-height;
+        width: auto;
+      }
+    }
+
+    &.e-rtl {
+      & .e-icon-right {
+        margin-left: $btn-bigger-icon-margin;
+        margin-right: 0;
+      }
+
+      & .e-icon-left {
+        margin-left: 0;
+        margin-right: $btn-bigger-icon-margin;
+      }
+    }
+
+    &.e-small {
+      font-size: $btn-bigger-small-font-size;
+      line-height: $btn-bigger-small-text-line-height;
+      padding: $btn-bigger-small-padding;
+      @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+        border-radius: 2px;
+      }
+      @else if $skin-name == 'bootstrap5.3' {
+        border-radius: 6px;
+      }
+
+      &.e-round-corner {
+        @if $skin-name == 'Material3' {
+          border-radius: 25px;
+          padding: $btn-bigger-small-padding;
+        }
+      }
+
+      & .e-btn-icon {
+        font-size: $btn-bigger-small-icon-font-size;
+        width: $btn-icon-bigger-small-width;
+
+        &.e-icon-left {
+          margin-left: $btn-bigger-small-icon-margin;
+          width: $btn-bigger-small-icon-width;
+          @include icon-left-right;
+        }
+
+        &.e-icon-right {
+          margin-right: $btn-bigger-small-icon-margin;
+          width: $btn-bigger-small-icon-width;
+          @include icon-left-right;
+        }
+
+        &.e-icon-top {
+          padding-bottom: $btn-small-icon-top-bottom-padding;
+          width: auto;
+        }
+
+        &.e-icon-bottom {
+          padding-top: $btn-small-icon-top-bottom-padding;
+          width: auto;
+        }
+      }
+
+      &.e-icon-btn {
+        padding: $btn-bigger-small-icon-padding;
+        @include mat3-border-radius;
+      }
+
+      &.e-top-icon-btn,
+      &.e-bottom-icon-btn {
+        @include top-bottom-icon-btn;
+        padding: $btn-top-icon-bigger-padding;
+      }
+
+      &.e-round {
+        height: $btn-round-bigger-small-height;
+        line-height: 1;
+        padding: 0;
+        width: $btn-round-bigger-small-width;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
+          border-radius: 50%;
+        }
+
+        & .e-btn-icon {
+          font-size: $btn-bigger-small-round-font-size;
+          line-height: $btn-bigger-small-round-icon-line-height;
+          width: auto;
+        }
+      }
+
+      &.e-rtl {
+        & .e-icon-right {
+          margin-left: $btn-bigger-small-icon-margin;
+          margin-right: 0;
+        }
+
+        & .e-icon-left {
+          margin-left: 0;
+          margin-right: $btn-bigger-small-icon-margin;
+        }
+      }
+    }
+  }
+
+  @if $skin-name == 'fluent2' {
+    .e-bigger.e-small .e-btn.e-icon-btn .e-btn-icon,
+    .e-bigger .e-btn.e-icon-btn .e-btn-icon {
+      font-size: 16px;
+      line-height: 16px;
+    }
+  }
+}

@@ -1,0 +1,86 @@
+@mixin speeddial-text-icon-colors($sd-color, $sd-bg-color, $sd-border-color) {
+  color: $sd-color;
+  .e-speeddial-li-text,
+  .e-speeddial-li-icon {
+    background: $sd-bg-color;
+    border-color: $sd-border-color;
+  }
+}
+
+@include export-module('speed-dial-theme') {
+  .e-speeddial-overlay {
+    background-color: $sd-overlay-bg;
+  }
+
+  .e-speeddial-popup {
+    .e-speeddial-li {
+      color: $sd-font-color;
+
+      .e-speeddial-li-text {
+        @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+          background: transparent;
+          box-shadow: none;
+        }
+        @else {
+          background: $sd-li-bg;
+          box-shadow: $sd-li-shadow;
+        }
+        @if ($skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+          border-color: transparent;
+        }
+        @else {
+          border-color: $sd-li-border-color;
+        }
+      }
+      .e-speeddial-li-icon {
+        box-shadow: $sd-li-shadow;
+        background: $sd-li-bg;
+        @if ($skin-name == 'Material3') {
+          border-color: transparent;
+        }
+        @else {
+          border-color: $sd-li-border-color;
+        }
+        @if ($skin-name == 'tailwind3') {
+          box-shadow: none;
+        }
+      }
+      &.e-speeddial-text-li .e-speeddial-li-text {
+        @if ($skin-name == 'fluent2') {
+          background: $secondary-bg-color;
+          box-shadow: $shadow-lg;
+          border-color: $secondary-border-color;
+        }
+        @if ($skin-name == 'tailwind3') {
+          background: $secondary-bg-color;
+          border-color: $secondary-border-color;
+        }
+      }
+    }
+    .e-speeddial-li.e-disabled {
+      @include speeddial-text-icon-colors($sd-disabled-font-color, $sd-disabled-li-bg, $sd-disabled-li-border-color);
+    }
+
+    .e-speeddial-li.e-speeddial-li-active:not(.e-disabled),
+    .e-speeddial-li:focus:not(.e-disabled) {
+      color: $sd-focus-font-color;
+      
+      .e-speeddial-li-text,
+      .e-speeddial-li-icon {
+        background: $sd-focus-li-bg;
+        border-color: $sd-focus-li-border-color;
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+          box-shadow: $sd-focus-box-shadow;
+        }
+      }
+    }
+
+    .e-speeddial-li:not(.e-disabled):hover {
+      @include speeddial-text-icon-colors($sd-hover-font-color, $sd-hover-li-bg, $sd-hover-li-border-color);
+    }
+
+    .e-speeddial-li:not(.e-disabled):active {
+      @include speeddial-text-icon-colors($sd-active-font-color, $sd-active-li-bg, $sd-active-li-border-color);
+    }
+  }
+}

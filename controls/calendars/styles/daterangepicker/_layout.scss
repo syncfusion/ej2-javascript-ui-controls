@@ -1,0 +1,806 @@
+@include export-module('daterangepicker-layout') {
+
+  .e-input-group.e-control-wrapper.e-date-range-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-date-range-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
+  .e-float-input.e-input-group.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
+  .e-input-group.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
+  .e-float-input.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
+  .e-float-input.e-input-group.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden,
+  .e-input-group.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden,
+  .e-float-input.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden {
+    border: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    text-indent: 0;
+    visibility: hidden;
+    width: 0;
+  }
+
+  #{&}.e-daterangepicker {
+    #{if(&, '&', '*')}.e-popup {
+      border: $range-popup-border;
+      border-radius: $range-popup-border-radius;
+      box-shadow: $range-box-shadow;
+      max-height: $range-max-height;
+      max-width: $range-max-width;
+
+      #{if(&, '&', '*')}.e-daterange-day-header-lg {
+        max-width: $range-lg-day-header-format-width;
+      }
+      #{if(&, '&', '*')}.e-preset-wrapper {
+        min-width: $range-preset-min-width;
+
+        #{if(&, '&', '*')} .e-presets {
+          max-height: $range-value-none;
+        }
+      }
+      #{if(&, '&', '*')} .e-range-header {
+        background: $range-header-bg-color;
+        padding: $range-control-header-margin;
+        width: $range-control-header-width;
+        @if $skin-name == 'tailwind' {
+          border-radius: $range-popup-header-border-radius;
+        }
+        @if $skin-name == 'Material3' {
+          border-top-left-radius: $range-popup-border-radius;
+        }
+        @if $skin-name == 'fluent2' {
+          border-top-left-radius: inherit;
+          border-top-right-radius: inherit;
+        }
+
+        #{if(&, '&', '*')} .e-start-label,
+        #{if(&, '&', '*')} .e-end-label {
+          cursor: $range-cursor-default-style;
+          display: $range-inline-block-style;
+          font-size: $range-header-label-size;
+          overflow: $range-visibility-hidden;
+          text-align: $range-align-center;
+          text-decoration: $range-value-none;
+          text-overflow: $range-text-overflow;
+          user-select: $range-browser-select-none;
+          white-space: $range-text-nowrap;
+          width: $range-start-end-label-width;
+          @if $skin-name == 'Material3' {
+            font-weight: $font-weight-medium;
+          }
+        }
+        #{if(&, '&', '*')} .e-change-icon {
+          font-size: $range-font-size;
+          font-weight: $range-font-weight-bold;
+          text-align: $range-align-center;
+          width: $range-change-icon-width;
+        }
+        #{if(&, '&', '*')} .e-day-span {
+          direction: $range-direction-left;
+          font-size: $range-calendar-small-font-size;
+          height: $range-day-span-height;
+          margin: $range-indicator-margin;
+          text-align: $range-align-center;
+          user-select: $range-browser-select-none;
+          width: $range-indicator-label-width;
+        }
+        #{if(&, '&', '*')} .e-start-end {
+          align-items: $range-align-center;
+          display: $range-flex-style;
+          height: $range-start-end-container-height;
+        }
+      }
+      #{if(&, '&', '*')} .e-separator {
+        @if ($skin-name != 'FluentUI') {
+          height: $range-separator-height;
+          margin: $range-separator-margin;
+        }
+      }
+      #{if(&, '&', '*')} .e-calendar {
+        border: $range-calendar-border;
+        margin: $range-calendar-margin;
+        @if ($skin-name != 'FluentUI') {
+          padding: $range-calendar-popup-padding;
+        }
+        @if $skin-name == 'fluent2' {
+          box-shadow: none;
+        }
+
+        #{if(&, '&', '*')} .e-content table {
+          @if ($skin-name != 'FluentUI') {
+            padding: $range-calendar-normal-table-padding;
+          }
+        }
+        #{if(&, '&', '*')} .e-header {
+          #{if(&, '&', '*')} .e-title {
+            cursor: $range-cursor-pointer-style;
+            @if $skin-name == 'bootstrap5.3' {
+              line-height: $range-normal-nav-icon-line-height;
+              padding: $range-header-title-padding;
+            }
+            @else {
+              line-height: $range-normal-nav-icon-height;
+            }
+            @if ($skin-name != 'FluentUI') {
+              width: $range-control-header-width;
+              float: $range-float-none;
+              font-weight: $range-font-weight-normal;
+              margin-left: $range-value-zero;
+            }
+          }
+          #{if(&, '&', '*')}.e-month,
+          #{if(&, '&', '*')}.e-year,
+          #{if(&, '&', '*')}.e-decade {
+            @if ($skin-name != 'FluentUI') {
+              padding: $range-calendar-header-padding;
+            }
+          }
+          #{if(&, '&', '*')} .e-next {
+            @if ($skin-name != 'FluentUI' and $skin-name != 'fluent2') {
+              float: $range-float-right;
+            }
+            @if $skin-name == 'tailwind3' {
+              margin-right: 0;
+              right: -10px;
+            }
+          }
+          #{if(&, '&', '*')} .e-prev {
+            @if ($skin-name != 'FluentUI' and $skin-name != 'fluent2') {
+              float: $range-float-left;
+            }
+            @if $skin-name == 'tailwind3' {
+              left: -10px;
+            }
+          }
+          #{if(&, '&', '*')} .e-next,
+          #{if(&, '&', '*')} .e-prev {
+            height: $range-normal-nav-icon-height;
+            width: $range-normal-nav-icon-width;
+            @if $skin-name == 'tailwind3' {
+              position: inherit;
+              top: 4px;
+            }
+          }
+          #{if(&, '&', '*')} .e-next span,
+          #{if(&, '&', '*')} .e-prev span {
+            padding: $range-icon-normal-padding;
+          }
+        }
+        #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover {
+          border-radius: $range-hover-start-radius;
+        }
+        #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover {
+          border-radius: $range-hover-end-radius;
+        }
+        #{if(&, '&', '*')} .e-start-date.e-selected {
+          @if ($skin-name == 'FluentUI') {
+            border-radius: $range-hover-start-radius;
+          }
+        }
+        #{if(&, '&', '*')} .e-end-date.e-selected {
+          @if ($skin-name == 'FluentUI') {
+            border-radius: $range-hover-end-radius;
+          }
+        }
+        #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover span.e-day,
+        #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover span.e-day {
+          border: $range-calendar-hover-border;
+        }
+      }
+      #{if(&, '&', '*')} .e-footer {
+        align-items: $range-align-center;
+        @if ($skin-name != 'FluentUI' and $skin-name != 'fluent2' and $skin-name != 'tailwind3') {
+          border-top: $range-border-value;
+        }
+        clear: $range-float-clear;
+        display: $range-flex-style;
+        flex-direction: $range-flex-direction-row-reverse;
+        height: $range-footer-height;
+        @if $skin-name == 'tailwind' {
+          border-radius: $range-popup-footer-border-radius;
+        }
+      }
+      #{if(&, '&', '*')} .e-footer .e-btn {
+        font-weight: $range-btn-font-weight;
+        height: $range-btn-normal-height;
+        line-height: $range-btn-normal-line-height;
+        overflow: $range-visibility-hidden;
+        padding: $range-btn-padding;
+        text-overflow: $range-text-overflow;
+        @if $skin-name == 'fluent2' {
+          border: $footer-btn-border;
+        }
+      }
+      #{if(&, '&', '*')} .e-footer .e-btn.e-apply {
+        margin: $range-normal-footer-margin;
+      }
+      #{if(&, '&', '*')} .e-date-range-container {
+        float: $range-float-left;
+        @if $skin-name == 'fluent2' {
+          border-top-left-radius: inherit;
+          border-top-right-radius: inherit;
+        }
+
+        #{if(&, '&', '*')}.e-range-border {
+          @if $skin-name != 'tailwind3' {
+            border-right: $range-border-value;
+          }
+        }
+      }
+      #{if(&, '&', '*')} .e-calendar-container {
+        display: $range-flex-style;
+
+        #{if(&, '&', '*')} .e-left-container,
+        #{if(&, '&', '*')} .e-right-container {
+          float: $range-float-left;
+        }
+        #{if(&, '&', '*')} .e-left-container {
+          @if $skin-name != 'FluentUI' and $skin-name != 'fluent2' and $skin-name != 'tailwind3' {
+            border-right: $range-border-value;
+          }
+          @if $skin-name == 'tailwind' {
+            border-right: $range-container-border-value;
+          }
+        }
+      }
+      #{if(&, '&', '*')} .e-presets {
+        max-height: $range-presets-height;
+        overflow: auto;
+        width: $range-width-auto;
+
+        #{if(&, '&', '*')} .e-list-item {
+          border-radius: $range-list-border-radius;
+          cursor: $range-cursor-pointer-style;
+          line-height: $range-list-item-height;
+          overflow: $range-visibility-hidden;
+          padding: $range-list-item-padding;
+          white-space: $range-text-nowrap;
+          text-overflow: $range-text-overflow;
+        }
+        #{if(&, '&', '*')} .e-list-parent {
+          margin: $range-value-zero;
+          max-width: $range-presets-width;
+          padding: $range-value-zero;
+        }
+        #{if(&, '&', '*')} .e-text-content {
+          line-height: $range-list-item-line-height;
+        }
+        #{if(&, '&', '*')} .e-ul {
+
+          #{if(&, '&', '*')} li.e-list-item {
+            font-size: $range-presets-normal-list-font-size;
+            height: $range-preset-normal-list-height;
+            line-height: $range-preset-normal-list-height;
+            @if $skin-name == 'tailwind3' {
+              font-weight: 500;
+            }
+            &.e-active:first-child {
+              @if $skin-name == 'Material3' {
+                border-top-right-radius: $range-popup-border-radius;
+                border-top-left-radius: $range-popup-border-radius;
+              }
+            }
+          }
+        }
+      }
+      #{if(&, '&', '*')} .e-hide-range {
+        display: $range-display-none;
+      }
+    }
+    #{if(&, '&', '*')}.e-rtl {
+      #{if(&, '&', '*')} .e-date-range-container {
+        float: $range-float-right;
+
+        #{if(&, '&', '*')}.e-range-border {
+          border-left: $range-border-value;
+          border-right: $range-value-zero;
+        }
+        #{if(&, '&', '*')} .e-left-container {
+          @if $skin-name != 'FluentUI' {
+            border-left: $range-border-value;
+            border-right: $range-value-zero;
+          }
+          @if $skin-name == 'tailwind' {
+            border-left: $range-container-border-value;
+          }
+        }
+        #{if(&, '&', '*')} .e-calendar {
+          #{if(&, '&', '*')} .e-next {
+            float: $range-float-left;
+          }
+          #{if(&, '&', '*')} .e-prev {
+            @if ($skin-name != 'FluentUI') {
+              float: $range-float-right;
+            }
+          }
+          #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover {
+            border-radius: $range-hover-end-radius;
+            @if ($skin-name == 'FluentUI') {
+              box-shadow: $selected-range-box-shadow;
+            }
+          }
+          #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover {
+            border-radius: $range-hover-start-radius;
+            @if ($skin-name == 'FluentUI') {
+              box-shadow: $selected-range-box-shadow;
+            }
+          }
+        }
+      }
+      #{if(&, '&', '*')} .e-footer {
+        flex-direction: $range-flex-direction-row;
+        justify-content: $range-flex-justify-content;
+
+        #{if(&, '&', '*')} .e-btn.e-cancel {
+          margin: $range-normal-rtl-footer-margin;
+        }
+        #{if(&, '&', '*')} .e-btn.e-apply {
+          margin-left: $range-value-zero;
+        }
+      }
+    }
+  }
+
+  .e-small #{&}.e-daterangepicker,
+  #{if(&, '&', '*')}.e-small#{&}.e-daterangepicker {
+    #{if(&, '&', '*')}.e-popup {
+      #{if(&, '&', '*')} .e-range-header {
+        @if $skin-name != 'tailwind' {
+          margin: $range-control-small-header-margin;
+        }
+
+        @if $skin-name == 'tailwind' {
+          padding: $range-control-bigger-header-margin;
+        }
+
+        #{if(&, '&', '*')} .e-start-label,
+        #{if(&, '&', '*')} .e-end-label {
+          font-size: $range-small-header-label-size;
+        }
+
+        #{if(&, '&', '*')} .e-change-icon {
+          font-size: $range-small-font-size;
+        }
+
+        #{if(&, '&', '*')} .e-start-end {
+          height: $range-start-end-container-small-height;
+        }
+
+        #{if(&, '&', '*')} .e-day-span {
+          font-size: $range-calendar-mouse-small-font-size;
+          margin: $range-indicator-small-margin;
+        }
+
+        #{if(&, '&', '*')} .e-separator {
+          @if ($skin-name != 'FluentUI') {
+            margin: $range-separator-small-margin;
+          }
+        }
+      }
+
+      #{if(&, '&', '*')} .e-footer .e-btn.e-apply {
+        margin: $range-small-footer-margin;
+      }
+
+      #{if(&, '&', '*')}.e-preset-wrapper .e-presets .e-list-parent.e-ul {
+        #{if(&, '&', '*')} .e-list-item {
+          font-size: $range-presets-small-list-font-size;
+          height: $range-preset-small-list-height;
+          line-height: $range-preset-small-list-height;
+        }
+      }
+    }
+  }
+  .e-daterangepicker .e-calendar .e-month .e-selected span.e-day {
+    @if $skin-name == 'FluentUI' {
+      height: 25px;
+      width: 25px;
+      line-height: 25px;
+    }
+  }
+
+  .e-daterangepicker.e-small .e-calendar .e-month .e-selected span.e-day {
+    @if $skin-name == 'FluentUI' {
+      height: 21px;
+      width: 21px;
+      line-height: 21px;
+    }
+  }
+}
+
+/* stylelint-disable */
+.e-range-overflow {
+  overflow: hidden;
+}
+
+.e-daterangepick-mob-popup-wrap {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  max-height: 100%;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1002;
+
+  .e-daterangepicker.e-popup.e-control.e-lib.e-device.e-popup-open {
+    position: relative;
+    top:0 !important;
+    left: 0 !important;
+  }
+
+  .e-daterangepicker.e-popup.e-popup-expand.e-control.e-lib.e-device.e-popup-open {
+    min-height:100%;
+    min-width: 100%;
+    height:100%;
+    width:100%;
+}
+}
+
+.e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker {
+  background-size: 250px 33px;
+  min-height: 33px;
+}
+
+.e-daterangepick-mob-popup-wrap {
+    #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {      
+      #{if(&, '&', '*')} .e-date-range-container {
+            min-height: $modal-range-portrait-calendar-min-height;
+            min-width: $modal-range-portrait-calendar-min-width;
+            height: $modal-range-portrait-calendar-height;
+            width: $modal-range-portrait-calendar-width;
+
+            #{if(&, '&', '*')} .e-range-header {
+              height: $modal-range-portrait-header-height;
+              padding: $modal-range-portrait-header-padding;
+              margin: 0;
+              color: $range-calendar-header-dark-color;
+
+              #{if(&, '&', '*')} .e-model-header-wrapper {
+                @media (max-device-width: 768px) {
+                  font-size: $range-header-font-size;
+                }
+        
+                @media (min-device-width: 768px) {
+                  font-size: $modal-range-tablet-font-size;
+                }
+
+                #{if(&, '&', '*')} .e-apply {
+                  float: $modal-range-portrait-icon-float;
+                }
+              }
+
+              #{if(&, '&', '*')} .e-start-end {
+                margin: $modal-range-start-end-margin;
+              }
+            }
+            #{if(&, '&', '*')} .e-calendar {
+              @media (max-height: 600px) {
+                min-height: $modal-range-portrait-calendar-height;
+                height: $modal-range-portrait-calendar-height;
+              }      
+              @media (min-height: 600px) {
+                min-height: $modal-range-landscape-calendar-height;
+                height: $modal-range-landscape-calendar-height;
+              }
+              min-width: $modal-range-portrait-calendar-min-width;
+              width: $modal-range-portrait-calendar-width;
+              padding: $modal-range-calendar-padding;
+              overflow: $modal-range-calendar-overflow;
+
+              #{if(&, '&', '*')} .e-header.e-month,
+              #{if(&, '&', '*')} .e-header.e-year,
+              #{if(&, '&', '*')} .e-header.e-decade {
+                height: $modal-range-portrait-header-month-height;
+                border-style: $modal-range-calendar-header-border-style;
+                border-width: $modal-range-calendar-header-border-width;
+                border-color: $range-separator-color;
+                padding: $modal-range-portrait-month-header-padding;
+                line-height: $modal-range-month-header-line-height;
+
+                #{if(&, '&', '*')} .e-prev {
+                  height: $modal-range-prev-next-icon-size;
+                  width: $modal-range-prev-next-icon-size;
+                  @if ($skin-name == 'Material3') {
+                    vertical-align: inherit;
+                    font-size: $modal-range-tablet-font-size
+                  }
+                  @media screen and (orientation: landscape) {
+                    @if ($skin-name == 'Material3') {
+                      vertical-align: inherit;
+                    }
+                  }
+
+                  #{if(&, '&', '*')} span {
+                    @media (min-device-width: 768px) {
+                      font-size: 18px;
+                      padding: 11px;
+                    }
+                  }
+                }
+                #{if(&, '&', '*')} .e-next {
+                  height: $modal-range-prev-next-icon-size;
+                  width: $modal-range-prev-next-icon-size;
+
+                  #{if(&, '&', '*')} span {
+                    padding: $modal-range-prev-next-icon-padding;
+                    line-height: $modal-range-prev-next-icon-line-height;
+                    @media (min-device-width: 768px) {
+                      font-size: $modal-range-tablet-font-size;
+                    }
+                  }
+                }
+
+                #{if(&, '&', '*')} .e-title {
+                  @media (max-height: 600px) {
+                      @if ($skin-name =='Material3') {
+                        margin-left: $modal-header-month-name-left-landscape-width;
+                        position: absolute;
+                        text-align: center;
+                        vertical-align: middle;
+                        width: $modal-header-month-name-width;
+                        line-height: $modal-month-name-line-height;
+                      }
+                  
+                      line-height: $modal-range-month-landscape-title-line-height;
+                    }
+          
+                  @media (min-height: 600px) {
+                    @if ($skin-name == 'Material3') {
+                      margin-left: $modal-header-month-name-left-width;
+                      position: absolute;
+                      text-align: center;
+                      vertical-align: middle;
+                      width: $modal-header-month-name-width;
+                      line-height: $modal-month-name-line-height;
+                  }
+                    line-height: $modal-range-month-header-title-line-height;
+                  }       
+                  
+                  @media (min-device-width: 768px) {
+                    font-size: $modal-range-tablet-font-size;
+                  }
+                }
+              }
+
+              #{if(&, '&', '*')} th {
+                @media (min-device-width: 768px) {
+                  font-size: $modal-range-tablet-font-size;
+                  height: $modal-range-calendar-th-size;
+                }
+              }
+      
+              #{if(&, '&', '*')} .e-content span.e-day {
+                @media (min-device-width: 768px) {
+                  font-size: $modal-range-tablet-font-size;
+                  height: $modal-range-tablet-content-size;
+                  width: $modal-range-tablet-content-size;
+                  line-height: $modal-range-tablet-content-size;
+                }
+              }
+              #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover,
+              #{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover {
+                border-radius: $modal-range-range-hover-radius;
+              }
+            }            
+        }        
+
+        #{if( &, '&', '*')} .e-calendar-holder {
+            height: 100%;
+
+            #{if( &, '&', '*')} .e-calendar-container {
+              @media (max-height: 600px) {
+                min-height: 78vh;
+                height: 78vh;
+              }
+
+              #{if( &, '&', '*')} .e-calendar {
+                @media (max-height: 600px) {
+                  min-height: 78vh;
+                  height: 78vh;
+                }
+              }
+            }
+        }
+
+        #{if(&, '&', '*')} .e-calendar-container {
+          @media (max-height: 600px) {
+            min-height: $modal-range-portrait-calendar-height;
+            height: $modal-range-portrait-calendar-height;
+          }      
+          @media (min-height: 600px) {
+            min-height: $modal-range-landscape-calendar-height;
+            height: $modal-range-landscape-calendar-height;
+          }
+        }
+
+        #{if(&, '&', '*')} .e-separator {
+            margin: 0;
+        }
+
+        #{if( &, '&', '*')} .e-content.e-month {
+            height: $modal-range-portrait-calendar-content-height;
+
+            table {
+              padding: $modal-range-table-padding;
+              height: $modal-range-portrait-calendar-tabel-height;
+              border-spacing: $modal-range-calendar-overflow;
+            }
+        }
+        #{if( &, '&', '*')} .e-footer{
+          display: $modal-range-footer-display;
+        }
+
+        #{if(&, '&', '*')} .e-presets {
+          max-height: $modal-range-presets-portrait-height;
+          height: $modal-range-presets-portrait-height;
+          #{if(&, '&', '*')} ul {
+            height: $modal-range-portrait-calendar-height;
+
+            #{if(&, '&', '*')} li.e-list-item {
+              font-size: $range-header-font-size;
+
+              @media (min-device-width: 768px) {
+                font-size: 18px;
+              }
+            }
+           }
+        }
+
+        #{if(&, '&', '*')} .e-range-mob-popup-wrap {
+          position: relative;
+          height:100%;
+
+          #{if(&, '&', '*')} .e-model-header {
+            height: $modal-range-presets-header-height;
+            padding: $modal-range-header-padding;
+            display: $modal-range-header-display-style;
+            align-items: $modal-range-header-content-align;
+            font-size: $modal-range-header-portrait-font-size;
+            border-bottom: none;
+            @media (min-device-width: 768px) {
+              font-size: $modal-range-header-landscape-font-size;
+            }
+
+            #{if(&, '&', '*')} .e-popup-close {
+              float: $modal-close-icon-float;
+              padding: $modal-portrait-content-padding;
+            }
+
+            #{if(&, '&', '*')} .e-model-title {
+              padding: $modal-portrait-content-padding;
+              text-transform: $modal-range-header-title-transform;
+            }
+          }
+        }
+    }
+}
+
+@media screen and (orientation: landscape) {
+  .e-daterangepick-mob-popup-wrap {
+    #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
+      #{if( &, '&', '*')} .e-date-range-container .e-range-header .e-model-header-wrapper .e-btn {
+        @if $skin-name != 'fluent2' {
+          padding: 0;
+        }
+        @media (min-device-width: 768px) {
+          font-size: $modal-range-header-landscape-font-size;
+        }
+      }
+
+      #{if( &, '&', '*')} .e-calendar-holder {
+        #{if(&, '&', '*')} .e-calendar-container {
+          @media (min-height: 600px) {
+            min-height: 70vh;
+            height: 70vh;
+          }
+
+          @media (max-height: 600px) {
+            min-height: 65%;
+            height: 65%;
+          }
+
+          #{if(&, '&', '*')} .e-calendar {
+            @media (min-height: 600px) {
+              min-height: 70vh;
+              height: 70vh;
+            }
+          }
+
+          #{if(&, '&', '*')} .e-content.e-month,
+          #{if(&, '&', '*')} .e-content.e-year,
+          #{if(&, '&', '*')} .e-content.e-decade {        
+            @media (max-height: 600px) {
+              height: 50vh;
+            }
+          }
+        }
+      }
+
+      #{if(&, '&', '*')} .e-presets {
+        max-height: $modal-range-presets-landscape-height;
+        height: $modal-range-presets-landscape-height;
+      }
+
+      #{if(&, '&', '*')} .e-range-mob-popup-wrap {
+        #{if(&, '&', '*')} .e-model-header {
+          height: $modal-range-header-landscape-height;
+          font-size: $modal-range-header-landscape-font-size;
+
+          #{if(&, '&', '*')} .e-popup-close {
+            padding: $modal-landscape-padding;
+          }
+
+          #{if(&, '&', '*')} .e-model-title {
+            padding: $modal-landscape-padding;
+          }
+        }
+      }
+      
+      #{if( &, '&', '*')} .e-date-range-container .e-range-header {
+          @media (max-height: 600px) {
+            height: $modal-range-landscape-header-height;
+          }
+  
+          @media (min-height: 600px) {
+            height: $modal-range-landscape-header-big-height;
+          }
+          width: $modal-range-portrait-calendar-width;
+
+          #{if(&, '&', '*')} .e-start-end {
+            margin: $modal-range-calendar-padding;
+            height: $modal-range-start-end-size;
+
+            @media (min-height: 600px) {
+              margin: $modal-range-start-end-tablet-margin;
+            }
+          }
+
+          #{if(&, '&', '*')} .e-day-span {
+            margin: 8px 0;
+            font-size: 16px;
+          }
+          
+        }            
+
+        #{if(&, '&', '*')} .e-calendar-container {
+          @media (min-height: 600px) {
+            min-height: $modal-range-landscape-container-height;
+            height: $modal-range-landscape-container-height;
+          }
+        }
+
+        #{if(&, '&', '*')} .e-content.e-month,
+        #{if(&, '&', '*')} .e-content.e-year,
+        #{if(&, '&', '*')} .e-content.e-decade {        
+          @media (max-height: 600px) {
+            height: $modal-range-header-height;
+          }
+
+          @media (min-height: 600px) {
+            height: $modal-range-tablet-header-height;
+          }
+          overflow-y: $modal-range-landscape-conetent-overflow;
+
+          table {  
+            @media (min-height: 600px) {
+              height: $modal-range-tablet-header-height;
+            }
+            display: $modal-range-table-display;
+            border-spacing: $modal-range-calendar-overflow;
+          }
+        }        
+    }
+  }
+}
+
+.e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-date-time-icon {
+  width: calc(100% - 80px);
+}
+
+.e-outline.e-float-input.e-static-clear.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-date-time-icon {
+  width: calc(100% - 110px);
+}

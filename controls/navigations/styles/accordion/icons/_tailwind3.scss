@@ -1,0 +1,15 @@
+@include export-module('accordion-tailwind3-icons') {
+  #{&}.e-accordion {
+
+    .e-tgl-collapse-icon {
+
+      &::before {
+        content: '\e729';
+      }
+
+      &.e-expand-icon {
+        transform: rotate(-180deg);
+      }
+    }
+  }
+}

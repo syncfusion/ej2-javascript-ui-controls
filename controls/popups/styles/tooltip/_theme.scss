@@ -1,0 +1,130 @@
+@include export-module('tooltip-theme') {
+
+  .e-tooltip-wrap {
+    border-radius: $tooltip-border-radius;
+
+    @if ($skin-name != 'tailwind' and $skin-name != 'tailwind3' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'FluentUI') {
+      filter: $tooltip-drop-shadow;
+      opacity: $tooltip-opacity;
+    }
+
+    &.e-popup {
+      background-color: $tooltip-content-bg-color;
+      border: $border-size $border-type $tooltip-content-border-color;
+      @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+        box-shadow: $tooltip-drop-shadow;
+        filter: $tooltip-drop-shadow-filter;
+      }
+    }
+
+    .e-arrow-tip-outer {
+      height: 0;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 0;
+
+      &.e-tip-bottom {
+        border-left: $tooltip-arrow-outer-border $border-type transparent;
+        border-right: $tooltip-arrow-outer-border $border-type transparent;
+        border-top: $tooltip-arrow-outer-border $border-type $tooltip-content-border-color;
+      }
+
+      &.e-tip-top {
+        border-bottom: $tooltip-arrow-outer-border $border-type $tooltip-content-border-color;
+        border-left: $tooltip-arrow-outer-border $border-type transparent;
+        border-right: $tooltip-arrow-outer-border $border-type transparent;
+      }
+
+      &.e-tip-left {
+        border-bottom: $tooltip-arrow-outer-border $border-type transparent;
+        border-right: $tooltip-arrow-outer-border $border-type $tooltip-content-border-color;
+        border-top: $tooltip-arrow-outer-border $border-type transparent;
+      }
+
+      &.e-tip-right {
+        border-bottom: $tooltip-arrow-outer-border $border-type transparent;
+        border-left: $tooltip-arrow-outer-border $border-type $tooltip-content-border-color;
+        border-top: $tooltip-arrow-outer-border $border-type transparent;
+      }
+    }
+
+    .e-arrow-tip-inner {
+      height: 0;
+      position: absolute;
+      width: 0;
+      z-index: 10;
+
+      &.e-tip-right,
+      &.e-tip-left,
+      &.e-tip-bottom,
+      &.e-tip-top {
+        color: $tooltip-content-bg-color;
+        font-family: 'e-icons';
+        font-size: $tooltip-arrow-icon-font-size;
+        font-style: normal;
+        font-variant: normal;
+        font-weight: normal;
+        line-height: 1;
+        text-transform: none;
+      }
+
+      &.e-tip-bottom,
+      &.e-tip-top {
+        right: $tooltip-arrow-icon-font-size;
+      }
+
+      &.e-tip-right,
+      &.e-tip-left {
+        bottom: $tooltip-arrow-icon-font-size;
+      }
+    }
+
+    .e-tooltip-close {
+      background-color: $tooltip-icon-bg-normal;
+      border-color: $tooltip-icon-border-color;
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
+        border-radius: 9px;
+      }
+      @else if ($skin-name == 'tailwind3') {
+        border-radius: 50%;
+      }
+      @else {
+        border-radius: 8px;
+      }
+      color: $tooltip-default-icon-color;
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        border-style: solid;
+        border-width: 1px;
+        height: 16px;
+        width: 16px;
+      }
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+        border: $tooltip-close-icon-border;
+      }
+
+      &:hover {
+        @if ($skin-name == 'tailwind') {
+          color: $tooltip-hover-icon-color;
+        }
+        @else {
+          background-color: $tooltip-icon-bg-hover;
+          color: $tooltip-hover-icon-color;
+        }
+        @if ($skin-name == 'bootstrap5') {
+          border-color: $tooltip-close-icon-border-hover;
+        }
+      }
+    }
+
+    .e-tip-content {
+      border-radius: inherit;
+      color: $tooltip-content-font-color;
+      font-family: $font-family;
+      font-size: $tooltip-font-size;
+      @if $skin-name == 'bootstrap4' {
+        line-height: 1.5;
+      }
+    }
+  }
+}

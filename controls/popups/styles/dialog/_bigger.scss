@@ -1,0 +1,80 @@
+@include export-module('dialog-bigger') {
+
+  .e-bigger.e-dialog,
+  #{if(&, '&', '*')}.e-bigger .e-dialog {
+    #{if(&, '&', '*')} .e-dlg-header-content {
+      padding: $dialog-bigger-header-content-padding;
+      @if $skin-name == 'bootstrap5' {
+        line-height: inherit;
+      }
+    }
+
+    & .e-dlg-header {
+      font-size: $dialog-bigger-header-content-font-size;
+      @if $skin-name == 'Material3' {
+        line-height: 40px;
+      }
+      @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
+        height: 28px;
+      }
+    }
+
+    & .e-dlg-content {
+      font-size: $dialog-bigger-content-font-size;
+      padding: $dialog-bigger-content-padding;
+    }
+
+    & .e-footer-content {
+      padding: $dialog-bigger-footer-content-padding;
+    }
+
+    & .e-footer-content .e-btn {
+      @if $skin-name != 'fluent2' {
+        margin-left: $dialog-bigger-footer-button-margin-left;
+      }
+    }
+
+    & .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
+      @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'tailwind3' {
+        bottom: $dialog-bigger-close-button-bottom;
+        left: $dialog-bigger-close-button-left;
+      }
+      height: $dialog-bigger-close-button-height;
+      width: $dialog-bigger-close-button-width;
+      @if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
+        padding: $dialog-bigger-header-btn-padding;
+      }
+      @if $skin-name == 'Material3' {
+        padding: $zero-value;
+      }
+    }
+
+    .e-btn .e-btn-icon.e-icon-dlg-close {
+      font-size: $dialog-bigger-close-icon-font-size;
+      width: $dialog-bigger-close-icon-width;
+      @if $skin-name == 'bootstrap5' {
+        top: auto;
+        left: auto;
+      }
+      @if $skin-name == 'tailwind3' {
+        margin-top: -25px;
+      }
+    }
+  }
+
+  .e-bigger.e-rtl .e-footer-content .e-btn,
+  .e-bigger .e-rtl .e-footer-content .e-btn {
+    margin-left: 0;
+    margin-right: $dialog-bigger-footer-button-margin-right;
+  }
+
+  .e-bigger .e-dlg-header-content + .e-dlg-content {
+    padding-top: $dialog-bigger-content-padding-top;
+  }
+
+  .e-bigger .e-content-placeholder.e-dialog.e-placeholder-dialog,
+  .e-bigger.e-content-placeholder.e-dialog.e-placeholder-dialog {
+    background-size: 400px 220px;
+    min-height: 220px;
+  }
+}

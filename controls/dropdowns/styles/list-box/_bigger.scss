@@ -1,0 +1,190 @@
+@include export-module('listbox-bigger') {
+  .e-bigger .e-listbox-wrapper,
+  .e-listbox-wrapper.e-bigger,
+  .e-bigger .e-listbox-container,
+  .e-listbox-container.e-bigger {
+    @if ($skin-name == 'bootstrap4') {
+      font-size: 16px;
+    }
+    @if ($theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark') {
+      border-radius: 6px;
+    }
+    @if $skin-name == 'tailwind3' {
+      border-radius: 8px;
+    }
+
+    &.e-listboxtool-container .e-list-wrap {
+      @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' {
+        width: calc(100% - 20%) !important; /* stylelint-disable-line declaration-no-important */
+      }
+      @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
+        width: calc(100% - 15%) !important; /* stylelint-disable-line declaration-no-important */
+      }
+      @else if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        width: calc(100% - 17%) !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    .e-list-item {
+      border-bottom: $listbox-border-bottom solid $listbox-border-bottom-color;
+      border-left: $listbox-border-left solid $listbox-border-left-color;
+      border-right: $listbox-border-right solid $listbox-border-right-color;
+      border-top: $listbox-border-top solid $listbox-border-top-color;
+    }
+
+    &:not(.e-list-template) .e-list-item,
+    .e-selectall-parent,
+    .e-list-group-item,
+    .e-list-header {
+      padding: $listbox-bigger-item-padding;
+    }
+
+    &:not(.e-list-template) .e-list-item,
+    .e-selectall-parent {
+      height: $listbox-touch-item-height;
+      line-height: $listbox-touch-item-line-height;
+      position: relative;
+      @if ($skin-name == 'bootstrap4') {
+        padding: 12px 20px;
+      }
+      @if ($theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' or $skin-name == 'tailwind3') {
+        font-size: 16px;
+      }
+    }
+
+    .e-list-parent {
+      min-height: $listbox-touch-item-height;
+    }
+
+    .e-text-content {
+      font-size: $listbox-touch-item-font-size;
+    }
+
+    .e-list-group-item {
+      height: $listbox-touch-groupheader-height;
+      line-height: $listbox-touch-groupheader-line-height;
+      @if ($skin-name == 'bootstrap4') {
+        font-size: 16px;
+        padding: 12px 20px;
+      }
+      @if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
+        padding: 9px 16px;
+      }
+      @if ($skin-name == 'tailwind3') {
+        font-size: 14px;
+        padding: 10px 16px;
+      }
+    }
+
+    .e-list-header {
+      align-items: center;
+      display: flex;
+      font-weight: $listbox-touch-header-font-weight;
+      height: $listbox-touch-header-height;
+      @if ($skin-name == 'bootstrap4') {
+        font-size: 20px;
+        line-height: 1.2;
+        padding: 0 0 0 20px;
+      }
+    }
+
+    .e-list-header .e-text.header,
+    .e-list-header .e-headertemplate-text.nested-header {
+      display: none;
+    }
+
+    .e-list-header .e-text {
+      font-size: $listbox-touch-header-font-size;
+    }
+
+    .e-but-back {
+      @if ($skin-name == 'bootstrap4') {
+        margin-top: -3px;
+        padding-right: 12px;
+      }
+    }
+
+    .e-list-icon {
+      @if ($skin-name == 'bootstrap4') {
+        margin-right: 12px;
+      }
+    }
+
+    .e-icon-collapsible {
+      @if ($skin-name == 'bootstrap4') {
+        font-size: 12px;
+      }
+    }
+
+    .e-checkbox-wrapper {
+      @if ($skin-name == 'bootstrap4') {
+        margin: 0 12px 0 0;
+      }
+    }
+
+    &.e-rtl {
+      .e-checkbox-wrapper {
+        @if ($skin-name == 'bootstrap4') {
+          margin: 0 0 0 12px;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-list-parent {
+    height: $listbox-filter-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+  .e-bigger .e-listbox-container.e-filter-list .e-list-wrap {
+    height: $listbox-mat-filter-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-bigger .e-listbox-container.e-filter-list .e-list-parent,
+  .e-bigger .e-listbox-container .e-selectall-parent + .e-list-parent,
+  .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-parent,
+  .e-bigger .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
+    height: 100%;
+  }
+
+  .e-bigger .e-listbox-wrapper.e-filter-list .e-selectall-parent + .e-list-parent,
+  .e-bigger .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
+    height: $listbox-filterselect-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-bigger .e-listbox-wrapper .e-selectall-parent + .e-list-parent,
+  .e-bigger .e-listbox-container .e-selectall-parent + .e-list-wrap {
+    height: $listbox-select-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-small.e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent,
+  .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-wrap {
+    height: $listbox-filter-bigger-small-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-bigger .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-selectall-parent + .e-hidden-select + .e-listbox + .e-list-parent {
+    height: $listbox-ej2-filterselect-bigger-height !important;/* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-bigger.e-listbox-wrapper,
+  .e-bigger.e-listbox-container {
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      font-size: $listbox-touch-item-font-size;
+    }
+
+    & .e-list-header,
+    & .e-list-group-item {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        font-size: $listbox-touch-header-font-size;
+      }
+    }
+  }
+
+  @if $skin-name == 'tailwind3' {
+    .e-bigger .e-listboxtool-wrapper .e-listbox-tool .e-btn-icon {
+      font-size: 18px;
+    }
+
+    .e-bigger .e-listbox-wrapper .e-filter-parent {
+      padding: 12px;
+    }
+  }
+}

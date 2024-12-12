@@ -1,0 +1,16 @@
+@include export-module('smart-textarea-theme') {
+  .smart-textarea-suggestion-overlay {
+    background-color: $sta-background-color;
+    color: $sta-color;
+    box-shadow: 0 1.25px 4px 0 $sta-box-shadow;
+  }
+
+  [data-suggestion-visible]::selection {
+    color: #{#999} !important; /* stylelint-disable-line declaration-no-important */
+    background: none !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .smart-textarea-caret {
+    background: #{#ff0000};
+  }
+}

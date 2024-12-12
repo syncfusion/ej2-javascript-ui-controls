@@ -1,0 +1,103 @@
+@include export-module('drop-down-button-theme') {
+  .e-dropdown-popup {
+    background: $drop-down-btn-ul-bgcolor;
+    color: $drop-down-btn-color;
+
+    & ul {
+      & .e-item  {
+        & .e-menu-url {
+          color: $drop-down-btn-color;
+        }
+
+        & .e-menu-icon {
+          color: $drop-down-btn-menu-icon-color;
+        }
+
+        &.e-focused {
+          @if $skin-name != 'FluentUI' {
+            background: $drop-down-btn-li-focus-bgcolor;
+          }
+          box-shadow: $drop-down-btn-li-box-shadow;
+        }
+
+        &:hover {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+            background: $drop-down-btn-li-hover-bgcolor;
+          }
+          @else {
+            background: $drop-down-btn-li-bgcolor;
+          }
+          color: $drop-down-btn-li-selection-font-color;
+          & .e-menu-icon,
+          & .e-menu-url {
+            @if $skin-name == 'fluent2' {
+              color: $drop-down-btn-li-selection-font-color;
+            }
+          }
+        }
+
+        &:active,
+        &.e-selected {
+          background: $drop-down-btn-li-selection-bgcolor;
+          color: $drop-down-btn-selected-color;
+
+          & .e-menu-url {
+            color: $drop-down-btn-selected-color;
+          }
+
+          & .e-menu-icon {
+            @if $skin-name == 'FluentUI' or $theme-name == 'FluentUI' {
+              color: $drop-down-btn-menu-icon-color;
+            }
+            @else {
+              color: $drop-down-btn-selected-color;
+            }
+          }
+        }
+
+        &:focus {
+          @if $skin-name == 'tailwind3' {
+            background: $drop-down-btn-li-bgcolor;
+            color: $drop-down-btn-li-selection-font-color;
+          }
+        }
+
+        &:focus-visible {
+          @if $theme-name == 'fluent2' {
+            background-color: $flyout-bg-color-focus;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+            color: $flyout-text-color-focus;
+
+            & .e-menu-icon {
+              color: $flyout-text-color-focus;
+            }
+          }
+        }
+      }
+
+      & .e-separator {
+        border-bottom-color: $drop-down-btn-li-border-color;
+      }
+    }
+  }
+
+  .e-dropdown-btn,
+  .e-dropdown-btn.e-btn {
+    &.e-inherit {
+      background: inherit;
+      border-color: transparent;
+      box-shadow: none;
+      color: inherit;
+
+      &:hover,
+      &:focus,
+      &:active,
+      &.e-active {
+        background: rgba(transparent, .056);
+        border-color: transparent;
+        box-shadow: none;
+        color: inherit;
+      }
+    }
+  }
+}
