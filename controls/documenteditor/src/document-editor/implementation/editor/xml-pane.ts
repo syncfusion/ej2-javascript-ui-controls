@@ -25,6 +25,10 @@ export class XmlPane {
     /**
      * @private
      */
+    public mappedContentControl: ContentControl;
+    /**
+     * @private
+     */
     public isAddedDocumentXml: boolean = false;
     /**
      * @private
@@ -184,10 +188,6 @@ export class XmlPane {
                 id: 'Insert',
                 items: [
                     {
-                        text: 'Rich Text',
-                        id: 'RichText'
-                    },
-                    {
                         text: 'Plain Text',
                         id: 'PlainText'
                     },
@@ -338,7 +338,11 @@ export class XmlPane {
                         this.getXmlPath();
                     }
                     this.documentHelper.owner.selection.selectContentInternal(contentControl);
-                    this.insertContent();
+                    contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
+                    this.mappedContentControl = contentControl;
+                    if (contentControl.contentControlProperties.type !== 'CheckBox') {
+                        this.insertContent();
+                    }
                 }
                 break;
         }
@@ -404,6 +408,12 @@ export class XmlPane {
                     break;
             }
         }
+        contentControl = this.documentHelper.owner.editor.getContentControl();
+        if (!isNullOrUndefined(this.mappedContentControl)) {
+            if (contentControl.contentControlProperties.xmlMapping.xPath === this.mappedContentControl.contentControlProperties.xmlMapping.xPath) {
+                contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
+            }
+        }
     }
     /**
     * To insert Content inside the content control.
@@ -421,6 +431,73 @@ export class XmlPane {
             }
         }
         this.documentHelper.owner.isXmlMapCC = false;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateContent(updatedText: string, xpath: string): void {
+        if (updatedText === String.fromCharCode(9744) || updatedText === String.fromCharCode(9746)) {
+            this.updateCheckBoxContentControl(updatedText, xpath);
+        }
+        else {
+            this.updateXMLData(updatedText);
+            const start = this.documentHelper.selection.start.clone();
+            const end = this.documentHelper.selection.end.clone();
+            for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+                let contentControl = this.documentHelper.contentControlCollection[i];
+                if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type !== 'CheckBox') {
+                    contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
+                    this.updateContentControl(contentControl, updatedText);
+                }
+                else if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type === 'CheckBox') {
+                    contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
+                }
+            }
+            this.documentHelper.selection.selectRange(start, end);
+        }
+    }
+
+    private updateContentControl(contentControl: ContentControl, updatedText: string): void {
+        this.documentHelper.selection.selectContentControlInternal(contentControl);
+        this.documentHelper.owner.editor.insertText(updatedText);
+    }
+
+    private updateCheckBoxContentControl(updatedText: string, xpath: string): void {
+        let isChecked: string;
+        if (updatedText === String.fromCharCode(9746)) {
+            isChecked = 'true';
+        }
+        else if (updatedText === String.fromCharCode(9744)) {
+            isChecked = 'false';
+        }
+        this.updateXMLData(isChecked);
+        const start = this.documentHelper.selection.start.clone();
+        const end = this.documentHelper.selection.end.clone();
+        for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+            let contentControl = this.documentHelper.contentControlCollection[i];
+            if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type !== 'CheckBox') {
+                contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
+                this.updateContentControl(contentControl, isChecked);
+            }
+            else if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type === 'CheckBox') {
+                contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
+                this.updateContentControl(contentControl, updatedText);
+            }
+        }
+        this.documentHelper.selection.selectRange(start, end);
+    }
+
+    private updateXMLData(Text: String): void {
+        let selectedNode = this.treeviewObject.selectedNodes.toString();
+        for (let i = 1; i < this.documentHelper.owner.editor.xmlData.length; i++) {
+            let xmlID = this.documentHelper.owner.editor.xmlData[i].id.toString();
+            if (selectedNode === xmlID) {
+                if (!isNullOrUndefined(this.documentHelper.owner.editor.xmlData[i].displayValue)) {
+                    this.documentHelper.owner.editor.xmlData[i].displayValue = Text;
+                }
+            }
+        }
     }
     /**
     * To get the XMLpath to bind in the XML mapping property

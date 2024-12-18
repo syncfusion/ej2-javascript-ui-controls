@@ -672,7 +672,7 @@ export class FocusStrategy {
         if (this.parent.isEdit && (e.action === 'tab' || e.action === 'shiftTab') && this.parent.editSettings.mode === 'Normal'
             && !this.parent.editSettings.showAddNewRow && !isNullOrUndefined(parentsUntil(target, 'e-addedrow'))) {
             const inputElements: NodeListOf<Element> = this.parent.editModule.formObj.element
-                .querySelectorAll('input.e-field:not(.e-disabled),button:not(.e-hide)');
+                .querySelectorAll('input:not([type="hidden"],.e-numeric-hidden,.e-disabled), select:not([aria-hidden="true"]), button:not(.e-hide)');
             const inputTarget: HTMLElement = target.classList.contains('e-ddl') ? target.querySelector('input') : target;
             const firstEditCell: boolean = e.action === 'tab' && inputTarget === inputElements[inputElements.length - 1];
             const lastEditCell: boolean = e.action === 'shiftTab' && inputTarget === inputElements[0];
@@ -1086,7 +1086,10 @@ export class FocusStrategy {
         this.removeEventListener();
     }
 
-    public restoreFocus(): void {
+    public restoreFocus(arg?: NotifyArgs): void {
+        if (arg && arg.requestType === 'sorting' && isNullOrUndefined(arg.target)) {
+            return;
+        }
         const groupModule: Group = (this.parent as Grid).groupModule;
         if ( this.parent.allowGrouping && groupModule && (groupModule.groupSortFocus || groupModule.groupTextFocus)) {
             groupModule.groupSortFocus = false;

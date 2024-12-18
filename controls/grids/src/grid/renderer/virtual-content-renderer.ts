@@ -424,8 +424,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 this.observer.setPageHeight(this.getOffset(blocks[blocks.length - 1]) - this.getOffset(blocks[0] - 1));
             }
         }
-        if (e.requestType === 'ungrouping' && !this.parent.groupSettings.enableLazyLoading &&
-            this.parent.groupSettings.columns.length === 0) {
+        if (!this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length === 0 &&
+            e.requestType === 'ungrouping') {
             this.observer.setPageHeight(this.getBlockHeight() * 2);
         }
         this.prevInfo = info;
@@ -613,7 +613,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             virtualHeight -= this.diff;
             this.heightChange = true;
         }
-        else if (this.diff && this.heightChange && this.requestType === 'virtualscroll') {
+        else if (this.requestType === 'virtualscroll'  && this.diff && this.heightChange) {
             virtualHeight -= this.diff;
             this.heightChange = false;
         }
@@ -828,7 +828,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             } else if (contentInfo.bottom > wrapperInfo.bottom) {
                 this.virtualEle.adjustTable(transform.width, translateY + (contentInfo.bottom - wrapperInfo.bottom));
             }
-            if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid()) {
+            if (this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization) {
                 this.resetStickyLeftPos(transform.width);
             }
         }
@@ -1069,7 +1069,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         if (this.parent.allowGrouping && this.parent.groupSettings.columns.length
             && ele && (ele.classList.contains(literals.rowCell) || !isNullOrUndefined(parentsUntil(ele, literals.groupCaptionRow)))
-            && e && (e.action === 'upArrow' || e.action === 'downArrow' || e.action === 'shiftEnter')) {
+            && e && (e.action === 'shiftEnter' || e.action === 'upArrow' || e.action === 'downArrow')) {
             const scrollEle: Element = this.parent.getContent().firstElementChild;
             const scrollEleInfo: DOMRect | ClientRect = scrollEle.getBoundingClientRect();
             const row: Element = closest(ele, 'tr');
@@ -1094,7 +1094,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (ele && ele.classList.contains(literals.rowCell)
             && e && (e.action === 'upArrow' || e.action === 'downArrow' || e.action === 'shiftEnter')) {
             let rowIndex: number = parseInt(ele.parentElement.getAttribute(literals.dataRowIndex), 10);
-            if (e && (e.action === 'downArrow' || e.action === 'upArrow' || e.action === 'shiftEnter')) {
+            if (e && (e.action === 'upArrow' || e.action === 'shiftEnter' || e.action === 'downArrow')) {
                 const scrollEle: Element = this.parent.getContent().firstElementChild;
                 if (e.action === 'downArrow') {
                     rowIndex += 1;
@@ -1509,7 +1509,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                         .findIndex((row: Row<Column>) => row.index === args.selectedIndex);
                     scrollTop = selectedRowObjectIndex !== -1 ? selectedRowObjectIndex * rowHeight : undefined;
                     this.isSelection = selectedRowObjectIndex !== -1 ? this.isSelection : false;
-                } else if (this.parent.getDataModule().isRemote() && this.parent.groupSettings.columns.length) {
+                } else if (this.parent.groupSettings.columns.length && this.parent.getDataModule().isRemote()) {
                     const page: number = Math.ceil((args.selectedIndex + 1) / this.parent.pageSettings.pageSize);
                     const blockIndexes: number[] = this.vgenerator.getBlockIndexes(page);
                     scrollTop = this.offsets[blockIndexes[0]];

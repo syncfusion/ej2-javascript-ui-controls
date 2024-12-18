@@ -1313,6 +1313,50 @@ describe('Clipboard ->', () => {
                 });
             });
         });
+        
+        describe('EJ2-922761 ->', () => {
+            let tableCont: HTMLElement; let spreadsheet: any;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('External copy and paste cell, data gets changed when pasting from excel into out spreadsheet', (done: Function) => {
+                const tableStr: string = '<style>col{mso-width-source:auto;}td{color:windowtext;vertical-align:bottom;border:none;}' +
+                    '.oa1{border:1.0pt solid black;vertical-align:top;}</style>' +
+                    '<table><tbody>' +
+                    '<tr height="42" style="height:20.93pt">' +
+                    '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single">' +
+                    '<span>42010419901123459</span>' +
+                    '</s></p></td>' +
+                    '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single">' +
+                    '<span>420104199011234595</span>' +
+                    '</s></p></td>' +
+                    '</tr>' +
+                    '<tr>' +
+                    '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
+                    '<span>4201041990112349</span></u></s></p>' +
+                    '</td>' +
+                    '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
+                    '<span>420104199011234969</span></u></s></p>' +
+                    '</td>' +
+                    '</tr>' +
+                    '</tbody></table>';
+                tableCont = createElement('span', { innerHTML: tableStr });
+                spreadsheet = helper.getInstance();
+                const rows: RowModel[] = [];
+                spreadsheet.clipboardModule.generateCells(tableCont, { model: rows });
+                expect(rows.length).toBe(2);
+                expect(rows[0].cells.length).toBe(2);
+                expect(rows[0].cells[0].value.toString()).toBe('42010419901123459');
+                expect(rows[0].cells[1].value.toString()).toBe('420104199011234595');
+                expect(rows[1].cells.length).toBe(2);
+                expect(rows[1].cells[0].value.toString()).toBe('4201041990112349');
+                expect(rows[1].cells[1].value.toString()).toBe('420104199011234969');
+                done();
+            });
+        });
     });
     describe('EJ2-58124 ->', () => {
         beforeAll((done: Function) => {

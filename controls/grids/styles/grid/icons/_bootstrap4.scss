@@ -243,3 +243,25 @@
     }
   }
 }
+
+.e-contextmenu-container {
+  .e-menu-item {
+    .e-menu-icon {
+      &.e-columnchooser::before {
+        content: '\e9d2';
+      }
+
+      &.e-pdfexport::before {
+        content: '\e727';
+      }
+
+      &.e-excelexport::before {
+        content: '\e74e';
+      }
+      
+      &.e-csvexport::before {
+        content: '\e725';
+      }
+    }
+  }
+}

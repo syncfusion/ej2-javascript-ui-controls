@@ -194,7 +194,7 @@
   .e-ddl.e-popup.e-popup-open .e-list-item.e-disabled {
     opacity: .7;
     pointer-events: none;
-    @if $skin-name == 'bootstrap5.3' or $skin-name == 'fluent2' or $skin-name == 'tailwind4' {
+    @if $skin-name == 'bootstrap5.3' or $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
       color: $ddl-list-disable-item-color;
     }
   }

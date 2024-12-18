@@ -686,8 +686,13 @@ export class BatchEdit {
         this.index = index;
         this.field = field;
         this.isAdd = isAdd;
+        let visibleRows: Element[] = gObj.getDataRows();
+        if (gObj.allowGrouping && gObj.groupSettings.columns.length && !gObj.groupSettings.enableLazyLoading) {
+            visibleRows = visibleRows.filter((row: HTMLElement) => row.style.display !== 'none');
+        }
+        const lastRowIndex: number = parseInt(visibleRows[visibleRows.length - 1].getAttribute('data-rowindex'), 10);
         const checkEdit: boolean = gObj.isEdit && !(this.cellDetails.column.field === field
-            && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index && this.prevEditedBatchCell));
+            && (this.cellDetails.rowIndex === index && lastRowIndex !== index && this.prevEditedBatchCell));
         if (gObj.editSettings.allowEditing) {
             if (!checkEdit && (col.allowEditing || (!col.allowEditing && gObj.focusModule.active
                 && gObj.focusModule.active.getTable().rows[this.crtRowIndex]

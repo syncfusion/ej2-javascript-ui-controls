@@ -630,52 +630,65 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
             done();
         });
 
-        it('scroll down 1st page', () => {
+
+        it('scroll down 1st page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+            setTimeout(done, 200);
         });
 
-        it('scroll down 2nd page', () => {
+        it('scroll down 2nd page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+            setTimeout(done, 200);
         });
 
-        it('scroll down 3rd page', () => {
+        it('scroll down 3rd page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+            setTimeout(done, 200);
         });
 
-        it('scroll up 3rd page', () => {
+        it('scroll up 3rd page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+            setTimeout(done, 200);
         });
         
-        it('scroll up 2nd page', () => {
+        it('scroll up 2nd page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+            setTimeout(done, 200);
         });
 
-        it('scroll up 1st page', () => {
+        it('scroll up 1st page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+            setTimeout(done, 200);
         });
 
-        it('scroll down 1st page', () => {
+        it('scroll down 1st page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+            setTimeout(done, 200);
         });
 
-        it('scroll down 2nd page', () => {
+        it('scroll down 2nd page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+            setTimeout(done, 200);
         });
 
-        it('scroll down 3rd page', () => {
+        it('scroll down 3rd page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 5300;
+            setTimeout(done, 200);
         });
 
-        it('scroll up 3rd page', () => {
+        it('scroll up 3rd page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+            setTimeout(done, 200);
         });
         
-        it('scroll up 2nd page', () => {
+        it('scroll up 2nd page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+            setTimeout(done, 200);
         });
 
-        it('scroll up 1st page', () => {
+        it('scroll up 1st page', (done: Function) => {
             (gridObj.element.querySelector('.e-ccdlg').querySelector('.e-cc-contentdiv.e-checkbox-infinitescroll') as HTMLElement).scrollTop = 0;
+            setTimeout(done, 200);
         });
 
             afterAll(() => {

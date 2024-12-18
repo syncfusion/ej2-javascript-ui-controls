@@ -316,6 +316,17 @@
           &:focus {
             background: $hdr-hover-bg-color;
           }
+          @if $theme-name == 'tailwind3-dark' {
+            background: $header-cell-bg-color;
+            &:active,
+            &.e-active {
+              background: $hdr-selection-bg-color;
+            }
+
+            &:hover:not(.e-active) {
+              background: $hdr-hover-bg-color;
+            }
+          }
         }
         @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
           &:focus {
@@ -1055,16 +1066,15 @@
           color: $cell-color;
         }
       }
+      @if $skin-name == 'tailwind3' {
+        & .e-input-group.e-control-wrapper.e-ddl .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon {
+          color: $cell-color;
+        }
+      }
     }
 
     & .e-datavalidation-dlg .e-dlg-error {
       color: $dlg-error-color;
-    }
-
-    & .sf-spreadsheet {
-      .e-resize-helper {
-        border-color: $selection-border-color;
-      }
     }
   }
 

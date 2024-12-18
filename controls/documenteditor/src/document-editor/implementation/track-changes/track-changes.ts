@@ -2,11 +2,11 @@
 import { RevisionType, RevisionActionType } from '../../base/types';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox, Widget, BlockWidget, FieldElementBox, HeaderFooterWidget, ShapeElementBox } from '../viewer/page';
+import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox, Widget, BlockWidget, FieldElementBox, HeaderFooterWidget, ShapeElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
-import { ParagraphInfo } from '../editor/editor-helper';
+import { ParagraphInfo, SelectedCommentInfo } from '../editor/editor-helper';
 import { BaseHistoryInfo, EditorHistory } from '../editor-history';
 import { RevisionActionEventArgs, revisionActionEvent } from '../../base/index';
 import { ChangesSingleView } from '../track-changes/track-changes-pane';
@@ -73,6 +73,16 @@ export class Revision {
             endPos = selection.start;
         }
         let blockInfo: ParagraphInfo = selection.getParagraphInfo(startPos);
+        let removeChanges: boolean = (!isNullOrUndefined(isFromAccept)) && ((this.revisionType === 'MoveFrom' || this.revisionType === 'Deletion') && isFromAccept ) || ((this.revisionType === 'Insertion' || this.revisionType === 'MoveTo') && !isFromAccept);
+        let comments: CommentCharacterElementBox[];
+        if (removeChanges) {
+            let commentInfo: SelectedCommentInfo = this.owner.editorModule.getSelectedComments();
+            if (commentInfo.commentEndInfo.length > 0 || commentInfo.commentStartInfo.length > 0) {
+                comments = this.owner.editorModule.checkAndRemoveComments(false, true);
+            } else {
+                removeChanges = false;
+            }
+        }
         this.owner.editorModule.initHistory(isFromAccept ? 'Accept Change' : 'Reject Change');
         let fieldBegin: FieldElementBox = selection.getHyperlinkField();
         if (isFromAccept && this.revisionType === 'Deletion' && !isNullOrUndefined(fieldBegin) 
@@ -138,6 +148,13 @@ export class Revision {
                 }
             }
             editorHistory.updateHistory();
+            if (removeChanges && this.owner.editorHistory && !isNullOrUndefined(this.owner.editorHistory.currentHistoryInfo)) {
+                for (let k: number = 0; k < comments.length; k++) {
+                    this.owner.editorModule.initInsertInline(comments[k], false);
+                }
+                this.owner.editorHistory.currentHistoryInfo.endPosition = this.owner.selection.startOffset;
+                this.owner.editorHistory.updateComplexHistory();
+            }
         }
         if (reLayoutTable && this.owner.selectionModule.start.paragraph.isInsideTable) {
             const table: TableWidget = (this.owner.selectionModule.start.paragraph.containerWidget as TableCellWidget).ownerTable;

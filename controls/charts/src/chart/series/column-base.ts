@@ -30,7 +30,7 @@ export class ColumnBase {
     public options: PathOption;
     public element: HTMLElement;
     protected getSideBySideInfo(series: Series): DoubleRange {
-
+        series.isRectSeries = true;
         if (series.chart.enableSideBySidePlacement && !series.position) {
             this.getSideBySidePositions(series);
         }
@@ -39,7 +39,6 @@ export class ColumnBase {
         }
         const position: number = series.type === 'Histogram' || !series.chart.enableSideBySidePlacement ? 0 : series.position;
         const rectCount: number = series.type === 'Histogram' || !series.chart.enableSideBySidePlacement ? 1 : series.rectCount;
-        series.isRectSeries = true;
         const visibleSeries: Series[] = series.chart.visibleSeries;
         const seriesSpacing: number = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing
         const pointSpacing: number = (series.columnWidth === null || isNaN(+series.columnWidth)) ? ((series.type === 'Histogram') ? 1 : 0.7) :

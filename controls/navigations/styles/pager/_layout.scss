@@ -730,6 +730,23 @@
         .e-last {
           font-size: $pager-icon-size;
         }
+        .e-firstpage,
+        .e-prevpage,
+        .e-firstpagedisabled,
+        .e-prevpagedisabled,
+        .e-nextpage,
+        .e-lastpage,
+        .e-nextpagedisabled,
+        .e-lastpagedisabled {
+          @if $pager-skin == 'tailwind3' {
+            padding: 7.1px 8.6px 8.5px;
+          }
+        }
+      }
+      .e-spacing {
+        @if $pager-skin == 'tailwind3' {
+          padding: 7.6px 11.85px 7.8px 11.8px;
+        }
       }
       
       .e-numericcontainer a {

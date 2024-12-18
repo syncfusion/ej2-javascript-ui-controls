@@ -1577,6 +1577,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * ```
      */
     public autoFit(range: string): void {
+        let sheetIdx: number;
+        if (range.indexOf('!') !== -1) {
+            sheetIdx = getSheetIndex(this, range.substring(0, range.lastIndexOf('!')));
+            range = range.substring(range.lastIndexOf('!') + 1);
+        }
         const values: { startIdx: number, endIdx: number, isCol: boolean } = this.getIndexes(range);
         let startIdx: number = values.startIdx;
         let endIdx: number = values.endIdx;
@@ -1590,7 +1595,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             return;
         }
         for (startIdx; startIdx <= endIdx; startIdx++) {
-            this.notify(setAutoFit, { idx: startIdx, isCol });
+            this.notify(setAutoFit, { idx: startIdx, isCol, sheetIdx: sheetIdx });
         }
     }
 

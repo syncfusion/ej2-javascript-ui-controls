@@ -70,6 +70,9 @@
         @if $skin-name == 'fluent2' {
           padding: 9px;
         }
+        @if $skin-name == 'tailwind3' {
+          padding: 3px;
+        }
       }
 
       @if $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'tailwind' {

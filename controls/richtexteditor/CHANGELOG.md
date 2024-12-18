@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I658935` - Now, the `executeCommand` method works properly to replace the text wrapped inside a `<span>` element in the Rich Text Editor.
+
+- `#I660077` - Now, the emoji is inserted correctly at the cursor location, even after pressing Enter multiple times, when the `EnterKey` API is configured to use `<br>`.
+
+- `#I663039` - Now, the bullet type changes correctly without adding extra bullets when applying a bullet list without focusing on the Rich Text Editor.
+
 ## 28.1.33 (2024-12-12)
 
 ### RichTextEditor

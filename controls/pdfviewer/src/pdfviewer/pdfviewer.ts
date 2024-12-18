@@ -9389,10 +9389,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.viewerBase.importAnnotations(importData);
                 } else {
                     importData = JSON.stringify(importData);
-                    const encoder : TextEncoder = new TextEncoder();
-                    const utf8Bytes: Uint8Array = encoder.encode(importData);
                     this.viewerBase.isPDFViewerJson = false;
-                    this.viewerBase.importAnnotations(btoa(String.fromCharCode(...Array.from(utf8Bytes))), AnnotationDataFormat.Json);
+                    if (this.viewerBase.clientSideRendering) {
+                        const encoder : TextEncoder = new TextEncoder();
+                        const utf8Bytes: Uint8Array = encoder.encode(importData);
+                        let binaryString: string = '';
+                        const chunkSize : number = 65536 ; // Process in chunks of 64 KB
+                        for (let i: number = 0; i < utf8Bytes.length; i += chunkSize) {
+                            binaryString += String.fromCharCode(...Array.from(utf8Bytes.subarray(i, i + chunkSize)));
+                        }
+                        this.viewerBase.importAnnotations(btoa(binaryString), AnnotationDataFormat.Json);
+                    }
+                    else {
+                        this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
+                    }
                 }
             }
         } else {

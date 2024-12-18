@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I653914` - Script error no longer thrown when drag and drop the text in document editor.
+- `#I655487` - Now, table column is rendered properly when imported the exported document.
+- `#I656985` - Now, oval shape is preserved properly in the document editor.
+- `#I658167` - Now table row get resized properly when we resize the row fast.
+- `F194125` - Now, Footnote and content does not get overlap when edit inside the document.
+- `#I640675` - Resolved the document freezing issue when reject the track changes.
+- `#I651428` - Now, comment get removed properly when delete the paragraph and accept the changes.
+- `#I661065` - Table border is rendered properly when table cell border's line style is set as none.
+- `#I658922` - Now, check box is rendered properly after change the value as checked.
+- `#I651509` - Provided content change event support to notify when protect and unprotected the document.
+- `#I658140` - Resolved the performance issue that occurs when performing the undo and redo functions after copy pasting multiple paragraphs within a table.
+- `#I656347` - Resolved the table layout issue when opening the exported document due to an improperly added row widget during exporting.
+- `#I645286`, `#I647203` - Handled the logic to combine text ranges with the same character formatting in the paragraph when exporting as SFDT to resolve performance issues.
+- `#I653756` - Resolved the content control border rendering issue for paragraph with lists and indentation applied.
+
 ## 27.2.4 (2024-11-26)
 
 ### DocumentEditor

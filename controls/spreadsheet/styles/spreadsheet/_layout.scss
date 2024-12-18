@@ -1403,6 +1403,9 @@
             @if $skin-name == 'bootstrap5.3' {
               margin-top: 2px;
             }
+            @if $skin-name == 'tailwind3' {
+              margin-right: 0;
+            }
           }
         }
       }
@@ -2588,53 +2591,6 @@
       }
       @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
         border: 0;
-      }
-    }
-
-    &.sf-spreadsheet {
-      .e-col-header-row.e-header-cell.e-highlight,
-      .e-rowhdr-table .e-header-cell.e-highlight {
-        border-right-color: $spreadsheet-hdr-selection-border-color;
-      }
-
-      .e-resize-cursor {
-        cursor: col-resize;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        right: 1px;
-        width: 4px;
-      }
-
-      .e-sheet-panel .back_content {
-        & .axis {
-          position: absolute;
-          background-color: rgba(231, 224, 226);
-          z-index: 0;
-        }
-
-        & .vaxis {
-          width: 1px;
-        }
-
-        & .haxis {
-          height: 1px;
-        }
-      }
- 
-      .e-header-cell span {
-        position: absolute;
-        top: 7px;
-      }
- 
-      .e-column-header .e-resize-helper {
-        position: absolute;
-        border-left: 2px solid;
-        z-index: 2;
-      }
-
-      .e-sheet-tab-panel .e-tab {
-        position: unset;
       }
     }
   }

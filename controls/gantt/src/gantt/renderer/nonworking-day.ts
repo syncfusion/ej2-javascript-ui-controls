@@ -181,6 +181,8 @@ export class NonWorkingDay {
                     const isHourTimeline: boolean =
                         (this.parent.timelineModule.bottomTier === 'Hour' &&
                             this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1) ||
+                            (this.parent.timelineModule.bottomTier === 'Minutes' &&
+                                this.parent.timelineModule.customTimelineSettings.bottomTier.count === 60) ||
                         (this.parent.timelineModule.topTier === 'Hour' &&
                             this.parent.timelineModule.customTimelineSettings.topTier.count === 1 &&
                             this.parent.timelineModule.bottomTier === 'Minutes' &&

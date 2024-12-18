@@ -435,7 +435,7 @@
       .e-rowcell.e-unfreeze,
       .e-rowcell.e-fixedfreeze {
         &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-          @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+          @include hover-color-styles($grid-skin, $grid-hover-bg-color, rgb(236 233 233));
         }
       }
     }

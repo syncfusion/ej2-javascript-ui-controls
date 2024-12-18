@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#F195300` - AutoFocus mismatching issue between grid and chart click issue has been fixed.
+- `#I660168` - Vertical scrollbar hides when resizing splitter to left or right issue has been fixed.
+- `#I665389` - Splitter position changes dynamically, but when splitter is manually dragged, position does not update issue has been fixed.
+- `#I663036` - Applied color do not persist in edit dialog's notes tab issue has been fixed.
+- `#I658189` - Tooltip misalignment occurs when the parent element is scrolled issue has been fixed.
+- `#I660498`,`#I659031` - Angular Gantt not working for `Content-Security-Policy` of meta tag issue has been fixed.
+- `#I660467` - Gantt crashes when timezone is set to `berlin` issue has been fixed.
+- `#I664048` - Issue in child-parent predecessor validation issue has been fixed.
+- `#I664336` - Convert to task does not work for milestone task with task type as fixed work issue has been fixed.
+
 ## 28.1.33 (2024-12-12)
 
 ### GanttChart

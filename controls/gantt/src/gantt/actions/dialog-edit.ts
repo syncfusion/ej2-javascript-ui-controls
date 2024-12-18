@@ -3458,7 +3458,12 @@ export class DialogEdit {
             }
             ganttObj.dataOperation.updateMappingData(this.rowData, 'notes');
         } else {
-            this.addedRecord[this.parent.taskFields.notes] = rte.getHtml();
+            if (!ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
+                this.addedRecord[this.parent.taskFields.notes] = rte.getHtml();
+            }
+            else {
+                this.addedRecord[this.parent.taskFields.notes] = rte.getText();
+            }
         }
     }
     private updateCustomTab(customElement: HTMLElement): void {

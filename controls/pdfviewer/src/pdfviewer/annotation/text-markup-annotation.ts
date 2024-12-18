@@ -1150,9 +1150,9 @@ export class TextMarkupAnnotation {
         this.highlightColor = this.highlightColor ? this.highlightColor : this.pdfViewer.highlightSettings.color ? this.pdfViewer.highlightSettings.color : '#FFDF56';
         this.underlineColor = this.underlineColor ? this.underlineColor : this.pdfViewer.underlineSettings.color ? this.pdfViewer.underlineSettings.color : '#00ff00';
         this.strikethroughColor = this.strikethroughColor ? this.strikethroughColor : this.pdfViewer.strikethroughSettings.color ? this.pdfViewer.strikethroughSettings.color : '#ff0000';
-        this.highlightOpacity = this.pdfViewer.highlightSettings.opacity;
-        this.underlineOpacity = this.pdfViewer.underlineSettings.opacity;
-        this.strikethroughOpacity = this.pdfViewer.strikethroughSettings.opacity;
+        this.highlightOpacity = this.highlightOpacity ? this.highlightOpacity : this.pdfViewer.highlightSettings.opacity;
+        this.underlineOpacity = this.underlineOpacity ? this.underlineOpacity : this.pdfViewer.underlineSettings.opacity;
+        this.strikethroughOpacity = this.strikethroughOpacity ? this.strikethroughOpacity : this.pdfViewer.strikethroughSettings.opacity;
         this.annotationAddMode = 'UI Drawn Annotation';
         let allowedInteractions: any[];
         const pageDetails: ISize = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)];

@@ -1062,4 +1062,39 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
             gridObj = null;
         });
     });
+    
+    describe('EJ2-922763: Grid Pager with custom pageSizes displays all records on a single page after clearing the filter', function () {
+        let gridObj: Grid;
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: data.slice(0,2),
+                pageSettings: { pageSize: 1, pageSizes: ['1', '10', '20', '50', '100']},
+                allowFiltering: true,
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'CustomerName', headerText: 'Customer Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShippedDate', headerText: 'Shipped Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                ],
+            }, done);
+        });
+        it('Apply filter', function (done) {
+            gridObj.filterByColumn("OrderID", 'equal', 10248);
+            done();
+        });
+        it('clear Filtering', function (done) {
+            gridObj.clearFiltering();
+            done();
+        });
+        it('check pagesize after clearing', function () {
+            expect(gridObj.pageSettings.pageSize).toBe(1);
+        });
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

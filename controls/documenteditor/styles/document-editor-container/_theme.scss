@@ -811,10 +811,10 @@
         @else {
             width: 75px;
         }
-        // @if $skin-name == 'tailwind3' {
-        //     width: $de-shw-hid-height;
-        //     height: $de-shw-hid-height;
-        // }
+        @if $skin-name == 'tailwind3' {
+            width: $de-shw-hid-height;
+            height: $de-shw-hid-height;
+        }
         @if $skin-name=='fluent2' {
             background-color: $de-ctnr-prop-bg-clr;
         }
@@ -999,6 +999,16 @@
         width: $de-hlt-clr-height !important;
         @if $skin-name=='bootstrap' or $skin-name=='bootstrap4' or  $skin-name=='bootstrap5' or $skin-name=='tailwind' {
             border-radius: 4px;
+        }
+    }
+    
+    @if $skin-name=='tailwind3' {
+        .e-de-font-clr-picker {
+            .e-split-btn-wrapper {
+                .e-split-btn {
+                    width: $de-clr-pckr-split-button;
+                 }
+            }
         }
     }
 
@@ -1620,7 +1630,6 @@
     @if $skin-name=='tailwind3' {
         .e-de-custom-treeview {
             border: none !important;
-            background: none !important;
         }
     }
     .e-rtl {
@@ -1873,28 +1882,17 @@
     .e-de-char-fmt-btn-right .e-de-ctnr-group-btn>button {
         width: 62px;
     }
-
     .e-de-ctnr-segment.e-de-ctnr-style-div {
-        width: 226px;
+        width: 234px;
     }
-
     .e-de-font-clr-picker.e-de-ctnr-group-btn {
         .e-split-colorpicker.e-control.e-lib.e-btn.e-icon-btn.e-split-btn.e-keyboard:first-of-type {
             padding: 1px !important;
         }
     }
-
     .e-de-ctnr-hglt-color {
         height: 24px !important;
         width: 24px !important;
         border-radius: 4px;
-    }
-
-    .e-de-toc-checkbox1,
-    .e-de-toc-checkbox2,
-    .e-de-toc-checkbox3 {
-        .e-label {
-            font-weight: normal !important;
-        }
     }
 }

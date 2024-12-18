@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-navigations/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-navigations)
+
 # JavaScript Navigation Controls
 
 ## What's Included in the JavaScript Navigation Package

@@ -629,71 +629,77 @@ export class SfdtExport {
         }
         return blocks;
     }
-    private contentControlProperty(contentControlPropertie: ContentControlProperties): any {
+    /**
+     * @private
+     */
+    public contentControlProperty(contentControlPropertie: ContentControlProperties, keywordIndex?: number): any {
+        if (isNullOrUndefined(keywordIndex)) {
+            keywordIndex = this.keywordIndex;
+        }
         let contentControlProperties: any = {};
         let contentControlListItems: any = [];
-        contentControlProperties[lockContentControlProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.lockContentControl, this.keywordIndex);
-        contentControlProperties[lockContentsProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.lockContents, this.keywordIndex);
-        contentControlProperties[tagProperty[this.keywordIndex]] = contentControlPropertie.tag;
-        contentControlProperties[colorProperty[this.keywordIndex]] = contentControlPropertie.color;
-        contentControlProperties[titleProperty[this.keywordIndex]] = contentControlPropertie.title;
+        contentControlProperties[lockContentControlProperty[keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.lockContentControl, keywordIndex);
+        contentControlProperties[lockContentsProperty[keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.lockContents, keywordIndex);
+        contentControlProperties[tagProperty[keywordIndex]] = contentControlPropertie.tag;
+        contentControlProperties[colorProperty[keywordIndex]] = contentControlPropertie.color;
+        contentControlProperties[titleProperty[keywordIndex]] = contentControlPropertie.title;
         if (!isNullOrUndefined(contentControlPropertie.appearance)) {
-            contentControlProperties[appearanceProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getContentControlAppearanceEnumValue(contentControlPropertie.appearance) : contentControlPropertie.appearance;
+            contentControlProperties[appearanceProperty[keywordIndex]] = keywordIndex == 1 ? this.getContentControlAppearanceEnumValue(contentControlPropertie.appearance) : contentControlPropertie.appearance;
         }
-        contentControlProperties[typeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getContentControlTypeEnumValue(contentControlPropertie.type) : contentControlPropertie.type;
-        contentControlProperties[hasPlaceHolderTextProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.hasPlaceHolderText, this.keywordIndex);
-        contentControlProperties[multiLineProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.multiline, this.keywordIndex);
-        contentControlProperties[isTemporaryProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.isTemporary, this.keywordIndex);
+        contentControlProperties[typeProperty[keywordIndex]] = keywordIndex == 1 ? this.getContentControlTypeEnumValue(contentControlPropertie.type) : contentControlPropertie.type;
+        contentControlProperties[hasPlaceHolderTextProperty[keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.hasPlaceHolderText, keywordIndex);
+        contentControlProperties[multiLineProperty[keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.multiline, keywordIndex);
+        contentControlProperties[isTemporaryProperty[keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.isTemporary, keywordIndex);
         if (!isNullOrUndefined(contentControlPropertie.isChecked)) {
-            contentControlProperties[isCheckedProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.isChecked, this.keywordIndex);
+            contentControlProperties[isCheckedProperty[keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.isChecked, keywordIndex);
         }
         if (!isNullOrUndefined(contentControlPropertie.uncheckedState)) {
-            contentControlProperties[uncheckedStateProperty[this.keywordIndex]] = this.tounCheckedState(contentControlPropertie.uncheckedState);
+            contentControlProperties[uncheckedStateProperty[keywordIndex]] = this.tounCheckedState(contentControlPropertie.uncheckedState);
         }
         if (!isNullOrUndefined(contentControlPropertie.checkedState)) {
-            contentControlProperties[checkedStateProperty[this.keywordIndex]] = this.toCheckedState(contentControlPropertie.checkedState);
+            contentControlProperties[checkedStateProperty[keywordIndex]] = this.toCheckedState(contentControlPropertie.checkedState);
         }
         if (!isNullOrUndefined(contentControlPropertie.dateCalendarType)) {
-            contentControlProperties[dateCalendarTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getDateCalendarTypeEnumValue(contentControlPropertie.dateCalendarType) : contentControlPropertie.dateCalendarType;
+            contentControlProperties[dateCalendarTypeProperty[keywordIndex]] = keywordIndex == 1 ? this.getDateCalendarTypeEnumValue(contentControlPropertie.dateCalendarType) : contentControlPropertie.dateCalendarType;
         }
         if (!isNullOrUndefined(contentControlPropertie.dateStorageFormat)) {
-            contentControlProperties[dateStorageFormatProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getDateStorageFormatEnumValue(contentControlPropertie.dateStorageFormat) : contentControlPropertie.dateStorageFormat;
+            contentControlProperties[dateStorageFormatProperty[keywordIndex]] = keywordIndex == 1 ? this.getDateStorageFormatEnumValue(contentControlPropertie.dateStorageFormat) : contentControlPropertie.dateStorageFormat;
         }
         if (!isNullOrUndefined(contentControlPropertie.dateDisplayLocale)) {
-            contentControlProperties[dateDisplayLocaleProperty[this.keywordIndex]] = contentControlPropertie.dateDisplayLocale;
+            contentControlProperties[dateDisplayLocaleProperty[keywordIndex]] = contentControlPropertie.dateDisplayLocale;
         }
         if (!isNullOrUndefined(contentControlPropertie.dateDisplayFormat)) {
-            contentControlProperties[dateDisplayFormatProperty[this.keywordIndex]] = contentControlPropertie.dateDisplayFormat;
+            contentControlProperties[dateDisplayFormatProperty[keywordIndex]] = contentControlPropertie.dateDisplayFormat;
         }
         if (!isNullOrUndefined(contentControlPropertie.xmlMapping)) {
             let xmlMapping: any = {};
             let customXmlPart: any = {};
-            xmlMapping[isMappedProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.xmlMapping.isMapped, this.keywordIndex);
-            xmlMapping[isWordMlProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.xmlMapping.isWordMl, this.keywordIndex);
+            xmlMapping[isMappedProperty[keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.xmlMapping.isMapped, keywordIndex);
+            xmlMapping[isWordMlProperty[keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.xmlMapping.isWordMl, keywordIndex);
             if (!isNullOrUndefined(contentControlPropertie.xmlMapping.prefixMapping)) {
-                xmlMapping[prefixMappingProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.prefixMapping;
+                xmlMapping[prefixMappingProperty[keywordIndex]] = contentControlPropertie.xmlMapping.prefixMapping;
             }
-            xmlMapping[xPathProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.xPath;
-            xmlMapping[storeItemIdProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.storeItemId;
+            xmlMapping[xPathProperty[keywordIndex]] = contentControlPropertie.xmlMapping.xPath;
+            xmlMapping[storeItemIdProperty[keywordIndex]] = contentControlPropertie.xmlMapping.storeItemId;
             if (!isNullOrUndefined(contentControlPropertie.xmlMapping.customXmlPart)) {
-                customXmlPart[idProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.customXmlPart.id;
-                customXmlPart[xmlProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.customXmlPart.xml;
-                xmlMapping[customXmlPartProperty[this.keywordIndex]] = customXmlPart;
+                customXmlPart[idProperty[keywordIndex]] = contentControlPropertie.xmlMapping.customXmlPart.id;
+                customXmlPart[xmlProperty[keywordIndex]] = contentControlPropertie.xmlMapping.customXmlPart.xml;
+                xmlMapping[customXmlPartProperty[keywordIndex]] = customXmlPart;
             }
-            contentControlProperties[xmlMappingProperty[this.keywordIndex]] = xmlMapping;
+            contentControlProperties[xmlMappingProperty[keywordIndex]] = xmlMapping;
         }
         if (!isNullOrUndefined(contentControlPropertie.characterFormat)) {
-            contentControlProperties[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(contentControlPropertie.characterFormat, this.keywordIndex);
+            contentControlProperties[characterFormatProperty[keywordIndex]] = this.writeCharacterFormat(contentControlPropertie.characterFormat, keywordIndex);
         }
         if (!isNullOrUndefined(contentControlPropertie.contentControlListItems)) {
             for (let i: number = 0; i < contentControlPropertie.contentControlListItems.length; i++) {
                 let listItems: any = {};
-                listItems[displayTextProperty[this.keywordIndex]] = contentControlPropertie.contentControlListItems[i].displayText;
-                listItems[valueProperty[this.keywordIndex]] = contentControlPropertie.contentControlListItems[i].value;
+                listItems[displayTextProperty[keywordIndex]] = contentControlPropertie.contentControlListItems[i].displayText;
+                listItems[valueProperty[keywordIndex]] = contentControlPropertie.contentControlListItems[i].value;
                 contentControlListItems.push(listItems);
             }
         }
-        contentControlProperties[contentControlListItemsProperty[this.keywordIndex]] = contentControlListItems;
+        contentControlProperties[contentControlListItemsProperty[keywordIndex]] = contentControlListItems;
         return contentControlProperties;
     }
     private tounCheckedState(state: any): any {
@@ -800,7 +806,9 @@ export class SfdtExport {
             next = (paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets[0].childWidgets[0] as BlockWidget;
         }
         if (this.isExport) {
-            return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
+            const isSameContainer = next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index;
+            const isTableCell = next instanceof BlockWidget && next.containerWidget instanceof TableCellWidget;
+            return (isSameContainer || isTableCell) ? next : undefined;
         } else {
             return next;
         }
@@ -829,9 +837,32 @@ export class SfdtExport {
             if (element instanceof ContentControl || (this.startContent && !this.blockContent)) {
                 this.writeInlinesContentControl(element, line, inlines, i);
             } else {
-                let inline: any = this.writeInline(element);
-                if (!isNullOrUndefined(inline)) {
-                    inlines.push(inline);
+                if (element instanceof TextElementBox && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof TextElementBox
+                    && !this.isSpecialCharacter(element.text) && !this.isSpecialCharacter(element.previousNode.text)
+                    && element.previousNode.characterFormat.isEqualFormat(element.characterFormat)
+                    && element.previousNode.scriptType === element.scriptType
+                    && element.revisions.length === 0 && element.previousNode.revisions.length === 0
+                    && (element.previousNode.text.length > 0 && element.previousNode.text[element.previousNode.text.length - 1] !== '-')) {
+                    let elementText: string = element.text;
+                    if (!this.isWriteEndFootNote && (isNullOrUndefined(this.owner.editorModule) || !this.owner.editorModule.isPaste)) {
+                        elementText = HelperMethods.removeInvalidXmlChars(elementText);
+                    }
+                    if (this.isWriteInlinesFootNote && element.indexInOwner === 0 && element.line.indexInOwner === 0
+                        && element.paragraph.indexInOwner == 0 && HelperMethods.checkTextFormat(elementText)) {
+                        elementText = "\u0002";
+                    }
+                    // replacing the no break hyphen character by '-'
+                    if (elementText.indexOf(String.fromCharCode(30)) !== -1) {
+                        elementText.replace(/\u001e/g, '-');
+                    } else if (elementText.indexOf(String.fromCharCode(31)) !== -1) {
+                        elementText.replace(/\u001f/g, '');
+                    }
+                    inlines[inlines.length - 1][textProperty[this.keywordIndex]] += elementText;
+                } else {
+                    let inline: any = this.writeInline(element);
+                    if (!isNullOrUndefined(inline)) {
+                        inlines.push(inline);
+                    }
                 }
             }
             if (this.isExport && element instanceof FieldElementBox && element.fieldType === 1) {
@@ -839,6 +870,11 @@ export class SfdtExport {
                 this.checkboxOrDropdown = false;
             }
         }
+    }
+    private isSpecialCharacter(text: string): boolean {
+        const specialChars: string[] = ['\t', '\v', '\f', '\r', String.fromCharCode(14), String.fromCharCode(31), String.fromCharCode(8194)];
+        const endCodeURIChars: string[] = ['%02', '%03', '%04'];
+        return specialChars.indexOf(text) !== -1 || endCodeURIChars.indexOf(encodeURI(text)) !== -1;
     }
     private inlineContentControl(element: ElementBox, nextElement: any, inlines?: any): any {
         let inline: any = {};
@@ -1765,7 +1801,6 @@ export class SfdtExport {
             }
         }
         let next: TableRowWidget = rowWidget;
-        let skip: boolean = false;
         do {
             rowWidget = next;
             next = rowWidget.nextRenderedWidget as TableRowWidget;
@@ -1774,8 +1809,7 @@ export class SfdtExport {
                 || rowWidget.ownerTable.bodyWidget.sectionIndex !== next.ownerTable.bodyWidget.sectionIndex)) {
                 next = undefined;
             }
-            skip = !isNullOrUndefined(rowWidget.nextSplitWidget) && rowWidget.childWidgets.length !== next.childWidgets.length;
-        } while (next instanceof TableRowWidget && next.index === rowWidget.index && !skip);
+        } while (next instanceof TableRowWidget && next.index === rowWidget.index);
         return next;
     }
     private writeCell(cellWidget: TableCellWidget, cells: any): boolean {

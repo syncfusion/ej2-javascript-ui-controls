@@ -329,10 +329,17 @@ export function sum(values: number[]): number {
  */
 export function subArraySum(values: Object[], first: number, last: number, index: number[], series: Series): number {
     let sum: number = 0;
+    let sumIndex: number = 0;
+    let isFirst: boolean = true;
     if (index !== null) {
         for (let i: number = (first + 1); i < last; i++) {
-            if (index.indexOf(i) === -1) {
+            if (index.indexOf(i) === -1 && (i !== series.intermediateSumIndexes[sumIndex as number] ||
+                (i === series.intermediateSumIndexes[sumIndex as number] && isFirst))) {
                 sum += values[i as number][series.yName] as number;
+                if (i === series.intermediateSumIndexes[sumIndex as number]) {
+                    isFirst = false;
+                    sumIndex += 1;
+                }
             }
         }
     } else {

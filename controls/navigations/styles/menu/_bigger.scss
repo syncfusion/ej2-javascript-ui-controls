@@ -155,6 +155,9 @@
 
       & .e-scroll-nav {
         width: $menu-bigger-hscroll-nav-size;
+        @if $skin-name == 'tailwind3' {
+          min-height: 48px;
+        }
       }
     }
 

@@ -1344,7 +1344,7 @@ export class Timeline {
             if (!this.parent.isInDst(date)) {
                 increment += (1000 * 60 * 60 * diffCount);
             }
-            else if (this.parent.isInDst(date) && count !== 2 && count !== 15) {
+            else if (this.parent.isInDst(date) && count !== 2 && count !== 15 && count !== 60) {
                 increment -= (1000 * 60 * 60 * diffCount);
             }
         }
@@ -1470,11 +1470,11 @@ export class Timeline {
                 }
             }
             else {
-                const zoomOrTimeline: Object = this.parent.currentZoomingLevel ? this.parent.currentZoomingLevel :
-                    this.parent.timelineSettings;
+                const zoomOrTimeline: Object = this.parent.timelineModule.customTimelineSettings;
                 const bottomTierSettings: Object = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'] :
                     zoomOrTimeline['topTier'];
-                const bottomTierCountIsOneAndUnitIsHour: boolean = (bottomTierSettings['count'] === 1 && bottomTierSettings['unit'] === 'Hour');
+                const bottomTierCountIsOneAndUnitIsHour: boolean = ((bottomTierSettings['count'] === 1 && bottomTierSettings['unit'] === 'Hour') ||
+                    (bottomTierSettings['count'] === 60 && bottomTierSettings['unit'] === 'Minutes'));
                 totalHour = this.calculateTotalHours(mode, count);
                 if (incrementHour !== totalHour && incrementHour < totalHour && !(tier === 'topTier' && bottomTierCountIsOneAndUnitIsHour)) {
                     temp = this.getIncrement(scheduleWeeks, count, mode) + (1000 * 60 * 60);
@@ -1487,10 +1487,13 @@ export class Timeline {
             }
         }
         const cellWidth: number = thWidth;
-        thWidth = isLast || (isFirstCell && mode !== 'Hour') ? isLast ? this.calculateWidthBetweenTwoDate(
-            mode, scheduleWeeks, this.timelineRoundOffEndDate) :
-            this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks, count))
-            : thWidth;
+        thWidth = isLast
+            ? (this.parent.isInDst(this.timelineRoundOffEndDate)
+                ? thWidth
+                : this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.timelineRoundOffEndDate))
+            : (isFirstCell && mode !== 'Hour')
+                ? this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks, count))
+                : thWidth;
         const isWeekendCell: boolean = this.isWeekendHeaderCell(mode, tier, scheduleWeeks);
         const textClassName: string = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
         if (isFirstCell && scheduleWeeks.getHours() === 20 && count === 12 && tier === 'bottomTier' &&

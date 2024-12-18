@@ -1074,90 +1074,104 @@ export class SfdtReader {
             rowFormat.gridAfterWidthType = this.getWidthType(data[gridAfterWidthTypeProperty[keyIndex]]);
         }
     }
-    private parseContentControlProperties(wContentControlProperties: any, contentControlProperties: ContentControlProperties): void {
-        if (!isNullOrUndefined(wContentControlProperties[lockContentControlProperty[this.keywordIndex]])) {
-            contentControlProperties.lockContentControl = HelperMethods.parseBoolValue(wContentControlProperties[lockContentControlProperty[this.keywordIndex]]);
+    /**
+     * @private
+     */
+    public parseContentControlProperties(wContentControlProperties: any, contentControlProperties: ContentControlProperties, keywordIndex?: number): void {
+        if (isNullOrUndefined(keywordIndex)) {
+            keywordIndex = this.keywordIndex;
         }
-        if (!isNullOrUndefined(wContentControlProperties[lockContentsProperty[this.keywordIndex]])) {
-            contentControlProperties.lockContents = HelperMethods.parseBoolValue(wContentControlProperties[lockContentsProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(wContentControlProperties[lockContentControlProperty[keywordIndex]])) {
+            contentControlProperties.lockContentControl = HelperMethods.parseBoolValue(wContentControlProperties[lockContentControlProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(wContentControlProperties[tagProperty[this.keywordIndex]])) {
-            contentControlProperties.tag = wContentControlProperties[tagProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(wContentControlProperties[lockContentsProperty[keywordIndex]])) {
+            contentControlProperties.lockContents = HelperMethods.parseBoolValue(wContentControlProperties[lockContentsProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(wContentControlProperties[colorProperty[this.keywordIndex]])) {
-            contentControlProperties.color = wContentControlProperties[colorProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(wContentControlProperties[tagProperty[keywordIndex]])) {
+            contentControlProperties.tag = wContentControlProperties[tagProperty[keywordIndex]];
+        } else {
+            //Updating for undo/redo content control properties
+            contentControlProperties.tag = undefined;
         }
-        if (!isNullOrUndefined(wContentControlProperties[titleProperty[this.keywordIndex]])) {
-            contentControlProperties.title = wContentControlProperties[titleProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(wContentControlProperties[colorProperty[keywordIndex]])) {
+            contentControlProperties.color = wContentControlProperties[colorProperty[keywordIndex]];
         }
-        if (!isNullOrUndefined(wContentControlProperties[appearanceProperty[this.keywordIndex]])) {
-            contentControlProperties.appearance = this.getContentControlAppearance(wContentControlProperties[appearanceProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(wContentControlProperties[titleProperty[keywordIndex]])) {
+            contentControlProperties.title = wContentControlProperties[titleProperty[keywordIndex]];
+        } else {
+            //Updating for undo/redo content control properties
+            contentControlProperties.title = undefined;
         }
-        if (!isNullOrUndefined(wContentControlProperties[typeProperty[this.keywordIndex]])) {
-            contentControlProperties.type =  this.getContentControlType(wContentControlProperties[typeProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(wContentControlProperties[appearanceProperty[keywordIndex]])) {
+            contentControlProperties.appearance = this.getContentControlAppearance(wContentControlProperties[appearanceProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(wContentControlProperties[hasPlaceHolderTextProperty[this.keywordIndex]])) {
-            contentControlProperties.hasPlaceHolderText = HelperMethods.parseBoolValue(wContentControlProperties[hasPlaceHolderTextProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(wContentControlProperties[typeProperty[keywordIndex]])) {
+            contentControlProperties.type = this.getContentControlType(wContentControlProperties[typeProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(wContentControlProperties[multiLineProperty[this.keywordIndex]])) {
-            contentControlProperties.multiline = HelperMethods.parseBoolValue(wContentControlProperties[multiLineProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(wContentControlProperties[hasPlaceHolderTextProperty[keywordIndex]])) {
+            contentControlProperties.hasPlaceHolderText = HelperMethods.parseBoolValue(wContentControlProperties[hasPlaceHolderTextProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(wContentControlProperties[isTemporaryProperty[this.keywordIndex]])) {
-            contentControlProperties.isTemporary = HelperMethods.parseBoolValue(wContentControlProperties[isTemporaryProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(wContentControlProperties[multiLineProperty[keywordIndex]])) {
+            contentControlProperties.multiline = HelperMethods.parseBoolValue(wContentControlProperties[multiLineProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(wContentControlProperties[characterFormatProperty[this.keywordIndex]])) {
-            this.parseCharacterFormat(this.keywordIndex, wContentControlProperties[characterFormatProperty[this.keywordIndex]], contentControlProperties.characterFormat);
+        if (!isNullOrUndefined(wContentControlProperties[isTemporaryProperty[keywordIndex]])) {
+            contentControlProperties.isTemporary = HelperMethods.parseBoolValue(wContentControlProperties[isTemporaryProperty[keywordIndex]]);
+        }
+        if (!isNullOrUndefined(wContentControlProperties[characterFormatProperty[keywordIndex]])) {
+            this.parseCharacterFormat(keywordIndex, wContentControlProperties[characterFormatProperty[keywordIndex]], contentControlProperties.characterFormat);
         }
         if (contentControlProperties.type === 'CheckBox') {
-            if (!isNullOrUndefined(wContentControlProperties[isCheckedProperty[this.keywordIndex]])) {
-                contentControlProperties.isChecked = HelperMethods.parseBoolValue(wContentControlProperties[isCheckedProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(wContentControlProperties[isCheckedProperty[keywordIndex]])) {
+                contentControlProperties.isChecked = HelperMethods.parseBoolValue(wContentControlProperties[isCheckedProperty[keywordIndex]]);
             }
-            if (!isNullOrUndefined(wContentControlProperties[uncheckedStateProperty[this.keywordIndex]])) {
+            if (!isNullOrUndefined(wContentControlProperties[uncheckedStateProperty[keywordIndex]])) {
                 contentControlProperties.uncheckedState = new CheckBoxState();
-                contentControlProperties.uncheckedState.font = wContentControlProperties[uncheckedStateProperty[this.keywordIndex]][fontProperty[this.keywordIndex]];
-                contentControlProperties.uncheckedState.value = wContentControlProperties[uncheckedStateProperty[this.keywordIndex]][valueProperty[this.keywordIndex]];
+                contentControlProperties.uncheckedState.font = wContentControlProperties[uncheckedStateProperty[keywordIndex]][fontProperty[keywordIndex]];
+                contentControlProperties.uncheckedState.value = wContentControlProperties[uncheckedStateProperty[keywordIndex]][valueProperty[keywordIndex]];
             }
-            if (!isNullOrUndefined(wContentControlProperties[checkedStateProperty[this.keywordIndex]])) {
+            if (!isNullOrUndefined(wContentControlProperties[checkedStateProperty[keywordIndex]])) {
                 contentControlProperties.checkedState = new CheckBoxState();
-                contentControlProperties.checkedState.font = wContentControlProperties[checkedStateProperty[this.keywordIndex]][fontProperty[this.keywordIndex]];
-                contentControlProperties.checkedState.value = wContentControlProperties[checkedStateProperty[this.keywordIndex]][valueProperty[this.keywordIndex]];
+                contentControlProperties.checkedState.font = wContentControlProperties[checkedStateProperty[keywordIndex]][fontProperty[keywordIndex]];
+                contentControlProperties.checkedState.value = wContentControlProperties[checkedStateProperty[keywordIndex]][valueProperty[keywordIndex]];
             }
         } else if (contentControlProperties.type === 'Date') {
-            if (!isNullOrUndefined(wContentControlProperties[dateCalendarTypeProperty[this.keywordIndex]])) {
-                contentControlProperties.dateCalendarType = this.getDateCalendarType(wContentControlProperties[dateCalendarTypeProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(wContentControlProperties[dateCalendarTypeProperty[keywordIndex]])) {
+                contentControlProperties.dateCalendarType = this.getDateCalendarType(wContentControlProperties[dateCalendarTypeProperty[keywordIndex]]);
             }
-            if (!isNullOrUndefined(wContentControlProperties[dateStorageFormatProperty[this.keywordIndex]])) {
-                contentControlProperties.dateStorageFormat = this.getDateStorageFormat(wContentControlProperties[dateStorageFormatProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(wContentControlProperties[dateStorageFormatProperty[keywordIndex]])) {
+                contentControlProperties.dateStorageFormat = this.getDateStorageFormat(wContentControlProperties[dateStorageFormatProperty[keywordIndex]]);
             }
-            if (!isNullOrUndefined(wContentControlProperties[dateDisplayLocaleProperty[this.keywordIndex]])) {
-                contentControlProperties.dateDisplayLocale = wContentControlProperties[dateDisplayLocaleProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(wContentControlProperties[dateDisplayLocaleProperty[keywordIndex]])) {
+                contentControlProperties.dateDisplayLocale = wContentControlProperties[dateDisplayLocaleProperty[keywordIndex]];
             }
-            if (!isNullOrUndefined(wContentControlProperties[dateDisplayFormatProperty[this.keywordIndex]])) {
-                contentControlProperties.dateDisplayFormat = wContentControlProperties[dateDisplayFormatProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(wContentControlProperties[dateDisplayFormatProperty[keywordIndex]])) {
+                contentControlProperties.dateDisplayFormat = wContentControlProperties[dateDisplayFormatProperty[keywordIndex]];
             }
         } else if (contentControlProperties.type === 'ComboBox' || contentControlProperties.type === 'DropDownList') {
-            if (!isNullOrUndefined(wContentControlProperties[contentControlListItemsProperty[this.keywordIndex]])) {
-                for (let i: number = 0; i < wContentControlProperties[contentControlListItemsProperty[this.keywordIndex]].length; i++) {
+            if (!isNullOrUndefined(wContentControlProperties[contentControlListItemsProperty[keywordIndex]])) {
+                //Updating for undo/redo content control properties
+                contentControlProperties.contentControlListItems = [];
+                for (let i: number = 0; i < wContentControlProperties[contentControlListItemsProperty[keywordIndex]].length; i++) {
                     const contentControlListItem: ContentControlListItems = new ContentControlListItems();
-                    contentControlListItem.displayText = wContentControlProperties[contentControlListItemsProperty[this.keywordIndex]][i][displayTextProperty[this.keywordIndex]];
-                    contentControlListItem.value = wContentControlProperties[contentControlListItemsProperty[this.keywordIndex]][i][valueProperty[this.keywordIndex]];
+                    contentControlListItem.displayText = wContentControlProperties[contentControlListItemsProperty[keywordIndex]][i][displayTextProperty[keywordIndex]];
+                    contentControlListItem.value = wContentControlProperties[contentControlListItemsProperty[keywordIndex]][i][valueProperty[keywordIndex]];
                     contentControlProperties.contentControlListItems.push(contentControlListItem);
                 }
             }
         }
-        if (!isNullOrUndefined(wContentControlProperties[xmlMappingProperty[this.keywordIndex]])) {
+        if (!isNullOrUndefined(wContentControlProperties[xmlMappingProperty[keywordIndex]])) {
             contentControlProperties.xmlMapping = new XmlMapping();
-            contentControlProperties.xmlMapping.isMapped = HelperMethods.parseBoolValue(wContentControlProperties[xmlMappingProperty[this.keywordIndex]][isMappedProperty[this.keywordIndex]]);
-            contentControlProperties.xmlMapping.isWordMl = HelperMethods.parseBoolValue(wContentControlProperties[xmlMappingProperty[this.keywordIndex]][isWordMlProperty[this.keywordIndex]]);
-            if (!isNullOrUndefined(wContentControlProperties[xmlMappingProperty[this.keywordIndex]][prefixMappingProperty[this.keywordIndex]])) {
-                contentControlProperties.xmlMapping.prefixMapping = wContentControlProperties[xmlMappingProperty[this.keywordIndex]][prefixMappingProperty[this.keywordIndex]];
+            contentControlProperties.xmlMapping.isMapped = HelperMethods.parseBoolValue(wContentControlProperties[xmlMappingProperty[keywordIndex]][isMappedProperty[keywordIndex]]);
+            contentControlProperties.xmlMapping.isWordMl = HelperMethods.parseBoolValue(wContentControlProperties[xmlMappingProperty[keywordIndex]][isWordMlProperty[keywordIndex]]);
+            if (!isNullOrUndefined(wContentControlProperties[xmlMappingProperty[keywordIndex]][prefixMappingProperty[keywordIndex]])) {
+                contentControlProperties.xmlMapping.prefixMapping = wContentControlProperties[xmlMappingProperty[keywordIndex]][prefixMappingProperty[keywordIndex]];
             }
-            contentControlProperties.xmlMapping.xPath = wContentControlProperties[xmlMappingProperty[this.keywordIndex]][xPathProperty[this.keywordIndex]];
-            contentControlProperties.xmlMapping.storeItemId = wContentControlProperties[xmlMappingProperty[this.keywordIndex]][storeItemIdProperty[this.keywordIndex]];
-            if (!isNullOrUndefined(wContentControlProperties[xmlMappingProperty[this.keywordIndex]][customXmlPartProperty[this.keywordIndex]])) {
+            contentControlProperties.xmlMapping.xPath = wContentControlProperties[xmlMappingProperty[keywordIndex]][xPathProperty[keywordIndex]];
+            contentControlProperties.xmlMapping.storeItemId = wContentControlProperties[xmlMappingProperty[keywordIndex]][storeItemIdProperty[keywordIndex]];
+            if (!isNullOrUndefined(wContentControlProperties[xmlMappingProperty[keywordIndex]][customXmlPartProperty[keywordIndex]])) {
                 contentControlProperties.xmlMapping.customXmlPart = new CustomXmlPart();
-                contentControlProperties.xmlMapping.customXmlPart.id = wContentControlProperties[xmlMappingProperty[this.keywordIndex]][customXmlPartProperty[this.keywordIndex]][idProperty[this.keywordIndex]];
-                contentControlProperties.xmlMapping.customXmlPart.xml = wContentControlProperties[xmlMappingProperty[this.keywordIndex]][customXmlPartProperty[this.keywordIndex]][xmlProperty[this.keywordIndex]];
+                contentControlProperties.xmlMapping.customXmlPart.id = wContentControlProperties[xmlMappingProperty[keywordIndex]][customXmlPartProperty[keywordIndex]][idProperty[keywordIndex]];
+                contentControlProperties.xmlMapping.customXmlPart.xml = wContentControlProperties[xmlMappingProperty[keywordIndex]][customXmlPartProperty[keywordIndex]][xmlProperty[keywordIndex]];
             }
         }
     }
@@ -2258,6 +2272,9 @@ export class SfdtReader {
                     fontFamily = this.documentHelper.fontSubstitutionTable.get(fontFamily);
                 }
                 characterFormat.fontFamily = fontFamily;
+                if (isNullOrUndefined(sourceFormat[fontFamilyAsciiProperty[keyIndex]])) {
+                    characterFormat.fontFamilyAscii = fontFamily;
+                }
             }
             if (!isNullOrUndefined(sourceFormat[boldProperty[keyIndex]])) {
                 characterFormat.bold = HelperMethods.parseBoolValue(sourceFormat[boldProperty[keyIndex]]);

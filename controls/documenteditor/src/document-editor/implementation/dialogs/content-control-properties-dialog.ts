@@ -413,6 +413,13 @@ export class ContentControlPropertiesDialog {
 
     }
     private applyProperties = (): void => {
+        let start: TextPosition = this.documentHelper.selection.start.clone();
+        let end: TextPosition = this.documentHelper.selection.end.clone();
+        let offset: number = this.currentContentControl.line.getOffset(this.currentContentControl, 1);
+        this.documentHelper.selection.start.setPositionParagraph(this.currentContentControl.line, offset);
+        this.documentHelper.selection.end.setPositionParagraph(this.currentContentControl.line, offset + 1);
+        this.documentHelper.owner.editorModule.initHistory('UpdateContentControl');
+        const properties: any = this.documentHelper.owner.editor.getContentControlPropObject(this.currentContentControl.contentControlProperties);
         if (!isNullOrUndefined(this.fontColor)) {
             this.currentContentControl.contentControlProperties.color = this.fontColor;
         }
@@ -439,10 +446,20 @@ export class ContentControlPropertiesDialog {
             this.currentContentControl.contentControlProperties.tag = this.tagText.value !== undefined ? this.tagText.value : '';
             this.currentContentControl.contentControlProperties.multiline = this.multilineCheckBox.checked;
         }
+        if (this.documentHelper.owner.editorHistoryModule) {
+            if (this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo) {
+                this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.modifiedProperties.push(properties);
+                const format: any = this.documentHelper.owner.editor.getContentControlPropObject(this.currentContentControl.contentControlProperties);
+                this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.format = JSON.stringify(format);
+            }
+            this.documentHelper.owner.editorHistoryModule.updateHistory();
+        }
+        this.documentHelper.selection.selectRange(start, end);
         this.unWireEventsAndBindings();
         this.documentHelper.dialog.hide();
         this.documentHelper.viewer.updateScrollBars();
         this.documentHelper.updateFocus();
+        this.documentHelper.owner.editorModule.fireContentChange();
     };
     private closePropertiesDialog = (): void => {
         this.documentHelper.dialog.hide();

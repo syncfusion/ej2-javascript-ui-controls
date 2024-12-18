@@ -3595,19 +3595,24 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
     const fontSize: number = typeof size !== 'undefined' ? size : 1;
     if (annotation._dictionary.has('DS') || annotation._dictionary.has('DA')) {
         switch (fontFamily) {
+        case 'Helv':
         case 'Helvetica':
             font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, style);
             break;
+        case 'Cour':
         case 'Courier':
             font = new PdfStandardFont(PdfFontFamily.courier, fontSize, style);
             break;
+        case 'Symb':
         case 'Symbol':
             font = new PdfStandardFont(PdfFontFamily.symbol, fontSize, style);
             break;
         case 'Times':
+        case 'TiRo':
         case 'TimesRoman':
             font = new PdfStandardFont(PdfFontFamily.timesRoman, fontSize, style);
             break;
+        case 'ZaDb':
         case 'ZapfDingbats':
             font = new PdfStandardFont(PdfFontFamily.zapfDingbats, fontSize, style);
             break;

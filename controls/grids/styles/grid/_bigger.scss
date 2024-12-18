@@ -1423,6 +1423,45 @@
   .e-res-toolbar .e-toolbar-items .e-toolbar-item.e-search-wrapper:has(.e-input-group) {
     padding-right: $grid-res-toolbar-search-wrapper-padding-right;
   }
+
+  .e-responsive-dialog .e-dlg-content .e-mainfilterdiv .e-dialog .e-contextmenu-wrapper ul li{
+    @if $theme-name == 'Material3-dark' or $theme-name == 'tailwind3-dark'{
+      background-color: unset;
+      outline-offset: 0;
+    }
+  }
+
+  .e-icons:not(.e-check, .e-stop) {
+    @if $grid-skin == 'tailwind3' {
+      font-size: $grid-bigger-icons-font-size;
+    }
+  }
+
+  .e-dialog .e-footer-content .e-btn{
+    @if $grid-skin =='highcontrast'{
+      margin-left: $grid-column-chooser-dlg-footer-padding;
+    }
+  }
+
+  .e-responsive-dialog .e-dlg-header-content .e-dlg-header .e-res-custom-element .e-res-apply-btn {
+    @if $grid-skin =='tailwind' or $grid-skin =='tailwind3' or $grid-skin =='tailwind-dark' or $grid-skin =='tailwind3-dark'{
+      padding-bottom: 6px;
+    }
+  }
+  .e-dialog .e-dlg-content .e-contextmenu-container ul .e-menu-item.e-menu-caret-icon {
+    @if $grid-skin =='fluent2' or $grid-skin =='fluent2-highcontrast' or $grid-skin =='fluent2-dark' {
+      padding: 0;
+    }
+  }
+  .e-xlflmenu.e-responsive-dialog.e-bigger {
+    .e-dlg-content{
+      .e-radio + label{
+        @if $grid-skin == 'fluent2' or $grid-skin == 'fluent2-dark' or $grid-skin == 'fluent2-highcontrast' {
+          margin: 0;
+        }
+      }
+    }
+  }
 }
 
 .e-bigger .e-grid,
@@ -1463,7 +1502,7 @@
       font-size: $grid-bigger-check-select-all-font-size;
     }
   }
-  
+
   .e-columnmenu {
     margin: $grid-bigger-column-menu-margin;
   }
@@ -1571,12 +1610,12 @@
   }
   .e-grid.sf-grid .e-gridheader .e-headercontent {
     .e-reorderuparrow {
-      @if $grid-skin == 'fluent2' or $grid-skin == 'fluent2-dark' or $grid-skin == 'material3' or $grid-skin == 'material3-dark' or $grid-skin == 'bootstrap5' or $grid-skin == 'fluent'{
+      @if $grid-skin == 'fluent2' or $grid-skin == 'fluent2-dark' or $grid-skin == 'material3' or $grid-skin == 'material3-dark' or $grid-skin == 'bootstrap5\.3' or $grid-skin == 'fluent' or $grid-skin == 'tailwind3' or $grid-skin == 'tailwind3-dark' {
         margin-top: $grid-biggerreorder-arrow-top-margin;
       }
     }
     .e-reorderdownarrow {
-      @if $grid-skin == 'fluent2' or $grid-skin == 'fluent2-dark' or $grid-skin == 'material3' or $grid-skin == 'material3-dark' {
+      @if $grid-skin == 'fluent2' or $grid-skin == 'fluent2-dark' or $grid-skin == 'material3' or $grid-skin == 'material3-dark' or $grid-skin == 'tailwind3' or $grid-skin == 'tailwind3-dark' {
         margin-top: $grid-biggerreorder-downarrow-top-margin;
       }
     }
@@ -1734,6 +1773,14 @@
   
 .e-bigger .e-responsive-dialog,
 .e-bigger.e-responsive-dialog {
+
+  .e-checkbox-wrapper .e-label.e-checkboxfiltertext,
+  .e-checkbox-wrapper .e-label.e-fltrcheck {
+    @if $grid-skin == 'tailwind3' {
+      font-weight: normal;
+    }
+  }
+
   .e-btn.e-ripple {
     overflow: initial;
   }
@@ -2378,10 +2425,20 @@
         padding: 8px;
 
         & .e-searchcontainer {
-          padding-left: 8px;
+          @if $grid-skin == 'fluent2' {
+            padding: 8px 27px;
+          }
+          @else {
+            padding: 8px 16px;
+          }
           margin-right: 7px;
           & .e-searchbox {
-            padding-left: 0;
+            @if $grid-skin == 'fluent2' {
+              padding-left: 0;
+            }
+            @else {
+              padding-left: 10px;
+            }
           }
           & .e-ftrchk.e-infinitescroll,
           & .e-spinner .e-checkboxlist {

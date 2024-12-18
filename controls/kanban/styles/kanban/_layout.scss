@@ -324,6 +324,9 @@
 
               .e-card-header {
                 padding: $kanban-card-header-padding;
+                @if ($skin-name == 'tailwind3') {
+                  border-bottom: 0;
+                }
 
                 .e-card-header-title {
                   font-size: $kanban-card-header-title-font-size;

@@ -63,7 +63,7 @@ export class WorkbookEdit {
                 <boolean>args.skipFormatCheck, <boolean>args.isRandomFormula, <boolean>args.skipCellFormat,
                 <boolean>args.isDelete, <number[]>args.deletedRange, <string>args.fillType,
                 <UndoRedoEventArgs>args.cellInformation, <boolean>args.isRedo, <boolean>args.isDependentUpdate,
-                <string>args.actionName);
+                <string>args.actionName, <boolean>args.isPaste);
             break;
         }
     }
@@ -71,7 +71,8 @@ export class WorkbookEdit {
     private updateCellValue(
         address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, skipFormatCheck?: boolean,
         isRandomFormula?: boolean, skipCellFormat?: boolean, isDelete?: boolean, deletedRange?: number[], fillType?: string,
-        cellInformation?: UndoRedoEventArgs, isRedo?: boolean, isDependentUpdate?: boolean, actionName?: string): boolean {
+        cellInformation?: UndoRedoEventArgs, isRedo?: boolean, isDependentUpdate?: boolean, actionName?: string,
+        isPaste?: boolean): boolean {
         if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
@@ -100,7 +101,7 @@ export class WorkbookEdit {
                 if (cell.formula) {
                     cell.formula = '';
                 }
-                cell.value = isNotTextFormat ? <string>parseIntValue(value) : value;
+                cell.value = isNotTextFormat ? <string>parseIntValue(value, isPaste) : value;
             }
             const eventArgs: { [key: string]: string | number | boolean | number[] } = {
                 action: 'refreshCalculate',

@@ -855,6 +855,11 @@ export class HelperMethods {
         characterFormat[fontFamilyFarEastProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyFarEast :isInline ? this.toWriteInline(format, 'fontFamilyFarEast') : format.getValue('fontFamilyFarEast');
         characterFormat[characterSpacingProperty[keywordIndex]] = isWriteAllValues? format.characterSpacing :isInline ? this.toWriteInline(format, 'characterSpacing') : format.getValue('characterSpacing');
         characterFormat[scalingProperty[keywordIndex]] = isWriteAllValues? format.scaling :isInline ? this.toWriteInline(format, 'scaling') : format.getValue('scaling');
+        if (format.hasValue('fontFamily') || isWriteAllValues) {
+            if (isNullOrUndefined(characterFormat[fontFamilyAsciiProperty[keywordIndex]])) {
+                characterFormat[fontFamilyAsciiProperty[keywordIndex]] = format.fontFamily;
+            }
+        }
     }
     /// <summary>
     /// To check whether the font name is theme font or not.

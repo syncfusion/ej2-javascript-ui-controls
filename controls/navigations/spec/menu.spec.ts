@@ -993,5 +993,14 @@ describe('Menu', () => {
              expect(menu.items[2].continent).toEqual('Bars');
              expect(menu.items[2].text).toEqual('Bars');
          });
+
+        it('coverage Improvement', () => {
+            appendStyles('#menu { height: 400px; } .e-menu-wrapper { height: 250px; } #cookbooks-menu-popup.e-menu-popup{ height: 200px; } #cookbooks-menu-popup.e-menu-popup .e-ul{ height: 250px; }');
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, enableScrolling: true, animationSettings: { effect: 'None' } }, '#menu');
+            const wrap: HTMLElement = menu.getWrapper();
+            const li: HTMLElement = ul.children[1] as HTMLElement;
+            triggerMouseEvent(li, 'mouseover');
+        });
     });
 });

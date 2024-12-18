@@ -932,6 +932,16 @@ export class Drawing {
                     const uniqueObject: any = (this.pdfViewer.nameTable as any)[`${uniqueObjectId}`];
                     if ((renderElement && this.shouldRefreshElement(uniqueObject)) ||
                     isNullOrUndefined(this.pdfViewer.formDesignerModule)) {
+                        if (!isNullOrUndefined(uniqueObject.properties.data) && uniqueObject.properties.data.includes('base64')) {
+                            const image: HTMLImageElement = new Image();
+                            image.src = uniqueObject.properties.data;
+                            if ((<any>window).customStampCollection == null && (<any>window).customStampCollection === undefined) {
+                                (<any>window).customStampCollection = new Map();
+                            }
+                            if ((<any>window).customStampCollection && !(<any>window).customStampCollection.get(renderElement.id)) {
+                                (<any>window).customStampCollection.set(renderElement.id, image);
+                            }
+                        }
                         refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
                     }
                 }

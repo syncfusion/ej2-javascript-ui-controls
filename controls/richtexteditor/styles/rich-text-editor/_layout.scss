@@ -207,9 +207,6 @@
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
-              @if $skin-name == 'tailwind3' {
-                font-weight: $font-weight-medium;
-              }
             }
           }
 
@@ -236,6 +233,10 @@
 
           .e-background-color.e-icons::before {
             display: inline;
+            font-size: $rte-background-color-icon-fontsize;
+          }
+
+          .e-rte-font-color.e-icons::before {
             font-size: $rte-background-color-icon-fontsize;
           }
 
@@ -1507,7 +1508,7 @@
       padding: $rte-quick-drop-btn-padding;
 
       .e-rte-dropdown-btn-text {
-        font-weight: 500;
+        font-weight: $font-weight;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -1785,7 +1786,7 @@
         margin: 0 auto 10px;
         padding: 0 18px;
         position: relative;
-        top: -50px;
+        top: 6px;
         @if $skin-name == 'FluentUI' {
           outline: none;
         }

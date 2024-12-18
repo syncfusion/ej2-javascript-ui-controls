@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#F63100` - The Completed event is now triggered correctly during actions, even when multiple mouse buttons are clicked simultaneously.
+- `#I660681` - EJ1 diagram JSON with ports in nodes is now loading correctly in the EJ2 Diagram Builder.
+- `#I660066` - The `RightToLeft` option in the Distribute function now operates correctly and independently from the `Center` option.
+
 ## 28.1.33 (2024-12-12)
 
 ### Diagram

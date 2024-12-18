@@ -4871,6 +4871,10 @@ export class WordExport {
     }
     // serialize the table margins, row margins, cell margins
     private serializeMargins(writer: XmlWriter, format: any, tag: string): void {
+        if (format[topMarginProperty[this.keywordIndex]] === undefined && format[leftMarginProperty[this.keywordIndex]] === undefined && 
+            format[bottomMarginProperty[this.keywordIndex]] === undefined && format[rightMarginProperty[this.keywordIndex]] === undefined) {
+            return;
+        }
         writer.writeStartElement(undefined, tag, this.wNamespace);
         if (!isNullOrUndefined(format[topMarginProperty[this.keywordIndex]])) {
             let topMargin: number = Math.round(format[topMarginProperty[this.keywordIndex]] * 20);

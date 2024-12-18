@@ -123,12 +123,14 @@ export class WorkbookInsert {
                     if (cell.style) {
                         this.checkBorder(cell.style, args.model.rows[index - 1].cells[i as number].style, newStyle);
                     }
-                    model.forEach((row: RowModel): void => {
-                        if (!row.cells) { row.cells = []; }
-                        if (!row.cells[i as number]) { row.cells[i as number] = {}; }
-                        if (!row.cells[i as number].style) { row.cells[i as number].style = {}; }
-                        Object.assign(row.cells[i as number].style, newStyle);
-                    });
+                    if (!args.isUndoRedo) {
+                        model.forEach((row: RowModel): void => {
+                            if (!row.cells) { row.cells = []; }
+                            if (!row.cells[i as number]) { row.cells[i as number] = {}; }
+                            if (!row.cells[i as number].style) { row.cells[i as number].style = {}; }
+                            Object.assign(row.cells[i as number].style, newStyle);
+                        });
+                    }
                 }
             }
             eventArgs.sheetCount = args.model.rows.length;
@@ -191,14 +193,16 @@ export class WorkbookInsert {
                     if (cell.style) {
                         this.checkBorder(cell.style, args.model.rows[i as number].cells[index - 1].style, newStyle);
                     }
-                    for (let j: number = index; j < curIdx; j++) {
-                        if (!args.model.rows[i as number].cells[j as number]) {
-                            args.model.rows[i as number].cells[j as number] = {};
+                    if (!args.isUndoRedo) {
+                        for (let j: number = index; j < curIdx; j++) {
+                            if (!args.model.rows[i as number].cells[j as number]) {
+                                args.model.rows[i as number].cells[j as number] = {};
+                            }
+                            if (!args.model.rows[i as number].cells[j as number].style) {
+                                args.model.rows[i as number].cells[j as number].style = {};
+                            }
+                            Object.assign(args.model.rows[i as number].cells[j as number].style, newStyle);
                         }
-                        if (!args.model.rows[i as number].cells[j as number].style) {
-                            args.model.rows[i as number].cells[j as number].style = {};
-                        }
-                        Object.assign(args.model.rows[i as number].cells[j as number].style, newStyle);
                     }
                 }
             }

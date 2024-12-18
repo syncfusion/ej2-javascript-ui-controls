@@ -193,7 +193,7 @@ export class ContextMenu implements IContextMenu {
                     } else {
                         this.contextMenuObj.enableItems([this.defaultPasteId], false, true);
                     }
-                } else if (isClickWithinSelectionBounds && this.pdfViewer.textSelectionModule) {
+                } else if ((isClickWithinSelectionBounds && this.pdfViewer.textSelectionModule) || (this.pdfViewer.textSelectionModule && this.pdfViewer.textSelectionModule.selectionRangeArray.length > 0 && this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp')) {
                     if ((!(args.event.target as HTMLElement).classList.contains('e-pv-maintaincontent') && (args.event.target as HTMLElement).classList.contains('e-pv-text') || (args.event.target as HTMLElement).classList.contains('e-pv-text-layer'))) {
                         if (this.pdfViewerBase.checkIsNormalText()) {
                             args.cancel = true;

@@ -334,4 +334,30 @@
       }
     }
   }
+
+  .e-bigger  #{&}.sf-pager,
+  #{&}.sf-pager.e-bigger {
+    .e-pagercontainer {
+      .e-firstpage,
+      .e-prevpage,
+      .e-firstpagedisabled,
+      .e-prevpagedisabled,
+      .e-nextpage,
+      .e-lastpage,
+      .e-nextpagedisabled,
+      .e-lastpagedisabled {
+        @if $pager-skin =='tailwind3' {
+          padding: 10.3px 11.6px 12.5px;
+        }
+      }
+    }
+ 
+    .e-spacing,
+    .e-currentitem,
+    .e-numericitem:hover {
+      @if $pager-skin =='tailwind3' {
+        padding: 14.5px 15.48px 11.8px 15.1px;
+      }
+    }
+  }
 }

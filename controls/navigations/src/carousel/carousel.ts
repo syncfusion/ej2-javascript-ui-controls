@@ -1479,7 +1479,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private wireEvents(): void {
-        if (!(this.animationEffect === 'Custom')) {
+        if (this.animationEffect !== 'Custom' && this.enableTouchSwipe) {
             this.swipeModehandlers();
         }
         EventHandler.add(this.element, 'focusin focusout', this.onFocusActions, this);

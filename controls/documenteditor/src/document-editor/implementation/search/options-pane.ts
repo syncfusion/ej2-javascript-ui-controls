@@ -70,6 +70,14 @@ export class OptionsPane {
     /**
      * @private
      */
+    public isHeadingTab: boolean = false;
+    /**
+     * @private
+     */
+    public isBuildHeading: boolean = false;
+    /**
+     * @private
+     */
     public data: { [key: string]: Object; }[] ;
     /**
      * @private
@@ -489,12 +497,15 @@ export class OptionsPane {
         if (!isNullOrUndefined(selectedElement)) {
             if (args.selectedIndex === 0) {
                 this.isOptionsPane = false;
+                this.isHeadingTab = true;
                 this.onHeadingPane();
             }
             else if (args.selectedIndex === 1) {
+                this.isHeadingTab = false;
                 this.isOptionsPane = true;
                 this.onFindPane();
             } else {
+                this.isHeadingTab = false;
                 this.isOptionsPane = false;
                 this.onReplacePane();
             }
@@ -716,6 +727,7 @@ export class OptionsPane {
      * @returns {void}
      */
     public onHeadingPane(): void {
+        this.updateHeadingTab();
         this.treeviewDiv.style.display = 'block';
         this.refreshHeadingPaneHeight();
         this.messageDiv.classList.remove('e-de-op-msg');
@@ -1311,8 +1323,6 @@ export class OptionsPane {
                 let treeViewResult: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_treeDiv');
                 if (!isNullOrUndefined(treeViewResult)) {
                     treeViewResult.innerHTML = '';
-                    this.data = this.dataForTreeview();
-                    this.initHeadingTab();
                 }
                 this.searchDiv.innerHTML = this.localeValue.getConstant(this.searchText);
                 this.isOptionsPaneShow = true;

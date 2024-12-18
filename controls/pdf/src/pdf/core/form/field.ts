@@ -2,7 +2,7 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfForm } from './form';
 import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
-import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString } from './../utils';
+import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont } from './../utils';
 import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfDocument } from './../pdf-document';
@@ -3671,6 +3671,7 @@ export class PdfButtonField extends PdfField {
         let font: PdfFont;
         let stringFormat: PdfStringFormat;
         let enableGrouping: boolean = false;
+        let isSizeZero: boolean = false;
         const backcolor: number[] = widget.backColor;
         if (backcolor) {
             parameter.backBrush = new PdfBrush(backcolor);
@@ -3705,6 +3706,50 @@ export class PdfButtonField extends PdfField {
             stringFormat = new PdfStringFormat(widget.textAlignment, PdfVerticalAlignment.middle);
         } else if (typeof this._font === 'undefined' || this._font === null) {
             this._font = this._defaultFont;
+        }
+        if (this._isLoaded && widget instanceof PdfWidgetAnnotation &&
+            widget !== null && typeof widget !== 'undefined' && widget._defaultAppearance) {
+            let fontName: string = widget._defaultAppearance.fontName;
+            if (fontName === null || typeof fontName === 'undefined') {
+                fontName = 'Helvetica';
+            }
+            let fontSize: number = widget._defaultAppearance.fontSize;
+            if (fontSize === null || typeof fontSize === 'undefined') {
+                fontSize = this._defaultFont.size;
+            } else if (fontSize === 0) {
+                isSizeZero = true;
+            }
+            let previousFont: PdfFont;
+            let currentFont: PdfFont;
+            let font: PdfFont;
+            this._stringFormat = new PdfStringFormat();
+            this._stringFormat.lineAlignment = PdfVerticalAlignment.middle;
+            this._stringFormat.alignment = PdfTextAlignment.center;
+            if (fontSize !== null && typeof fontSize !== 'undefined' && fontName) {
+                font = _mapFont(fontName, fontSize, PdfFontStyle.regular, widget);
+            }
+            if (font !== null && typeof font !== 'undefined') {
+                currentFont = font;
+            } else {
+                currentFont = this._defaultFont;
+            }
+            let textWidth: number[] = currentFont.measureString(this.text, this._stringFormat);
+            if (isSizeZero && currentFont && currentFont instanceof PdfStandardFont) {
+                if (this._isLoaded && !widget._dictionary.has('AP')) {
+                    const width: number = widget.bounds.width - 8 * border.width;
+                    const height: number = widget.bounds.height - 8 * border.width;
+                    while (textWidth[0] < width || textWidth[1] < height) {
+                        previousFont = currentFont;
+                        currentFont = new PdfStandardFont((currentFont as PdfStandardFont).fontFamily, currentFont._size + 1);
+                        textWidth = currentFont.measureString(this.text, this._stringFormat);
+                        if (textWidth[0] > width || textWidth[1] > height) {
+                            currentFont = previousFont;
+                            break;
+                        }
+                    }
+                    this._font = currentFont;
+                }
+            }
         }
         if (enableGrouping) {
             if (isPressed) {

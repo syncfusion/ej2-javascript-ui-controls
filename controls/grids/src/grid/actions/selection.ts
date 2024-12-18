@@ -104,6 +104,7 @@ export class Selection implements IAction {
     private chkAllCollec: Object[] = [];
     private isCheckedOnAdd: boolean = false;
     private persistSelectedData: Object[] = [];
+    private virtualSelectedData: Object[] = [];
     private deSelectedData: Object[] = [];
     private onDataBoundFunction: Function;
     private actionBeginFunction: Function;
@@ -557,6 +558,9 @@ export class Selection implements IAction {
                 if (this.isCancelDeSelect) {
                     return;
                 }
+                if (this.checkVirtualCheckBox() && !this.parent.isPersistSelection) {
+                    this.virtualSelectedData.splice(this.virtualSelectedData.indexOf(rowObj.data), 1);
+                }
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
                 this.selectRowIndex(this.selectedRowIndexes.length ? this.selectedRowIndexes[this.selectedRowIndexes.length - 1] : -1);
@@ -719,6 +723,9 @@ export class Selection implements IAction {
             return;
         }
         if (this.selectedRowIndexes.indexOf(startIndex) === -1) {
+            if (this.checkVirtualCheckBox() && !this.parent.isPersistSelection) {
+                this.virtualSelectedData.push(this.parent.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data);
+            }
             this.selectedRowIndexes.push(startIndex);
             this.selectedRecords.push(selectedRow);
         }
@@ -854,6 +861,13 @@ export class Selection implements IAction {
                                      }
                                      this.updateCheckBoxes(element[parseInt(j.toString(), 10)]);
                                  }
+                                 if ((this.parent.enableVirtualization || (this.parent.enableInfiniteScrolling
+                                    && this.parent.infiniteScrollSettings.enableCache)) && this.selectedRecords.length && !element.length
+                                    && !this.parent.selectionSettings.persistSelection && !this.disableUI
+                                    && !this.parent.isCheckBoxSelection) {
+                                     this.addRemoveClassesForRow(null, false, true);
+                                 }
+                                 this.virtualSelectedData = [];
                                  this.selectedRowIndexes = [];
                                  this.selectedRecords = [];
                                  this.isRowSelected = false;
@@ -3045,6 +3059,10 @@ export class Selection implements IAction {
             this.selectRowsByRange(
                 cRenderer.getVirtualRowIndex(0),
                 cRenderer.getVirtualRowIndex(this.getCurrentBatchRecordChanges().length - 1));
+            if (this.checkVirtualCheckBox() && !this.parent.isPersistSelection) {
+                this.virtualSelectedData = this.virtualCheckBoxData().slice();
+                this.selectedRowIndexes = Object.keys(this.virtualSelectedData).map((key: string) => parseInt(key, 10));
+            }
         } else {
             this.parent.checkAllRows = 'Uncheck';
             this.updatePersistSelectedData(checkState);
@@ -3315,6 +3333,7 @@ export class Selection implements IAction {
                 if (this.parent.groupSettings.columns.length && getRecord['records']) {
                     getRecord = getRecord['records'];
                 }
+                this.totalRecordsCount = this.checkVirtualCheckBox() ? getRecord.length : this.totalRecordsCount;
                 if ((checkToSelectAll && isFiltered && (this.parent.getDataModule().isRemote() ||
                     (!isNullOrUndefined(this.parent.dataSource) && (<{ result: object[] }>this.parent.dataSource).result) ||
                     getRecord.length)) || (!isFiltered && ((checkedLen === this.totalRecordsCount && this.totalRecordsCount
@@ -3373,6 +3392,19 @@ export class Selection implements IAction {
                 }
             }
         }
+    }
+
+    private checkVirtualCheckBox(): boolean {
+        return this.parent.enableVirtualization && !(this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
+            && (<{result: object[]}>this.parent.dataSource).result)) && this.parent.isCheckBoxSelection && !this.isPartialSelection;
+    }
+
+    private virtualCheckBoxData(): object[] {
+        let data: object[] = this.getData();
+        if (this.parent.groupSettings.columns.length && data['records']) {
+            data = data['records'];
+        }
+        return data;
     }
 
     private isSelectAllRowCount(count?: number): boolean {
@@ -3942,6 +3974,9 @@ export class Selection implements IAction {
                 .map((m: Row<Column>) => m.data);
         } else {
             selectedData = this.persistSelectedData;
+        }
+        if (this.checkVirtualCheckBox() && !this.parent.isPersistSelection) {
+            selectedData = this.virtualSelectedData;
         }
         return selectedData;
     }

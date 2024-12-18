@@ -1,7 +1,7 @@
 import { Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { DropDownTree } from '../../src/drop-down-tree/drop-down-tree';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { listData , hierarchicalData3 } from '../../spec/drop-down-tree/dataSource.spec'
+import { listData , hierarchicalData3, popupClosedata } from '../../spec/drop-down-tree/dataSource.spec'
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 describe('DropDownTree control', () => {
@@ -1362,4 +1362,89 @@ describe('DropdownTree', () => {
         (ddtreeObj as any).onFocusOut();
     });
 
+});
+
+describe('DropdownTree', () => {
+
+    let ddtreeObj: DropDownTree;
+    let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+    beforeEach((): void => {
+        ddtreeObj = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        document.body.appendChild(ele);
+        const childTreeContainer: HTMLElement = createElement('div', {id: 'childTreesContainer'});
+        document.body.appendChild(childTreeContainer);
+    });
+    afterEach((): void => {
+        if (ddtreeObj)
+            ddtreeObj.destroy();
+        document.body.innerHTML = '';
+    });
+
+    it('Render the second Dropdown Tree based on the first Dropdown Trees node check action, and after destroying the second Dropdown Tree, close the first Dropdown Tree popup on document click', (done) => {
+      let newAdditions: number[] = [];
+      let childTreesContainer: HTMLElement = document.getElementById('childTreesContainer');
+      let childTreeElement: HTMLDivElement;
+      let ddTreeChild:DropDownTree;
+      // Function to create a new DropDownTree
+      function createChildDropDownTree(id: number) {
+        ddTreeChild = new DropDownTree({
+          fields: { dataSource: popupClosedata, value: "id", text: "name", child: 'subChild' },
+          placeholder: `Child Tree ${id}`,
+          popupHeight: '100px',
+          showCheckBox: true,
+          showSelectAll: false,
+          allowFiltering: true,
+        });
+        childTreeElement = document.createElement('div');
+        childTreeElement.id = `childTree${id}`;
+        childTreesContainer.appendChild(childTreeElement);
+        ddTreeChild.appendTo(`#childTree${id}`);
+      }
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: popupClosedata, value: "id", text: "name", child: 'subChild' },
+            placeholder: 'Parent Tree',
+            popupHeight: '100px',
+            showCheckBox: true,
+            showSelectAll: false,
+            allowFiltering: true,
+            treeSettings: {
+                expandOn: 'Auto',
+                loadOnDemand: true,
+                autoCheck: true,
+                checkDisabledChildren: false,
+            },
+            mode: 'Custom',
+            changeOnBlur: false,
+            destroyPopupOnHide: false
+        }, '#ddtree');
+        function change() {
+            // Check if any node is checked
+            let checkSpan: HTMLElement = (ddtreeObj as any).treeObj.element.querySelector('.e-check');
+            if (checkSpan) {
+              let newId: number = newAdditions.length + 1;
+              newAdditions.push(newId);
+              createChildDropDownTree(newId); // Add a new child DropDownTree
+            } else if (newAdditions.length > 0) {
+              newAdditions.pop();
+              ddTreeChild.destroy();
+            }
+        };
+        ddtreeObj.showPopup();
+        (ddtreeObj as any).treeObj.checkAll(['1']);
+        change();
+        expect((ddtreeObj as any).treeObj.element.querySelector('.e-check')).not.toBeNull();
+        expect(childTreeElement.classList.contains('e-dropdowntree')).toBe(true);
+        expect((ddtreeObj as any).isPopupOpen).toBe(true);
+        (ddtreeObj as any).treeObj.uncheckAll(['1']);
+        change();
+        expect((ddtreeObj as any).treeObj.element.querySelector('.e-check')).toBeNull();
+        mouseEventArgs.target = document.getElementsByTagName('HTML')[0];
+        mouseEventArgs.srcElement = document.getElementsByTagName('HTML')[0];
+        (ddtreeObj as any).onDocumentClick(mouseEventArgs);
+        setTimeout(function () {
+            expect((ddtreeObj as any).isPopupOpen).toBe(false);
+            done();
+        }, 450);
+    });
 });

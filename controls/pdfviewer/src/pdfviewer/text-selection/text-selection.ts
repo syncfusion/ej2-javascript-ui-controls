@@ -1870,15 +1870,15 @@ export class TextSelection {
         const proxy: any = this;
         setTimeout(
             () => {
-                const leftValue: number = 35;
-                const selectedContent: any = document.getElementsByClassName('e-pv-maintaincontent')[0] ? document.getElementsByClassName('e-pv-maintaincontent')[0].getBoundingClientRect() : null;
+                const length: number = document.getElementsByClassName('e-pv-maintaincontent').length;
+                const selectedContent: any = document.getElementsByClassName('e-pv-maintaincontent')[length - 1] ? document.getElementsByClassName('e-pv-maintaincontent')[length - 1].getBoundingClientRect() : null;
                 if (selectedContent) {
                     if ((selectedContent.bottom + proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight) > window.innerHeight) {
                         top = selectedContent.top - (proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight - topMargin);
                     } else {
-                        top = selectedContent.bottom + proxy.pdfViewerBase.toolbarHeight - topMargin;
+                        top = selectedContent.bottom;
                     }
-                    left =  selectedContent.left - leftValue;
+                    left =  selectedContent.right;
                     const toolbarModule: any = this.pdfViewer.toolbarModule ? this.pdfViewer.toolbarModule.annotationToolbarModule : 'null';
                     if (!toolbarModule || !toolbarModule.textMarkupToolbarElement ||
                         toolbarModule.textMarkupToolbarElement.children.length === 0) {

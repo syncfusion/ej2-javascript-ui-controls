@@ -38,7 +38,7 @@ import { TrackChangesPane } from './implementation/track-changes/track-changes-p
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';
-import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent } from './base/constants';
+import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent, beforecontentControlFillEvent, aftercontentControlFillEvent } from './base/constants';
 import { Optimized, Regular, HelperMethods } from './index';
 import { ColumnsDialog } from './implementation/dialogs/columns-dialog';
 import { DocumentCanvasElement } from './implementation/viewer/document-canvas';
@@ -52,7 +52,7 @@ import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';
 import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';
 import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';
 import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { Comment, DocumentLoadFailedEventArgs } from './base/events-helper';
+import { Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs } from './base/events-helper';
 import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
@@ -1099,6 +1099,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public beforeFormFieldFill: EmitType<FormFieldFillEventArgs>;
     /**
+     * @private
+     */
+    public beforeContentControlFill: EmitType<ContentControlFillEventArgs>;
+    /**
+     * @private
+     */
+    public afterContentControlFill: EmitType<ContentControlFillEventArgs>;
+    /**
      * Triggers when the server side action fails.
      *
      * @event serviceFailure
@@ -2117,6 +2125,23 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public fireAfterFormFieldFill(): void {
         const eventArgs: FormFieldFillEventArgs = {};
         this.trigger(afterFieldFillEvent, eventArgs);
+    }
+    
+    /**
+     * @private
+     * @returns {void}
+     */
+    public fireBeforeContentControlFill(): void {
+        const eventArgs: ContentControlFillEventArgs = {};
+        this.trigger(beforecontentControlFillEvent, eventArgs);
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public fireAfterContentControlFill(): void {
+        const eventArgs: ContentControlFillEventArgs = {};
+        this.trigger(aftercontentControlFillEvent, eventArgs);
     }
 
     /**

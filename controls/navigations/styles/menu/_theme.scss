@@ -253,9 +253,7 @@
     }
 
     & .e-menu-hscroll.e-hscroll .e-scroll-nav {
-      @if $skin-name != 'tailwind3' {
-        background: $menu-ul-bgcolor;
-      }
+      background: $menu-ul-bgcolor;
 
       & .e-nav-arrow.e-icons {
         @if $skin-name == 'fluent2' {

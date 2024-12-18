@@ -2687,6 +2687,9 @@ export class DocumentHelper {
                         this.selection.selectInternal(formField.line, formField, 0, point);
                     }
                 }
+                if(this.contentControlCollection.length > 0) {
+                    this.selection.triggerContentControlFillEvent();
+                }
                 if(this.isSelectionChangedOnMouseMoved){
                     this.selection.fireSelectionChanged(true);
                 }
@@ -2760,6 +2763,10 @@ export class DocumentHelper {
         let dragOnSelectionEndParaIndex: string = this.selection.getHierarchicalIndex(this.dragEndParaInfo.paragraph, this.dragEndParaInfo.offset.toString());
         let dragOnSelectionStartPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(dragOnSelectionStartParaIndex);
         let dragOnSelectionEndPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(dragOnSelectionEndParaIndex);
+        let isDraggedInSamePara: Boolean = false;
+        if (dropSelectionStartParaInfo.paragraph === dragOnSelectionStartPos.paragraph) {
+            isDraggedInSamePara = true;
+        }
         if (dropSelectionStartPos.isExistBefore(dragOnSelectionStartPos)
             || dropSelectionEndPos.isExistAfter(dragOnSelectionEndPos)) {
             this.owner.editorModule.initComplexHistory('DragAndDropContent');
@@ -2785,7 +2792,7 @@ export class DocumentHelper {
                 dropSelectionStartParaIndex = this.selection.getHierarchicalIndex(dropSelectionStartParaInfo.paragraph, dropSelectionStartParaInfo.offset.toString());
                 dropSelectionEndParaIndex = this.selection.getHierarchicalIndex(dropSelectionEndParaInfo.paragraph, dropSelectionEndParaInfo.offset.toString());
             }
-            if (!hasNewLineChar || !this.dragEndParaInfo.paragraph.equals(dropSelectionEndParaInfo.paragraph)) {
+            if (!hasNewLineChar || !this.dragEndParaInfo.paragraph.equals(dropSelectionEndParaInfo.paragraph) && !isDraggedInSamePara) {
                 dropSelectionStartParaIndex = this.selection.getHierarchicalIndex(dropSelectionStartParaInfo.paragraph, dropSelectionStartParaInfo.offset.toString());
                 dropSelectionEndParaIndex = this.selection.getHierarchicalIndex(dropSelectionEndParaInfo.paragraph, dropSelectionEndParaInfo.offset.toString());
             }

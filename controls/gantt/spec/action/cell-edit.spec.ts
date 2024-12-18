@@ -1830,6 +1830,7 @@ describe('taskType with resourceUnit mapping', () => {
                 splitterSettings: {
                     columnIndex: 9
                 },
+		disableHtmlEncode: false,
                 allowUnscheduledTasks: true,
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
                 columns: [

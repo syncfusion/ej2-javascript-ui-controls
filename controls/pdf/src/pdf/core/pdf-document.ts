@@ -64,6 +64,7 @@ export class PdfDocument {
     _isDuplicatePage: boolean = false;
     _mergeHelperCache: Map<string, _PdfMergeHelper>;
     _uniqueID: string;
+    _isSplitDocument: boolean = false;
     /*
      * An event triggered during the splitting process, providing access to split PDF data and split index.
      *
@@ -1704,7 +1705,12 @@ export class PdfDocument {
                     page.annotations._clear();
                 }
             }
-            helper._importPages(page, this._targetIndex, isLayersPresent, this._isDuplicatePage, options);
+            if (sourceDocument._isSplitDocument) {
+                helper._importPages(page, this._targetIndex, isLayersPresent, this._isDuplicatePage, options,
+                                    sourceDocument._isSplitDocument);
+            } else {
+                helper._importPages(page, this._targetIndex, isLayersPresent, this._isDuplicatePage, options);
+            }
             correspondancePagecount++;
             if (typeof this._targetIndex === 'number') {
                 ++this._targetIndex;
@@ -1921,6 +1927,7 @@ export class PdfDocument {
         }
     }
     private _importDocumentPages(startIndex: number, endIndex: number): Uint8Array {
+        this._isSplitDocument = true;
         const document: PdfDocument = new PdfDocument(_emptyPdfData);
         for (let i: number = startIndex; i <= endIndex; i++) {
             const page: PdfPage = this.getPage(i);

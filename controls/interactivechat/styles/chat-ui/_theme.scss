@@ -1,25 +1,25 @@
 @include export-module('chatui-theme') {
   .e-chat-ui {
     border-color: $chat-border-color;
-    background-color: $chat-bg-color;
+    background: $chat-bg-color;
     .e-chat-content {
       color: $chat-text-color;
     }
     .e-right .e-text {
-      background-color: $chat-right-bg-color;
+      background: $chat-right-bg-color;
       color: $chat-right-text-color;
     }
     .e-left .e-text {
       color: $chat-left-text-color;
-      background-color: $chat-left-bg-color;
+      background: $chat-left-bg-color;
       &:active,
       &:focus {
         color: $chat-left-text-color-active;
-        background-color: $chat-left-bg-color-active;
+        background: $chat-left-bg-color-active;
       }
       &:hover {
         color: $chat-left-text-color-hover;
-        background-color: $chat-left-bg-color-hover;
+        background: $chat-left-bg-color-hover;
       }
     }
     .e-chat-send {
@@ -41,7 +41,7 @@
     }
     .e-chat-header {
       border-bottom-color: $chat-border-color;
-      background-color: $chat-header-bg-color;
+      background: $chat-header-bg-color;
       border-color: $chat-header-bg-color;
       color: $chat-header-color;
       .e-toolbar,
@@ -57,11 +57,11 @@
     .e-timebreak {
       &::before,
       &::after {
-        background-color: $timebreak-border-color;
+        background: $timebreak-border-color;
       }
     }
     .e-timestamp {
-      background-color: $timebreak-bg-color;
+      background: $timebreak-bg-color;
       color: $timebreak-color;
       border-color: $timestamp-border-color;
     }
@@ -88,20 +88,30 @@
         border-color: $chat-suggestion-li-border-color;
       }
     }
+    .e-header-icon,
     .e-message-icon,
     .e-user-icon {
       color: $sender-icon-color;
-      background-color: $sender-icon-bg-color;
+      @if ($skin-name == 'Material3' or $theme-name == 'Material3-dark') {
+        background: $sender-icon-bg-color;
+      }
+      @else {
+        background-color: $sender-icon-bg-color;
+      }
+      border-radius: 50%;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
     }
     .e-indicator {
       background: $chat-left-bg-color;
-      animation: blink 1s infinite;
+      animation: e-chat-indicator-blink 1s infinite;
     }
     .e-user-text {
       color: $typing-user-color;
     }
 
-    @keyframes blink {
+    @keyframes e-chat-indicator-blink {
       50% {
         background: $message-header-color;
         height: .2rem;
@@ -113,6 +123,66 @@
         &:not(:active),
         &:not(:hover) {
           border: 1px solid rgba(150, 150, 150, 1);
+        }
+      }
+    }
+    .e-chat-header {
+      .e-toolbar-item {
+        .e-tbar-btn {
+          &:focus,
+          &:active,
+          &:hover {
+            @if ($skin-name == 'highcontrast') {
+              background: rgba(104, 87, 8, 1);
+            }
+          }
+          &:hover {
+            @if ($theme-name == 'Material3-dark') {
+              background: rgba(0, 0, 0, .056);
+            }
+          }
+          &:focus {
+            @if ($skin-name == 'Material3') {
+              box-shadow: 0 0 0 1px rgba(255, 255, 255, 1);
+            }
+            @if ($theme-name == 'Material3-dark') {
+              box-shadow: 0 0 0 1px rgba(0, 0, 0, 1);
+            }
+          }
+          .e-tbar-btn-text,
+          .e-btn-icon {
+            &:focus,
+            &:active,
+            &:hover {
+              @if ($skin-name == 'highcontrast') {
+                color: rgba(255, 255, 255, 1);
+              }
+            }
+            @if ($skin-name == 'bootstrap5' or $theme-name == 'bootstrap5-dark') {
+              color: rgba(255, 255, 255, 1);
+            }
+            &:not(:active) {
+              @if ($skin-name == 'Material3') {
+                color: rgba(255, 255, 255, 1);
+              }
+              @if ($theme-name == 'Material3-dark') {
+                color: rgba(0, 0, 0, 1);
+              }
+            }
+          }
+        }
+        .e-dropdown-btn,
+        .e-dropdown-btn.e-btn {
+          @if ($skin-name == 'Material3' or $theme-name == 'Material3-dark') {
+            box-shadow: none;
+          }
+          &:focus,
+          &:active,
+          &:hover {
+            @if ($skin-name == 'Material3' or $theme-name == 'Material3-dark') {
+              box-shadow: none;
+            }
+          }
         }
       }
     }

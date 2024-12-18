@@ -1245,7 +1245,7 @@ export class ParagraphWidget extends BlockWidget {
                         || inline instanceof ShapeElementBox
                         || inline instanceof BookmarkElementBox || inline instanceof FieldElementBox
                         && HelperMethods.isLinkedFieldCharacter(inline as FieldElementBox))
-                        || inline instanceof ChartElementBox) {
+                        || inline instanceof ChartElementBox || inline instanceof ContentControl) {
                         isStarted = true;
                     }
 
@@ -3231,10 +3231,18 @@ export class TableRowWidget extends BlockWidget {
      * @private
      */
     public updateUniformWidthUnitForCells():void{
+        let isSetMinwidth: boolean = false;
+        if (this.ownerTable && this.ownerTable.tableHolder && this.ownerTable.tableHolder.columns && this.childWidgets.length !== this.ownerTable.tableHolder.columns.length) {
+            isSetMinwidth = true;
+        }
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let cell: TableCellWidget = this.childWidgets[i] as TableCellWidget;
             cell.cellFormat.preferredWidthType = "Point";
-            cell.cellFormat.preferredWidth = cell.cellFormat.cellWidth;
+            if (isSetMinwidth) {
+                cell.cellFormat.preferredWidth = cell.getMinimumPreferredWidth();
+            } else {
+                cell.cellFormat.preferredWidth = cell.cellFormat.cellWidth;
+            }
         }
     }
     /**
@@ -3990,12 +3998,18 @@ export class TableCellWidget extends BlockWidget {
                 isFirstCell = true;
             }
             let isRowBorderDefined: boolean = false;
+            let hasNoneStyle: boolean = false;
+            if (isFirstCell && !isNullOrUndefined(rowBorders.left)) {
+                hasNoneStyle = rowBorders.left.hasNoneStyle;
+            } else if (!isFirstCell && !isNullOrUndefined(rowBorders.vertical)) {
+                hasNoneStyle = rowBorders.vertical.hasNoneStyle;
+            }
             if (!isNullOrUndefined(rowBorders.left) && rowBorders.left.lineStyle !== 'None' 
-                && rowBorders.left.isBorderDefined && !isNullOrUndefined(leftBorder) 
+                && rowBorders.left.isBorderDefined && !hasNoneStyle && !isNullOrUndefined(leftBorder) 
                 && leftBorder.lineStyle === 'None' && leftBorder.isBorderDefined && !leftBorder.hasValue('color')) {
                 isRowBorderDefined = true;
             }
-            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None' && (!leftBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(leftBorder)) {
+            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None' && ((!leftBorder.isBorderDefined && !hasNoneStyle) || isRowBorderDefined)) || isNullOrUndefined(leftBorder)) {
                 if (isFirstCell) {
                     leftBorder = rowBorders.left;
                     if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None') || isNullOrUndefined(leftBorder)) {
@@ -4090,12 +4104,18 @@ export class TableCellWidget extends BlockWidget {
                 isLastCell = true;
             }
             let isRowBorderDefined: boolean = false;
+            let hasNoneStyle: boolean = false;
+            if (isLastCell && !isNullOrUndefined(rowBorders.right)) {
+                hasNoneStyle = rowBorders.right.hasNoneStyle;
+            } else if (!isLastCell && !isNullOrUndefined(rowBorders.vertical)) {
+                hasNoneStyle = rowBorders.vertical.hasNoneStyle;
+            }
             if (!isNullOrUndefined(rowBorders.right) && rowBorders.right.lineStyle !== 'None' 
-                && rowBorders.right.isBorderDefined && !isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' 
+                && rowBorders.right.isBorderDefined && !hasNoneStyle && !isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' 
                 && rightBorder.isBorderDefined && !rightBorder.hasValue('color')) {
                 isRowBorderDefined = true;
             }
-            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' && (!rightBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(rightBorder)) {
+            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' && ((!rightBorder.isBorderDefined && !hasNoneStyle) || isRowBorderDefined)) || isNullOrUndefined(rightBorder)) {
                 if (isLastCell) {
                     rightBorder = rowBorders.right;
                     if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None') || isNullOrUndefined(rightBorder)) {
@@ -4178,12 +4198,18 @@ export class TableCellWidget extends BlockWidget {
         if (!isNullOrUndefined(ownerCell)) {
             let isFirstRow: boolean = isNullOrUndefined(ownerCell.ownerRow.previousWidget);
             let isRowBorderDefined: boolean = false;
+            let hasNoneStyle: boolean = false;
+            if (isFirstRow && !isNullOrUndefined(rowBorders.top)) {
+                hasNoneStyle = rowBorders.top.hasNoneStyle;
+            } else if (!isFirstRow && !isNullOrUndefined(rowBorders.horizontal)) {
+                hasNoneStyle = rowBorders.horizontal.hasNoneStyle;
+            }
             if (!isNullOrUndefined(rowBorders.top) && rowBorders.top.lineStyle !== 'None' 
-                && rowBorders.top.isBorderDefined && !isNullOrUndefined(topBorder) 
+                && rowBorders.top.isBorderDefined && !hasNoneStyle && !isNullOrUndefined(topBorder) 
                 && topBorder.lineStyle === 'None' && topBorder.isBorderDefined && !topBorder.hasValue('color')) {
                 isRowBorderDefined = true;
             }
-            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None' && (!topBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(topBorder)) {
+            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None' && ((!topBorder.isBorderDefined && !hasNoneStyle) || isRowBorderDefined)) || isNullOrUndefined(topBorder)) {
                 if (isFirstRow) {
                     topBorder = rowBorders.top;
                     if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None') || isNullOrUndefined(topBorder)) {
@@ -4276,12 +4302,18 @@ export class TableCellWidget extends BlockWidget {
         if (!isNullOrUndefined(ownerCell)) {
             let isLastRow: boolean = isNullOrUndefined(ownerCell.ownerRow.nextWidget);
             let isRowBorderDefined: boolean = false;
+            let hasNoneStyle: boolean = false;
+            if (isLastRow && !isNullOrUndefined(rowBorders.bottom)) {
+                hasNoneStyle = rowBorders.bottom.hasNoneStyle;
+            } else if (!isLastRow && !isNullOrUndefined(rowBorders.horizontal)) {
+                hasNoneStyle = rowBorders.horizontal.hasNoneStyle;
+            }
             if (!isNullOrUndefined(rowBorders.bottom) && rowBorders.bottom.lineStyle !== 'None' 
-                && rowBorders.bottom.isBorderDefined && !isNullOrUndefined(bottomBorder) 
+                && rowBorders.bottom.isBorderDefined && !hasNoneStyle && !isNullOrUndefined(bottomBorder) 
                 && bottomBorder.lineStyle === 'None' && bottomBorder.isBorderDefined && !bottomBorder.hasValue('color')) {
                 isRowBorderDefined = true;
             }
-            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None' && (!bottomBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(bottomBorder)) {
+            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None' && ((!bottomBorder.isBorderDefined && !hasNoneStyle) || isRowBorderDefined)) || isNullOrUndefined(bottomBorder)) {
                 if (isLastRow) {
                     bottomBorder = rowBorders.bottom;
                     if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None') || isNullOrUndefined(bottomBorder)) {
@@ -6532,6 +6564,10 @@ export class XmlMapping {
      * @private
      */
     public isMapped: boolean;
+    /**
+     * @private
+     */
+    public isContentControlMapped: boolean = false;
     /**
      * @private
      */

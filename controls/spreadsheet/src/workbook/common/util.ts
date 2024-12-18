@@ -486,7 +486,8 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
                         (cell.formula || cell.value || (<unknown>cell.value === 0 ? '0' : '')),
                 skipFormatCheck: prop.skipFormatCheck, isRandomFormula: prop.isRandomFormula,
                 isDelete: prop.isDelete, deletedRange: prop.deletedRange, fillType: prop.fillType,
-                cellInformation: actionData, isRedo: !isUndo, actionName: prop.fillType
+                cellInformation: actionData, isRedo: !isUndo, actionName: prop.fillType,
+                isPaste: prop.requestType === 'paste'
             };
             context.notify(workbookEditOperation, evtArgs);
             prop.isFormulaDependent = <boolean>evtArgs.isFormulaDependent;

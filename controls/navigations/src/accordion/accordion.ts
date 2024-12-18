@@ -70,6 +70,13 @@ export interface AccordionClickArgs extends BaseEventArgs {
      * Defines the current Event arguments.
      */
     originalEvent?: Event
+    /**
+     * Defines whether to cancel the Accordion click action.
+     * When set to `true`, the default click behavior will be prevented,
+     * preventing any action associated with the Accordion item click (such as expanding or collapsing the item).
+     * When set to `false` or omitted, the default click behavior will proceed as normal.
+     */
+    cancel?: boolean;
 }
 /** An interface that holds options to control the expanding item action. */
 export interface ExpandEventArgs extends BaseEventArgs {
@@ -695,54 +702,58 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private afterContentRender(
         trgt: HTEle, eventArgs: AccordionClickArgs, acrdnItem: HTEle, acrdnHdr: HTEle, acrdnCtn: HTEle, acrdnCtnItem: HTEle): void {
         const acrdActive: HTEle[] = [];
-        this.trigger('clicked', eventArgs);
-        let cntclkCheck: boolean = (acrdnCtn && !isNOU(select('.e-target', acrdnCtn)));
-        const inlineAcrdnSel: string = '.' + CLS_CONTENT + ' .' + CLS_ROOT;
-        const inlineEleAcrdn: boolean = acrdnCtn && !isNOU(select('.' + CLS_ROOT, acrdnCtn)) && isNOU(closest(trgt, inlineAcrdnSel));
-        const nestContCheck: boolean = acrdnCtn && isNOU(select('.' + CLS_ROOT, acrdnCtn)) || !(closest(trgt, '.' + CLS_ROOT) === this.element);
-        cntclkCheck = cntclkCheck && (inlineEleAcrdn || nestContCheck);
-        trgt.classList.remove('e-target');
-        if (trgt.classList.contains(CLS_CONTENT) || trgt.classList.contains(CLS_CTENT) || cntclkCheck) {
-            return;
-        }
-        const acrdcontainer: HTMLElement = <HTMLElement>this.element.querySelector('.' + CLS_CONTAINER);
-        const acrdnchild: HTMLCollection = (acrdcontainer) ? acrdcontainer.children : this.element.children;
-        [].slice.call(acrdnchild).forEach((el: HTEle) => {
-            if (el.classList.contains(CLS_ACTIVE)) {
-                acrdActive.push(el);
-            }
-        });
-        const acrdAniEle: HTEle[] = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM + ' [' + CLS_ANIMATE + ']'));
-        if (acrdAniEle.length > 0) {
-            for (const el of acrdAniEle) {
-                acrdActive.push(el.parentElement);
-            }
-        }
-        const sameContentCheck: boolean = acrdActive.indexOf(acrdnCtnItem) !== -1 && acrdnCtn.getAttribute('e-animate') === 'true';
-        let sameHeader: boolean = false;
-        if (!isNOU(acrdnItem) && !isNOU(acrdnHdr)) {
-            const acrdnCtn: HTEle = <HTEle>select('.' + CLS_CONTENT, acrdnItem);
-            const acrdnRoot: HTEle = <HTEle>closest(acrdnItem, '.' + CLS_ACRDN_ROOT);
-            const expandState: HTEle = <HTEle>acrdnRoot.querySelector('.' + CLS_EXPANDSTATE);
-            if (isNOU(acrdnCtn)) {
+        this.trigger('clicked', eventArgs, (eventArgs: AccordionClickArgs) => {
+            if (eventArgs.cancel) {
                 return;
             }
-            sameHeader = (expandState === acrdnItem);
-            if (isVisible(acrdnCtn) && (!sameContentCheck || acrdnCtnItem.classList.contains(CLS_SLCTED))) {
-                this.collapse(acrdnCtn);
-            } else {
-                if ((acrdActive.length > 0) && this.expandMode === 'Single' && !sameContentCheck) {
-                    acrdActive.forEach((el: HTEle) => {
-                        this.collapse(<HTEle>select('.' + CLS_CONTENT, el));
-                        el.classList.remove(CLS_EXPANDSTATE);
-                    });
+            let cntclkCheck: boolean = (acrdnCtn && !isNOU(select('.e-target', acrdnCtn)));
+            const inlineAcrdnSel: string = '.' + CLS_CONTENT + ' .' + CLS_ROOT;
+            const inlineEleAcrdn: boolean = acrdnCtn && !isNOU(select('.' + CLS_ROOT, acrdnCtn)) && isNOU(closest(trgt, inlineAcrdnSel));
+            const nestContCheck: boolean = acrdnCtn && isNOU(select('.' + CLS_ROOT, acrdnCtn)) || !(closest(trgt, '.' + CLS_ROOT) === this.element);
+            cntclkCheck = cntclkCheck && (inlineEleAcrdn || nestContCheck);
+            trgt.classList.remove('e-target');
+            if (trgt.classList.contains(CLS_CONTENT) || trgt.classList.contains(CLS_CTENT) || cntclkCheck) {
+                return;
+            }
+            const acrdcontainer: HTMLElement = <HTMLElement>this.element.querySelector('.' + CLS_CONTAINER);
+            const acrdnchild: HTMLCollection = (acrdcontainer) ? acrdcontainer.children : this.element.children;
+            [].slice.call(acrdnchild).forEach((el: HTEle) => {
+                if (el.classList.contains(CLS_ACTIVE)) {
+                    acrdActive.push(el);
                 }
-                this.expand(acrdnCtn);
+            });
+            const acrdAniEle: HTEle[] = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM + ' [' + CLS_ANIMATE + ']'));
+            if (acrdAniEle.length > 0) {
+                for (const el of acrdAniEle) {
+                    acrdActive.push(el.parentElement);
+                }
             }
-            if (!isNOU(expandState) && !sameHeader) {
-                expandState.classList.remove(CLS_EXPANDSTATE);
+            const sameContentCheck: boolean = acrdActive.indexOf(acrdnCtnItem) !== -1 && acrdnCtn.getAttribute('e-animate') === 'true';
+            let sameHeader: boolean = false;
+            if (!isNOU(acrdnItem) && !isNOU(acrdnHdr)) {
+                const acrdnCtn: HTEle = <HTEle>select('.' + CLS_CONTENT, acrdnItem);
+                const acrdnRoot: HTEle = <HTEle>closest(acrdnItem, '.' + CLS_ACRDN_ROOT);
+                const expandState: HTEle = <HTEle>acrdnRoot.querySelector('.' + CLS_EXPANDSTATE);
+                if (isNOU(acrdnCtn)) {
+                    return;
+                }
+                sameHeader = (expandState === acrdnItem);
+                if (isVisible(acrdnCtn) && (!sameContentCheck || acrdnCtnItem.classList.contains(CLS_SLCTED))) {
+                    this.collapse(acrdnCtn);
+                } else {
+                    if ((acrdActive.length > 0) && this.expandMode === 'Single' && !sameContentCheck) {
+                        acrdActive.forEach((el: HTEle) => {
+                            this.collapse(<HTEle>select('.' + CLS_CONTENT, el));
+                            el.classList.remove(CLS_EXPANDSTATE);
+                        });
+                    }
+                    this.expand(acrdnCtn);
+                }
+                if (!isNOU(expandState) && !sameHeader) {
+                    expandState.classList.remove(CLS_EXPANDSTATE);
+                }
             }
-        }
+        });
     }
     private eleMoveFocus(action: Str, root: HTEle, trgt: HTEle): void {
         let clst: HTEle;
@@ -1081,9 +1092,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.setProperties({ expandedIndices: temp }, true);
     }
     private collapse(trgt: HTEle): void {
+        if (isNOU(trgt)) { return; }
         const items: Object[] = this.getItems();
         const trgtItemEle: HTEle = <HTEle>closest(trgt, '.' + CLS_ITEM);
-        if (isNOU(trgt) || !isVisible(trgt) || trgtItemEle.classList.contains(CLS_DISABLE)) {
+        if (!isVisible(trgt) || trgtItemEle.classList.contains(CLS_DISABLE)) {
             return;
         }
         const animation: AnimationModel = {

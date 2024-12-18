@@ -49,6 +49,24 @@ export interface FormFieldFillEventArgs {
 }
 
 /**
+ * This event arguments provides the necessary information about content control fill event.
+ */
+export interface ContentControlFillEventArgs {
+    /**
+     * Specifies content control name.
+     */
+    contentName?: string
+    /**
+     * Specifies content control value.
+     */
+    value?: string | boolean | number
+    /**
+     * Specifies whether content control action is canceled or not.
+     */
+    isCanceled?: boolean
+}
+
+/**
  * Specified form field data
  */
 export interface FormFieldData {

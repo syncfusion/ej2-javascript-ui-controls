@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType } from '../../index'
+import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType, ContentControlProperties, ContentControlWidgetType, ContentControl } from '../../index'
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base'
 
@@ -287,6 +287,7 @@ export class CollaborativeEditingHandler {
         if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
             currentTextArea = this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea as HTMLTextAreaElement;
         }
+        let contentControlProperties: ContentControlProperties;
         for (let i: number = 0; i < action.operations.length; i++) {
             let markerData: MarkerInfo = action.operations[i].markerData;
             let tableLength: number = undefined;
@@ -480,6 +481,20 @@ export class CollaborativeEditingHandler {
                         } else if (op2.markerData.type === 'Endnote') {
                             this.documentEditor.editorModule.insertEndnote();
                         }
+                    } else if (markerData.type && markerData.type === 'ContentControl') {
+                        if (op2.text === CONTROL_CHARACTERS.Marker_Start) {
+                            contentControlProperties = new ContentControlProperties(markerData.text as ContentControlWidgetType);
+                            if (!isNullOrUndefined(markerData.contentControlProperties)) {
+                                this.documentEditor.editorModule.assignContentControl(contentControlProperties, JSON.parse(markerData.contentControlProperties));
+                            }
+                        }
+                        const contentControl: ContentControl = new ContentControl(contentControlProperties.contentControlWidgetType);
+                        contentControl.contentControlProperties = contentControlProperties;
+                        contentControl.type = op2.text === CONTROL_CHARACTERS.Marker_Start ? 0 : 1;
+                        this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [contentControl]);
+                        if (op2.text === CONTROL_CHARACTERS.Marker_End && contentControl.reference) {
+                            this.documentEditor.editorModule.updatePropertiesToBlock(contentControl.reference, true);
+                        }
                     }
                 } else if (markerData && !isNullOrUndefined(markerData.dropDownIndex) && op2.type === 'DropDown') {
                     const inlineObj: ElementInfo = this.documentEditor.selectionModule.start.currentWidget.getInline(this.documentEditor.selectionModule.start.offset, 0);
@@ -567,6 +582,11 @@ export class CollaborativeEditingHandler {
             } else if (op2.action === 'Format') {
                 if (op2.text === (CONTROL_CHARACTERS.Marker_Start.toString() + CONTROL_CHARACTERS.Marker_End.toString())) {
                     this.updateOperation(op2);
+                } else if (op2.text === CONTROL_CHARACTERS.Marker_Start && !isNullOrUndefined(op2.format)) {
+                    const contentcontrol: ContentControl = this.documentEditor.editorModule.getContentControl();
+                    if (contentcontrol) {
+                        this.documentEditor.editorModule.assignContentControl(contentcontrol.contentControlProperties, JSON.parse(op2.format));
+                    }
                 } else if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.revisionId)) {
                     if (!isNullOrUndefined(op2.markerData.revisionType)) {
                         if (op2.markerData.revisionType === 'Deletion') {
@@ -681,6 +701,12 @@ export class CollaborativeEditingHandler {
             if (!isNullOrUndefined(this.documentEditor.searchModule) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.searchModule.searchResults.length > 0 && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
                 this.documentEditor.optionsPaneModule.searchIconClickInternal();
             }
+        }
+        if (!isNullOrUndefined(contentControlProperties)) {
+            this.documentEditor.selection.contentControleditRegionHighlighters.clear();
+            this.documentEditor.selection.isHighlightContentControlEditRegion = true;
+            this.documentEditor.selection.onHighlightContentControl();
+            contentControlProperties = undefined;
         }
         if (this.documentEditor.editor.isFieldOperation) {
             this.documentEditor.editorModule.layoutWholeDocument();

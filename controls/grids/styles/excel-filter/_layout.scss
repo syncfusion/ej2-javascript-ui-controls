@@ -24,6 +24,9 @@
     .e-dlg-content {
       overflow: visible;
       padding: 0;
+      @if $theme-name == 'Material3-dark' or $theme-name == 'tailwind3-dark' {
+        background: unset;
+      }
     }
 
     .e-searchcontainer {
@@ -64,8 +67,12 @@
       }
       ul .e-menu-item .e-caret {
         margin-right: 24px;
-        @if $grid-xlfl-skin == 'fluent2' or $grid-xlfl-skin == 'fluent2-dark' or $grid-xlfl-skin == 'bootstrap5.3'{
+        @if $grid-xlfl-skin == 'fluent2' or $grid-xlfl-skin == 'fluent2-dark' or $grid-xlfl-skin == 'bootstrap5' {
           line-height: 36px;
+          padding: 0;
+        }
+        @if $grid-xlfl-skin == 'tailwind3' or $grid-xlfl-skin == 'tailwind3-dark' {
+          line-height: 40px;
           padding: 0;
         }
       }

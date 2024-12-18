@@ -47,7 +47,8 @@ export class _PdfMergeHelper {
         }
         this._copier = new _PdfCopier(this._crossReference, this._sourceDocument._crossReference);
     }
-    _importPages(page: PdfPage, index: number, layers: boolean, isCopiedPage: boolean, options?: PdfPageImportOptions): void {
+    _importPages(page: PdfPage, index: number, layers: boolean, isCopiedPage: boolean, options?: PdfPageImportOptions,
+                 isSplitDocument?: boolean): void {
         let template: PdfTemplate;
         let  newPage: PdfPage;
         const pageDictionary: _PdfDictionary = page._pageDictionary;
@@ -64,20 +65,29 @@ export class _PdfMergeHelper {
         } else {
             newPage = this._insertNewPage(page);
         }
-        if (isCopiedPage && this._options.optimizeResources) {
+        if ((isCopiedPage || isSplitDocument) && this._options.optimizeResources) {
             const newContents: any[] = []; // eslint-disable-line
             pageDictionary.forEach((key: string, value: any) => { // eslint-disable-line
                 if (key === 'Contents' && newContents.length === 0) {
                     let contents: any = value; // eslint-disable-line
                     if (contents instanceof _PdfReference) {
-                        newPage._pageDictionary.update(key, contents);
+                        const pageContent: any = isSplitDocument ?  this._copier._copy(contents) : contents; // eslint-disable-line
+                        newPage._pageDictionary.update(key, pageContent);
                     } else if (contents instanceof Array) {
                         for (let i: number = 0; i < contents.length; i++) {
-                            newContents.push(contents[Number.parseInt(i.toString(), 10)]);
+                            const newContent: any = isSplitDocument ? (this._copier._copy(contents[Number.parseInt(i.toString(), 10)])) : // eslint-disable-line
+                                contents[Number.parseInt(i.toString(), 10)];
+                            newContents.push(newContent);
                         }
                         newPage._pageDictionary.update(key, newContents);
                     }
-                } else if (key !== 'MediaBox' && key !== 'CropBox' && key !== 'Parent' && key !== 'Annots' && key !== 'Contents' && key !== 'Rotate') {
+                } else if (key === 'Resources' && value) {
+                    const resourceValue: any = isSplitDocument ? this._copier._copy(value) : value; // eslint-disable-line
+                    if (resourceValue) {
+                        newPage._pageDictionary.update(key, resourceValue);
+                    }
+                } else if (key !== 'Resources' && key !== 'MediaBox' && key !== 'CropBox' && key !== 'Parent' && key !== 'Annots'
+                           && key !== 'Contents' && key !== 'Rotate') {
                     newPage._pageDictionary.update(key, value);
                 }
             });
@@ -760,10 +770,15 @@ export class _PdfMergeHelper {
         const res: _PdfDictionary = newPageDictionary.get('Resources');
         const xobject: _PdfDictionary = res.get('XObject');
         let xobjdict: any ; // eslint-disable-line
-        xobject.forEach((key: any, value: any) => { // eslint-disable-line
-            xobjdict = this._crossReference._fetch(value);
-        });
-        const resource: _PdfDictionary = xobjdict.dictionary.get('Resources');
+        if (xobject) {
+            xobject.forEach((key: any, value: any) => { // eslint-disable-line
+                xobjdict = this._crossReference._fetch(value);
+            });
+        }
+        let resource: _PdfDictionary;
+        if (xobjdict) {
+            resource = xobjdict.dictionary.get('Resources');
+        }
         let XObject: any; // eslint-disable-line
         const oldPageList: Map<string, _PdfReference> = new Map<string, _PdfReference>();
         const oldPageResource: _PdfDictionary = oldPageDictionary.get('Resources');

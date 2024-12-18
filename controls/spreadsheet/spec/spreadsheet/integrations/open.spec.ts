@@ -24,7 +24,7 @@ describe('Open & Save ->', () => {
                     const spreadsheet: Spreadsheet = helper.getInstance();
                     spreadsheet.openComplete = () => {
                         const sheet: SheetModel = helper.invoke('getActiveSheet');
-                        expect(JSON.stringify(sheet.rows[0].cells[0])).toBe('{"style":{"fontWeight":"Bold","textAlign":"Center","verticalAlign":"Middle"},"value":"Customer Name"}');
+                        expect(JSON.stringify(sheet.rows[0].cells[0])).toBe('{"value":"Customer Name","style":{"fontWeight":"Bold","verticalAlign":"Middle","textAlign":"Center"}}');
                         expect(JSON.stringify(sheet.rows[30].cells[5])).toBe('{"format":"$#,##0.00","formula":"=SUM(F2:F30)","style":{"fontWeight":"Bold"}}');
                         expect(sheet.columns[0].width).toBe(180);
                         done();
@@ -562,7 +562,7 @@ describe('Opening document using chunk processing', () => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 spreadsheet.openComplete = () => {
                     const sheet: SheetModel = helper.invoke('getActiveSheet');
-                    expect(JSON.stringify(sheet.rows[0].cells[0])).toBe('{"style":{"fontWeight":"Bold","textAlign":"Center","verticalAlign":"Middle"},"value":"Customer Name"}');
+                    expect(JSON.stringify(sheet.rows[0].cells[0])).toBe('{"value":"Customer Name","style":{"fontWeight":"Bold","verticalAlign":"Middle","textAlign":"Center"}}');
                     expect(JSON.stringify(sheet.rows[30].cells[5])).toBe('{"format":"$#,##0.00","formula":"=SUM(F2:F30)","style":{"fontWeight":"Bold"}}');
                     expect(sheet.columns[0].width).toBe(180);
                     done();

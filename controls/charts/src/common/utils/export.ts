@@ -335,13 +335,13 @@ export class ExportUtils {
                 (pdfDefaultHeight < height[i as number]) ? (height[i as number] + margin.top + margin.bottom) : pdfDefaultHeight;
             if (header !== undefined) {
                 const font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
-                const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
+                const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 30);
                 pdfHeader.graphics.drawString(header.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), header.x, header.y, null);
                 document.template.top = pdfHeader;
             }
             if (footer !== undefined) {
                 const font: PdfStandardFont = new PdfStandardFont(1, footer.fontSize || 15);
-                const pdfFooter: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
+                const pdfFooter: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 30);
                 pdfFooter.graphics.drawString(footer.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), footer.x, footer.y, null);
                 document.template.bottom = pdfFooter;
             }

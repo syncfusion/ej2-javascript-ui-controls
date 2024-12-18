@@ -1119,27 +1119,16 @@ export class Axis extends ChildProperty<Axis> {
         }
         const titlePadding: number = ((this.title !== '' && this.titlePadding !== 5) ? this.titlePadding : 0);
         if (this.isAxisOpposedPosition) {
-            if (this.labelPosition === 'Inside' && definition.insideFarSizes.length < 1) {
-                definition.insideFarSizes.push(titleSize + innerPadding +
-                    titlePadding + (this.tickPosition === 'Inside' ? 0 : this.majorTickLines.height));
-            }
-            else {
-                definition.insideFarSizes.push(labelSize);
-            }
+            definition.insideFarSizes.push(labelSize);
         }
         else {
-            if (this.labelPosition === 'Inside' && definition.insideNearSizes.length < 1) {
-                definition.insideNearSizes.push(titleSize + innerPadding +
-                    titlePadding + (this.tickPosition === 'Inside' ? 0 : this.majorTickLines.height));
-            }
-            else {
-                definition.insideNearSizes.push(labelSize);
-            }
+            definition.insideNearSizes.push(labelSize);
         }
 
         if (this.labelPosition === 'Inside') {
             if ((this.isAxisOpposedPosition && definition.farSizes.length < 1) ||
                 (!this.isAxisOpposedPosition && definition.nearSizes.length < 1)) {
+                innerPadding = (this.labelPosition === 'Inside' && (chart.axes.indexOf(this) > -1)) ? -5 : 5;
                 return titleSize + innerPadding + titlePadding;
             }
             else {

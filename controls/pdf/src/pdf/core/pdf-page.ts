@@ -1100,40 +1100,42 @@ export class PdfDestination {
     _initializePrimitive(): void {
         this._array = [];
         const page: PdfPage = this._page as PdfPage;
-        const element: _PdfDictionary = this._page._pageDictionary;
-        if (typeof element !== 'undefined' && element !== null) {
-            this._array.push(this._page._ref);
-        }
-        switch (this._destinationMode) {
-        case PdfDestinationMode.location:
-            this._array.push(_PdfName.get('XYZ'));
-            if (typeof page !== 'undefined' && page !== null) {
-                this._array.push(this._location[0]);
-                this._array.push(this._page.graphics._size[1] - this._location[1]);
-            } else {
-                this._array.push(0);
-                this._array.push(0);
+        if (page && page._pageDictionary) {
+            const element: _PdfDictionary = page._pageDictionary;
+            if (typeof element !== 'undefined' && element !== null) {
+                this._array.push(this._page._ref);
             }
-            this._array.push(this._zoom);
-            break;
-        case PdfDestinationMode.fitToPage:
-            this._array.push(_PdfName.get('Fit'));
-            break;
-        case PdfDestinationMode.fitR:
-            this._array.push(_PdfName.get('FitR'));
-            this._array.push(this._destinationBounds[0]);
-            this._array.push(this._destinationBounds[1]);
-            this._array.push(this._destinationBounds[2]);
-            this._array.push(this._destinationBounds[3]);
-            break;
-        case PdfDestinationMode.fitH:
-            this._array.push(_PdfName.get('FitH'));
-            this._array.push((typeof page !== 'undefined' && page !== null) ? page._size[1] - this._location[1] : 0);
-            break;
-        }
-        if (this._parent) {
-            this._parent._dictionary.set(this._parent instanceof PdfNamedDestination ? 'D' : 'Dest', this._array);
-            this._parent._dictionary._updated = true;
+            switch (this._destinationMode) {
+            case PdfDestinationMode.location:
+                this._array.push(_PdfName.get('XYZ'));
+                if (typeof page !== 'undefined' && page !== null) {
+                    this._array.push(this._location[0]);
+                    this._array.push(this._page.graphics._size[1] - this._location[1]);
+                } else {
+                    this._array.push(0);
+                    this._array.push(0);
+                }
+                this._array.push(this._zoom);
+                break;
+            case PdfDestinationMode.fitToPage:
+                this._array.push(_PdfName.get('Fit'));
+                break;
+            case PdfDestinationMode.fitR:
+                this._array.push(_PdfName.get('FitR'));
+                this._array.push(this._destinationBounds[0]);
+                this._array.push(this._destinationBounds[1]);
+                this._array.push(this._destinationBounds[2]);
+                this._array.push(this._destinationBounds[3]);
+                break;
+            case PdfDestinationMode.fitH:
+                this._array.push(_PdfName.get('FitH'));
+                this._array.push((typeof page !== 'undefined' && page !== null) ? page._size[1] - this._location[1] : 0);
+                break;
+            }
+            if (this._parent) {
+                this._parent._dictionary.set(this._parent instanceof PdfNamedDestination ? 'D' : 'Dest', this._array);
+                this._parent._dictionary._updated = true;
+            }
         }
     }
 }

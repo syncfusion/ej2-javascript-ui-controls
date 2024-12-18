@@ -34,4 +34,11 @@
       }
     }
   }
+
+  .e-treelistgrid.e-grid.e-print-grid-layout {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: $treegrid-right-arrow-icon;
+    }
+  }
 }

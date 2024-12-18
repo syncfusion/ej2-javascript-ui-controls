@@ -200,17 +200,23 @@ export function toDate(
 /**
  * @hidden
  * @param {string} value - Specifies the value.
+ * @param {boolean} isPaste - Optional flag indicating whether the value came from a paste action.
  * @returns { string | number} - ReturnsparseIntValue.
  */
-export function parseIntValue(value: string): string | number {
+export function parseIntValue(value: string, isPaste?: boolean): string | number {
     if (value && value !== '.' && value !== '-') {
         let val: string = value.toString();
+        const maxSafeIntegerLength: number = Number.MAX_SAFE_INTEGER.toString().length;
         if (val.startsWith('-')) {
             val = val.slice(1);
             val = val.includes('-') ? value : val;
         }
         if (/^\d*\.?\d*$/.test(val)) {
-            return parseFloat(value);
+            if (isPaste && val.length > maxSafeIntegerLength) { // If the number is longer than the safe integer length.
+                return value; //skip parsefloat to get the precise value while pasting.
+            } else {
+                return parseFloat(value);
+            }
         }
     }
     return value;

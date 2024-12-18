@@ -813,8 +813,8 @@ export class LayoutRender extends MobileLayout {
         let second: string | number;
         cardData = cardData.sort((firstData: { [key: string]: string | number }, secondData: { [key: string]: string | number }) => {
             if (!isNumeric) {
-                first = (firstData[`${key}`] as string).toLowerCase();
-                second = (secondData[`${key}`] as string).toLowerCase();
+                first = firstData[`${key}`] ? (firstData[`${key}`] as string).toLowerCase() : '';
+                second = secondData[`${key}`] ? (secondData[`${key}`] as string).toLowerCase() : '';
             } else {
                 first = (firstData[`${key}`] as number);
                 second = (secondData[`${key}`] as number);

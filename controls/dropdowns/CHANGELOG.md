@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I660279` - The issue of being unable to close the parent Dropdown Tree using the document click action after dynamically removing the child Dropdown Tree component has been resolved.
+- `#I662309` - Issue with inconsistent selection behavior when using `selectAll` API on Dropdown Tree component initial render has been resolved.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I660915` - Fixed an issue where an empty popup was displayed when opening the popup manually.
+
 ## 28.1.33 (2024-12-12)
 
 ### ListBox

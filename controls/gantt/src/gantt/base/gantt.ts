@@ -2757,7 +2757,9 @@ export class Gantt extends Component<HTMLElement>
             }
         } else {
             this.treeGridPane.classList.remove('e-temp-content');
-            remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
+            if (!isNullOrUndefined(this.treeGridPane.querySelector('.e-gantt-temp-header'))) {
+                remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
+            }
             this.notify('dataReady', {});
             if (this.enableContextMenu) {
                 this.notify('initiate-contextMenu', {});
@@ -2838,7 +2840,7 @@ export class Gantt extends Component<HTMLElement>
             const pane2: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
             this.splitterModule.splitterPreviousPositionGrid = pane1.scrollWidth + 1 + 'px';
             this.splitterModule.splitterPreviousPositionChart = pane2.scrollWidth + 1 + 'px';
-            this.splitterModule.splitterObject.paneSettings[1].size = (this.ganttWidth - parseInt(this.splitterModule.splitterPreviousPositionGrid, 10) - 4) + 'px';
+            this.splitterModule.splitterObject.paneSettings[1].size = (this.ganttWidth - parseInt(this.splitterModule.splitterPreviousPositionGrid, 10) - this.splitterSettings.separatorSize) + 'px';
             if (this.timelineModule.isZoomedToFit) {
                 setTimeout(() => {
                     this.timelineModule.processZoomToFit();
@@ -4763,9 +4765,11 @@ export class Gantt extends Component<HTMLElement>
             this.splitterSettings.view = tempSplitterSettings[type as string];
             break;
         case 'columnIndex':
+            this.splitterModule['isSplitterResized'] = true;
             this.splitterSettings.columnIndex = tempSplitterSettings[type as string];
             break;
         case 'position':
+            this.splitterModule['isSplitterResized'] = true;
             this.splitterSettings.position = tempSplitterSettings[type as string];
             break;
         default:
@@ -5649,6 +5653,16 @@ export class Gantt extends Component<HTMLElement>
             }
             if (!isNullOrUndefined(taskfields.segments)) {
                 data[taskfields.segments] = null;
+            }
+            const taskType: TaskType = !isNullOrUndefined(rowData.ganttProperties.taskType) ? rowData.ganttProperties.taskType
+                : this.taskType;
+            if (taskType === 'FixedWork') {
+                if (!isNullOrUndefined(data[taskfields.work])) {
+                    data[taskfields.work] = 0;
+                }
+                else {
+                    rowData.ganttProperties.work = 0;
+                }
             }
             if (!isNullOrUndefined(this.contextMenuModule) &&
                 this.contextMenuModule.isOpen &&

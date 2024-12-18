@@ -18,6 +18,7 @@ export class TableResizer {
     public resizerPosition: number = -1;
     public currentResizingTable: TableWidget = undefined;
     public startingPoint: Point;
+    private isResizerEnabled: boolean = false;
     public constructor(node: DocumentEditor) {
         this.owner = node;
         this.documentHelper = this.owner.documentHelper;
@@ -60,9 +61,11 @@ export class TableResizer {
     public isInCellResizerArea(touchPoint: Point): boolean {
         const position: number = this.getCellReSizerPosition(touchPoint);
         if (position === -1) {
+            this.isResizerEnabled = false;
             return false;
         } else {
             this.resizeNode = 0;
+            this.isResizerEnabled = true;
             this.resizerPosition = position;
             return true;
         }
@@ -151,6 +154,10 @@ export class TableResizer {
                 } else if (childCellWidget.childWidgets.length > 0) {
                     return this.getCellReSizerPositionInternal(childCellWidget, touchPoint);
                 }
+            }
+            else if (this.isResizerEnabled && this.owner.selection.getSelectedCells().length === 0 && this.owner.documentHelper.isMouseDown)
+            {
+                position = this.resizerPosition;
             }
         }
         return position;

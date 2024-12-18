@@ -3479,6 +3479,10 @@ export class Layout {
                 if (table.footnoteElement.indexOf(element) == -1) {
                     table.footnoteElement.push(element);
                     this.layoutedFootnoteElement.push(element);
+                    let currentTable: TableWidget = (element.line.paragraph.containerWidget as TableCellWidget).ownerTable;
+                    if (currentTable.footnoteElement.indexOf(element) == -1) {
+                        currentTable.footnoteElement.push(element);
+                    }
                 }
             }
             footnote.height += height;
@@ -4147,6 +4151,7 @@ export class Layout {
                 splittedElementBox.trimEndWidth = splittedElementBox.width;
             }
             splittedElementBox.characterRange = elementBox.characterRange;
+            splittedElementBox.scriptType = elementBox.scriptType;
             //splittedElementBox.revisions = splittedElementBox.revisions;
             elementBox.text = elementBox.text.substr(0, index);
             if (elementBox.text !== ' ' && HelperMethods.endsWith(elementBox.text) && characterFormat.bidi 
@@ -4185,7 +4190,7 @@ export class Layout {
         elementBox.characterFormat.copyFormat(textElement.characterFormat);
         elementBox.line = lineWidget;
         elementBox.characterRange = CharacterRangeType.WordSplit;
-        elementBox.scriptType = FontScriptType.English;
+        elementBox.scriptType = textElement.scriptType;
         elementBox.height = textElement.height;
         elementBox.baselineOffset = textElement.baselineOffset;
         elementBox.width = this.documentHelper.textHelper.getWidth(elementBox.text, format, elementBox.scriptType);
@@ -4341,6 +4346,7 @@ export class Layout {
                     splittedElement.height = textElement.height;
                     splittedElement.baselineOffset = textElement.baselineOffset;
                     splittedElement.characterRange = textElement.characterRange;
+                    splittedElement.scriptType = textElement.scriptType;
                     lineWidget.children.splice(indexOf, 0, splittedElement);
                     if (textElement.revisions.length > 0) {
                         this.updateRevisionForSplittedElement(textElement, splittedElement, index > 0, true);
@@ -7181,18 +7187,19 @@ export class Layout {
         let height: number = 0;
         if (Array.isArray(footnoteWidgets)) {
             for (let i: number = 0; i < footnoteWidgets.length; i++) {
-                height += this.getFootnoteHeightInternal(footnoteWidgets[i]);
+                height += this.getFootnoteHeightInternal(footnoteWidgets[i], i);
             }
         } else {
-            height = this.getFootnoteHeightInternal(footnoteWidgets);
+            height = this.getFootnoteHeightInternal(footnoteWidgets, 0);
         }
         return height;
     }
-    private getFootnoteHeightInternal(footnoteWidgets: BodyWidget): number {
+    private getFootnoteHeightInternal(footnoteWidgets: BodyWidget, index: number): number {
         let height: number = 0;
         for (let i: number = 0; i < footnoteWidgets.childWidgets.length; i++) {
             height += (footnoteWidgets.childWidgets[i] as BlockWidget).height;
-            if (footnoteWidgets.indexInOwner === 0 && i === 0) {
+            if ((footnoteWidgets.indexInOwner === 0 || (footnoteWidgets.indexInOwner !== -1 && footnoteWidgets.containerWidget
+                && this.existFootnoteHeight === 0 && index === 0)) && i === 0) {
                 height += footnoteWidgets.containerWidget.margin.top;
             }
         }
@@ -7288,6 +7295,7 @@ export class Layout {
     private splitWidgets(tableRowWidget: TableRowWidget, viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], splittedWidget: TableRowWidget, isLastRow: boolean, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, cellIndex?: number, isMultiColumnSplit?: boolean, isRowSpan?: boolean): TableRowWidget {
         if (!(isMultiColumnSplit && lineIndexInCell === 0) && (this.isFirstLineFitForRow(viewer.clientArea.bottom, tableRowWidget) && tableRowWidget.childWidgets.length > 0)) {
             splittedWidget = this.getSplittedWidgetForRow(viewer.clientArea.bottom, tableCollection, rowCollection, tableRowWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, undefined, isRowSpan);
+            footNoteCollection = [];
             if (this.documentHelper.splittedCellWidgets.length > 0 || splittedWidget !== tableRowWidget) {
                 if (isLastRow) {
                     for (let i: number = 0; i < splittedWidget.childWidgets.length; i++) {
@@ -7330,7 +7338,13 @@ export class Layout {
             if (isMultiColumnSplit && !isNullOrUndefined(splittedCell) && splittedCell.childWidgets.length !== 0 && cellHeight > cellWidget.height) {
                 cellHeight = cellWidget.height;
             }
-            footNoteCollection = [];
+            if (!isNullOrUndefined(footNoteCollection) && footNoteCollection.length > 0) {
+                for (let j = 0; j < footNoteCollection.length; j++) {
+                    if (footNoteCollection[j].paragraph.containerWidget.indexInOwner === -1) {
+                        footNoteCollection.splice(j, 1);
+                    }
+                }
+            }
             if (isNullOrUndefined(splittedCell) && cellWidget === tableRowWidget.childWidgets[tableRowWidget.childWidgets.length - 1] && this.isRowSpanEnd(tableRowWidget, this.viewer) && this.documentHelper.splittedCellWidgets.length > 0 && isRowSpan) {
                 splittedWidget = this.getSplittedWidgetForSpannedRow(bottom, tableRowWidget, tableCollection, rowCollection, footNoteCollection);
                 splittedCell = undefined;
@@ -7344,8 +7358,17 @@ export class Layout {
                     //Returns if the whole content of the row does not fit in current page.
                     return tableRowWidget;
                 }
-                if (cellWidget.height > maximumCellWidgetHeight && !(cellWidget.ownerTable.isInsideTable && !isNullOrUndefined(splittedCell) &&
-                    splittedCell.childWidgets.length === 0 && this.existFootnoteHeight !== 0)) {
+                let nestedCellHeight: number = 0;
+                if (cellWidget.ownerTable.isInsideTable) {
+                    for (let k: number = 0; k < cellWidget.childWidgets.length; k++) {
+                        nestedCellHeight += (cellWidget.childWidgets[k] as BlockWidget).height;
+                    }
+                }
+                if (cellWidget.ownerTable.isInsideTable) {
+                    if (maximumCellWidgetHeight < nestedCellHeight) {
+                        maximumCellWidgetHeight = nestedCellHeight;
+                    }
+                } else if (cellWidget.height > maximumCellWidgetHeight) {
                     maximumCellWidgetHeight = cellWidget.height;
                 }
                 if (tableRowWidget.childWidgets.indexOf(splittedCell) !== -1) {
@@ -7552,7 +7575,7 @@ export class Layout {
         let footnoteElements = this.layoutedFootnoteElement;
         let isRepeatRowHeader: boolean = false;
         if(tableRowWidget.bodyWidget.page.footnoteWidget !== undefined) {
-            this.footHeight = tableRowWidget.bodyWidget.page.footnoteWidget.height;
+            this.footHeight = this.getFootNoteHeight(tableRowWidget.bodyWidget.page.footnoteWidget.bodyWidgets);
             if(this.footnoteHeight === 0) {
                 this.footnoteHeight = this.footHeight;
             }
@@ -7790,7 +7813,7 @@ export class Layout {
                         }
                     }
                     bodyWidget = this.moveBlocksToNextPage(block instanceof ParagraphWidget ? block.previousWidget as BlockWidget : 
-                        (keepNext && isTableFirstRow) ? !isNullOrUndefined(block.previousWidget) ? block.previousWidget as BlockWidget : block as BlockWidget : block as BlockWidget, keepNext);
+                        (keepNext && isTableFirstRow) ? !isNullOrUndefined(block.previousWidget) ? block.previousWidget as BlockWidget : block as BlockWidget : block as BlockWidget, keepNext, undefined, undefined, undefined, true);
 
                     let curretTable: TableWidget = tableWidgets[tableWidgets.length - 1];
                     //Move Next RowWidge to next page
@@ -8323,22 +8346,6 @@ export class Layout {
         let splittedWidget: TableCellWidget = undefined;
         let footnoteHeight: number = 0;
         if (isMultiColumnSplit || cellWidget.y + cellWidget.height > bottom - this.footHeight - cellWidget.margin.bottom) {
-            for (let i: number = 0; i < cellWidget.ownerRow.childWidgets.length; i++) {
-                let tableCellWidget: TableCellWidget = cellWidget.ownerRow.childWidgets[i] as TableCellWidget;
-                if (tableCellWidget.y + tableCellWidget.height < bottom - this.footHeight - tableCellWidget.margin.bottom) {
-                    for (let j: number = 0; j < tableCellWidget.childWidgets.length; j++) {
-                        if (tableCellWidget.childWidgets[j] instanceof ParagraphWidget) {
-                            let paragraphWidget: ParagraphWidget = tableCellWidget.childWidgets[j] as ParagraphWidget;
-                            for (let k: number = 0; k < paragraphWidget.childWidgets.length; k++) {
-                                let lineWidget: LineWidget = paragraphWidget.childWidgets[k] as LineWidget;
-                                let height: number = this.getFootNoteHeightInLine(lineWidget);
-                                this.existFootnoteHeight += height;
-                                footnoteHeight += height;
-                            }
-                        }
-                    }
-                }
-            }
             let count: number = 0;
             if (cellWidget.ownerTable.isInsideTable) {
                 count = nestedCount;
@@ -8373,7 +8380,13 @@ export class Layout {
                 } else {
                     const tableWidget: TableWidget = cellWidget.childWidgets[i] as TableWidget;
                     const tableCol: TableWidget[] = [tableWidget];
-                    let existFootnoteHeight: number = this.existFootnoteHeight;
+                    let nextFootHeight: number = 0;
+                    if (!isNullOrUndefined(tableWidget.footnoteElement)) {
+                        for (let j: number = 0; j < tableWidget.footnoteElement.length; j++) {
+                            nextFootHeight += this.getFootNoteHeight(tableWidget.footnoteElement[j].bodyWidget);
+                        }
+                    }
+                    let existFootnoteHeight: number = this.existFootnoteHeight + nextFootHeight;
                     if (!isNullOrUndefined(footNoteCollection)) {
                         for (let j: number = 0; j < footNoteCollection.length; j++) {
                             existFootnoteHeight += this.getFootNoteHeight(footNoteCollection[j].bodyWidget);
@@ -8383,7 +8396,12 @@ export class Layout {
                     if (isMultiColumnSplit || bottom - cellWidget.margin.bottom < tableWidget.y + tableWidget.height + existFootnoteHeight) {
                         const tableHeight: number = tableWidget.height;
                         /* eslint-disable-next-line max-len */
-                        let splittedTable: TableWidget = this.getSplittedWidgetForTable(bottom - cellWidget.margin.bottom, tableCol, tableWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, count);
+                        let splittedTable: TableWidget;
+                        if (isCellSplit) {
+                            splittedTable = tableWidget;
+                        } else {
+                            splittedTable = this.getSplittedWidgetForTable(bottom - cellWidget.margin.bottom, tableCol, tableWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, count);
+                        }
                         if (isNullOrUndefined(splittedTable) &&
                             !((tableWidget.childWidgets[0] as TableRowWidget).rowFormat.allowBreakAcrossPages)) {
                             splittedTable = tableWidget;
@@ -8408,16 +8426,98 @@ export class Layout {
                             splittedWidget.childWidgets.push(splittedTable);
                             splittedTable.containerWidget = splittedWidget;
                         }
+                    } else if (tableWidget.footnoteElement.length > 0) {
+                        for (let j: number = 0; j < tableWidget.footnoteElement.length; j++) {
+                            footNoteCollection.push(tableWidget.footnoteElement[j]);
+                        }
                     }
                 }
             }
+        } else {
+            this.updateFootHeight(cellWidget, footNoteCollection);
         }
-        this.existFootnoteHeight -= footnoteHeight;
         if (isNullOrUndefined(splittedWidget) && splitMinimalWidget && this.isRelayoutneed) {
             //Creates new widget, to hold the splitted contents.
             splittedWidget = this.createCellWidget(cellWidget);
         }
         return splittedWidget;
+    }
+
+    private getNextFootNoteHeight(cell: TableCellWidget, currentPosition: number): number {
+        let height: number = 0;
+        if (!isNullOrUndefined(cell.ownerTable.footnoteElement) && cell.ownerTable.footnoteElement.length > 0) {
+            for (let i: number = cell.indexInOwner + 1; i < cell.ownerRow.childWidgets.length; i++) {
+                let currentCell: TableCellWidget = cell.ownerRow.childWidgets[i] as TableCellWidget;
+                for (let j: number = 0; j < currentCell.childWidgets.length; j++) {
+                    if (currentCell.childWidgets[j] instanceof ParagraphWidget) {
+                        height += this.getFootHeightFromPara(currentCell.childWidgets[j] as ParagraphWidget, currentPosition);
+                    } else if (currentCell.childWidgets[j] instanceof TableWidget) {
+                        let table: TableWidget = currentCell.childWidgets[j] as TableWidget;
+                        height += this.getFootHeightFromTable(table, currentPosition);
+                    }   
+                }
+            }
+            if (cell.ownerTable.isInsideTable) {
+                height += this.getNextFootNoteHeight(cell.ownerTable.containerWidget as TableCellWidget, currentPosition);
+            }
+        }
+        return height;
+    }
+
+    private getFootHeightFromTable(table: TableWidget, currentPosition: number): number {
+        let height: number = 0;
+        for (let k: number = 0; k < table.childWidgets.length; k++) {
+            let row: TableRowWidget = table.childWidgets[k] as TableRowWidget;
+            for (let m: number = 0; m < row.childWidgets.length; m++) {
+                let cell: TableCellWidget = row.childWidgets[m] as TableCellWidget;
+                for (let n: number = 0; n < cell.childWidgets.length; n++) {
+                    if (cell.childWidgets[n] instanceof ParagraphWidget) {
+                        height += this.getFootHeightFromPara(cell.childWidgets[n] as ParagraphWidget, currentPosition);
+                    } else if (cell.childWidgets[n] instanceof TableWidget) {
+                        height += this.getFootHeightFromTable(cell.childWidgets[n] as TableWidget, currentPosition);
+                    }
+
+                }
+            }
+        }
+        return height;
+    }
+
+    private getFootHeightFromPara(blockWidget: ParagraphWidget, currentPosition: number): number {
+        let height: number = 0;
+        for (let k: number = 0; k < blockWidget.childWidgets.length; k++) {
+            let lineWidget: LineWidget = blockWidget.childWidgets[k] as LineWidget;
+            let footHeight: number = this.getFootNoteHeightInLine(lineWidget);
+            if (currentPosition > lineWidget.height + blockWidget.y) {
+                height += footHeight;
+            }
+        }
+        return height;
+    }
+
+    private updateFootHeight(cellWidget: TableCellWidget, footNoteCollection: FootnoteElementBox[]): void {
+        if (!isNullOrUndefined(footNoteCollection)) {
+            for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
+                if (cellWidget.childWidgets[i] instanceof ParagraphWidget) {
+                    const paragraphWidget: ParagraphWidget = cellWidget.childWidgets[i] as ParagraphWidget;
+                    for (let j: number = 0; j < paragraphWidget.childWidgets.length; j++) {
+                        this.getFootnoteFromLine(paragraphWidget.childWidgets[j] as LineWidget, footNoteCollection);
+                    }
+                } else if (cellWidget.childWidgets[i] instanceof TableWidget) {
+                    this.updateFootHeightForTable(cellWidget.childWidgets[i] as TableWidget, footNoteCollection);
+                }
+            }
+        }
+    }
+
+    private updateFootHeightForTable(table: TableWidget, footNoteCollection: FootnoteElementBox[]): void {
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            const rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
+                const cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                this.updateFootHeight(cellWidget, footNoteCollection);
+            }
+        }
     }
 
     public getListLevelPattern(value: number): ListLevelPattern {
@@ -8488,10 +8588,12 @@ export class Layout {
         let splittedWidget: ParagraphWidget = undefined;
         let moveEntireBlock: boolean = false;
         let isSplitParagraph: boolean = false;
+        let lineWidgetHeight: number = 0;
         for (let i: number = 0; i < paragraphWidget.childWidgets.length; i++) {
+            let nextFootHeight: number = this.getNextFootNoteHeight(paragraphWidget.containerWidget as TableCellWidget, paragraphWidget.y + lineWidgetHeight);
             let lineWidget: LineWidget = paragraphWidget.childWidgets[i] as LineWidget;
             let height: number =  this.getFootNoteHeightInLine(lineWidget);
-            height +=  this.existFootnoteHeight;
+            height += this.existFootnoteHeight + nextFootHeight;
             if (!isNullOrUndefined(footNoteCollection)) {
                 for (let j: number = 0; j < footNoteCollection.length; j++) {
                     height += this.getFootNoteHeight(footNoteCollection[j].bodyWidget);
@@ -8504,6 +8606,7 @@ export class Layout {
             else {
                 lineHeight = lineWidget.height;
             }
+            lineWidgetHeight += lineHeight;
             if ((isMultiColumnSplit && count >= lineIndexInCell) || bottom < lineBottom + height + lineHeight || isCellSplit) {
                 if (paragraphWidget.paragraphFormat.keepLinesTogether && (paragraphWidget.index !== 0 ||
                     (paragraphWidget.index === 0 && !isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousWidget)))) {
@@ -8579,6 +8682,11 @@ export class Layout {
             // }
             const rowHeight: number = rowWidget.height;
             let existFootnoteHeight: number = this.existFootnoteHeight;
+            if (bottom > rowBottom + rowHeight + existFootnoteHeight && isNullOrUndefined(splittedWidget)) {
+                for (let k: number = 0; k < rowWidget.childWidgets.length; k++) {
+                    this.updateFootHeight(rowWidget.childWidgets[k] as TableCellWidget, footNoteCollection);
+                }
+            }
             if (!isNullOrUndefined(footNoteCollection)) {
                 for (let j: number = 0; j < footNoteCollection.length; j++) {
                     existFootnoteHeight += this.getFootNoteHeight(footNoteCollection[j].bodyWidget);
@@ -9389,7 +9497,7 @@ export class Layout {
                         this.viewer.clientArea.height += footnoteHeight;
                     }
                 }
-                if (footNoteWidget.bodyWidgets.length === 0 && footNoteWidget.page) {
+                if (footNoteWidget && footNoteWidget.bodyWidgets.length === 0 && footNoteWidget.page) {
                     footNoteWidget.page.footnoteWidget = undefined;
                 }
                 footnote.bodyWidget.containerWidget = undefined;
@@ -9733,26 +9841,62 @@ export class Layout {
         return tableView[tableView.length - 1];
     }
 
-    private updateFootnoteHeight(table: TableWidget, isUpdateFootHeight: boolean): void {
-        if (!this.isInitialLoad && !table.isInsideTable && !isNullOrUndefined(table.bodyWidget) && !isNullOrUndefined(table.bodyWidget.page.footnoteWidget) &&
-            table.bodyWidget.page.footnoteWidget.footNoteType === 'Footnote') {
-            const page: Page = table.bodyWidget.page;
+    private updateFootnoteHeight(block: BlockWidget, isUpdateFootHeight: boolean, getBottom?: boolean): number {
+        if ((!this.isInitialLoad || getBottom) && !block.isInsideTable && !isNullOrUndefined(block.bodyWidget) && !isNullOrUndefined(block.bodyWidget.page.footnoteWidget) &&
+        block.bodyWidget.page.footnoteWidget.footNoteType === 'Footnote') {
+            const page: Page = block.bodyWidget.page;
             const section: BodyWidget = page.bodyWidgets[0];
             const pageHeight: number = HelperMethods.convertPointToPixel(section.sectionFormat.pageHeight);
-            const top: number = HelperMethods.convertPointToPixel(section.sectionFormat.topMargin);
+            let top: number = HelperMethods.convertPointToPixel(section.sectionFormat.topMargin);
             const bottomMargin: number = HelperMethods.convertPointToPixel(section.sectionFormat.bottomMargin);
             let bottom: number = 0.667 + bottomMargin;
+            let isEmptyWidget: boolean = false;
+            let headerDistance: number = 48;
+            let footerDistance: number = 48;
+            if (!isNullOrUndefined(section.sectionFormat)) {
+                top = HelperMethods.convertPointToPixel(section.sectionFormat.topMargin);
+                headerDistance = HelperMethods.convertPointToPixel(section.sectionFormat.headerDistance);
+                footerDistance = HelperMethods.convertPointToPixel(section.sectionFormat.footerDistance);
+            }
+            if (!isNullOrUndefined(page.headerWidget)) {
+                isEmptyWidget = page.headerWidget.isEmpty;
+                if(top >= 0) {
+                    if (!isEmptyWidget || isEmptyWidget && this.documentHelper.owner.enableHeaderAndFooter) {
+                        top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+                    }
+                } else {
+                    top = Math.abs(top);
+                }
+            }
+            if (!isNullOrUndefined(page.footerWidget)) {
+                isEmptyWidget = page.footerWidget.isEmpty;
+                let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
+                footnoteHeight = Math.min(footnoteHeight, ((pageHeight - top - bottom) / 100 * 90));
+                if (bottom >= 0) {
+                    if (!isEmptyWidget || isEmptyWidget && this.documentHelper.owner.enableHeaderAndFooter) {
+                        bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+                    }
+                } else {
+                    bottom = Math.abs(bottom);
+                }
+                if (!getBottom) {
+                    bottom += footnoteHeight;
+                }
+            }
             if (!isNullOrUndefined(page.footnoteWidget)) {
                 const footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
-                bottom += footnoteHeight;
+                //bottom += footnoteHeight;
                 const height: number = pageHeight - top - bottom;
+                if (getBottom) {
+                    return height + this.viewer.clientArea.y;
+                }
                 if (isUpdateFootHeight && height === this.viewer.clientArea.height) {
                     this.viewer.clientArea.height += footnoteHeight;
                 } else if (height + footnoteHeight === this.viewer.clientArea.height) {
                     this.viewer.clientArea.height -= footnoteHeight;
                 }
             }
-        }
+        } return 0;
     }
     private updateClientAreaForWrapTable(tables: TableWidget[], table: TableWidget, beforeLayout: boolean, clientActiveAreaForTableWrap: Rect, clientAreaForTableWrap: Rect): void {
         if (beforeLayout) {
@@ -10292,6 +10436,7 @@ export class Layout {
         // Todo: For page layout and section break continuous, need to handle the same.
         let splittedWidget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         let nextBlock: BlockWidget = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
+        let footnoteCollection: BodyWidget[] = [];
         while (nextBlock instanceof BlockWidget && (nextBlock.bodyWidget.index === sectionIndex || (nextBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak' && block.bodyWidget.sectionFormat.pageWidth === nextBlock.bodyWidget.sectionFormat.pageWidth && block.bodyWidget.sectionFormat.pageHeight === nextBlock.bodyWidget.sectionFormat.pageHeight))) {
             if (isMultiColumnShift && nextBlock.bodyWidget.sectionFormat.columns.length === 0) {
                 return;
@@ -10336,7 +10481,7 @@ export class Layout {
             updateNextBlockList = true;
             // Here, we have added this condition to skip the non-layouted blocks during relayouting.
             if (!block.isFieldCodeBlock) {
-                this.reLayoutOrShiftWidgets(block, this.viewer, isMultiColumnShift);
+                this.reLayoutOrShiftWidgets(block, this.viewer, isMultiColumnShift, footnoteCollection);
             }
             if (this.keepWithNext) {
                 block = this.documentHelper.blockToShift;
@@ -10480,7 +10625,7 @@ export class Layout {
             }
         }
     }
-    private reLayoutOrShiftWidgets(blockAdv: BlockWidget, viewer: LayoutViewer, isMultiColumnShift?: boolean): void {
+    private reLayoutOrShiftWidgets(blockAdv: BlockWidget, viewer: LayoutViewer, isMultiColumnShift?: boolean, footnoteCollection?: BodyWidget[]): void {
         let block: BlockWidget = blockAdv;
         let isRealyoutList: Boolean = false;
         // if (block instanceof ParagraphWidget) {
@@ -10508,7 +10653,7 @@ export class Layout {
             isRealyoutList = true;
         } else {
             //Handled to check client area and shift layouted widget.
-            this.shiftWidgetsBlock(block, viewer);
+            this.shiftWidgetsBlock(block, viewer, footnoteCollection);
         }
         let index: number = this.documentHelper.pages.indexOf(block.bodyWidget.page);
         if (index > 0 && block === block.bodyWidget.childWidgets[0] && block instanceof ParagraphWidget) {
@@ -10540,14 +10685,17 @@ export class Layout {
         }
         return false;
     }
-    private shiftWidgetsBlock(block: BlockWidget, viewer: LayoutViewer): void {
+    private shiftWidgetsBlock(block: BlockWidget, viewer: LayoutViewer, footnoteCollection?: BodyWidget[]): void {
         if (block instanceof ParagraphWidget) {
-            this.shiftWidgetsForPara(block as ParagraphWidget, viewer);
+            this.shiftWidgetsForPara(block as ParagraphWidget, viewer, footnoteCollection);
         } else if (block instanceof TableWidget) {
+            if (!isNullOrUndefined(footnoteCollection) && footnoteCollection.length > 0 && block.previousRenderedWidget && block.previousRenderedWidget.y + block.previousRenderedWidget.height + block.height > this.viewer.clientArea.bottom) {
+                footnoteCollection.length = 0;
+            }
             this.shiftWidgetsForTable(block as TableWidget, viewer);
         }
     }
-    private shiftWidgetsForPara(paragraph: ParagraphWidget, viewer: LayoutViewer): void {
+    private shiftWidgetsForPara(paragraph: ParagraphWidget, viewer: LayoutViewer, footnoteCollection?: BodyWidget[]): void {
         if (paragraph.height > (viewer.clientArea.height + viewer.clientArea.y) && !this.documentHelper.owner.enableHeaderAndFooter) {
             return;
         }
@@ -10586,10 +10734,24 @@ export class Layout {
             if (!skipFootNoteHeight) {
                 footWidget = this.getFootNoteWidgetsOf(widget);
             }
+            let footHeight: number = 0;
+            let isSplit: boolean = false;
+            if (!this.isMultiColumnSplit && !widget.isInsideTable && !isNullOrUndefined(footnoteCollection) && footnoteCollection.length > 0 && this.isFitInClientArea(widget, viewer, footWidget) && widget.previousRenderedWidget && widget.bodyWidget.page === (widget.previousRenderedWidget as BlockWidget).bodyWidget.page) {
+                footHeight = this.getFootNoteHeight(footnoteCollection);
+                let bottom: number = this.updateFootnoteHeight(widget, false, true);
+                if (widget.previousRenderedWidget.y + widget.previousRenderedWidget.height + footHeight + (widget.firstChild as LineWidget).height > bottom && this.viewer.clientArea.bottom <= bottom) {
+                    isSplit = true;
+                }
+            }
             skipFootNoteHeight = false;
             //let isContainsFootnote: boolean = false;
-            if (this.isFitInClientArea(widget, viewer, footWidget) || (viewer.clientActiveArea.height < (widget.firstChild as LineWidget).height && this.viewer.clientActiveArea.y === this.viewer.clientArea.y)
+            if ((this.isFitInClientArea(widget, viewer, footWidget) && !isSplit) || (viewer.clientActiveArea.height < (widget.firstChild as LineWidget).height && this.viewer.clientActiveArea.y === this.viewer.clientArea.y)
                 || (this.isMultiColumnSplit && widget.bodyWidget.sectionFormat.numberOfColumns - 1 !== widget.bodyWidget.columnIndex)) {
+                if (!isNullOrUndefined(footnoteCollection) && !isNullOrUndefined(footWidget) && footWidget.length > 0) {
+                    for (let k: number = 0; k < footWidget.length; k++) {
+                        footnoteCollection.push(footWidget[k])
+                    }
+                }
                 if (this.keepWithNext) {
                     this.updateClientPositionForBlock(widget.containerWidget.firstChild as BlockWidget, widget);
                     this.keepWithNext = false;
@@ -10670,6 +10832,9 @@ export class Layout {
                     viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
                 }
             } else {
+                if (!isNullOrUndefined(footnoteCollection)) {
+                    footnoteCollection.length = 0;
+                }
                 const previousBlock: BlockWidget = widget.previousRenderedWidget as BlockWidget;
                 let isPageBreak: boolean = false;
                 let isColumnBreak: boolean = false;
@@ -10681,7 +10846,7 @@ export class Layout {
                     this.viewer instanceof PageLayoutViewer) {
                     isColumnBreak = true;
                 }
-                const isSplittedToNewPage: boolean = this.splitWidget(widget, viewer, prevBodyWidget, index + 1, isPageBreak, footWidget, isColumnBreak);
+                const isSplittedToNewPage: boolean = this.splitWidget(widget, viewer, prevBodyWidget, index + 1, isPageBreak, footWidget, isColumnBreak, isSplit ? footHeight : 0);
                 this.updateFloatingElementPosition(widget);
                 prevWidget = undefined;
                 if (prevBodyWidget !== widget.containerWidget) {
@@ -10862,11 +11027,28 @@ export class Layout {
                     let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
                     for (let x: number = 0; x < cell.childWidgets.length; x++) {
                         let block: BlockWidget = cell.childWidgets[x] as BlockWidget;
-                        footnoteElements = this.getFootNotesOfBlock(block, footnoteElements);
+                        if (block instanceof TableWidget) {
+                            let footWidgets: BodyWidget[] = this.getFootNoteWidgetsOf(block, isShifting);
+                            for (let f: number = 0; f < footWidgets.length; f++) {
+                                if (footnoteWidgets.indexOf(footWidgets[f]) === -1) {
+                                    footnoteWidgets.push(footWidgets[f]);
+                                }
+                            }
+                        } else {
+                            footnoteElements = this.getFootNotesOfBlock(block, footnoteElements);
+                        }
                         let blockfootnoteWidgets: BodyWidget[] = this.getFootNoteWidgetsBy(block, footnoteElements);
-                        for (let f: number = 0; f < blockfootnoteWidgets.length; f++) {
-                            if (footnoteWidgets.indexOf(blockfootnoteWidgets[f]) === -1) {
-                                footnoteWidgets.push(blockfootnoteWidgets[f]);
+                        if (isShifting && blockfootnoteWidgets.length === 0) {
+                            for (var l = 0; l < footnoteElements.length; l++) {
+                                if (footnoteWidgets.indexOf(footnoteElements[l].bodyWidget) === -1) {
+                                    footnoteWidgets.push(footnoteElements[l].bodyWidget);
+                                }
+                            }
+                        } else {
+                            for (let f: number = 0; f < blockfootnoteWidgets.length; f++) {
+                                if (footnoteWidgets.indexOf(blockfootnoteWidgets[f]) === -1) {
+                                    footnoteWidgets.push(blockfootnoteWidgets[f]);
+                                }
                             }
                         }
                     }
@@ -11092,7 +11274,7 @@ export class Layout {
         }
     }
     /* eslint-disable-next-line max-len */
-    private splitWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousBodyWidget: BodyWidget, index: number, isPageBreak: boolean, footWidget?: BodyWidget[], isColumnBreak?: boolean): boolean {
+    private splitWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousBodyWidget: BodyWidget, index: number, isPageBreak: boolean, footWidget?: BodyWidget[], isColumnBreak?: boolean, footHeight?: number): boolean {
         const firstLine: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
         const keepLinesTogether: boolean = (paragraphWidget.paragraphFormat.keepLinesTogether && (this.viewer.clientActiveArea.y !== this.viewer.clientArea.y));
         let maxElementHeight: number = keepLinesTogether ? paragraphWidget.height : this.getMaxElementHeight(firstLine);
@@ -11110,7 +11292,11 @@ export class Layout {
             }
             //maxElementHeight += (paragraphWidget.bodyWidget.page.footnoteWidget.childWidgets[0] as ParagraphWidget).height;
         }
-        if (viewer.clientActiveArea.height >= maxElementHeight && !isPageBreak && !isColumnBreak) {
+        let height: number = 0;
+        if (!isNullOrUndefined(footHeight) && footHeight > 0) {
+            height = footHeight;
+        }
+        if (viewer.clientActiveArea.height >= maxElementHeight + height && !isPageBreak && !isColumnBreak) {
             let splittedWidget: ParagraphWidget = undefined;
             const widgetIndex: number = paragraphView.indexOf(paragraphWidget);
             if (widgetIndex < (paragraphView.length - 1)) {
@@ -11606,7 +11792,7 @@ export class Layout {
         return { bodyWidget: prevBodyWidget, index: index };
     }
 
-    public moveBlocksToNextPage(block: BlockWidget, moveFootnoteFromLastBlock?: boolean, childStartIndex?: number, sectionBreakContinuous?: boolean, isEndnote?: boolean): BodyWidget {
+    public moveBlocksToNextPage(block: BlockWidget, moveFootnoteFromLastBlock?: boolean, childStartIndex?: number, sectionBreakContinuous?: boolean, isEndnote?: boolean, isTableSplit?: boolean): BodyWidget {
         const body: BodyWidget = block.bodyWidget as BodyWidget;
         this.viewer.columnLayoutArea.setColumns(body.sectionFormat);
         let nextColumn: WColumnFormat = this.viewer.columnLayoutArea.getNextColumnByBodyWidget(block.bodyWidget);
@@ -11725,7 +11911,7 @@ export class Layout {
                 } else {
                     lastBlock = body.lastChild as BlockWidget;
                 }
-                if (moveFootnoteFromLastBlock) {
+                if (moveFootnoteFromLastBlock || (isTableSplit && block !== lastBlock && !(lastBlock instanceof TableWidget) && lastBlock.isLayouted)) {
                     const footWidget: BodyWidget[] = this.getFootNoteWidgetsOf(lastBlock);
                     this.moveFootNotesToPage(footWidget, body, nextBody);
                 }

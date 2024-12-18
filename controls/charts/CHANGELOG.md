@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I662154` - Axis labels are now rendered correctly in the exported PDF, even when headers and footers are included.
+- `#I662546` - Tooltip highlighting functions correctly when the column series width is specified using `columnWidthInPixel`.
+- `#I662277` - The intermediate sum index is no longer included in the calculation of the sum index.
+- `#I663653` - Data labels are now rendered correctly when the intermediate sum index is empty.
+- `#I663652` - The calculations for both sum and intermediate sum indexes have been corrected.
+
 ## 28.1.33 (2024-12-12)
 
 ### Chart

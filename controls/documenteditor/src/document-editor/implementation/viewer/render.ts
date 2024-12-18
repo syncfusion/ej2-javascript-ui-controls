@@ -548,6 +548,10 @@ export class Renderer {
                 this.renderPathElement(shape, shapeLeft, shapeTop);
             }
         }
+        else if(shape.fillFormat && shape.fillFormat.color && shapeType === 'Oval') {
+            this.pageContext.fillStyle = shape.fillFormat.color;
+            this.renderPathElement(shape, shapeLeft, shapeTop);
+        }
         if (!isNullOrUndefined(shapeType)) {
             if (shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') {
                 this.pageContext.lineWidth = shape.lineFormat.weight;
@@ -1378,10 +1382,19 @@ private calculatePathBounds(data: string): Rect {
                         }
                         let widget: SelectionWidgetInfo[] = widgetInfo.get(lineWidget);
                         for (var j = 0; j < widget.length; j++) {
-                            let startX = widget[j].left - 2;
+                            let paragraph: ParagraphWidget = lineWidget.paragraph;
+                            let startX: number = 0;
+                            const firstLineIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+                            const leftIndent = HelperMethods.convertPointToPixel(paragraph.leftIndent);
+                            if (paragraph.paragraphFormat.listFormat.listId !== -1) {
+                                startX = widget[j].left - leftIndent - 2;
+                            }
+                            else {
+                                startX = widget[j].left - leftIndent - firstLineIndent - 2;
+                            }
                             let endX = widget[j].left + widget[j].width + 2;
                             if (widgetInfo.length - 1 > lineIndex) {
-                                endX = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
+                                endX = this.documentHelper.getParagraphLeftPosition(paragraph) + this.getContainerWidth(paragraph, page) + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.borders.right.space);
                             }
                             let startY = top;
                             let endY = top + lineWidget.height;
@@ -1391,36 +1404,39 @@ private calculatePathBounds(data: string): Rect {
                                 //top
                                 this.renderSingleBorder(color, startX, startY, endX, startY, 1, 'single');
                                 //bottom
-                                if (widgetInfo.length === 1 || (isNullOrUndefined(lineWidget.paragraph.nextWidget) && lineWidget === lineWidget.paragraph.lastChild)) {
+                                if (widgetInfo.length === 1 || (isNullOrUndefined(paragraph.nextWidget) && lineWidget === paragraph.lastChild)) {
                                     this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
                                 }
                             }
                             else if (lineWidget !== contenControl.line && lineWidget !== contenControl.reference.line) {
                                 //top
-                                if (isNullOrUndefined(lineWidget.paragraph.previousWidget) && lineWidget === lineWidget.paragraph.firstChild) {
+                                if (isNullOrUndefined(paragraph.previousWidget) && lineWidget === paragraph.firstChild) {
                                     this.renderSingleBorder(color, startX, startY, endX, startY, 1, 'single');
                                 }
-                                let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[lineIndex - 1]);
-                                this.renderSingleBorder(color, startX, startY, widgets[j].left - 2, startY, 1, 'single');
+                                else if (contenControl.contentControlWidgetType !== 'Block') {
+                                    let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[lineIndex - 1]);
+                                    this.renderSingleBorder(color, startX, startY, widgets[j].left - 2, startY, 1, 'single');
+                                }
                                 //bottom
-                                if (isNullOrUndefined(lineWidget.paragraph.nextWidget) && lineWidget === lineWidget.paragraph.lastChild) {
+                                if (isNullOrUndefined(paragraph.nextWidget) && lineWidget === paragraph.lastChild) {
+                                    endX = this.documentHelper.getParagraphLeftPosition(paragraph) + this.getContainerWidth(paragraph, page) + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.borders.right.space);
                                     this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
                                 }
                             }
                             else if (lineIndex === widgetInfo.length - 1 && lineWidget === contenControl.reference.line) {
                                 //Top
                                 let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[lineIndex - 1]);
-                                if (isNullOrUndefined(lineWidget.paragraph.previousWidget) && lineWidget === lineWidget.paragraph.firstChild) {
-                                    endX = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
+                                if (isNullOrUndefined(paragraph.previousWidget) && lineWidget === paragraph.firstChild) {
+                                    endX = this.documentHelper.getParagraphLeftPosition(paragraph) + this.getContainerWidth(paragraph, page) + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.borders.right.space);
                                     this.renderSingleBorder(color, startX, startY, endX, startY, 1, 'single');
                                 }
                                 else if (startX > widgets[j].left) {
                                     this.renderSingleBorder(color, widgets[j].left - 2, startY, startX, startY, 1, 'single');
                                 }
-                                let lastLine: LineWidget = lineWidget.paragraph.lastChild as LineWidget;
-                                if (!isNullOrUndefined(lastLine) && lineWidget === lastLine && lastLine.children[lastLine.children.length - 1] instanceof ContentControl  && lastLine.children[lastLine.children.length - 1] === contenControl.reference && contenControl.contentControlWidgetType === 'Block') {
+                                let lastLine: LineWidget = paragraph.lastChild as LineWidget;
+                                if (!isNullOrUndefined(lastLine) && (!isNullOrUndefined(page.nextPage) || !isNullOrUndefined(paragraph.nextWidget)) && lineWidget === lastLine && lastLine.children[lastLine.children.length - 1] instanceof ContentControl  && lastLine.children[lastLine.children.length - 1] === contenControl.reference && contenControl.contentControlWidgetType === 'Block') {
                                     //bottom
-                                    endX = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
+                                    endX = this.documentHelper.getParagraphLeftPosition(paragraph) + this.getContainerWidth(paragraph, page) + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.borders.right.space);
                                     this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
                                 }
                                 else {
@@ -1429,9 +1445,9 @@ private calculatePathBounds(data: string): Rect {
                                     //top
                                     if (widgetInfo.length > 1) {
                                         let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[lineIndex - 1]);
-                                        let endUpdated = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
+                                        let endUpdated = this.documentHelper.getParagraphLeftPosition(paragraph) + this.getContainerWidth(paragraph, page) + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.borders.right.space);
                                         this.renderSingleBorder(color, endX, startY, endUpdated, startY, 1, 'single');
-                                        if (startX < widgets[j].left - 2) {
+                                        if (startX < widgets[j].left - 2  && contenControl.contentControlWidgetType !== 'Block') {
                                             this.renderSingleBorder(color, widgets[j].left - 2, startY, startX, startY, 1, 'single');
                                         }
                                     }

@@ -24,7 +24,9 @@ import {
     Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs, contentControlEvent,
     beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType, HeaderFooterType,
     ContentControlInfo,
-    ContentControlType
+    ContentControlType,
+    aftercontentControlFillEvent,
+    beforecontentControlFillEvent
 } from '../../base/index';
 import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
@@ -206,6 +208,14 @@ export class Selection {
      * @private
      */
     public previousSelectedFormField: FieldElementBox = undefined;
+    /**
+     * @private
+     */
+    public previousSelectedContentControl: ContentControl = undefined;
+    /**
+     * @private
+     */
+    public currentContentControl: ContentControl = undefined;
     /**
      * @private
      */
@@ -2857,6 +2867,26 @@ export class Selection {
 
             currentFieldData = { 'fieldName': currentField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(currentField) };
             this.owner.trigger(beforeFormFieldFillEvent, currentFieldData);
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public triggerContentControlFillEvent(): void {
+        let currentContentControl = this.currentContentControl;
+        let previousContentControl = this.previousSelectedContentControl;
+        if (!isNullOrUndefined(previousContentControl) && previousContentControl.contentControlProperties) {
+            let data = { 'Text': this.owner.editor.getResultContentControlText(previousContentControl) };
+            this.owner.trigger(aftercontentControlFillEvent, data);
+            if (!isNullOrUndefined(previousContentControl.contentControlProperties.xmlMapping) && previousContentControl.contentControlProperties.xmlMapping.isContentControlMapped) {
+                let xpath = previousContentControl.contentControlProperties.xmlMapping.xPath;
+                this.owner.xmlPaneModule.updateContent(data.Text, xpath);
+            }
+        }
+        if (!isNullOrUndefined(currentContentControl) && currentContentControl.contentControlProperties) {
+            let data = { 'Text': this.owner.editor.getResultContentControlText(currentContentControl) };
+            this.owner.trigger(beforecontentControlFillEvent, data);
         }
     }
 
@@ -7682,10 +7712,18 @@ export class Selection {
         if (!isNullOrUndefined(this.previousSelectedFormField) && isNullOrUndefined(this.previousSelectedFormField.fieldSeparator)) {
             this.previousSelectedFormField = this.currentFormField;
         }
-        if (!this.skipFormatRetrieval) {
+        if(isSelectionChanged) {
+            this.previousSelectedContentControl = this.currentContentControl;
+        }
+        if (this.documentHelper.contentControlCollection.length > 0 && !this.owner.editor.isRemoteAction) {
+            this.currentContentControl = this.owner.editor.getContentControl();
+        } else {
+            this.currentContentControl = undefined;
+        }
+        if (!this.skipFormatRetrieval && !(!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isBuildHeading)) {
             this.retrieveCurrentFormatProperties();
         }
-        if (this.documentHelper.contentControlCollection.length > 0) {
+        if (this.documentHelper.contentControlCollection.length > 0 && !(!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isBuildHeading)) {
             this.contentControl = this.owner.editor.getContentControl();
         }
         this.documentHelper.clearSelectionHighlight();

@@ -5044,3 +5044,41 @@ describe('EJ2-908921: Add Form Opens When Pressing Insert Key While Alert Messag
         gridObj = preventDefault = null;
     });
 });
+
+
+describe('922786 - Unable to navigate to editTemplate with keyboard while adding record', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true, validationRules: { required: true, number: true } },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150,validationRules: { required: true } },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150, editType: 'dropdownedit', editTemplate: "<div> <input /></div>" },
+                ],
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('check add record input length', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'add') {
+                expect(gridObj.editModule.formObj.element
+                    .querySelectorAll('input:not([type="hidden"],.e-numeric-hidden,.e-disabled), select:not([aria-hidden="true"]), button:not(.e-hide)').length).toBe(3);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.addRecord();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

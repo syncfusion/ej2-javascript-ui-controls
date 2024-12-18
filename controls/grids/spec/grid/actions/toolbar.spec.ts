@@ -437,3 +437,76 @@ describe('EJ2-899326 => Script error occurs on selecting records in Adaptive UI 
         gridObj = null;
     });
 });
+
+describe('EJ2-924659 => Export Options Not Disabled When Properties Are Set to False for Adaptive mode => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 24),
+                allowPaging: true,
+                rowRenderingMode: 'Vertical',
+                enableAdaptiveUI: true,
+                showColumnChooser: true,
+                allowExcelExport: false,
+                allowPdfExport: false,
+                height: '100%',
+                width: 600,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search', 'ColumnChooser', 'ExcelExport', 'PdfExport'],
+                pageSettings: { pageSize: 12, pageSizes: true },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' },
+                ],
+            }, done);
+    });
+
+    it('In expect checks the context menu items wer disabled or not in adaptive mode', function (done) {
+        const toolbarMenuButton: HTMLElement = gridObj.toolbarModule.toolbar.element.querySelector('.e-responsive-toolbar-items');
+        toolbarMenuButton.click();
+        const menuItems = document.querySelectorAll('.e-menu-item');
+        expect(menuItems[0].classList.contains('e-disabled')).toBeFalsy();
+        expect(menuItems[1].classList.contains('e-disabled')).toBeTruthy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-924659 => Export Options Not Disabled When Properties Are Set to False for normal mode => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 24),
+                allowPaging: true,
+                showColumnChooser: false,
+                allowExcelExport: false,
+                allowPdfExport: false,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search', 'ColumnChooser', 'ExcelExport', 'PdfExport', 'CsvExport'],
+                pageSettings: { pageSize: 12, pageSizes: true },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' },
+                ],
+            }, done);
+    });
+
+    it('In expect checks the context menu items wer disabled or not in normal mode', function (done) {
+        expect((document.getElementById(gridObj.element.id+'_excelexport') as any).ariaDisabled).toBeTruthy();
+        expect((document.getElementById(gridObj.element.id+'_pdfexport') as any).ariaDisabled).toBeTruthy();
+        expect((document.getElementById(gridObj.element.id+'_columnchooser') as any).ariaDisabled).toBeTruthy();
+        expect((document.getElementById(gridObj.element.id+'_csvexport') as any).ariaDisabled).toBeTruthy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

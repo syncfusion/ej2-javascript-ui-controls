@@ -1909,6 +1909,161 @@ describe('Chart Control', () =>{
             chart.enableRtl = true;
             chart.appendTo('#container');
         });
+        describe('Checking the titlePadding and labelPadding', function () {
+            let chart: Chart;
+            let ele: HTMLElement;
+            let loaded: EmitType<ILoadedEventArgs>;
+            let element: Element;
+            let posX: string;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'container' });
+                document.body.appendChild(ele);
+                chart = new Chart(
+                    {
+                    primaryXAxis: { 
+                        valueType: 'Category', 
+                        rangePadding: 'Normal', 
+                        title: 'Country', 
+                    },
+                    primaryYAxis: { 
+                        title: 'PrimaryYAxis', 
+                    },
+                    series: [{ 
+                        dataSource: categoryData, 
+                        xName: 'x',
+                        yName: 'y',
+                        fill: 'red', 
+                    }],
+                    height: '400px', 
+                    width: '900px',
+                });
+            });
+            afterAll((): void => {
+                chart.destroy();
+                ele.remove();
+            });
+            it('Checking yAxis with labelPosition Inside', (done: Function) => {
+                loaded = (args: Object): void => {
+                    element = document.getElementById('container_AxisTitle_1');
+                    let element1 = document.getElementById('container1_AxisLabel_6');
+                    let titleX = element.getAttribute('x');
+                    let titleY = element.getAttribute('y');
+                    let labelX = element1.getAttribute('x');
+                    let labelY = element1.getAttribute('y');
+                    expect(titleX === '26.5' || titleX === '27.5').toBe(true);
+                    expect(titleY === '176.875').toBe(true);
+                    expect(labelX === '138' || labelX === '139').toBe(true);
+                    expect(labelY === '107.25' || labelY === '106.5' ).toBe(true);
+                    done();
+                };
+                chart.loaded = loaded;
+                chart.primaryYAxis.titlePadding = 50;
+                chart.primaryYAxis.labelPadding = 50;
+                chart.primaryYAxis.labelPosition = 'Inside';
+                chart.appendTo('#container');
+            });
+            it('Checking yAxis with tickPosition Inside', (done: Function) => {
+                loaded = (args: Object): void => {
+                    element = document.getElementById('container_AxisTitle_1');
+                    let element1 = document.getElementById('container1_AxisLabel_5');
+                    let titleX = element.getAttribute('x');
+                    let titleY = element.getAttribute('y');
+                    let labelX = element1.getAttribute('x');
+                    let labelY = element1.getAttribute('y');
+                    expect(titleX === '71.5' || titleX === '72.5').toBe(true);
+                    expect(titleY === '126.875').toBe(true);
+                    expect(labelX === '82' || labelX === '83').toBe(true);
+                    expect(labelY === '135').toBe(true);
+                    done();
+                };
+                chart.loaded = loaded;
+                chart.primaryYAxis.labelPosition = 'Outside';
+                chart.primaryYAxis.tickPosition = 'Inside';
+                chart.appendTo('#container');
+            });
+            it('Checking yAxis with both Position Inside', (done: Function) => {
+                loaded = (args: Object): void => {
+                    element = document.getElementById('container_AxisTitle_1');
+                    let element1 = document.getElementById('container1_AxisLabel_4');
+                    let titleX = element.getAttribute('x');
+                    let titleY = element.getAttribute('y');
+                    let labelX = element1.getAttribute('x');
+                    let labelY = element1.getAttribute('y');
+                    expect(titleX === '26.5' || titleX === '27.5').toBe(true);
+                    expect(titleY === '176.875').toBe(true);
+                    expect(labelX === '138' || labelX === '139').toBe(true);
+                    expect(labelY === '190.25' || labelY === '189.5').toBe(true);
+                    done();
+                };
+                chart.loaded = loaded;
+                chart.primaryYAxis.labelPosition = 'Inside';
+                chart.primaryYAxis.tickPosition = 'Inside';
+                chart.appendTo('#container');
+            });
+            it('Checking xAxis with labelPosition Inside', (done: Function) => {
+                loaded = (args: Object): void => {
+                    element = document.getElementById('container_AxisTitle_0');
+                    let element1 = document.getElementById('container0_AxisLabel_6');
+                    let titleX = element.getAttribute('x');
+                    let titleY = element.getAttribute('y');
+                    let labelX = element1.getAttribute('x');
+                    let labelY = element1.getAttribute('y');
+                    expect(titleX === '471.75' || titleX === '472.25').toBe(true);
+                    expect(titleY === '385.5' || titleY === '385.25').toBe(true);
+                    expect(labelX === '722.15625' || labelX === '722.34375').toBe(true);
+                    expect(labelY === '268' || labelY === '267').toBe(true);
+                    done();
+                };
+                chart.loaded = loaded;
+                chart.primaryYAxis.titlePadding = 5;
+                chart.primaryYAxis.labelPadding = 5;
+                chart.primaryYAxis.labelPosition = 'Outside';
+                chart.primaryYAxis.tickPosition = 'Outside';
+                chart.primaryXAxis.titlePadding = 50;
+                chart.primaryXAxis.labelPadding = 50;
+                chart.primaryXAxis.labelPosition = 'Inside';
+                chart.appendTo('#container');
+            });
+            it('Checking xAxis with tickPosition Inside', (done: Function) => {
+                loaded = (args: Object): void => {
+                    element = document.getElementById('container_AxisTitle_0');
+                    let element1 = document.getElementById('container0_AxisLabel_3');
+                    let titleX = element.getAttribute('x');
+                    let titleY = element.getAttribute('y');
+                    let labelX = element1.getAttribute('x');
+                    let labelY = element1.getAttribute('y');
+                    expect(titleX === '471.75' || titleX === '472.25').toBe(true);
+                    expect(titleY === '385.5' || titleY === '385.25').toBe(true);
+                    expect(labelX === '397.46875' || labelX === '398.03125').toBe(true);
+                    expect(labelY === '320.25' || labelY === '319.5').toBe(true);
+                    done();
+                };
+                chart.loaded = loaded;
+                chart.primaryXAxis.labelPosition = 'Outside';
+                chart.primaryXAxis.tickPosition = 'Inside';
+                chart.appendTo('#container');
+            });
+            it('Checking xAxis with both Position Inside', (done: Function) => {
+                loaded = (args: Object): void => {
+                    element = document.getElementById('container_AxisTitle_0');
+                    let element1 = document.getElementById('container0_AxisLabel_4');
+                    let titleX = element.getAttribute('x');
+                    let titleY = element.getAttribute('y');
+                    let labelX = element1.getAttribute('x');
+                    let labelY = element1.getAttribute('y');
+                    expect(titleX === '471.75' || titleX === '472.25' ).toBe(true);
+                    expect(titleY === '385.5' || titleY === '385.25').toBe(true);
+                    expect(labelX === '507.53125' || labelX === '507.96875').toBe(true);
+                    expect(labelY === '268' || labelY === '267').toBe(true);
+                    done();
+                };
+                chart.loaded = loaded;
+                chart.primaryXAxis.labelPosition = 'Inside';
+                chart.primaryXAxis.tickPosition = 'Inside';
+                chart.appendTo('#container');
+            });
+
+        })
     });
 
 });

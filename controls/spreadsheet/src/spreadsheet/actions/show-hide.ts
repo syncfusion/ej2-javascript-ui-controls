@@ -289,10 +289,11 @@ export class ShowHide {
             let skipDetach: boolean = args.freezePane;
             let direction: string = 'lastElementChild';
             let detachedHeight: number = 0;
+            const viewportTopIdx: number = this.parent.viewport.topIndex + frozenRow;
             if (isFinite) {
                 const lastIdx: number = skipHiddenIdx(sheet, sheet.rowCount - 1, false);
                 if (this.parent.viewport.bottomIndex === lastIdx) {
-                    if (this.parent.viewport.topIndex + frozenRow === skipHiddenIdx(sheet, frozenRow, true)) {
+                    if (viewportTopIdx === skipHiddenIdx(sheet, frozenRow, true)) {
                         skipDetach = true;
                     } else {
                         const topLeftCell: number = getRangeIndexes(sheet.paneTopLeftCell)[0];
@@ -385,6 +386,7 @@ export class ShowHide {
             if (idx === undefined) {
                 return;
             }
+            let refreshUI: boolean;
             if (!args.freezePane) {
                 if (args.isFiltering && args.startIndex < getCellIndexes(sheet.paneTopLeftCell)[0]) {
                     eventArgs.refreshUI = true;
@@ -392,13 +394,18 @@ export class ShowHide {
                         return;
                     }
                 }
+                const prevBottomIdx: number = this.parent.viewport.bottomIndex;
                 this.parent.viewport.bottomIndex = this.parent.viewport.topIndex + frozenRow + this.parent.viewport.rowCount +
                     (this.parent.getThreshold('row') * 2);
-                count = this.parent.hiddenCount(this.parent.viewport.topIndex + frozenRow, args.startIndex) +
-                    this.parent.hiddenCount(args.endIndex + 1, this.parent.viewport.bottomIndex);
+                const endHiddenCount: number = this.parent.hiddenCount(args.endIndex + 1, this.parent.viewport.bottomIndex);
+                count = this.parent.hiddenCount(this.parent.viewport.topIndex + frozenRow, args.startIndex) + endHiddenCount;
                 this.parent.viewport.bottomIndex += count;
                 if (isFinite && this.parent.viewport.bottomIndex >= sheet.rowCount) {
                     this.parent.viewport.bottomIndex = skipHiddenIdx(sheet, sheet.rowCount - 1, false);
+                }
+                if (!args.isFiltering && startRow >= viewportTopIdx && startRow <= prevBottomIdx && startRow >
+                    (this.parent.viewport.bottomIndex - endHiddenCount - Math.abs(endRow - startRow))) {
+                    refreshUI = true;
                 }
             }
             args.insertIdx = eventArgs.insertIdx = idx; args.row = eventArgs.row = frag.querySelector('.e-row');
@@ -442,7 +449,7 @@ export class ShowHide {
             if (isFinite) {
                 this.parent.notify(updateTranslate, { height: height, size: detachedHeight });
             }
-            if (Math.abs(endRow - startRow) > this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2)) {
+            if (refreshUI || (Math.abs(endRow - startRow) > this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2))) {
                 this.parent.renderModule.refreshSheet(false, false, true);
             } else {
                 if (rowHdr) {

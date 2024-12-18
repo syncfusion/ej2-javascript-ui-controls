@@ -1127,4 +1127,48 @@ describe('Column chooser module', () => {
     //         gridObj = null;
     //     });
     // });
+
+    describe('Coverage Improvement - 1', () => {
+        let gridObj: Grid;
+        let beforeOpenColumnChooser: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                    ],
+                    beforeOpenColumnChooser: beforeOpenColumnChooser,
+                }, done);
+        });
+
+        it('Coverage Improvement - function and method ', () => {
+            const ccInstance: any = gridObj.columnChooserModule as any;
+            ccInstance.keyUpHandler({});
+            ccInstance.onResetColumns({});
+            ccInstance.renderResponsiveColumnChooserDiv({});
+            ccInstance.mOpenDlg();
+            ccInstance.serviceLocator = null;
+            ccInstance.setFullScreenDialog();
+            ccInstance.innerDiv = null;
+            ccInstance.rtlUpdate();
+
+        });
+        
+
+
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

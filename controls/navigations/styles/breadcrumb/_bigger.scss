@@ -29,6 +29,12 @@
         }
       }
 
+      @if $breadcrumb-skin == 'tailwind3' {
+        &.e-icon-item .e-breadcrumb-text {
+          padding: 5px !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+
       .e-breadcrumb-text {
         font-size: $breadcrumb-bigger-font-size;
 

@@ -92,7 +92,8 @@ export class Scroll implements IAction {
             && this.parent.height.toString().indexOf('%') < 0) {
             height = parseInt(height, 10) - Scroll.getScrollBarWidth();
         }
-        if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto') {
+        if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto' &&
+            this.parent.height !== '100%') {
             const tbody: HTMLElement = (this.parent.getHeaderContent()
                 .querySelector( literals.tbody + ':not(.e-masked-tbody)') as HTMLElement);
             mHdrHeight = tbody ? tbody.offsetHeight : 0;
@@ -104,7 +105,7 @@ export class Scroll implements IAction {
                 && this.parent.getHeaderContent().querySelector('.e-masked-table')) {
                 height = parseInt(height as string, 10) - (this.parent.frozenRows * this.parent.getRowHeight());
             }
-            content.style.height = formatUnit((height as number) - mHdrHeight);
+            content.style.height = formatUnit(parseInt(height as string, 10) - mHdrHeight);
         } else {
             content.style.height = formatUnit(height);
         }

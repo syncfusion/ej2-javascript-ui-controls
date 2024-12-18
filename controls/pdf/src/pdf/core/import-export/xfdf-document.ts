@@ -1779,6 +1779,9 @@ export class _XfdfDocument extends _ExportHelper {
                                 annotation._ref = reference;
                                 const index: number = annotations._annotations.length;
                                 annotations._annotations.push(reference);
+                                if (annotations._comments && annotations._comments.length > 0) {
+                                    annotations._comments = [];
+                                }
                                 pageDictionary.set('Annots', annotations._annotations);
                                 pageDictionary._updated = true;
                                 annotations._parsedAnnotations.set(index, annotation);

@@ -535,7 +535,7 @@ $dialog-active-icon-color: $icon-color-hover;
 $dialog-btn-clr: $icon-color;
 $de-tooltip-color: $content-text-color;
 $de-blink-cursor-clr: rgba(0, 0, 0) !default;
-$de-avatar-clr: var(--color-sf-dialog-border) !default;
+$de-avatar-clr: $white !default;
 $de-pane-color-border: $primary !default;
 $de-rp-btn-bg-color: '';
 $de-rp-btn-nav-box-shadow: $shadow-md;

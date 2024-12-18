@@ -17,10 +17,12 @@
     .e-message-icon {
       height: 40px;
       width: 40px;
+      font-size: 16px;
     }
     .e-user-icon {
       height: 32px;
       width: 32px;
+      font-size: 14px;
     }
     .e-left {
       &:not(.e-message-item-template) {
@@ -60,13 +62,13 @@
         .e-textarea {
           min-height: 38px;
           @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-            padding: 6px 12px 6px 16px;
+            padding: 10px 12px 0 16px;
             min-height: 28px;
           }
         }
         &.e-rtl .e-textarea {
           @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-            padding: 6px 16px 6px 12px;
+            padding: 10px 16px 0 12px;
           }
         }
       }

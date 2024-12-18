@@ -1,9 +1,9 @@
 import { getDPRValue, hideAutoFillElement, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
-import { closest, detach, EventHandler } from '@syncfusion/ej2-base';
+import { closest, detach, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth } from '../common/index';
 import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit, refreshFilterCellsOnResize } from '../common/index';
-import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
+import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol, getSheet } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
 import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected, beginAction } from '../../workbook/common/index';
 import { getFormattedCellObject, hideShow, NumberFormatArgs } from '../../workbook/common/index';
@@ -296,11 +296,11 @@ export class Resize {
         }
     }
 
-    private setAutoFitHandler(args: { idx: number, isCol: boolean }): void {
+    private setAutoFitHandler(args: { idx: number, isCol: boolean, sheetIdx?: number }): void {
         if (args.isCol && isHiddenCol(this.parent.getActiveSheet(), args.idx)) {
             this.showHiddenColumns(args.idx);
         } else {
-            this.setAutofit(args.idx, args.isCol);
+            this.setAutofit(args.idx, args.isCol, null, null, args.sheetIdx);
         }
     }
 
@@ -334,8 +334,15 @@ export class Resize {
         return displayText;
     }
 
-    private setAutofit(idx: number, isCol: boolean, prevData?: string, hdrCell?: Element): void {
-        const sheet: SheetModel = this.parent.getActiveSheet(); let autoFitWithHeader: boolean;
+    private setAutofit(
+        idx: number,
+        isCol: boolean,
+        prevData?: string,
+        hdrCell?: Element,
+        sheetIdx?: number): void {
+        const sheet: SheetModel = !isNullOrUndefined(sheetIdx) ? getSheet(this.parent, sheetIdx) : this.parent.getActiveSheet();
+        let autoFitWithHeader: boolean;
+        const isActiveSheet: boolean = !isNullOrUndefined(sheetIdx) ? sheetIdx === this.parent.activeSheetIndex : true;
         if (hdrCell) {
             const eventArgs: { [key: string]: string | number | boolean } = { cancel: false, index: idx, isCol: isCol,
                 sheetIndex: this.parent.activeSheetIndex };
@@ -433,10 +440,14 @@ export class Resize {
             if ((frozenCol && idx >= getRangeIndexes(sheet.topLeftCell)[1] && idx < frozenCol) ||
                 (idx >= this.parent.viewport.leftIndex + frozenCol && idx <= this.parent.viewport.rightIndex)) {
                 getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
-                this.resizeStart(idx, this.parent.getViewportIndex(idx, true), autofitValue + 'px', isCol, true, prevData);
-                this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
+                if (isActiveSheet) {
+                    this.resizeStart(idx, this.parent.getViewportIndex(idx, true), autofitValue + 'px', isCol, true, prevData);
+                    this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
+                }
             } else {
-                this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
+                if (isActiveSheet) {
+                    this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
+                }
                 getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
             }
         } else {
@@ -447,14 +458,20 @@ export class Resize {
                 (idx >= this.parent.viewport.topIndex + frozenRow && idx <= this.parent.viewport.bottomIndex)) {
                 setRowHeight(sheet, idx, autofitValue);
                 setRow(sheet, idx, { customHeight: false });
-                this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
-                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+                if (isActiveSheet) {
+                    this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
+                    this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+                }
             } else {
-                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+                if (isActiveSheet) {
+                    this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+                }
                 setRowHeight(sheet, idx, autofitValue);
             }
         }
-        this.parent.selectRange(sheet.selectedRange);
+        if (isActiveSheet) {
+            this.parent.selectRange(sheet.selectedRange);
+        }
     }
 
     private getMergedColumnsWidth(colSpan: number, colIndex: number, sheet: SheetModel): number {

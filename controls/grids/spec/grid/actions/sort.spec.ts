@@ -8,7 +8,7 @@ import { Sort } from '../../../src/grid/actions/sort';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Page } from '../../../src/grid/actions/page';
 import { Group } from '../../../src/grid/actions/group';
-import { data } from '../base/datasource.spec';
+import { data, employeeData } from '../base/datasource.spec';
 import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Column } from '../../../src/grid/models/column';
@@ -880,4 +880,46 @@ describe('Sorting module => ', () => {
         });
     });
 
+    describe('EJ2-924933 Script error occurs while searching for data after clearing the sorting => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowSorting: true,
+                    toolbar: ['Search'],
+                    sortSettings: { columns: [{field: 'EmployeeID', direction: 'Ascending'}] },
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'City', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                    childGrid: {
+                        dataSource: data,
+                        queryString: 'EmployeeID',
+                        allowSorting: true,
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                            { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                            { field: 'Freight', headerText: 'Freight', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                        ],
+                    },
+                }, done);
+        });
+        it('clear sorting', (done: Function) => {
+            gridObj.clearSorting();
+            done();
+        });
+        it('focus the element value', (done: Function) => {
+            expect(gridObj.focusModule.currentInfo.element).toBeUndefined();
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

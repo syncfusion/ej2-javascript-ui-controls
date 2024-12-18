@@ -765,7 +765,7 @@ export class BaseLegend {
         this.itemPadding = this.isBulletChartControl ? legend.padding : this.itemPadding;
         const isPaging: boolean = legend.enablePages;
         const titlePosition: LegendTitlePosition = legend.titlePosition;
-        const upArrowHeight: number = this.isPaging && !legend.enablePages && this.isVertical && !(this.legend.layout === 'Auto') ? this.pageButtonSize : 0;
+        const upArrowHeight: number = this.isPaging && !legend.enablePages && this.isVertical && ((chart.getModuleName() !== 'accumulationchart' && chart.getModuleName() !== 'chart') || this.legend.layout === 'Auto') ? this.pageButtonSize : 0;
         const legendGroup: Element = chart.renderer.createGroup({ id: this.legendID + '_g' });
         const legendTranslateGroup: Element = this.createLegendElements(chart, legendBounds, legendGroup, legend, this.legendID, redraw);
         this.legendRegions = [];
@@ -1556,7 +1556,7 @@ export class BaseLegend {
             (page ? this.getPageHeight(this.pageHeights, page) : 0) : ((this.clipPathHeight) * page);
         if (!isCanvas && (this.isChartControl || this.isAccChartControl)) {
             this.clipRect.setAttribute('height', (this.pageHeights[page as number] - (this.isTitle && this.isTop && (this.isChartControl || !this.isVertical || legend.layout !== 'Auto') ? this.legendTitleSize.height : 0) - legend.containerPadding.top - legend.containerPadding.bottom).toString());
-            if (this.isAccChartControl && this.isPaging && !legend.enablePages && this.isVertical && legend.layout === 'Auto') {
+            if (this.isAccChartControl && this.isPaging && !legend.enablePages && this.isVertical && (this.chart.getModuleName() !== 'accumulationchart' || legend.layout === 'Auto')) {
                 this.clipRect.setAttribute('height', this.legendBounds.height.toString());
             }
         }

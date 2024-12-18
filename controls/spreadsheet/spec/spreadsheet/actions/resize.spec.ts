@@ -481,7 +481,7 @@ describe('Resize ->', () => {
                 }, 50);
             });
         });
-        describe('EJ2-876040, EJ2-911629 ->', () => {
+        describe('EJ2-876040, EJ2-911629, EJ2-924641 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [
@@ -489,6 +489,14 @@ describe('Resize ->', () => {
                             rows: [
                                 { cells: [{ value: 'Add Some Content' }] }, { cells: [{ value: '100' }] }, { cells: [{ value: '100' }] }, { cells: [{ value: '100' }] }
                             ]
+                        },
+                        {
+                            rows: [
+                                { cells: [{ value: 'Add Some Content' }, { value: '10' }, { value: '12345678909876543211234567890' }], height: 50 },
+                                { cells: [{ value: '10' }], height: 70 },
+                                { cells: [{ value: '12345678' }], height: 80 }
+                            ],
+                            columns: [{ width: 300 }, { width: 400 }, { width: 500 }]
                         }
                     ]
                 }, done);
@@ -515,6 +523,50 @@ describe('Resize ->', () => {
                 helper.invoke('autoFit', ['B']);
                 setTimeout((): void => {
                     expect(helper.getInstance().sheets[0].columns[0].width).toBe(200);
+                    done();
+                });
+            });
+            it('AutoFit method does not works if we pass the range along with sheet name.', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                expect(spreadsheet.sheets[1].columns[0].width).toBe(300);
+                expect(spreadsheet.sheets[1].columns[1].width).toBe(400);
+                expect(spreadsheet.sheets[1].columns[2].width).toBe(500);
+                let colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[0];
+                expect(colHdr.clientWidth).toBe(199);
+                colHdr = helper.invoke('getColHeaderTable').rows[0].cells[1]
+                expect(colHdr.clientWidth).toBe(63);
+                colHdr = helper.invoke('getColHeaderTable').rows[0].cells[2];
+                expect(colHdr.clientWidth).toBe(63);
+                helper.invoke('autoFit', ['Sheet2!A:C']);
+                setTimeout((): void => {
+                    colHdr = helper.invoke('getColHeaderTable').rows[0].cells[0];
+                    expect(colHdr.clientWidth).toBe(199);
+                    colHdr = helper.invoke('getColHeaderTable').rows[0].cells[1];
+                    expect(colHdr.clientWidth).toBe(63);
+                    colHdr = helper.invoke('getColHeaderTable').rows[0].cells[2];
+                    expect(colHdr.clientWidth).toBe(63);
+                    expect(spreadsheet.sheets[1].columns[0].width).toBe(118);
+                    expect(spreadsheet.sheets[1].columns[1].width).toBe(20);
+                    expect(spreadsheet.sheets[1].columns[2].width).toBe(217);
+                    expect(spreadsheet.sheets[1].rows[0].height).toBe(50);
+                    expect(spreadsheet.sheets[1].rows[1].height).toBe(70);
+                    expect(spreadsheet.sheets[1].rows[2].height).toBe(80);
+                    let rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+                    expect(rowHdr.clientHeight).toBe(24);
+                    rowHdr = helper.invoke('getRowHeaderTable').rows[1].cells[0];
+                    expect(rowHdr.clientHeight).toBe(24);
+                    rowHdr = helper.invoke('getRowHeaderTable').rows[2].cells[0];
+                    expect(rowHdr.clientHeight).toBe(24);
+                    helper.invoke('autoFit', ['Sheet2!1:3']);
+                    expect(spreadsheet.sheets[1].rows[0].height).toBe(20);
+                    expect(spreadsheet.sheets[1].rows[1].height).toBe(20);
+                    expect(spreadsheet.sheets[1].rows[2].height).toBe(20);
+                    rowHdr = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+                    expect(rowHdr.clientHeight).toBe(24);
+                    rowHdr = helper.invoke('getRowHeaderTable').rows[1].cells[0];
+                    expect(rowHdr.clientHeight).toBe(24);
+                    rowHdr = helper.invoke('getRowHeaderTable').rows[2].cells[0];
+                    expect(rowHdr.clientHeight).toBe(24);
                     done();
                 });
             });

@@ -2,15 +2,24 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### Accordion
+
+#### Bug Fixes
+
+- `#I660165` - The issue with " The accordion causing a script error when expanding it with the `expandMode` set to single" has been resolved.
+- `#I924619` - Added `cancel` support to the Accordion component's click event. This allows users to programmatically restrict the toggle behaviour expand or collapse by setting `cancel` as `true`.
+
 ## 28.1.33 (2024-12-12)
 
 ### ContextMenu
 
 #### Features
 
-- The context menu now includes `scroller support`, improving accessibility and usability across all devices. Submenus dynamically adjust to fit the available screen space.
+- The context menu now features `Scroller support`, enhancing accessibility and usability across all devices. Submenus dynamically adjust to the available screen space, ensuring a smooth and user-friendly navigation experience. This update makes accessing all menu items more efficient and intuitive.
 
-- The context menu now includes `Template Support`, enabling the embedding of custom layouts, controls, or components for seamless integration of text, buttons, images, and icons.
+- The context menu now supports `Template Support`, embedding custom layouts, controls, or components, allowing for flexible integration of text, buttons, images, and icons to enhance user-friendliness.
 
 ### Menu
 

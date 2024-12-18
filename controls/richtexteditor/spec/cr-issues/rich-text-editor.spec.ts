@@ -2364,6 +2364,43 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('926827 - Without focusing the editor, changing the list type adds extra bullet points', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let editNode: HTMLElement;
+        let curDocument: Document;
+        let innerHTML: string = `<ul style="list-style-image: none; list-style-type: square"><li>cgvhj​</li></ul>`;
+        beforeAll(() => {
+            rteObj = renderRTE({ 
+                toolbarSettings: {
+                    items: ['BulletFormatList']
+                }
+            });
+            elem = rteObj.element;
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            curDocument = rteObj.contentModule.getDocument();
+            editNode.innerHTML = innerHTML;
+        });
+
+        it('Without focusing the editor, changing the list type adds extra bullet points', () => {
+            rteObj.focusIn()
+            let trg = document.querySelector('[title="Bullet Format List (Ctrl+Alt+O)"]').childNodes[0].childNodes[0] as HTMLElement
+            let event = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            trg.dispatchEvent(event);
+            (document.querySelector('[title="Bullet Format List (Ctrl+Alt+O)"]').childNodes[0] as HTMLElement).click();
+            (document.querySelector('.e-dropdown-popup').childNodes[0].childNodes[1] as HTMLElement).click();
+            expect(editNode.innerHTML == `<ul style="list-style-image: none; list-style-type: disc;"><li>cgvhj​</li></ul>`).toBe(true)
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('847101 - The image focus and resize class names are not removed when the editor in focused out. - ', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {

@@ -45,14 +45,14 @@ export class DragAndDrop extends ActionBase {
     private isPreventMultiDrag: boolean = false;
     private slotsUptoCursor: number = -1;
     private eleTop: number = 0;
+    private distanceUptoCursor: number = 0;
 
     public wireDragEvent(element: HTMLElement): void {
-        const isVerticalView: boolean = ['Day', 'Week', 'WorkWeek'].indexOf(this.parent.currentView) > -1;
         new Draggable(element, {
             abort: '.' + cls.EVENT_RESIZE_CLASS,
             clone: true,
             isDragScroll: true,
-            enableTailMode: (this.parent.eventDragArea || isVerticalView) ? true : false,
+            enableTailMode: this.parent.eventDragArea ? true : false,
             cursorAt: (this.parent.eventDragArea) ? { left: -20, top: -20 } : { left: 0, top: 0 },
             dragArea: this.dragArea,
             dragStart: this.dragStart.bind(this),
@@ -77,8 +77,12 @@ export class DragAndDrop extends ActionBase {
         }
         this.setDragActionDefaultValues();
         this.actionObj.element = e.element as HTMLElement;
-        this.eleTop = parseFloat(this.actionObj.element.style.top);
-        this.slotsUptoCursor = -1;
+        if (e.sender && ['Day', 'Week', 'WorkWeek'].indexOf(this.parent.currentView) > -1) {
+            const eventArgs: (MouseEvent & TouchEvent) | Touch = this.parent.eventBase.getPageCoordinates(e.sender);
+            this.distanceUptoCursor = eventArgs.clientY - this.actionObj.element.getBoundingClientRect().top;
+            this.eleTop = parseFloat(this.actionObj.element.style.top);
+            this.slotsUptoCursor = -1;
+        }
         this.actionObj.action = 'drag';
         let elements: Element[] = [];
         if (!this.parent.allowMultiDrag || isNullOrUndefined(this.parent.selectedElements) || this.parent.selectedElements.length === 0 ||
@@ -154,11 +158,11 @@ export class DragAndDrop extends ActionBase {
             let top: number = parseInt(<string>e.top, 10);
             top = top < 0 ? 0 : top;
             if (this.slotsUptoCursor < 0) {
-                const cellsCountUptoCursor: number = Math.floor(top / cellHeight);
+                const cellsCountUptoCursor: number = Math.floor((this.eleTop + this.distanceUptoCursor) / cellHeight);
                 const cellsCountUptoEleTop: number = Math.floor(this.eleTop / cellHeight);
                 this.slotsUptoCursor = cellsCountUptoCursor - cellsCountUptoEleTop;
             }
-            top = (Math.floor((top + 1) / cellHeight) - this.slotsUptoCursor) * cellHeight;
+            top = (Math.floor((top + this.distanceUptoCursor + 1) / cellHeight) - this.slotsUptoCursor) * cellHeight;
             topValue = formatUnit(top < 0 ? 0 : top);
             const scrollHeight: number = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
             const cloneBottom: number = parseInt(topValue, 10) + this.actionObj.clone.offsetHeight;

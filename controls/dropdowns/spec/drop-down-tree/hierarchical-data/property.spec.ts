@@ -1726,4 +1726,79 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect((ddtreeObj as any).popupObj.element.firstElementChild.innerText).toBe('There is no record found');
         });
     });
+    describe('Perform testing by rendering the Dropdown Tree', () => {
+        let ddtreeObj: any;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+        let originalTimeout: any;
+        let ele: HTMLInputElement;
+        beforeEach((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            ddtreeObj = undefined;
+            ele = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (ddtreeObj)
+                ddtreeObj.destroy();
+                ddtreeObj = undefined
+            ele.remove();
+            document.body.innerHTML = '';
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('Trigger the selectAll API property programatically', function (done) {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true, expandOn: 'Auto', loadOnDemand: true },
+                showCheckBox: true,
+                allowMultiSelection: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.selectAll(true);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(24);
+                ddtreeObj.clear();
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(0);
+                ddtreeObj.showPopup();
+                setTimeout(function () {
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+                    let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+                    let checkEle: Element = li[1];
+                    let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    checkEle.querySelector('.e-frame').dispatchEvent(e);
+                    e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    checkEle.querySelector('.e-frame').dispatchEvent(e);
+                    e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    checkEle.querySelector('.e-frame').dispatchEvent(e);
+                    expect(checkEle.getAttribute('aria-checked')).toBe('true');
+                    expect(ddtreeObj.value.length).toBe(1);
+                    expect(ddtreeObj.value.indexOf('2') !== -1).toBe(true);
+                    ddtreeObj.hidePopup();
+                    ddtreeObj.showPopup();
+                    setTimeout(function () {
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("New South Wales");
+                        expect(ddtreeObj.value.indexOf('2') !== -1).toBe(true);
+                        expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
+                        done();
+                    }, 350);
+                }, 350);
+            }, 350);
+        });
+    });
 });

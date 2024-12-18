@@ -221,11 +221,15 @@ export class WaterfallSeries extends ColumnBase {
             }
         }
         if (sumIndex !== undefined && sumIndex.length > 0) {
+            let intermediateSumCount: number = 0;
             for (let k: number = 0; k < sumIndex.length; k++) {
                 for (let j: number = 0; j < data.length; j++) {
                     if (j === sumIndex[k as number]) {
-                        if (intermediateSum !== undefined) {
-                            index = subArraySum(data, intermediateSum[k as number] - 1, sumIndex[k as number], sumIndex, series);
+                        if (intermediateSum !== undefined && intermediateSum.length > intermediateSumCount &&
+                            intermediateSum[k as number] !== sumIndex[k as number]) {
+                            index = subArraySum(data, intermediateSum.length <= 1 ? intermediateSum[0] - 1 :
+                                intermediateSum[k as number] - 1, sumIndex[k as number], sumIndex, series);
+                            intermediateSumCount += 1;
                         } else {
                             if (k === 0) {
                                 index = subArraySum(data, -1, sumIndex[k as number], null, series);

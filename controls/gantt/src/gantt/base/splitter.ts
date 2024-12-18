@@ -13,6 +13,7 @@ export class Splitter {
     public splitterObject: SplitterLayout;
     public splitterPreviousPositionGrid: string;
     public splitterPreviousPositionChart: string;
+    private isSplitterResized: boolean = false;
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
         this.parent.on('destroy', this.destroy, this);
@@ -74,11 +75,12 @@ export class Splitter {
             },
             resizeStop: (args: ISplitterResizedEventArgs) => {
                 this.parent['calculateDimensions']();
+                this.isSplitterResized = true;
                 const leftPane: HTMLElement = args.pane[0];
                 this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
                 this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);
                 this.parent.splitterSettings.position = this.splitterObject.paneSettings[0].size;
-                this.splitterObject.paneSettings[1].size = (this.parent.ganttWidth - parseInt(this.splitterPreviousPositionGrid, 10) - 4) + 'px';
+                this.splitterObject.paneSettings[1].size = (this.parent.ganttWidth - parseInt(this.splitterPreviousPositionGrid, 10) - this.parent.splitterSettings.separatorSize) + 'px';
                 const callBackPromise: Deferred = new Deferred();
                 this.parent.trigger('splitterResized', args, (splitterResizedArgs: ISplitterResizedEventArgs) => {
                     if (splitterResizedArgs.cancel === true) {
@@ -192,7 +194,10 @@ export class Splitter {
         const splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings);
         this.splitterObject.paneSettings[0].min = this.getSpliterPositionInPercentage(this.parent.splitterSettings.minimum);
         this.splitterObject.dataBind();
-        this.splitterObject.paneSettings[0].size = splitterPosition;
+        if (!this.isSplitterResized) {
+            this.splitterObject.paneSettings[0].size = splitterPosition;
+        }
+        this.isSplitterResized = false;
         if (isNullOrUndefined(this.parent.projectEndDate)) {
             this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
         }

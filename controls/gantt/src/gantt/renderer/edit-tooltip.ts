@@ -1,5 +1,5 @@
 import { Gantt } from '../base/gantt';
-import { getValue, Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getValue, Internationalization, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { BeforeTooltipRenderEventArgs, ITaskData } from '../base/interface';
 import { TaskbarEdit } from '../actions/taskbar-edit';
@@ -13,6 +13,7 @@ export class EditTooltip {
     public taskbarTooltipContainer: HTMLElement;
     public taskbarTooltipDiv: HTMLElement;
     private taskbarEdit: TaskbarEdit;
+    private toolTipHeight: string;
     constructor(gantt: Gantt, taskbarEdit: TaskbarEdit) {
         this.parent = gantt;
         this.taskbarEdit = taskbarEdit;
@@ -35,6 +36,7 @@ export class EditTooltip {
                 enableRtl: this.parent.enableRtl,
                 mouseTrail: mouseTrail,
                 cssClass: cls.ganttTooltip,
+                windowCollision : true,
                 target: target ? target : null,
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } }
             }
@@ -82,7 +84,7 @@ export class EditTooltip {
                 } else {
                     tooltipPositionY = top - (args.element.offsetHeight) - 8;
                 }
-                args.element.style.top = tooltipPositionY + 'px';
+                this.toolTipHeight = args.element.style.top = tooltipPositionY + 'px';
             }
         }
     }
@@ -134,7 +136,6 @@ export class EditTooltip {
 
         const left: number = (isNullOrUndefined(segmentIndex) || segmentIndex === -1) ? ganttProp.left : ganttProp.left +
             ganttProp.segments[segmentIndex as number].left;
-        let topValue: number;
         if (!isNullOrUndefined(this.toolTipObj)) {
             if (this.taskbarEdit.taskBarEditAction === 'ConnectorPointLeftDrag' ||
                 this.taskbarEdit.taskBarEditAction === 'ConnectorPointRightDrag') {
@@ -150,11 +151,9 @@ export class EditTooltip {
                 this.toolTipObj.content = this.getTooltipText(segmentIndex);
                 if (ganttProp.segments && ganttProp.segments.length > 0 && this.taskbarEdit['mainElement'] && this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
                     const segments: NodeListOf<Element> = this.taskbarEdit['mainElement'].querySelectorAll('.e-segmented-taskbar');
-                    topValue = segments[segmentIndex as number].getBoundingClientRect().top;
                     this.toolTipObj.refresh(segments[segmentIndex as number] as HTMLElement);
                 }
                 else {
-                    topValue = this.taskbarEdit.taskBarEditElement.getBoundingClientRect().top;
                     this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement);
                 }
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
@@ -184,11 +183,8 @@ export class EditTooltip {
                 } else if (taskWidth > 5) {
                     this.toolTipObj.offsetX = -(taskWidth + left - this.taskbarEdit.tooltipPositionX);
                 }
-                if (topValue && this.parent.tooltipSettings.editing) {
-                    if (document.getElementsByClassName('e-gantt-tooltip')[0]) {
-                        (document.getElementsByClassName('e-gantt-tooltip')[0] as HTMLElement).style.top = topValue -
-                            this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'] + window.scrollY + 'px';
-                    }
+                if (this.parent.tooltipSettings.editing && document.getElementsByClassName('e-gantt-tooltip')[0] && this.toolTipHeight) {
+                    (document.getElementsByClassName('e-gantt-tooltip')[0] as HTMLElement).style.top = this.toolTipHeight;
                 }
             }
         }
@@ -201,7 +197,7 @@ export class EditTooltip {
      * @returns {void} .
      * @private
      */
-    private getTooltipText(segmentIndex: number): string | HTMLElement {
+    private getTooltipText(segmentIndex: number): string | HTMLElement | Function {
         let tooltipString: string | HTMLElement = '';
         const instance: Internationalization = this.parent.globalize;
         let editRecord: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties as ITaskData;
@@ -287,7 +283,15 @@ export class EditTooltip {
             }
             }
         }
-        return tooltipString;
+        if (typeof tooltipString === 'string') {
+            const contentTemp: Function = function (): string {
+                return tooltipString as string;
+            };
+            return initializeCSPTemplate(contentTemp);
+        }
+        else {
+            return tooltipString;
+        }
     }
 
 }

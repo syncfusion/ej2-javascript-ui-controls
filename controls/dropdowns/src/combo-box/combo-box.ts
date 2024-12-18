@@ -795,6 +795,7 @@ export class ComboBox extends DropDownList {
             super.clearAll(e);
         }
         if (this.isFiltering() && !isNullOrUndefined(e) && e.target === this.inputWrapper.clearButton) {
+            this.typedString = this.filterInput.value;
             this.searchLists(e);
         }
     }

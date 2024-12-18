@@ -657,4 +657,22 @@ export let remoteData2_1: { [key: string]: Object }[] = [
     },
 ];
 
-
+export let popupClosedata: { [key: string]: Object }[] = [
+    {
+      id: '1',
+      name: 'Parent',
+      subChild: [
+        {
+          id: '2',
+          name: 'Child',
+          subChild: [],
+          htmlAttributes: {
+            title: 'Child item',
+          },
+        },
+      ],
+      htmlAttributes: {
+        title: 'Attribute',
+      },
+    }
+];

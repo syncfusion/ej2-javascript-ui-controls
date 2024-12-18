@@ -233,3 +233,21 @@
     content: '\e7e7';
   }
 }
+
+.e-contextmenu-container {
+  .e-menu-item {
+    .e-menu-icon {
+      &.e-pdfexport::before {
+        content: '\e700';
+      }
+      
+      &.e-excelexport::before {
+        content: '\e7c1';
+      }
+      
+      &.e-csvexport::before {
+        content: '\e7ba';
+      }
+    }
+  }
+}

@@ -535,8 +535,7 @@ export class Dependency {
                         }
                     }
                 }
-                if (flatData[count as number].hasChildRecords && this.parent.editModule &&
-                    flatData[count as number].ganttProperties.startDate
+                if (flatData[count as number].hasChildRecords && flatData[count as number].ganttProperties.startDate
                     && this.parent.allowParentDependency) {
                     this.updateChildItems(flatData[count as number]);
                 }
@@ -1116,7 +1115,7 @@ export class Dependency {
      * @returns {void} .
      */
     private updateChildItems(ganttRecord: IGanttData): void {
-        if (ganttRecord.childRecords.length > 0 && this.validatedChildItems.length > 0) {
+        if (ganttRecord.childRecords.length > 0 && this.validatedChildItems && this.validatedChildItems.length > 0) {
             let isPresent: boolean = true;
             isPresent = !ganttRecord.childRecords.some((record: IGanttData) => {
                 return this.validatedChildItems['includes'](record as Object);

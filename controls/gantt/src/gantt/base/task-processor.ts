@@ -1476,10 +1476,9 @@ export class TaskProcessor extends DateProcessor {
      */
     public getTaskWidth(startDate: Date, endDate: Date, ganttData?: ITaskData): number {
         const sDate: Date = new Date(startDate.getTime()); const eDate: Date = new Date(endDate.getTime());
-        let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
-            this.parent.timelineModule.topTier;
-        const zoomOrTimeline: Object = this.parent.currentZoomingLevel ? this.parent.currentZoomingLevel :
-            this.parent.timelineSettings;
+        let tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
+            this.parent.timelineModule.customTimelineSettings.topTier.unit;
+        const zoomOrTimeline: Object = this.parent.timelineModule.customTimelineSettings;
         let countValue: number = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'].count :
             zoomOrTimeline['topTier'].count;
         let isValid: boolean = false;
@@ -1640,7 +1639,8 @@ export class TaskProcessor extends DateProcessor {
                         tierMode = topTier['unit'];
                         countValue = topTier['count'];
                     }
-                    if (tierMode === 'Hour' && countValue === 1 && sOffset !== eOffset && sOffset > eOffset) {
+                    const unitHour: boolean = ((tierMode === 'Hour' && countValue === 1) || (tierMode === 'Minutes' && countValue === 60));
+                    if (unitHour && sOffset !== eOffset && sOffset > eOffset) {
                         totalWidth = totalWidth - (this.parent.perDayWidth / 24);
                     }
                     return totalWidth;
@@ -1702,10 +1702,9 @@ export class TaskProcessor extends DateProcessor {
     public getTaskLeft(startDate: Date, isMilestone: boolean, isFromTimelineVirtulization?: boolean): number {
         let isTimeSet: boolean = false;
         const date: Date = new Date(startDate.getTime());
-        let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
-            this.parent.timelineModule.topTier;
-        const zoomOrTimeline: Object = this.parent.currentZoomingLevel ? this.parent.currentZoomingLevel :
-            this.parent.timelineSettings;
+        let tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
+            this.parent.timelineModule.customTimelineSettings.topTier.unit;
+        const zoomOrTimeline: Object = this.parent.timelineModule.customTimelineSettings;
         let countValue: number = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'].count :
             zoomOrTimeline['topTier'].count;
         if (tierMode === 'Day') {
@@ -1802,7 +1801,8 @@ export class TaskProcessor extends DateProcessor {
                 tierMode = topTier['unit'];
                 countValue = topTier['count'];
             }
-            if (hasDST && countValue === 1 && tierMode === 'Hour' && startDate >= transitions['dstStart'] && isBeforeOrAtDSTStart) {
+            const unitHour: boolean = ((tierMode === 'Hour' && countValue === 1) || (tierMode === 'Minutes' && countValue === 60));
+            if (hasDST && unitHour && startDate >= transitions['dstStart'] && isBeforeOrAtDSTStart) {
                 leftValue = leftValue - (this.parent.perDayWidth / 24);
             }
             return leftValue;

@@ -400,7 +400,6 @@
     }
     &.e-vertical .e-stepper-progressbar {
       min-height: inherit;
-      height: inherit;
       width: $stepper-progress-bar-height;
       top: $stepper-ol-padding;
       left: var(--progress-position);

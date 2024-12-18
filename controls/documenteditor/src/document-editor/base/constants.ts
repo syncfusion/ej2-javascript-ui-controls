@@ -27,6 +27,10 @@ export const customContextMenuBeforeOpenEvent: string = 'customContextMenuBefore
 /** @hidden */
 export const contentControlEvent: string = 'contentControl';
 /** @hidden */
+export const beforecontentControlFillEvent: string = 'beforeContentControlFill';
+/** @hidden */
+export const aftercontentControlFillEvent: string = 'afterContentControlFill';
+/** @hidden */
 export const commentBeginEvent: string = 'commentBegin';
 /** @hidden */
 export const commentEndEvent: string = 'commentEnd';

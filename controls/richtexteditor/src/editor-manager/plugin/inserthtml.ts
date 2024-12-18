@@ -215,7 +215,7 @@ export class InsertHtml {
         docElement: Document, isCollapsed: boolean, closestParentNode: Node, editNode?: Element, enterAction?: string): void {
         const isCursor: boolean = range.startOffset === range.endOffset &&
         range.startContainer === range.endContainer;
-        if (isCursor && range.startContainer === editNode && editNode.textContent === '') {
+        if (isCursor && range.startContainer === editNode && editNode.textContent === '' && range.startOffset === 0 && range.endOffset === 0) {
             const currentBlockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
             nodeSelection.setSelectionText(docElement, currentBlockNode, currentBlockNode, 0, 0);
             range = nodeSelection.getRange(docElement);
@@ -581,9 +581,19 @@ export class InsertHtml {
                 }
             }
             if (blockNode && blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH' || blockNode.nodeName === 'TR') {
-                const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
-                range.insertNode(tempSpan);
-                tempSpan.parentNode.replaceChild(node, tempSpan);
+                let parentElem: Node = range.startContainer;
+                while (!isNOU(parentElem) && parentElem.parentElement !== blockNode) {
+                    parentElem = parentElem.parentElement as Node;
+                }
+                range.deleteContents();
+                const splitedElm: Node = nodeCutter.GetSpliceNode(range, parentElem as HTMLElement);
+                if (splitedElm) {
+                    splitedElm.parentNode.replaceChild(node, splitedElm);
+                } else {
+                    range.insertNode(node);
+                }
+                this.contentsDeleted = true;
+                return;
             } else {
                 const nodeSelection: NodeSelection = new NodeSelection(editNode as HTMLElement);
                 const currentNode: Node = this.getNodeCollection(range, nodeSelection, node)[this.getNodeCollection(

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### Grid
+
+#### Bug fixes
+
+- `#I659877` - Fixed the issue where the `getSelectedRecords` method retained previous selections when virtual scrolling was enabled.
+- `#I660588` - The issue of a script error occurring while searching for data after clearing the sorting in the hierarchy grid has been resolved.
+- `#I660594` - The problem of the vertical scrollbar disappearing when frozen rows are enabled in the responsive grid has been resolved.
+- `#F195226` - The issue of being unable to navigate to the `editTemplate` with the keyboard while adding a record has been resolved.
+- `#I656905` - Fixed an issue where clearing filters in the grid with custom page sizes displayed all records on one page.
+
 ## 28.1.33 (2024-12-12)
 
 ### Grid

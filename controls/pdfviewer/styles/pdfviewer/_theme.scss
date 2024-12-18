@@ -491,7 +491,7 @@ $lg-desktop: 1399.98;
       padding-left: 0;
     }
   }
-
+  
   .e-pv-primary-toolbar .e-toolbar .e-dropdown-btn {
     @if $skin-name=='tailwind3' {
       font-weight: 600 !important;/* stylelint-disable-line declaration-no-important */
@@ -1755,10 +1755,9 @@ $lg-desktop: 1399.98;
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-caret,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret,
   .e-pv-annotation-comment-panel-container .e-pv-tbar-btn,
-  .e-pv-comment-panel-title-container .e-pv-annotation-tools-close-icon.e-pv-icon,
-  .e-pv-annotation-toolbar .e-pv-prop-dropdown {
+  .e-pv-comment-panel-title-container .e-pv-annotation-tools-close-icon.e-pv-icon {
     color: $pv-icon-color;
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark' or $skin-name == 'tailwind3') {
       box-shadow: none;
     }
   }
@@ -1821,8 +1820,7 @@ $lg-desktop: 1399.98;
   .e-input-group.e-control-wrapper.e-pv-prop-dropdown.e-ddl.e-valid-input:not(.e-input-focus):hover,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-caret:focus,
   .e-input-group.e-control-wrapper.e-pv-prop-dropdown-rtl.e-ddl.e-valid-input:not(.e-input-focus):hover,
-  .e-pv-annotation-comment-panel-container .e-pv-tbar-btn:hover,
-  .e-pv-annotation-toolbar .e-pv-prop-dropdown:hover span {
+  .e-pv-annotation-comment-panel-container .e-pv-tbar-btn:hover {
     @if $skin-name == 'bootstrap4' {
       color: $pv-icon-color-hover;
     }
@@ -1855,10 +1853,10 @@ $lg-desktop: 1399.98;
     @if $skin-name == 'bootstrap4' {
       color: $pv-icon-color-hover;
     }
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+    @if ($skin-name == 'bootstrap5.3') {
       color: $pv-icon-color;
     }
-    @if $skin-name == 'FluentUI' {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
       color: $pv-item-selection-color;
     }
   }
@@ -2401,9 +2399,7 @@ $lg-desktop: 1399.98;
     @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
       line-height: 1.71em;
     }
-    @if $skin-name != 'tailwind3' {
-      border-bottom: 2px solid;
-    }
+    border-bottom: 2px solid;
     margin-top: 0;
     padding-top: 5px;
     @if ($skin-name=='bootstrap5') {

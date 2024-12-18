@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I641521`,`#I643607` - `SelectRow` and `selectedRowIndex` now navigates properly to the selected records  when virtualization is enabled.
+
+### Tree Grid
+
 ## 28.1.33 (2024-12-12)
 
 ### Tree Grid

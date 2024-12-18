@@ -5375,3 +5375,59 @@ describe('EJ2-919939: Keyboard navigation with the "down-arrow" keys is not func
         gridObj = null;
     });
 });
+
+describe('EJ2-927007: Save the cell with enter key functionality not working properly for the last row after collapsing =>', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+        {
+            dataSource: data.slice(0,11),
+            editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+            allowGrouping: true,
+            groupSettings:{ columns:['ShipCountry'] },
+            toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                    validationRules: { required: true }, width: 120
+                },
+                {
+                    field: 'CustomerID', headerText: 'Customer ID', width: 140
+                },
+                { field: 'ShipName', headerText: 'Ship Name', width: 170 },
+                {
+                    field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150
+                }
+            ],
+            
+        }, done);
+    });
+
+
+    it('collapse the row', (done: Function) => {
+        gridObj.groupModule.expandCollapseRows(gridObj.getContent().querySelectorAll('.e-recordplusexpand')[6]);
+        done();
+    });
+    it('edit cell', (done: Function) => {
+        let cellEdit = (): void => {
+            expect(gridObj.isEdit).toBeFalsy();
+            gridObj.cellEdit = null;
+            done();
+        };
+        gridObj.cellEdit = cellEdit;
+        gridObj.editModule.editCell(9, 'CustomerID');
+    });
+
+    it('save the cell', (done: Function) => {
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-input.e-defaultcell') } as any);
+        expect(gridObj.element.querySelectorAll('.e-row')[9].querySelectorAll('td')[2].classList.contains('e-editedbatchcell')).toBeFalsy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

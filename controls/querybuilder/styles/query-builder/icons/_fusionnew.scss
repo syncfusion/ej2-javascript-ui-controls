@@ -1,0 +1,11 @@
+@include export-module('query-builder-fusionnew-icons') {
+  .e-query-builder {
+    & .e-collapse-rule::before {
+      content: '\e80e';
+    }
+
+    & .e-drag-qb-rule::before {
+      content: '\e726';
+    }
+  }
+}

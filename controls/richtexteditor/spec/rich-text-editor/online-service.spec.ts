@@ -46,7 +46,7 @@ describe('Test case with online service', () => {
             isOnline = false;
         }
     });
-    describe('901364 - After image delete is called multiple times when the CTRL + A is pressed multiple times.', ()=> {
+    xdescribe('901364 - After image delete is called multiple times when the CTRL + A is pressed multiple times.', ()=> {
         let editor: RichTextEditor;
         let imageSuccess: boolean = false;
         let imageRemove: boolean = false;
@@ -148,7 +148,7 @@ describe('Test case with online service', () => {
         });
     });
 
-    describe('908236: Web URL is disabled and not able to enter URL after uploading and deleting the image in Insert image pop up.', () => {
+    xdescribe('908236: Web URL is disabled and not able to enter URL after uploading and deleting the image in Insert image pop up.', () => {
         let editor: RichTextEditor;
         beforeAll((done: Function) => {
             editor = renderRTE({

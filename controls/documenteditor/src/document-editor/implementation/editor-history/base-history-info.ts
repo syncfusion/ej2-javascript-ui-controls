@@ -578,7 +578,11 @@ export class BaseHistoryInfo {
             if (this.owner.enableCollaborativeEditing) {
                 this.updateCollaborativeSelection(selectionStartTextPosition, selectionEndTextPosition);
             }
-            this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);
+            if (this.action === 'UpdateContentControl') {
+                this.revertContentControlProperties(selectionStartTextPosition, selectionEndTextPosition);
+            } else {
+                this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);
+            }
         } else {
             if (this.owner.enableCollaborativeEditing) {
                 if (!isNullOrUndefined(this.insertPosition)) {
@@ -935,6 +939,21 @@ export class BaseHistoryInfo {
         return !isNullOrUndefined(markedNode) ? markedNode : elementBox;
     }
 
+    private revertContentControlProperties(start: TextPosition, end: TextPosition): void {
+        if (!isNullOrUndefined(start) && !isNullOrUndefined(end)) {
+            this.owner.selectionModule.selectRange(start, end);
+        }
+        const contentcontrol: ContentControl = this.owner.editorModule.getContentControl();
+        const contenControlObject: any = this.modifiedProperties.pop();
+        if (contentcontrol) {
+            this.editorHistory.currentBaseHistoryInfo = this;
+            const content: any = this.owner.editorModule.getContentControlPropObject(contentcontrol.contentControlProperties);
+            this.owner.editorModule.assignContentControl(contentcontrol.contentControlProperties, contenControlObject);
+            this.modifiedProperties.push(content);
+            this.format = JSON.stringify(contenControlObject);
+        }
+    }
+
     private revertModifiedProperties(start: TextPosition, end: TextPosition): void {
         if (this.action === 'CellFormat' || this.action === 'CellOptions' || this.action === 'TableOptions') {
             this.owner.isShiftingEnabled = false;
@@ -1202,8 +1221,14 @@ export class BaseHistoryInfo {
     private insertRemovedNodes(deletedNodes: IWidget[], block: BlockWidget, endIndex?: string): void {
         // Use this property to relayout whole document (after complete all insertion intead of each section insertion) when insert section (this functionality already added in insertSection API).
         let isRelayout: boolean = false;
+        let isSelectionInsideTable: boolean = this.owner.selection.start.paragraph.isInsideTable;
         for (let i: number = deletedNodes.length - 1, index: number = 0; i > -1; i--) {
             let node: IWidget = deletedNodes[i];
+            // BUG 926010: If multiple blocks are inserted into a single cell, then the entire table will be layout for each block insertion, which may lead to performance issues.
+            // Therefore, we should layout the entire table only after the last block insertion.
+            if (i === 0) {
+                isSelectionInsideTable = false;
+            }
             if (this.isHyperlinkField && !isNullOrUndefined(endIndex) && node instanceof FieldElementBox && node.fieldType === 1) {
                 // Bug 873011: Updated the selection for field end element insertion on "Accept Change" undo case.
                 this.owner.selectionModule.start.setPositionInternal(this.owner.selectionModule.getTextPosBasedOnLogicalIndex(endIndex));
@@ -1234,7 +1259,7 @@ export class BaseHistoryInfo {
                             this.owner.selectionModule.end.setPositionParagraph(node.nextRenderedWidget.firstChild as LineWidget, 0);
                         }
                     } else {
-                        this.owner.editorModule.insertBlock(node);
+                        this.owner.editorModule.insertBlock(node, isSelectionInsideTable);
                     }
                 }
             } else if (node instanceof WCharacterFormat) {
@@ -2378,6 +2403,7 @@ export class BaseHistoryInfo {
             case 'Cut':
             case 'DeleteBookmark':
             case 'RemoveEditRange':
+            case 'RemoveContentControl':
                 if (this.editorHistory.isUndoing) {
                     if (action == "DeleteBookmark" || action == "RemoveEditRange") {
                         this.startIndex -= 1;
@@ -2450,6 +2476,10 @@ export class BaseHistoryInfo {
                                         let operation = operations[operations.length - 1];
                                         operation.offset -= 1;
                                     }
+                                } else if (action === "RemoveContentControl") {
+                                    let operation = this.getDeleteOperation(action, true);
+                                    operation.text = CONTROL_CHARACTERS.Marker_End;
+                                    operations.push(operation);
                                 }
                             }
                         }
@@ -2822,6 +2852,13 @@ export class BaseHistoryInfo {
                 this.type = 'CellFormat';
                 operations = this.getSelectedCellOperation(action, false, false, false, true).slice();
                 this.format = undefined;
+                break;
+            case 'UpdateContentControl':
+                if (this.modifiedProperties.length > 0) {
+                    const operation: Operation = this.getFormatOperation();
+                    operation.text = CONTROL_CHARACTERS.Marker_Start;
+                    operations.push(operation);
+                }
                 break;
         }
         this.cellOperation = [];
@@ -3215,7 +3252,7 @@ export class BaseHistoryInfo {
         }
         let selectionLength: number = !isNullOrUndefined(text) ? text.length : this.endIndex - this.startIndex;
         let removedText: string;
-        if (action === 'DeleteBookmark' || action === 'RemoveEditRange') {
+        if (action === 'DeleteBookmark' || action === 'RemoveEditRange' || action === "RemoveContentControl") {
             removedText = this.insertedText;
             selectionLength = 1;
         } else if (action === 'DeleteHeaderFooter') {
@@ -4565,7 +4602,7 @@ export interface MarkerInfo {
     /**
      * Reserved for internal use only.
      */
-    contentControl?: ContentControl,
+    contentControlProperties?: string,
     /**
      * Reserved for internal use only.
      */

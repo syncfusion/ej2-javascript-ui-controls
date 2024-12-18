@@ -2708,6 +2708,51 @@ describe("Accordion Testing", () => {
             expect(ele.childElementCount).toBe(2);
         });
     });
+    describe("Accordion Item Content Collapse Testing with args.cancel value", () => {
+        let accordion: Accordion;
+        document.body.innerHTML = "";
+        function click(e: AccordionClickArgs) {
+            e.cancel = true;
+        }
+        beforeEach((done: Function) => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "accordion";
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    clicked: click,
+                    items: [
+                        { header: "Item1", content: "Content of Item1" },
+                        { header: "Item2", content: "Content of Item2" }
+                    ]
+                }, ele);
+            (<HTMLElement>ele.querySelector("." + CLS_HEADER)).click();
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
+        afterEach((): void => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            let acrdnItem1: Element = ele.children[0];
+            let itemContent: Element = acrdnItem1.querySelector("." + CLS_CONTENT);
+            expect(isVisible(itemContent)).toBe(false);
+            expect(itemContent.classList.contains(CLS_CTNHIDE)).toBe(true);
+            expect(acrdnItem1.classList.contains(CLS_ACTIVE)).toBe(false);
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("Accordion Content Expand Testing", (done: Function) => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            (<HTMLElement>ele.querySelector("." + CLS_HEADER)).click();
+            setTimeout(() => { done(); }, TIME_DELAY);
+            let acrdnItem1: Element = ele.children[0];
+            let itemContent: Element = acrdnItem1.querySelector("." + CLS_CONTENT);
+            expect(isVisible(itemContent)).toBe(false);
+            expect(itemContent.classList.contains(CLS_CTNHIDE)).toBe(true);
+            expect(acrdnItem1.classList.contains(CLS_ACTIVE)).toBe(false);
+            
+        });
+    });
     describe("Accordion Event Flow testing for Expanding and expand ", () => {
         let accordion: any;
         function argsPushing(e: any, curObject: any): void {

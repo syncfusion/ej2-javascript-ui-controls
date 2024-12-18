@@ -506,7 +506,9 @@ export class DiagramEventHandler {
         }
         // EJ2-57541 - Added the below code to check whether diagram tool is instance of node drawing tool or connector drawing tool.
         // If node or connector drawing tool means then we have returned without perform any operation.
-        if (this.inAction === true && ( (this.tool) instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool )) {
+        // 923532: Event 'Completed' state not triggered with multiple button click Action
+        if ((this.inAction === true && ( (this.tool) instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool )) ||
+        (this.inAction === true && (evt.buttons && (evt.buttons & (evt.buttons - 1)) !== 0))) {
             return;
         }
         this.focus = true;

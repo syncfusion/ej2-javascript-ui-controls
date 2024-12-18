@@ -471,4 +471,20 @@
       }
     }
   }
+
+  .e-treelistgrid.e-print-grid-layout {
+    .e-icons.e-none::before {
+      content: '';
+    }
+
+    .e-treecolumn-container {
+      .e-icons:not(.e-frame) {
+        display: inline-block;
+      }
+    }
+
+    .e-treegridexpand {
+      transform: rotate(90deg);
+    }
+  }
 }

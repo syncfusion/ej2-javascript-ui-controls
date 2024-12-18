@@ -1609,7 +1609,8 @@ export class Signature {
                 this.fontsign[parseInt(i.toString(), 10)].classList.add('e-pv-selected-fontdiv');
                 this.fontsign[parseInt(i.toString(), 10)].style.borderColor = 'red';
             }
-            else if (isNullOrUndefined(this.fontName) && this.signfontStyle[parseInt(i.toString(), 10)].FontName === 'Helvetica') {
+            else if (isNullOrUndefined(this.fontName) &&
+                     !isNullOrUndefined(this.signfontStyle[parseInt(i.toString(), 10)].FontName) && i === 0) {
                 this.fontsign[parseInt(i.toString(), 10)].classList.add('e-pv-selected-fontdiv');
                 this.fontsign[parseInt(i.toString(), 10)].style.borderColor = 'red';
             }

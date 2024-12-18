@@ -3256,9 +3256,9 @@ export class PdfLineAnnotation extends PdfComment {
         if (this.border.dash === null || typeof this.border.dash === 'undefined') {
             this.border.dash = [];
             if (this.border.style === PdfBorderStyle.dashed) {
-                this.border.dash.push(4);
+                this.border.dash = [3, 1];
             } else if (this.border.style === PdfBorderStyle.dot) {
-                this.border.dash.push(2);
+                this.border.dash = [1, 1];
             }
         }
         if (this._measure) {
@@ -7009,16 +7009,20 @@ export class PdfInkAnnotation extends PdfComment {
                             index++;
                         }
                     } else {
-                        pathPointCont = count;
-                        pathPoints = new Array(pathPointCont);
                         if (count % 3 === 1) {
+                            pathPointCont = count;
+                            pathPoints = new Array(pathPointCont);
                             pathPoints = point;
                         } else if (count % 3 === 0) {
-                            for (let i: number = 0; i < count; i++) {
+                            pathPointCont = count + 1;
+                            pathPoints = new Array(pathPointCont);
+                            for (let i: number = 0; i < point.length; i++) {
                                 pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(i.toString(), 10)];
                             }
                         } else {
-                            for (let i: number = 0; i < count; i++) {
+                            pathPointCont = count + 2;
+                            pathPoints = new Array(pathPointCont);
+                            for (let i: number = 0; i < point.length; i++) {
                                 pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(i.toString(), 10)];
                             }
                             pathPoints[pathPointCont - 2] = point[point.length - 2];
@@ -7145,7 +7149,9 @@ export class PdfInkAnnotation extends PdfComment {
             });
         }
         const cropOrMediaBox: number[] = this._getCropOrMediaBox();
+        let containsCropOrMediaBox: boolean = false;
         if (cropOrMediaBox && cropOrMediaBox.length > 3 && typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number' && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
+            containsCropOrMediaBox = true;
             for (let i: number = 0; i < inkCollection.length; i++) {
                 const inkList: number[] = inkCollection[Number.parseInt(i.toString(), 10)];
                 const modifiedInkList: number[] = inkList;
@@ -7165,8 +7171,7 @@ export class PdfInkAnnotation extends PdfComment {
             }
             this._dictionary.update('InkList', inkCollection);
         }
-        if (this._isEnableControlPoints || (Array.isArray(cropOrMediaBox) && cropOrMediaBox.length > 3 &&
-            _areNotEqual(cropOrMediaBox, [0, 0, 0, 0]))) {
+        if (this._isEnableControlPoints || containsCropOrMediaBox) {
             return this._getInkBoundsValue(inkCollection);
         } else {
             if (!this._isFlatten) {
@@ -8314,7 +8319,7 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
      * ```
      */
     get destination(): PdfDestination {
-        if (this._isLoaded) {
+        if (this._isLoaded && !this._destination) {
             this.destination = this._obtainDestination();
         }
         return this._destination;
@@ -8351,8 +8356,11 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
      * ```
      */
     set destination(value: PdfDestination) {
-        if (value !== null) {
+        if (value) {
             this._destination = value;
+            if (this._isLoaded) {
+                this._destination._initializePrimitive();
+            }
         }
     }
     static _load(page: PdfPage, dictionary: _PdfDictionary): PdfDocumentLinkAnnotation {
@@ -8660,6 +8668,8 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
     _doPostProcess(isFlatten: boolean = false): void {
         if (!this._isLoaded) {
             this._postProcess();
+        } else if (this._destination) {
+            this._dictionary.update('Dest', this._destination._array);
         }
         if (isFlatten) {
             let appearanceStream: _PdfBaseStream;

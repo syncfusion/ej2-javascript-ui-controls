@@ -7540,7 +7540,7 @@ export class FormDesigner {
     }
 
     private getFontFamily(fontFamily: any): boolean {
-        const fontFamilyNames: string[] = ['Helvetica', 'Courier', 'TimesRoman', 'Symbol', 'ZapfDingbats'];
+        const fontFamilyNames: string[] = ['Helvetica', 'Courier', 'Times New Roman', 'Symbol', 'ZapfDingbats'];
         return fontFamilyNames.indexOf(fontFamily) > -1 ? true : false;
     }
 

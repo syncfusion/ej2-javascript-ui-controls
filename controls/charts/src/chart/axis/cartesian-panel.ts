@@ -239,7 +239,7 @@ export class CartesianAxisLayoutPanel {
                                 + axis.maxLabelSize.width + axis.multiLevelLabelHeight + (axis.tickPosition === 'Inside' ? axis.majorTickLines.height : 0) + axis.labelPadding;
                         }
                         else {
-                            x = rect.x + rect.width + sum(subArray(row.insideFarSizes, farCount));
+                            x = rect.x + rect.width - sum(subArray(row.insideFarSizes, farCount));
                         }
                     }
                     else {
@@ -255,7 +255,7 @@ export class CartesianAxisLayoutPanel {
                                 axis.multiLevelLabelHeight - (axis.tickPosition === 'Inside' ? axis.majorTickLines.height : 0) - axis.labelPadding;
                         }
                         else {
-                            x = rect.x - sum(subArray(row.insideNearSizes, nearCount));
+                            x = rect.x + sum(subArray(row.insideNearSizes, nearCount));
                         }
                     }
                     else {
@@ -293,7 +293,7 @@ export class CartesianAxisLayoutPanel {
                                 - axis.multiLevelLabelHeight - (axis.tickPosition === 'Inside' ? axis.majorTickLines.height : 0) - axis.labelPadding;
                         }
                         else {
-                            y = rect.y - sum(subArray(column.insideFarSizes, farCount));
+                            y = rect.y + sum(subArray(column.insideFarSizes, farCount));
                         }
                     }
                     else {
@@ -308,7 +308,7 @@ export class CartesianAxisLayoutPanel {
                                 + axis.multiLevelLabelHeight + (axis.tickPosition === 'Inside' ? axis.majorTickLines.height : 0) + axis.labelPadding;
                         }
                         else {
-                            y = rect.y + rect.height + sum(subArray(column.insideNearSizes, nearCount));
+                            y = rect.y + rect.height - sum(subArray(column.insideNearSizes, nearCount));
                         }
                     }
                     else {
@@ -1229,15 +1229,15 @@ export class CartesianAxisLayoutPanel {
             let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + axis.titlePadding) +
                 (axis.labelPosition === 'Inside' ? 0 :
                     (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
-            padding = (axis.tickPosition === 'Inside' || axis.labelPosition === 'Inside')
+            padding = (axis.tickPosition !== 'Outside' && (axis.tickPosition === 'Inside' || axis.labelPosition === 'Inside'))
                 ? (axis.titlePadding === 5 ? padding : padding + axis.titlePadding)
                 : padding;
 
             padding = isOpposed ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
 
             if ((labelRotation !== -90 && !isOpposed) || (labelRotation !== 90 && isOpposed)) {
-                padding += axis.isAxisOpposedPosition ? axis.titleSize.width / 2 + (axis.labelPosition === 'Inside' ? 0 : axis.labelPadding ) :
-                    -axis.titleSize.width / 2 - (axis.labelPosition === 'Inside' ? 0 : axis.labelPadding );
+                padding += axis.isAxisOpposedPosition ? axis.titleSize.width / 2 + (axis.labelPosition === 'Inside' ? (axis.labelPadding !== 5 ? 0 : axis.labelPadding) : axis.labelPadding ) :
+                    -axis.titleSize.width / 2 - (axis.labelPosition === 'Inside' ? (axis.labelPadding !== 5 ? 0 : axis.labelPadding) : axis.labelPadding ) ;
                 isRotated = true;
             }
             const x: number = rect.x + padding;
@@ -1257,7 +1257,7 @@ export class CartesianAxisLayoutPanel {
             }
             const titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
             const options: TextOption = new TextOption(
-                chart.element.id + '_AxisTitle_' + index, x, y + (isRotated ? - titleSize : - axis.labelPadding - titleSize), anchor,
+                chart.element.id + '_AxisTitle_' + index, x, y + (isRotated ? - titleSize : - (axis.labelPosition === 'Inside' ? (axis.labelPadding !== 5 ? 0 : axis.labelPadding) : axis.labelPadding) - titleSize), anchor,
                 axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
             );
             const element: Element = textElement(
@@ -2206,7 +2206,7 @@ export class CartesianAxisLayoutPanel {
             let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + axis.titlePadding) +
                 (axis.labelPosition === 'Inside' ? 0 :
                     axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
-            padding = (axis.tickPosition === 'Inside' || axis.labelPosition === 'Inside')
+            padding = (axis.tickPosition !== 'Outside' && (axis.tickPosition === 'Inside' || axis.labelPosition === 'Inside'))
                 ? (axis.titlePadding === 5 ? padding : padding + axis.titlePadding)
                 : padding;
             const titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));

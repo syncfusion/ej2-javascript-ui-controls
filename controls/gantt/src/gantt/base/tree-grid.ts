@@ -1,6 +1,6 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
-import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, remove } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, remove, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { FilterEventArgs, SortEventArgs, FailureEventArgs, Grid, ColumnMenuItem, ColumnMenuItemModel } from '@syncfusion/ej2-grids';
 import { setValue} from '@syncfusion/ej2-base';
 import { Deferred, Query} from '@syncfusion/ej2-data';
@@ -858,8 +858,12 @@ export class GanttTreeGrid {
             column.editType = column.editType ? column.editType : 'stringedit';
             if (!this.parent.showInlineNotes) {
                 if (!column.template) {
-                    column.template = '<div class="e-ganttnotes-info">' +
-                        '<span class="e-icons e-notes-info"></span></div>';
+                    const contentTemp: Function = function (): string {
+                        return `<div class="e-ganttnotes-info">
+                            <span class="e-icons e-notes-info"></span>
+                        </div>`;
+                    };
+                    column.template = initializeCSPTemplate(contentTemp);
                 }
             }
         } else if (taskSettings.baselineStartDate === column.field ||

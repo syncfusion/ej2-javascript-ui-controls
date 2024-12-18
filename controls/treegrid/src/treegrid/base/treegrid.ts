@@ -2056,7 +2056,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.grid.rowDropSettings.targetID += '_gridcontrol';
         }
         this.addListener();
-        const gridContainer: Element = createElement('div', { id: this.element.id + '_gridcontrol' });
+        const gridContainer: Element = createElement('div', { id: this.element.id + '_gridcontrol', className: 'e-treelistgrid' });
         addClass([this.element], 'e-treegrid');
         if (!isNullOrUndefined(this.height) && typeof (this.height) === 'string' && this.height.indexOf('%') !== -1) {
             this.element.style.height = this.height;

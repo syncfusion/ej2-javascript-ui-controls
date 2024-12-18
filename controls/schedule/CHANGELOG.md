@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I659549` - An issue with dragging longer appointments to the bottom of the vertical views of the Scheduler has been fixed.
+
 ## 28.1.33 (2024-12-12)
 
 ### Schedule

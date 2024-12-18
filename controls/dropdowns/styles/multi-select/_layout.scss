@@ -414,9 +414,7 @@
   max-width: 100%;
   padding-left: $ddl-delim-text-indent;
   padding-right: $ddl-delim-text-padding-right;
-  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'bootstrap5.3' and $ddl-multiselect-skin-name != 'FluentUI' {
-    vertical-align: middle;
-  }
+  vertical-align: middle;
 }
 
 .e-small .e-multi-select-wrapper .e-delim-values .e-remain {

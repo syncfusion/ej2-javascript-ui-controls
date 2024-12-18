@@ -1710,7 +1710,7 @@ export function resetDialogAppend(gObj: IGrid, dlgObj: Dialog): void {
     element.style.zIndex = (dlgObj.zIndex).toString();
     element.style.width = dlgObj.element.offsetWidth + 'px';
     element.appendChild(dlgObj.element);
-    const sbPanel: HTMLElement = document.querySelector('.sb-demo-section');
+    const sbPanel: HTMLElement = document.querySelector('.sb-demo-section,.e-grid-dialog-fixed');
     if (sbPanel) {
         const sbPos: { left: number; top: number; } = calculateRelativeBasedPosition(gObj.element, sbPanel);
         element.style.top = sbPos.top + 'px';

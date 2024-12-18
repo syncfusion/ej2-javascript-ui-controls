@@ -2351,6 +2351,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
                     this.getInitialData = true;
                     this.renderList();
+                    if (!this.isSecondClick && !this.isDropDownClick) {
+                        this.executeCloneElements();
+                    }
                 }
                 this.typedString = this.filterInput.value;
                 this.preventAutoFill = false;
@@ -2615,6 +2618,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.getFilteringSkeletonCount();
             }
             this.renderReactTemplates();
+            if (this.filterInput && this.filterInput.value === '' && this.getModuleName() === 'combobox') {
+                this.executeCloneElements();
+            }
         }
     }
     protected setSearchBox(popupElement: HTMLElement): InputObject {
@@ -4477,10 +4483,16 @@ export class DropDownList extends DropDownBase implements IInput {
                 isOpen: true
             });
         }
+        if (!this.isSecondClick && !this.isDropDownClick) {
+            this.executeCloneElements();
+        }
+    }
+
+    private executeCloneElements(): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: this = this;
         const duration: number = (this.element.tagName === this.getNgDirective() && this.itemTemplate) ? 500 : 100;
-        if (!this.isSecondClick && this.isReact && !this.isDropDownClick && this.isFiltering() && this.itemTemplate != null) {
+        if (this.isReact && this.isFiltering() && this.itemTemplate != null) {
             setTimeout(() => {
                 proxy.cloneElements();
                 proxy.isSecondClick = true;

@@ -839,4 +839,79 @@ describe('Cell Format ->', () => {
             done();
         });
     });
+
+    describe('Testing Cell Formatting while performing undo action ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Cell Formatting while performing undo action after deleting rows', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+            spreadsheet.selectRange('A2:CV5');
+            let td: HTMLTableCellElement = helper.invoke('getCell', [1, 0]);
+            let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(7)');
+                setTimeout(() => {
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[1].cells[0].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[0].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[2].cells[0].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[2].cells[0].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[3].cells[0].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[3].cells[0].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[4].cells[0].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[4].cells[0].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[7].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[7].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[2].cells[7].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[2].cells[7].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[3].cells[7].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[3].cells[7].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[4].cells[7].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[4].cells[7].style).toBeUndefined();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Cell Formatting while performing undo action after deleting columns', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:A11');
+            helper.invoke('selectRange', ['B1:E100']);
+            let td: HTMLTableCellElement = helper.invoke('getCell', [1, 0]);
+            let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(7)');
+                setTimeout(() => {
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[1].cells[1].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[1].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[2].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[2].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[3].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[3].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[4].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[1].cells[4].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[10].cells[1].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[10].cells[1].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[10].cells[2].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[10].cells[2].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[10].cells[3].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[10].cells[3].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[10].cells[4].style).toBeUndefined();
+                        expect(spreadsheet.sheets[0].rows[10].cells[4].style).toBeUndefined();
+                        done();
+                    });
+                });
+            });
+        });
+    });
 });

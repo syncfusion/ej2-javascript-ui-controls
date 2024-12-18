@@ -16434,6 +16434,56 @@ describe('Spreadsheet formula module ->', () => {
                     done();
                 });
             });
+        });
+        describe('EJ2-921559 -> Incorrect expression results when comparing negative values precedes with operators->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Checking expression with negative sign and comparison operator with cell references as alphabets', (done: Function) => {
+                helper.edit('I1', '=A1>-1');
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('TRUE');
+                helper.edit('I2', '=A1<-1');
+                expect(helper.getInstance().sheets[0].rows[1].cells[8].value).toBe('FALSE');
+                helper.edit('I3', '=A1>=-1');
+                expect(helper.getInstance().sheets[0].rows[2].cells[8].value).toBe('TRUE');
+                helper.edit('I4', '=A1<=-1');
+                expect(helper.getInstance().sheets[0].rows[3].cells[8].value).toBe('FALSE');
+                helper.edit('I5', '=A1<>-1');
+                expect(helper.getInstance().sheets[0].rows[4].cells[8].value).toBe('TRUE');
+                helper.edit('I6', '=A1<>1');
+                expect(helper.getInstance().sheets[0].rows[5].cells[8].value).toBe('TRUE');
+                done();
+            });
+            it('Checking expression with negative sign and comparison operator with cell references as number', (done: Function) => {
+                helper.edit('H2', '-1');
+                helper.edit('J1', '=H2>-1');
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toBe('FALSE');
+                helper.edit('J2', '=H2<-1');
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('FALSE');
+                helper.edit('J3', '=H2>=-1');
+                expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toBe('TRUE');
+                helper.edit('J4', '=H2<=-1');
+                expect(helper.getInstance().sheets[0].rows[3].cells[9].value).toBe('TRUE');
+                helper.edit('J5', '=H2<>-1');
+                expect(helper.getInstance().sheets[0].rows[4].cells[9].value).toBe('FALSE');
+                helper.edit('J6', '=H2<>1');
+                expect(helper.getInstance().sheets[0].rows[5].cells[9].value).toBe('TRUE');
+                done();
+            });
+            it('Checking expression with negative sign with cell references', (done: Function) => {
+                helper.edit('J7', '=A2>-H2');
+                expect(helper.getInstance().sheets[0].rows[6].cells[9].value).toBe('TRUE');
+                helper.edit('J8', '=A2>H2');
+                expect(helper.getInstance().sheets[0].rows[7].cells[9].value).toBe('TRUE');
+                helper.edit('J9', '=A2<-H2');
+                expect(helper.getInstance().sheets[0].rows[8].cells[9].value).toBe('FALSE');
+                helper.edit('J10', '=A2<H2');
+                expect(helper.getInstance().sheets[0].rows[9].cells[9].value).toBe('FALSE');
+                done();
+            });
         });   
     });
     describe('EJ2-917774 ->', () => {

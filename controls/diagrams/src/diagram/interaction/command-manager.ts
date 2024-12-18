@@ -6609,6 +6609,7 @@ Remove terinal segment in initial
             let center: number = 0;
             let middle: number = 0;
             let btt: number = 0;
+            let rtl: number = 0;
             //const sum: number = 0;
             let undoSelectorObj: SelectorModel = { nodes: [], connectors: [] };
             let redoSelectorObj: SelectorModel = { nodes: [], connectors: [] };
@@ -6624,14 +6625,18 @@ Remove terinal segment in initial
                 center = center + (objects[i] as Node).wrapper.bounds.center.x - (objects[i - 1] as Node).wrapper.bounds.center.x;
                 middle = middle + (objects[i] as Node).wrapper.bounds.center.y - (objects[i - 1] as Node).wrapper.bounds.center.y;
                 btt = btt + (objects[i] as Node).wrapper.bounds.topRight.y - (objects[i - 1] as Node).wrapper.bounds.bottomRight.y;
+                rtl = rtl + (objects[i] as Node).wrapper.bounds.middleLeft.x - (objects[i - 1] as Node).wrapper.bounds.middleRight.x;
             }
             for (i = 1; i < objects.length - 1; i++) {
                 let tx: number = 0;
                 let ty: number = 0;
                 const prev: Rect = getBounds(objects[i - 1].wrapper);
                 const current: Rect = getBounds(objects[i].wrapper);
-                if (option === 'RightToLeft' || option === 'Center') {
+                if (option === 'Center') {
                     tx = prev.center.x - current.center.x + (center / (objects.length - 1));
+                } else if (option === 'RightToLeft') {
+                    // 926115: Distribute command RightToLeft option works incorrectly
+                    tx = prev.middleRight.x - current.middleLeft.x + (rtl / (objects.length - 1));
                 } else if (option === 'Right') {
                     tx = prev.topRight.x - current.topRight.x + (right / (objects.length - 1));
                 } else if (option === 'Left') {

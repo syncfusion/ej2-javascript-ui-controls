@@ -8,7 +8,7 @@ import { Gantt } from './../base/gantt';
 import { Deferred } from '@syncfusion/ej2-data';
 import { ContextMenu as Menu, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { NotifyArgs, ContextMenuItemModel } from '@syncfusion/ej2-grids';
-import { ITaskData, IGanttData, IPredecessor, RowPosition, ITaskSegment } from '../base/common';
+import { ITaskData, IGanttData, IPredecessor, RowPosition, ITaskSegment, TaskType } from '../base/common';
 import { TaskFieldsModel } from '../models/models';
 // eslint-disable-next-line
 /**
@@ -199,6 +199,24 @@ export class ContextMenu {
                 if (!isNullOrUndefined(data[taskfields.milestone])) {
                     if (data[taskfields.milestone] === true) {
                         data[taskfields.milestone] = false;
+                    }
+                }
+                const taskType: TaskType = !isNullOrUndefined(this.rowData.ganttProperties.taskType) ? this.rowData.ganttProperties.taskType
+                    : this.parent.taskType;
+                if (taskType === 'FixedWork' || taskType === 'FixedUnit') {
+                    let totSeconds: number;
+                    if (this.parent.weekWorkingTime.length > 0) {
+                        totSeconds = this.parent['getSecondsPerDay'](this.rowData.ganttProperties.startDate ?
+                            this.rowData.ganttProperties.startDate : this.rowData.ganttProperties.endDate);
+                    } else {
+                        totSeconds = this.parent.secondsPerDay;
+                    }
+                    const actualOneDayWork: number = (totSeconds) / 3600;
+                    if (!isNullOrUndefined(data[taskfields.work])) {
+                        data[taskfields.work] = actualOneDayWork;
+                    }
+                    else {
+                        this.rowData.ganttProperties.work = actualOneDayWork;
                     }
                 }
                 if (data[taskfields.startDate]) {

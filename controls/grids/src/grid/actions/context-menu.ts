@@ -455,8 +455,8 @@ export class ContextMenu implements IAction {
             }
             break;
         case 'export':
-            if ((!this.parent.allowExcelExport || !this.parent.excelExport) ||
-                !this.parent.ensureModuleInjected(PdfExport) && !this.parent.ensureModuleInjected(ExcelExport)) {
+            if (!(this.parent.allowExcelExport && this.parent.ensureModuleInjected(ExcelExport))
+                && !(this.parent.allowPdfExport && this.parent.ensureModuleInjected(PdfExport))) {
                 status = true;
             }
             break;

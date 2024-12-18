@@ -438,3 +438,153 @@ describe('Splitter position issue after changing view', () => {
         }
     });
 });
+describe('Dynamically changing position with view as Grid', () => {
+    let ganttObj: Gantt;
+    let projectNewData : any = [
+        {
+          TaskID: 1,
+          TaskName: 'Project Initiation',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/21/2019'),
+          subtasks: [
+            {
+              TaskID: 2,
+              TaskName: 'Identify Site location',
+              StartDate: new Date('04/02/2019'),
+              Duration: 4,
+              Progress: 50,
+            },
+            {
+              TaskID: 3,
+              TaskName: 'Perform Soil test',
+              StartDate: new Date('04/02/2019'),
+              Duration: 4,
+              Progress: 50,
+            },
+            {
+              TaskID: 4,
+              TaskName: 'Soil test approval',
+              StartDate: new Date('04/02/2019'),
+              Duration: 4,
+              Progress: 50,
+            },
+          ],
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+      name: 'TaskName',
+      startDate: 'StartDate',
+      endDate: 'EndDate',
+      duration: 'Duration',
+      progress: 'Progress',
+      dependency: 'Predecessor',
+      child: 'subtasks',
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        splitterSettings : {
+            view:'Grid'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        }, done);
+    });
+    it('checking position value after resized', () => {
+        ganttObj.splitterResized = (args) => {
+            expect(ganttObj.splitterSettings.position).toBe('35%');
+            expect(ganttObj.splitterSettings.view).toBe('Grid');
+        };
+        ganttObj.setSplitterPosition('35%', 'position');        
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Splitter resize with large separator size', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: baselineData,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'Children'
+            },
+            height: '400px',
+            width: '700px',
+            splitterSettings: {
+                separatorSize: 24
+            },
+            projectStartDate: new Date('10/15/2017'),
+            projectEndDate: new Date('12/30/2017'),
+        }, done);
+    });
+
+    it('Vertical scrollbar should not be hidden after resizing with large separator size', () => {
+        let splitterIcon: HTMLElement = ganttObj.element.querySelector('.e-split-bar') as HTMLElement;  
+        triggerMouseEvent(splitterIcon, 'mousedown');
+        triggerMouseEvent(splitterIcon, 'mousemove', 100, 0);
+        triggerMouseEvent(splitterIcon, 'mouseup');
+      //  expect(ganttObj.splitterModule.splitterObject.paneSettings[1].size).toBe('579px')
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

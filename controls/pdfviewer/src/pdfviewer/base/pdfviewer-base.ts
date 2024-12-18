@@ -2795,6 +2795,9 @@ export class PdfViewerBase {
             pdfViewer.fireDocumentUnload(this.pdfViewer.fileName);
         }
         this.pdfViewer.fileName = null;
+        if ((<any>window).customStampCollection instanceof Map) {
+            (<any>window).customStampCollection.clear();
+        }
     }
 
     /**
@@ -3821,6 +3824,7 @@ export class PdfViewerBase {
         default:
             break;
         }
+        this.focusViewerContainer();
     }
 
     private CommentItemSelected(): void {
@@ -4515,7 +4519,7 @@ export class PdfViewerBase {
                 case 80: // p key
                     if (this.pdfViewer.printModule && this.pdfViewer.enablePrint) {
                         event.preventDefault();
-                        this.pdfViewer.print.print();
+                        this.pdfViewer.firePrintStart();
                     }
                     break;
                 case 83: {  //s key
@@ -10401,6 +10405,10 @@ export class PdfViewerBase {
         }
         this.eventArgs = {};
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
+        if (this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp' && this.pdfViewer.selectedItems && (this.pdfViewer.selectedItems.annotations && this.pdfViewer.selectedItems.annotations.length > 0 ||
+            this.pdfViewer.selectedItems.formFields && this.pdfViewer.selectedItems.formFields.length > 0)) {
+            this.contextMenuModule.open(this.mouseY, this.mouseX, this.viewerContainer);
+        }
     }
 
     /**

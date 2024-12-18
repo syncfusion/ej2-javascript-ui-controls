@@ -20,11 +20,11 @@
     }
     .e-header {
       height: 100%;
-      margin-left: 10px;
+      margin-left: 16px;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: $message-header-font-weight;
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
     }
     .e-message-wrapper {
@@ -45,7 +45,7 @@
       }
     }
     .e-message-group {
-      max-width: 60%;
+      max-width: 75%;
       margin: 4px;
     }
     .e-message-item {
@@ -55,7 +55,7 @@
     }
     .e-message-header-container {
       display: flex;
-      align-items: flex-end;
+      align-items: baseline;
       gap: 4px;
     }
     .e-message-header {
@@ -94,7 +94,7 @@
     }
     .e-chat-send {
       position: absolute;
-      right: 20px;
+      right: 15px;
       font-size: $chat-send-icon-size;
       bottom: $chat-send-icon-bottom;
       padding-top: 2px;
@@ -169,14 +169,11 @@
     .e-message-icon {
       height: 32px;
       width: 32px;
+      font-size: 14px;
     }
     .e-message-icon,
     .e-header-icon,
     .e-user-icon {
-      border-radius: 50%;
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: cover;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -245,6 +242,7 @@
       margin-right: -16px;
       height: 24px;
       width: 24px;
+      font-size: 10px;
     }
     .e-user-text {
       margin-left: 20px;
@@ -296,6 +294,7 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
+        margin-right: 1px;
       }
       li {
         font-size: $timebreak-font-size;
@@ -336,8 +335,21 @@
         margin-right: unset;
       }
       .e-typing-indicator,
-      .e-user-text {
+      .e-user-text,
+      .e-header {
         margin-left: unset;
+      }
+      .e-header {
+        margin-right: 16px;
+      }
+      .e-suggestions ul {
+        margin-right: unset;
+        margin-left: 1px;
+      }
+      .e-right .e-time,
+      .e-status-text {
+        margin-right: unset;
+        margin-left: 18px;
       }
     }
     @if ($skin-name == 'highcontrast') {
@@ -357,6 +369,9 @@
     }
     .e-show-suggestions {
       display: block;
+    }
+    .e-suggestions li:focus-visible {
+      outline: 1px solid;
     }
   }
 }

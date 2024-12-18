@@ -546,6 +546,27 @@ describe('EJ2-55078 - Insert HTML insert content outside', function () {
     });
 });
 
+describe('924996 - Issue when entering multiple line breaks and inserting new text removes all lines', function () {
+    let innervalue: string = '<br><br><br><br><br><br><br><br><br class="focusElement">';
+    let divElement: HTMLElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeAll(function () {
+        document.body.appendChild(divElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Issue when entering multiple line breaks and inserting new text removes all lines', function () {
+        let focusElement: any = document.querySelector('.focusElement');
+        domSelection.setSelectionNode(document, focusElement);
+        (InsertHtml as any).Insert(document, '<p>Inserted Content</p>', divElement, true);
+        expect((divElement as any).innerHTML === '<p><br><br><br><br><br><br><br><br></p><p>Inserted Content</p>').toBe(true);
+    });
+});
+
 describe('EJ2-52641- Text inserted outside of the RichTextEditor after Shift + Enter Key pressed', function () {
     let innervalue: string = '<p>Testing<br/></br/></p>';
     let rangeNodes: Node[] = [];
@@ -615,6 +636,56 @@ describe('917388 - Table Insertion Occurs in Wrong Place When Cursor Is in a Spa
         (InsertHtml as any).Insert(document, table, divElement,true);
         expect(document.getElementsByClassName('content-inner')[0].children.length === 4).toBe(true);
         expect(document.getElementsByClassName('content-inner')[0].children[2].tagName === 'TABLE').toBe(true);
+    });
+});
+
+describe('923872 - The execCommand method does not replace the text wrapped inside a span element in the editor', function () {
+    let innervalue: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;">
+            <tbody>
+              <tr>
+                <td class="e-cell-select" style="width: 33.3333%; text-align: start;">
+                  <span class="focusElement" style="color: rgb(33, 37, 41); font-family: system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, arial, &quot;Noto Sans&quot;, &quot;Liberation Sans&quot;, sans-serif, &quot;apple color emoji&quot;, &quot;Segoe UI emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Noto color emoji&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">The Rich Text Editor, a WYSIWYG (what you see is what you get)
+                    editor, is a user interface that allows you to create, edit, and
+                    format rich text content.<span>&nbsp;</span></span>
+                </td>
+                <td style="width: 33.3333%;"><br></td>
+                <td style="width: 33.3333%;"><br></td>
+              </tr>
+              <tr>
+                <td style="width: 33.3333%;"><br></td>
+                <td style="width: 33.3333%;"><br></td>
+                <td style="width: 33.3333%;"><br></td>
+              </tr>
+              <tr>
+                <td style="width: 33.3333%;"><br></td>
+                <td style="width: 33.3333%;"><br></td>
+                <td style="width: 33.3333%;"><br></td>
+              </tr>
+            </tbody>
+        </table><p><br></p>`;
+    let range: Range; 
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('The execCommand method does not replace the text wrapped inside a span element in the editor', function () {
+        let focusElement: any = document.querySelector('.focusElement');
+        range = document.createRange();
+        let textLength = focusElement.textContent.length - 1;
+        range.setStart(focusElement.firstChild, 0);
+        range.setEnd(focusElement.firstChild, textLength);
+        let paragraph: Element = document.createElement('p');
+        paragraph.textContent = "Hello Rich Text Editor";
+        domSelection.setSelectionText(document, focusElement.firstChild, focusElement.firstChild, 0, textLength);
+        (InsertHtml as any).Insert(document, paragraph, divElement, true);
+        expect(document.getElementsByClassName("e-cell-select")[0].firstElementChild.outerHTML).toBe('<p>Hello Rich Text Editor</p>');
     });
 });
 

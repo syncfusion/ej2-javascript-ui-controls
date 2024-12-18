@@ -4068,6 +4068,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         case 'contextMenuItems':
             this.notify(events.uiUpdate, { module: 'contextMenu', enable: this.contextMenuItems }); break;
         case 'showColumnChooser':
+            if (this.toolbarModule) {
+                this.toolbarModule.refreshToolbarItems();
+            }
             this.notify(events.uiUpdate, { module: 'columnChooser', enable: this.showColumnChooser }); break;
         case 'filterSettings':
             this.updateStackedFilter();
@@ -4180,6 +4183,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             break;
         case 'enableStickyHeader':
             this.scrollModule.addStickyListener(newProp.enableStickyHeader);
+            break;
+        case 'allowPdfExport':
+            if (this.toolbarModule) {
+                this.toolbarModule.refreshToolbarItems();
+            }
+            break;
+        case 'allowExcelExport':
+            if (this.toolbarModule) {
+                this.toolbarModule.refreshToolbarItems();
+            }
             break;
         }
     }

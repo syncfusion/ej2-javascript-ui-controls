@@ -671,12 +671,12 @@ describe('Hide & Show ->', () => {
             });
         });
         describe('Hiding columns more than threshold value->', () => {
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }]
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Hiding columns more than threshold value->', (done: Function) => {
@@ -705,6 +705,27 @@ describe('Hide & Show ->', () => {
                         done();
                     }, 20);
                 }, 20);
+            });
+            it('Hiding rows outside the viewport rows ->', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('hideRow', [19, 63]);
+                setTimeout(() => {
+                    const sheet: SheetModel = spreadsheet.sheets[0];
+                    expect(sheet.rows[19].hidden).toBeTruthy();
+                    expect(sheet.rows[44].hidden).toBeTruthy();
+                    expect(sheet.rows[63].hidden).toBeTruthy();
+                    helper.invoke('hideRow', [19, 63, false]);
+                    setTimeout(() => {
+                        expect(sheet.rows[19].hidden).toBeFalsy();
+                        expect(sheet.rows[44].hidden).toBeFalsy();
+                        expect(sheet.rows[63].hidden).toBeFalsy();
+                        const rows: HTMLElement[] = [].slice.call(spreadsheet.element.querySelectorAll('.e-content-table .e-row'));
+                        rows.forEach((row: HTMLElement, index: number): void => {
+                            expect(Number(row.getAttribute('aria-rowindex'))).toBe(index + 1);
+                        });
+                        done();
+                    });
+                });
             });
         });
     });

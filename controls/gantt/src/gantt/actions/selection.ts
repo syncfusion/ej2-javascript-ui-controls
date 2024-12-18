@@ -123,6 +123,10 @@ export class Selection {
                 }
             }
             else{
+                if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping &&
+                    isNullOrUndefined(getValue('data.ganttProperties.left', args))) {
+                    args.data = this.parent.getRecordByID((args.data as any).taskId);
+                }
                 this.parent.ganttChartModule.updateScrollLeft(getValue('data.ganttProperties.left', args));
             }
         }

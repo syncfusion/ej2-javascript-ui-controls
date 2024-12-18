@@ -1,7 +1,7 @@
 import { L10n, EventHandler, extend, isNullOrUndefined, MouseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { remove, select, removeClass } from '@syncfusion/ej2-base';
 import { Toolbar as tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { IGrid, NotifyArgs, FocusInfo, ColumnMenuClickEventArgs } from '../base/interface';
+import { IGrid, NotifyArgs, FocusInfo, ColumnMenuClickEventArgs, RefreshToolbarItemsArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { EditSettingsModel } from '../base/grid-model';
@@ -362,8 +362,15 @@ export class Toolbar {
         }
     }
 
+    /**
+     * Refreshes the toolbar items
+     *
+     * @param {RefreshToolbarItemsArgs} args - Defines the editSettings model and name.
+     * @returns {void}
+     * @hidden
+     */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private refreshToolbarItems(args?: { editSettings: EditSettingsModel, name: string }): void {
+    public refreshToolbarItems(args?: RefreshToolbarItemsArgs): void {
         const gObj: IGrid = this.parent;
         let enableItems: string[] = [];
         let disableItems: string[] = [];
@@ -385,6 +392,26 @@ export class Toolbar {
             enableItems.push(this.gridID + '_delete');
         } else {
             disableItems.push(this.gridID + '_delete');
+        }
+        if (gObj.allowPdfExport && hasData) {
+            enableItems.push(this.gridID + '_pdfexport');
+        }
+        else {
+            disableItems.push(this.gridID + '_pdfexport');
+        }
+        if (gObj.allowExcelExport && hasData) {
+            enableItems.push(this.gridID + '_excelexport');
+            enableItems.push(this.gridID + '_csvexport');
+        }
+        else {
+            disableItems.push(this.gridID + '_excelexport');
+            disableItems.push(this.gridID + '_csvexport');
+        }
+        if (gObj.showColumnChooser) {
+            enableItems.push(this.gridID + '_columnchooser');
+        }
+        else {
+            disableItems.push(this.gridID + '_columnchooser');
         }
         if (gObj.editSettings.mode === 'Batch') {
             if (gObj.element.getElementsByClassName('e-updatedtd').length && (edit.allowAdding || edit.allowEditing)) {
@@ -635,6 +662,7 @@ export class Toolbar {
             enableRtl: this.parent.enableRtl,
             enablePersistence: this.parent.enablePersistence,
             locale: this.parent.locale,
+            beforeOpen: this.beforeOpenResponsiveToolbarMenuItem.bind(this),
             items: this.getMenuItems(),
             select: this.ResponsiveToolbarMenuItemClick.bind(this)
         });
@@ -659,6 +687,30 @@ export class Toolbar {
                 }
             }
         });
+    }
+
+    private beforeOpenResponsiveToolbarMenuItem(): void {
+        const toolbarItems: (ToolbarItems | string | ItemModel | ToolbarItem)[] = this.parent.toolbar || [];
+        const responsiveMenuItems: { key: string; enabled: boolean }[] = [
+            { key: 'PdfExport', enabled: this.parent.allowPdfExport },
+            { key: 'ExcelExport', enabled: this.parent.allowExcelExport },
+            { key: 'CsvExport', enabled: this.parent.allowExcelExport },
+            { key: 'ColumnChooser', enabled: this.parent.showColumnChooser }
+        ];
+        const enableItems: string[] = [];
+        const disableItems: string[] = [];
+        responsiveMenuItems.forEach((item: { key: string; enabled: boolean }) => {
+            if (toolbarItems.indexOf(item.key) !== -1) {
+                const localeText: string = this.getLocaleText(item.key);
+                if (item.enabled) {
+                    enableItems.push(localeText);
+                } else {
+                    disableItems.push(localeText);
+                }
+            }
+        });
+        this.responsiveToolbarMenu.enableItems(enableItems, true);
+        this.responsiveToolbarMenu.enableItems(disableItems, false);
     }
 
     private modelChanged(e: { module: string, properties: EditSettingsModel }): void {

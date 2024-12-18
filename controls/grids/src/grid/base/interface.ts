@@ -1053,6 +1053,8 @@ export interface NotifyArgs {
     count?: number;
     /** Defines the request type. */
     requestType?: Action;
+    /** Defines the target. */
+    target?: HTMLElement;
     /** Defines the module. */
     module?: string;
     /** Defines the enable property. */
@@ -3144,4 +3146,12 @@ export interface ItemTemplateArgs {
 export interface DistributeColWidth {
     columns?: Column[];
     usedWidth?: number;
+}
+
+/**
+ * @hidden
+ */
+export interface RefreshToolbarItemsArgs {
+    editSettings?: EditSettingsModel;
+    name?: string;
 }

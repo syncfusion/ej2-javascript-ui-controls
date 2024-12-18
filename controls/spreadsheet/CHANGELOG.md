@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I647640` - Issue with "data got changed when multiple text-formatted values from Excel were pasted into Spreadsheet" has been resolved.
+
 ## 28.1.33 (2024-12-12)
 
 ### Spreadsheet

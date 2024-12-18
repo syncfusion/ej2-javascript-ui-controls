@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 28.1.35 (2024-12-18)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I63329` - Now, after the font family is changed, the default font family does not appear in the font family dropdown on the appearance tab.
+- `#I646929` - Now, the typed signature appears in the signature field after being added using the custom font.
+- `#I551643`, `#I664728` - Now, the script error does not occur when importing the large annotations.
+- `#I663071` - Now, the `printStart` event is triggered when printing a PDF using the `Ctrl + P` shortcut.
+
 ## 28.1.33 (2024-12-12)
 
 ### PDF Viewer

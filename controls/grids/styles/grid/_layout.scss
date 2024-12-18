@@ -210,6 +210,12 @@
       /* stylelint-enable */
     }
 
+    @if $grid-skin == 'tailwind3' {
+      .e-checkbox-wrapper .e-checkboxfiltertext {
+        font-weight: normal;
+      }
+    }
+
     .e-checkboxlist {
       height: 200px;
       margin-top: 5px;
@@ -3574,7 +3580,7 @@
       
       span.e-ungroupbutton.e-icons {
         margin-left: $grid-group-ungroupicon-margin-left;
-        @if $grid-skin == 'material3' {
+        @if $grid-skin == 'material3' or $grid-skin == 'tailwind3' or $grid-skin == 'tailwind3-dark' or $grid-skin == 'bootstrap5\.3' {
           margin-left: $group-unpgrouicon-margin-left;
         }
       }
@@ -3747,6 +3753,12 @@
       .e-checkboxlist .e-fltrcheck,
       .e-cc-contentdiv .e-choosercheck {
         white-space: $grid-filter-checkbox-white-space;
+      }
+
+      .e-checkbox-wrapper .e-label.e-fltrcheck {
+        @if $grid-skin == 'tailwind3' {
+          font-weight: normal;
+        }
       }
 
       .e-filterdiv,
@@ -3947,11 +3959,20 @@
 
 @if $grid-skin == 'fluent2' {
   .e-grid-menu.e-grid-column-menu.e-contextmenu-wrapper .e-ul .e-menu-item,
-  .e-grid-menu.e-contextmenu-container .e-ul .e-menu-item {
+  .e-grid-menu.e-contextmenu-container.e-grid-column-menu .e-ul .e-menu-item {
     padding: 0 6px;
   }
   .e-grid-menu.e-grid-column-menu .e-colmenu.e-contextmenu {
     padding: 0;
+  }
+}
+
+@if $grid-skin == 'tailwind3' {
+  .e-grid-menu.e-contextmenu-wrapper,
+  .e-grid-menu.e-contextmenu-container.e-sfcontextmenu {
+    .e-ul .e-menu-item .e-checkbox-wrapper .e-label {
+      font-weight: normal;
+    }
   }
 }
 

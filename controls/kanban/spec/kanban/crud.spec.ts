@@ -931,6 +931,27 @@ describe('CRUD actions module', () => {
         });
     });
 
+    describe('921266 - After sorting cards using custom and descending, script error occurs.', () => {
+        let kanbanObj: Kanban;
+        let card: Record<string, any>;
+        let length: number;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = { };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Check cards are alinged in descending order', () => {
+            kanbanObj.sortSettings.sortBy= 'Custom';
+            kanbanObj.sortSettings.direction= 'Descending';
+            kanbanObj.layoutModule.sortOrder('None','Ascending',kanbanData);
+            expect(kanbanObj.getColumnData('Open').length).toBe(14);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

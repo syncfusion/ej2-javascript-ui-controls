@@ -497,6 +497,7 @@ export class Parser {
         }
         text = text.split('---').join('-').split('--').join('+').split(this.parent.getParseArgumentSeparator() + '-').join(this.parent.getParseArgumentSeparator() + 'u').split(this.parent.leftBracket + '-').join(this.parent.leftBracket + 'u').split('=-').join('=u');
         text = text.split(',+').join(',').split(this.parent.leftBracket + '+').join(this.parent.leftBracket).split('=+').join('=').split('>+').join('>').split('<+').join('<').split('/+').join('/').split('*+').join('*').split('++').join('+').split('*-').join('*u').split('/-').join('/u').split('w-').join('wu').split('i-').join('iu').toString();
+        text = text.split('>-').join('>u').split('<-').join('<u').split('h-').join('hu').split('f-').join('fu').split('z-').join('zu');
         if (text.length > 0 && text[0] === '-') {
             text = text.substring(1).split('-').join(this.tokenOr);
             text = '0-' + text;

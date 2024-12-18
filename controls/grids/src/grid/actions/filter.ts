@@ -91,6 +91,8 @@ export class Filter implements IAction {
     private docClickHandler: Function;
     /** @hidden */
     public inputList: InputArgs[] = [];
+    /** @hidden */
+    public isClearFiltering: boolean = false;
 
     /**
      * Constructor for Grid filtering module
@@ -770,6 +772,7 @@ export class Filter implements IAction {
      * @returns {void}
      */
     public clearFiltering(fields?: string[]): void {
+        this.isClearFiltering = true;
         const cols: PredicateModel[] = getActualPropFromColl(this.filterSettings.columns);
         if (!isNullOrUndefined(fields)) {
             this.refresh = false;

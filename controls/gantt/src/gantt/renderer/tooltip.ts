@@ -37,6 +37,7 @@ export class Tooltip {
             '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone-container, .e-gantt-manualparenttaskbar';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
+        this.toolTipObj.windowCollision = true;
         this.toolTipObj.enableRtl = this.parent.enableRtl;
         this.toolTipObj.enableHtmlSanitizer = this.parent.enableHtmlSanitizer;
         this.toolTipObj.cssClass = cls.ganttTooltip;
@@ -217,12 +218,18 @@ export class Tooltip {
                 tooltipPositionX = tooltipPositionX + 10;
                 args.element.style.left = tooltipPositionX + 'px';
             }
-            if (window.innerHeight < args.element.offsetHeight + tooltipPositionY) {
-                tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
+            if ((args.event as any).clientY > args.element.offsetHeight) {
+                if (window.innerHeight < args.element.offsetHeight + tooltipPositionY) {
+                    tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
+                }
+                if ((topEnd < (tooltipPositionY + args.element.offsetHeight + 20))) {
+                    tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
+                }
+                else {
+                    tooltipPositionY = tooltipPositionY + 10;
+                }
             }
-            if ((topEnd < (tooltipPositionY + args.element.offsetHeight + 20))) {
-                tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
-            } else {
+            else {
                 tooltipPositionY = tooltipPositionY + 10;
             }
             args.element.style.top = tooltipPositionY + 'px';

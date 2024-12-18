@@ -37,8 +37,11 @@ export class PortProperties {
                     newPort.verticalAlignment = port.verticalAlignment.charAt(0).toUpperCase() +
                     port.verticalAlignment.slice(1) as VerticalAlignment;
                 }
-                // eslint-disable-next-line max-len
-                newPort.margin = { left: port.margin.left, right: port.margin.right, top: port.margin.top, bottom: port.margin.bottom };
+                // 925993: Unable to load an EJ1 diagram JSON into EJ2 Diagram because of port margin undefined.
+                if (port.margin) {
+                    // eslint-disable-next-line max-len
+                    newPort.margin = { left: port.margin.left, right: port.margin.right, top: port.margin.top, bottom: port.margin.bottom };
+                }
                 (newPort as any).offset = { x: (port as any).offset.x, y: (port as any).offset.y };
                 newPort.style.strokeColor = (port as EJ1Port).borderColor;
                 newPort.style.strokeWidth = (port as EJ1Port).borderWidth;

@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { ContentControlInfo, Editor } from '../../src/index';
+import { BookmarkElementBox, ContentControlInfo, Editor } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -861,3 +861,44 @@ describe('footnote undo redo validation', () => {
 //     });
 // });
 
+describe('Select and delete multiple paragraph', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Validate the bookmark is present', () => {
+        console.log('Validate the bookmark is present');
+        editor.editor.insertText('Text before the bookmarks');
+        editor.editor.insertBookmark('bookmark1');
+        editor.editor.insertText('Bookmark 1 - This is the text inside bookmark 1');
+        editor.selection.moveToDocumentEnd();
+        editor.editor.insertBookmark('bookmark2');
+        editor.editor.insertText('Bookmark 2 - This is the text inside bookmark 2');
+        editor.selection.moveToDocumentEnd();
+        editor.editor.insertText('Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nEtiam urna ligula, malesuada eu dolor in, mattis rhoncus orci.\nInteger consequat, velit vitae tristique convallis, neque neque ultricies diam, sed tincidunt quam nibh in purus. \nQuisque vel mauris eros. Fusce tincidunt arcu non velit tempor molestie. \nMorbi posuere interdum lectus, sit amet cursus mauris condimentum vitae. Maecenas feugiat mattis sagittis. \nMauris ut facilisis magna. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. \nUt scelerisque malesuada feugiat. Sed eget gravida metus. In eleifend urna id arcu congue, quis lobortis risus finibus. Morbi pretium ligula in enim aliquam, et convallis sapien vestibulum.');
+        editor.selection.select('0;0;40', '0;4;10');
+        editor.editor.delete();
+        expect(editor.documentHelper.bookmarks.length).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] instanceof TextElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] instanceof TextElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] instanceof BookmarkElementBox).toBe(true);
+    });
+});

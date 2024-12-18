@@ -85,6 +85,15 @@
         display: inline-flex;
       }
 
+      .e-gantt-manualparenttaskbar {
+        margin-top: 5px;
+      }
+
+      .e-gantt-manualparenttaskbar-left,
+      .e-gantt-manualparenttaskbar-right {
+        width: 15px;
+      }
+
       .e-timeline-header-container {
         height: $gantt-bigger-header-border-height;
       }
@@ -116,7 +125,7 @@
         }
       }
 
-      @if ($skin-name =='FluentUI' or $skin-name =='bootstrap5' or $skin-name =='tailwind' or $skin-name =='Material3') {
+      @if ($skin-name =='FluentUI' or $skin-name =='bootstrap5' or $skin-name =='tailwind' or $skin-name =='Material3' or $skin-name =='tailwind3') {
 
         .e-left-resize-gripper::before,
         .e-right-resize-gripper::before {
@@ -305,6 +314,7 @@
 
   .e-gantt-dialog {
     border-radius: 6px;
+
     .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
       padding: 0 16px !important; /* stylelint-disable-line declaration-no-important */
     }

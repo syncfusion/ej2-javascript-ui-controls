@@ -219,7 +219,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             const gridTop: number = this.parent.element.getBoundingClientRect().top;
             if (rowTop > 0){
                 this[`${initialRowTop}`] = this.parent.getRowByIndex(0).getBoundingClientRect().top - gridTop;
-            } else {
+            } else if (this.parent.selectedRowIndex === -1) {
                 this[`${initialRowTop}`] = this.content.getBoundingClientRect().top -
                 this.parent.getRowByIndex(0).getBoundingClientRect().height;
             }
@@ -434,7 +434,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             - this.parent.pageSettings.pageSize;
             index = (index > 0) ? index : 0;
             if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 && index !== this[`${selectedRowIndex}`] &&
-                ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop)) {
+                ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop) && !this.parent.allowRowDragAndDrop) {
                 index = this[`${selectedRowIndex}`];
             }
             this.startIndex = index;
@@ -466,6 +466,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                         (this.endIndex - this.parent.pageSettings.pageSize) * (this.parent.rowHeight ?
                             this.parent.rowHeight : this.parent.getRowHeight()) : 0;
                 }
+                else if (this.startIndex === this[`${selectedRowIndex}`]) {
+                    this.translateY = scrollArgs.offset.top;
+                }
                 else {
                     this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
                         scrollArgs.offset.top - (outBuffer * rowHeight) + rowHeight : 0;
@@ -484,7 +487,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             let nextSetResIndex: number = ~~(content.scrollTop / rowHeight);
             const isLastBlock: boolean = (this[`${selectedRowIndex}`] + this.parent.pageSettings.pageSize) < this.totalRecords ? false : true;
             if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 &&
-             nextSetResIndex !== this[`${selectedRowIndex}`] && !isLastBlock) {
+             nextSetResIndex !== this[`${selectedRowIndex}`] && !isLastBlock && !this.parent.allowRowDragAndDrop) {
                 nextSetResIndex = this[`${selectedRowIndex}`];
             }
             let lastIndex: number = nextSetResIndex + this.parent.pageSettings.pageSize;
@@ -511,7 +514,11 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             } else {
                 if (this.totalRecords === this.endIndex)
                 {
-                    this.translateY = (this.totalRecords * rowHeight) - ((this.endIndex - this.startIndex) * rowHeight);
+                    if (isLastBlock) {
+                        this.translateY = (this.totalRecords * rowHeight) - (this.parent.pageSettings.pageSize * rowHeight);
+                    } else {
+                        this.translateY = (this.totalRecords * rowHeight) - ((this.endIndex - this.startIndex) * rowHeight);
+                    }
                 }
                 else
                 {

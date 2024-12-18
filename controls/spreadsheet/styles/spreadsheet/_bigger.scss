@@ -658,7 +658,7 @@
     &.e-font-size-ddb ul {
       min-width: 70px;
     }
-    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' or $skin-name == 'tailwind3' {
       &.e-dragfill-ddb ul,
       &.e-numformat-ddb ul {
         max-width: initial;

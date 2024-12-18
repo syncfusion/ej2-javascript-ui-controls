@@ -267,3 +267,25 @@
     }
   }
 }
+
+.e-contextmenu-container {
+  .e-menu-item {
+    .e-menu-icon {
+      &.e-columnchooser::before {
+        content: '\e9db';
+      }
+
+      &.e-pdfexport::before {
+        content: '\e240';
+      }
+      
+      &.e-excelexport::before {
+        content: '\e242';
+      }
+      
+      &.e-csvexport::before {
+        content: '\e241';
+      }
+    }
+  }
+}
