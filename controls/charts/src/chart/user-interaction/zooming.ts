@@ -494,8 +494,14 @@ export class Zoom {
                     if (axis.zoomPosition !== zoomPosition || axis.zoomFactor !== zoomFactor) {
                         zoomFactor = (zoomPosition + zoomFactor) > 1 ? (1 - zoomPosition) : zoomFactor;
                     }
-                    argsData.currentZoomFactor = zoomFactor;
-                    argsData.currentZoomPosition = zoomPosition;
+                    if (parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) {
+                        argsData.currentZoomFactor = argsData.previousZoomFactor;
+                        argsData.currentZoomPosition = argsData.previousZoomPosition;
+                    }
+                    else {
+                        argsData.currentZoomFactor = zoomFactor;
+                        argsData.currentZoomPosition = zoomPosition;
+                    }
                 }
                 if (argsData.currentZoomFactor === argsData.previousZoomFactor &&
                     argsData.currentZoomPosition === argsData.previousZoomPosition) {

@@ -2148,9 +2148,11 @@ export function colorNameToHex(color: string): string {
         color = color.replace(/\s/g, '').replace(/[()]/g, '');
         isRGBValue = color.slice(3).split(',');
     }
-    return convertToHexCode(
-        new ColorValue(parseInt(isRGBValue[0], 10), parseInt(isRGBValue[1], 10), parseInt(isRGBValue[2], 10))
-    );
+    if (isRGBValue && isRGBValue.length) {
+        const [r, g, b] = isRGBValue.map((value: string) => parseInt(value, 10));
+        return convertToHexCode(new ColorValue(r, g, b));
+    }
+    return '';
 }
 /**
  * Checks if the provided color string is in a valid format.

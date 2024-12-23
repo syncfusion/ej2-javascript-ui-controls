@@ -5,6 +5,7 @@ import { Gantt,Selection, Sort,UndoRedo,Edit,Toolbar, RowDD,Filter, ContextMenu,
 import { baselineData, cellEditData, filteredData, projectData, projectData1, projectData2, projectData3, projectData4, resourceDataUndo, resourceResourcesUndo, resourcesData, sbSampleResource, sbSampleResourceData, undoredo907807,multipleResourcesData  } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ResizeArgs } from '@syncfusion/ej2-grids';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
@@ -396,10 +397,14 @@ describe('Gantt undoredo support', () => {
                 expect(args.taskBarEditAction).toBe('ProgressResizing');
                 expect(args.editingFields.progress).toBe(0);
             };
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', 0, 0);
-            triggerMouseEvent(dragElement, 'mouseup');
+            if (!isNullOrUndefined(ganttObj.element)) {
+                let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
+                if (!isNullOrUndefined(dragElement)) {
+                    triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+                    triggerMouseEvent(dragElement, 'mousemove', 0, 0);
+                    triggerMouseEvent(dragElement, 'mouseup');
+                }
+            }
         });
         it('Undo action for progress resize', () => {
             ganttObj.actionComplete = function (args: any): void {

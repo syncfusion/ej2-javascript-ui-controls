@@ -366,7 +366,8 @@ export class CheckBoxFilterBase {
         this.dialogObj.appendTo(this.dlg as HTMLElement);
         this.dialogObj.element.style.maxHeight = options.isResponsiveFilter ? 'none' : this.options.height + 'px';
         this.dialogObj.show();
-        if ((this.parent as IGrid) && (this.parent as IGrid).filterSettings && (this.parent as IGrid).filterSettings.type === 'CheckBox' &&
+        if ((this.parent as IGrid) && (this.parent as IGrid).filterSettings && ((this.parent as IGrid).filterSettings.type === 'CheckBox'
+            || (this.options.column && this.options.column.filter && this.options.column.filter.type === 'CheckBox')) &&
             ((this.parent as IGrid).getContent().firstElementChild as HTMLElement).offsetHeight < this.dialogObj.element.offsetHeight &&
             !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
             resetDialogAppend((this.parent as IGrid), this.dialogObj);
@@ -455,6 +456,9 @@ export class CheckBoxFilterBase {
                 this.dialogObj.element.querySelector('.e-dlg-content').innerHTML = '';
             }
             this.dialogObj.destroy();
+            if (this.dialogObj['dlgClosedBy'] === 'escape') {
+                (this.parent as IGrid).isColumnMenuFilterClosing = true;
+            }
             if (this.dlg && this.dlg.parentElement) {
                 remove(this.dlg);
             }

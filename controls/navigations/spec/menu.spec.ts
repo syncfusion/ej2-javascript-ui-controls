@@ -1003,4 +1003,45 @@ describe('Menu', () => {
             triggerMouseEvent(li, 'mouseover');
         });
     });
+
+    describe('Menu KeyBoardHandler with Scrolling', () => {
+        afterEach(() => {
+            menu.destroy();
+        });
+    
+        it('should handle enter key on scroll navigation', () => {
+            document.body.appendChild(ul);
+            const items: MenuItemModel[] = [
+                { text: 'File', id: 'file' },
+                { text: 'Edit', id: 'edit' },
+                { text: 'View', id: 'view' }
+            ];
+            menu = new Menu({ items: items, enableScrolling: true }, '#menu');
+            // Assume the scroll navigation button is active
+            const scrollNav: HTMLElement = createElement('div', { className: 'e-scroll-nav e-right-nav' });
+            ul.parentElement.insertBefore(scrollNav, ul);
+
+            const keyEventArgs: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                action: 'enter',
+                keyCode: 13,
+                target: scrollNav,
+                altKey: false,
+                charCode: 0,
+                code: '',
+                ctrlKey: false,
+                key: 'Enter',
+                location: 0,
+                metaKey: false,
+                repeat: false,
+                shiftKey: false,
+                which: 13
+            };
+
+            (keyEventArgs as any).target = scrollNav;
+            (menu as any).keyBoardHandler(keyEventArgs);
+        });
+    });
+
+    
 });

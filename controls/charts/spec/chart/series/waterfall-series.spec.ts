@@ -1091,7 +1091,7 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(d).toBe('M 18.31875000000001 371.5 L 314.43125 371.5 M 184.69374999999997 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 ');
+                expect(d).toBe('M 158.05624999999998 371.5 L 174.69375000000002 371.5 M 324.43125000000003 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 ');
                 done();
             };
             chart.loaded = loaded;
@@ -1101,7 +1101,7 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(d).toBe('M 18.31875000000001 371.5 L 314.43125 371.5 M 184.69374999999997 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 ');
+                expect(d).toBe('M 158.05624999999998 371.5 L 174.69375000000002 371.5 M 324.43125000000003 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 ');
                 done();
             };
             chart.series[0].marker.visible=true;
@@ -1112,7 +1112,7 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(d).toBe('M 507.44374999999997 371.5 L 490.80625000000003 371.5 M 341.06874999999997 371.5 L 324.43125000000003 371.5 M 174.69374999999997 148.6 L 158.05625000000003 148.6 ');
+                expect(d).toBe('M 647.1812500000001 371.5 L 351.06874999999997 371.5 M 480.80625000000003 371.5 L 324.43125000000003 371.5 M 174.69374999999997 148.6 L 158.05625000000003 148.6 ');
                 done();
             };
             chart.primaryXAxis.isInversed=true;

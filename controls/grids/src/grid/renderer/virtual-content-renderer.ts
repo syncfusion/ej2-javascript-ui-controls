@@ -192,7 +192,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             }
         }
         if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
-            || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
+            || ((info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString())
+            || (this.parent.isFrozenGrid() && this.parent.getVisibleFrozenLeftCount() >= viewInfo.columnIndexes[0]
+            && this.prevInfo.columnIndexes.toString().includes(viewInfo.columnIndexes.toString()))))) {
             this.parent.removeMaskRow();
             if (Browser.isIE) {
                 this.parent.hideSpinner();
@@ -288,8 +290,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.prevInfo = this.prevInfo || this.vgenerator.getData();
         indexes = indexes.filter((val: number, ind: number) => indexes.indexOf(val) === ind);
         let preventSelf: boolean = false;
-        if (checkIsVirtual(this.parent) && info.direction === 'up' && ((((info.page + 1) === this.prevInfo.page
-            || info.page === this.prevInfo.page) && info.block === 1) || (info.page === this.prevInfo.page && indexes.length === 2))
+        if (checkIsVirtual(this.parent) && info.direction === 'up' && (((info.page + 1 === this.prevInfo.page
+            || info.page === this.prevInfo.page) && (info.block === 1 || (info.block === 0
+            && info.page === 1))) || (info.page === this.prevInfo.page && indexes.length === 2))
             && this.vgenerator.isBlockAvailable(info.blockIndexes[1] + 1)) {
             preventSelf = (info.page + 1) === this.prevInfo.page && info.block === 1;
             index += 1;
@@ -674,6 +677,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (result + blockHeight > this.offsets[parseInt(totalBlocks.toString(), 10)]) {
             result -= (result + blockHeight) - this.offsets[parseInt(totalBlocks.toString(), 10)];
         }
+        if (info.page === 1 && info.block === 0 && info.direction === 'up') {
+            result = 0;
+        }
         if (!this.parent.enableVirtualization && this.parent.enableColumnVirtualization) {
             result = 0;
         }
@@ -693,11 +699,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 this.parent.showSpinner();
             }
             this.prevInfo = this.prevInfo || this.vgenerator.getData();
+            const viewInfo: VirtualInfo = this.getInfoFromView(direction, current, e);
+            if (this.parent.isFrozenGrid() && current.axis === 'X' && this.parent.getVisibleFrozenLeftCount() >= viewInfo.columnIndexes[0]
+                && this.prevInfo && this.prevInfo.columnIndexes.toString().includes(viewInfo.columnIndexes.toString())) {
+                return;
+            }
             if (this.parent.enableVirtualMaskRow && !this.preventEvent) {
                 const firstOffSetKey: number = parseInt(this.offsetKeys[0], 10);
                 const lastOffSetKey: number = parseInt(this.offsetKeys[this.offsetKeys.length - 1], 10);
                 const blockIndex: number[] = this.currentInfo.blockIndexes;
-                const viewInfo: VirtualInfo = this.getInfoFromView(direction, current, e);
                 const disableShowMaskRow: boolean = (this.prevInfo && current.axis === 'X'
                     && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString())
                     || (direction === 'down' && this.parent.allowGrouping && this.parent.groupSettings.columns.length

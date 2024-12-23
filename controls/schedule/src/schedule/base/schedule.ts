@@ -1956,9 +1956,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public removeSelectedClass(): void {
         const selectedCells: Element[] = this.getSelectedCells();
         for (const cell of selectedCells) {
-            if (this.currentView !== 'Year') {
-                cell.setAttribute('aria-selected', 'false');
-            }
             cell.removeAttribute('tabindex');
         }
         removeClass(selectedCells, cls.SELECTED_CELL_CLASS);
@@ -1977,11 +1974,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public addSelectedClass(cells: HTMLTableCellElement[], focusCell: HTMLTableCellElement, isPreventScroll?: boolean): void {
-        if (this.currentView !== 'Year') {
-            for (const cell of cells) {
-                cell.setAttribute('aria-selected', 'true');
-            }
-        }
         addClass(cells, cls.SELECTED_CELL_CLASS);
         if (focusCell) {
             focusCell.setAttribute('tabindex', '0');

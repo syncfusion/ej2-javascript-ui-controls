@@ -1192,6 +1192,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         }
         this.updateSplineValue();
         this.updateYAxisForErrorBars();
+        if (this instanceof Series && this.type === 'Waterfall' && isNullOrUndefined(this.yAxis.minimum)) {
+            this.yMin = Math.min(...this.chart.waterfallSeriesModule.cumulativeSums);
+        }
     }
     /**
      * Calculates the errorbar and adds a range to axis if errorbar exeeds to the actual range.

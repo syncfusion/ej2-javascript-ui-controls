@@ -3,7 +3,7 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs, UndoRedo  } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue} from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -536,7 +536,7 @@ describe('Gantt dialog module', () => {
                textObj.value = '5 days';
                textObj.dataBind();
                let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
-               expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/4/2019');
+               expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/5/2019');
                let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
                expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/11/2019');
                let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
@@ -572,7 +572,7 @@ describe('Gantt dialog module', () => {
                textObj.value = '5 days';
                textObj.dataBind();
                let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
-               expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/4/2019');
+               expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/5/2019');
                let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
                expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/11/2019');
                let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
@@ -975,7 +975,7 @@ describe('Gantt dialog module', () => {
                    // without unit and work mapping
                    expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
                    //expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
-                   expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+                   expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
                    expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
                    expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
                }
@@ -994,8 +994,8 @@ describe('Gantt dialog module', () => {
            expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 1");
            expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
            //expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
-           expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
-           expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/04/2019');
+           expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
+           expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/02/2019');
            ganttObj.actionBegin = function (args: any): void {
                if (args.requestType === "beforeOpenEditDialog") {
                    args.dialogModel.animationSettings = { 'effect': 'none' };
@@ -1035,7 +1035,7 @@ describe('Gantt dialog module', () => {
            ganttObj.actionComplete = (args: any): void => {
                if (args.requestType === 'save') {
                   
-                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(12);
+                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
                }
            };
            let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
@@ -1124,7 +1124,7 @@ describe('Gantt dialog module', () => {
                    expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 2[80%]");
                    // with unit and without work mapping
                    expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['resourceUnit']).toBe(80);
-                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(19.2);
+                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
                    expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
                    expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
                }
@@ -3897,7 +3897,7 @@ describe('Bug-850397: Work column is not properly updating in Resource sample', 
         triggerMouseEvent(resourceCheckbox1, 'click');
         let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveButton, 'click');
-        expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(50.4);
+        expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(48);
         expect(ganttObj.currentViewData.length).toBe(5);
     });
 });
@@ -13243,7 +13243,7 @@ describe('Dialog editing - Resource Tab with unit mapping', () => {
         triggerMouseEvent(checkbox, 'click');
         let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveRecord, 'click');
-        expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo[0]['Unit']).toBe(0)
+        expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo[0]['Unit']).toBe(100)
     });
 });
 describe('Dialog editing - Work and duration fields not updated while adding a new task with Fixed Unit type', () => {
@@ -13733,6 +13733,221 @@ describe('Add new record with notes value', () => {
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
+        }
+    });
+ });
+ describe('Dialog editing and verification - Start Date Check', () => {
+    let ganttObj: Gantt;
+    const datasources : Object[] =  [
+        {
+            TaskID: 1,
+            TaskName: 'newtask2',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            resources: [{ resourceId: 1, resourceUnit: 100 }],
+            Predecessor: "2FS"
+        },
+        { TaskID: 2, TaskName: 'newtask1', StartDate: new Date('04/02/2019'), Duration: 1 }
+    ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: datasources,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks',
+                type: 'taskType',
+                milestone: 'isMilestone',
+                dependency: 'Predecessor',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            gridLines:'Both',
+            resources: resourceResources,
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'Unit',
+            },
+            workUnit: 'Hour',
+            taskType: 'FixedWork',
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+                'Refresh',
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                {
+                    field: 'StartDate',
+                    headerText: 'Start Date',
+                },
+                {
+                    field: 'EndDate',
+                    headerText: 'End Date',
+                },
+                { field: 'resources', headerText: 'Resources', width: '160' },
+                { field: 'work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' },
+            ],
+        }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);      
+        ganttObj.openEditDialog(1);
+    });
+    it('should update work and check start date for Task ID 1', () => {
+        let workField: any = document.querySelector('#' + ganttObj.element.id + 'work') as HTMLInputElement;
+        if (workField) {
+            let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'work')).ej2_instances[0];
+            inputObj.value = 8;
+            inputObj.dataBind();
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-primary') as HTMLElement;
+            triggerMouseEvent(saveButton, 'click');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/3/2019')
+        }
+    });
+});
+describe('Dialog editing - With task name has -', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource:  [
+                {
+                  TaskID: 1,
+                  TaskName: 'Project initiation',
+                  StartDate: new Date('04/02/2024'),
+                  EndDate: new Date('04/21/2024'),
+                  subtasks: [
+                    {
+                      TaskID: 2,
+                      TaskName: 'Task-1',
+                      StartDate: new Date('04/02/2024'),
+                      Duration: 0,
+                      Progress: 30,
+                      resources: [1],
+                      info: 'Measure the total property area alloted for construction',
+                    },
+                    {
+                      TaskID: 3,
+                      TaskName: 'Task-2',
+                      StartDate: new Date('04/02/2024'),
+                      Duration: 4,
+                      resources: [2, 3, 5],
+                      info:
+                        'Obtain an engineered soil test of lot where construction is planned.' +
+                        'From an engineer or company specializing in soil testing',
+                    },
+                    {
+                      TaskID: 4,
+                      TaskName: 'Task-3',
+                      StartDate: new Date('04/02/2024'),
+                      Duration: 0,
+                      Progress: 30,
+                    },
+                  ],
+                },
+              ],
+              allowReordering: true,
+              enableContextMenu: true,
+              taskFields: {
+                  id: 'TaskID',
+                  name: 'TaskName',
+                  startDate: 'StartDate',
+                  duration: 'Duration',
+                  progress: 'Progress',
+                  dependency: 'Predecessor',
+                  baselineStartDate: "BaselineStartDate",
+                  baselineEndDate: "BaselineEndDate",
+                  child: 'subtasks',
+                  indicators: 'Indicators'
+              },
+              renderBaseline: true,
+              baselineColor: 'red',
+              editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true
+              },
+              columns: [
+                  { field: 'TaskID', headerText: 'Task ID' },
+                  { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                  { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                  { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                  { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                  { field: 'CustomColumn', headerText: 'CustomColumn' }
+              ],
+              toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll',],
+              allowSelection: true,
+              allowRowDragAndDrop: true,
+              selectedRowIndex: 1,
+              splitterSettings: {
+                  position: "50%",
+              },
+              editDialogFields: [
+                { type: 'Dependency' }
+            ],
+              allowResizing: true,
+              readOnly: false,
+              taskbarHeight: 20,
+              rowHeight: 40,
+              height: '550px',
+              allowUnscheduledTasks: true,
+              projectStartDate: new Date('03/25/2024'),
+              projectEndDate: new Date('05/30/2024'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+        ganttObj.openAddDialog();
+        let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+        tab.selectedItem = 1;
+        tab.dataBind();
+    });
+    it('Dependency tab editing with - in taskname', (done: Function) => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'add') {
+                expect(args.data.Predecessor).toBe('3FS');
+                done();
+            }
+        };
+        let addButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_add') as HTMLElement;
+        if (addButton) {
+            triggerMouseEvent(addButton, 'click');
+            let input: any = (<EJ2Instance>document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "3-Task-2";
+            input.dataBind();
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+            triggerMouseEvent(saveButton, 'click');
         }
     });
  });

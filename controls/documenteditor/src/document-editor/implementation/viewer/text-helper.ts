@@ -663,7 +663,7 @@ export class TextHelper {
             if (charFormat.bidi || charFormat.complexScript) {
                 return this.getFontNameBidiToRender(scriptType, charFormat);
             } else {
-                if (this.isEastAsiaScript(scriptType) && !isNullOrUndefined(charFormat.fontFamilyFarEast))
+                if ((this.isEastAsiaScript(scriptType) || (charFormat.fontHintType === 'EastAsia' && scriptType === FontScriptType.SpecialCharacter)) && !isNullOrUndefined(charFormat.fontFamilyFarEast))
                     return this.getFontNameEAToRender(scriptType, charFormat);
 
                 else
@@ -692,7 +692,7 @@ export class TextHelper {
         {            
             let fontName: string = charFormat.fontFamilyFarEast;
             if (isNullOrUndefined(fontName) || HelperMethods.isThemeFont(fontName))
-                return this.getFontNameFromTheme(charFormat, fontName, scriptType, FontHintType.EastAsia);
+                return this.getFontNameFromTheme(charFormat, fontName, scriptType, "EastAsia");
             else
                 return fontName;
         }
@@ -700,7 +700,7 @@ export class TextHelper {
         {
             let fontName: string = charFormat.fontFamilyAscii;
             if (HelperMethods.isThemeFont(fontName))
-                return this.getFontNameFromTheme(charFormat, fontName, scriptType, FontHintType.Default);
+                return this.getFontNameFromTheme(charFormat, fontName, scriptType, "Default");
             else
                 return charFormat.fontFamily;
         }
@@ -713,7 +713,7 @@ export class TextHelper {
                 //Determines the font nmae to used for RTL characters based on its script from direct or font scheme (Document theme file)
                 let fontName: string = charFormat.fontFamilyBidi;
                 if (!isNullOrUndefined(fontName) || HelperMethods.isThemeFont(fontName))
-                    return this.getFontNameFromTheme(charFormat, fontName, scriptType, FontHintType.CS);
+                    return this.getFontNameFromTheme(charFormat, fontName, scriptType, "CS");
                 else
                     return fontName;
             }
@@ -776,7 +776,7 @@ export class TextHelper {
             }
             if (majorMinorFontScheme != null && majorMinorFontScheme.fontTypeface != null)
             {
-                if (hintType == FontHintType.CS)
+                if (hintType == "CS")
                 {
                     // //If it's an complex script and "themeFontLang" element has a "bidi" attribute, then we need to locate the font name
                     // //from the "theme.xml" for the language specified by the bidi attribute
@@ -796,7 +796,7 @@ export class TextHelper {
                         fontNameFromTheme = majorMinorFontScheme.fontTypeface.get('Arab');
                     }
                 }
-                else if (hintType == FontHintType.EastAsia)
+                else if (hintType == "EastAsia")
                 {
                     if (!isNullOrUndefined(this.documentHelper.themeFontLanguage)) {
                         fontName = this.getFontNameWithFontScript(majorMinorFontScheme, this.documentHelper.themeFontLanguage.localeIdFarEast, hintType);
@@ -881,7 +881,7 @@ export class TextHelper {
         else if ((lang == 'th_TH' || localeID == 1054) && fontTypeFaces.containsKey("Thai"))
             fontName = fontTypeFaces.get("Thai");
         //Arabic
-        else if (hintType == FontHintType.CS && fontTypeFaces.containsKey("Arab"))
+        else if (hintType == "CS" && fontTypeFaces.containsKey("Arab"))
             fontName = fontTypeFaces.get("Arab");
 
         return fontName;

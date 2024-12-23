@@ -393,7 +393,8 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
 
     protected renderBannerView(bannerTemplate: string | Function, parentElement: HTMLElement, templateName: string): void {
         if (bannerTemplate) {
-            const introContainer: HTMLElement = this.createElement('div', { attrs: { class: 'e-banner-view'} });
+            const className: string = templateName === 'emptyChatTemplate' ? 'e-empty-chat-template' : 'e-banner-view';
+            const introContainer: HTMLElement = this.createElement('div', { attrs: { class: className} });
             this.updateContent(bannerTemplate, introContainer, {}, templateName);
             parentElement.prepend(introContainer);
         }

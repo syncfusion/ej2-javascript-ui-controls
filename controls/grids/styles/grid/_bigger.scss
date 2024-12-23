@@ -1424,6 +1424,13 @@
     padding-right: $grid-res-toolbar-search-wrapper-padding-right;
   }
 
+  .e-row .e-input-group .e-control.e-input {
+    @if $grid-skin == 'material3' or $grid-skin == 'material3-dark' {
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+  }
+
   .e-responsive-dialog .e-dlg-content .e-mainfilterdiv .e-dialog .e-contextmenu-wrapper ul li{
     @if $theme-name == 'Material3-dark' or $theme-name == 'tailwind3-dark'{
       background-color: unset;

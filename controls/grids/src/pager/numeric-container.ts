@@ -406,7 +406,9 @@ export class NumericContainer implements IRender {
             const currentPage: number = (this.pagerModule.isPagerResized && currentPageIndex !== -1) ? currentPageIndex
                 : ((this.pagerModule.currentPage - 1) % this.pagerModule.pageCount);
             classList(this.links[parseInt(currentPage.toString(), 10)], ['e-currentitem', 'e-active'], []);
-            this.links[parseInt(currentPage.toString(), 10)].setAttribute('aria-current', 'page');
+            if (this.links[parseInt(currentPage.toString(), 10)]) {
+                this.links[parseInt(currentPage.toString(), 10)].setAttribute('aria-current', 'page');
+            }
         }
     }
 

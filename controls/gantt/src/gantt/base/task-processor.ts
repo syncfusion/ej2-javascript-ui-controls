@@ -22,6 +22,7 @@ export class TaskProcessor extends DateProcessor {
     public isResourceString: boolean;
     private customSegmentProperties: Object[] = [];
     private systemTimeZone: string;
+    private isBaseline : boolean = false;
 
     constructor(parent: Gantt) {
         super(parent);
@@ -1094,14 +1095,13 @@ export class TaskProcessor extends DateProcessor {
                     }
                     break;
                 case 'FixedWork':
-                    if (!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
-                                           ganttData.ganttProperties.resourceInfo.length !== 0) {
+                    if ((!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
+                                           ganttData.ganttProperties.resourceInfo.length !== 0) || (ganttProperties.work === 0)) {
                         this.updateDurationWithWork(ganttData);
                     }
-                    this.updateUnitWithWork(ganttData);
                     break;
                 case 'FixedUnit':
-                    this.updateWorkWithDuration(ganttData);
+                    this.updateDurationWithWork(ganttData);
                     break;
                 }
                 if (!isNullOrUndefined(taskSettings.type)) {
@@ -1137,7 +1137,7 @@ export class TaskProcessor extends DateProcessor {
         const resources: Object[] = (this.parent.editModule && this.parent.editModule.dialogModule &&
             this.parent.editModule.dialogModule['currentResources']) ? this.parent.editModule.dialogModule['currentResources']
             : ganttProperties.resourceInfo;
-        if (!isNullOrUndefined(resources)) {
+        if (!isNullOrUndefined(resources) && resources.length > 0) {
             const resourcesLength: number = !isNullOrUndefined(resources) ? resources.length : 0;
             let totalResourceOneDayWork: number = 0;
             let totSeconds: number;
@@ -1155,7 +1155,8 @@ export class TaskProcessor extends DateProcessor {
                 resourceUnit = resources[index as number][this.parent.resourceFields.unit]; //in percentage
                 totalResourceOneDayWork += (resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : (ganttData.ganttProperties.taskType !== 'FixedUnit' ? ((ganttProperties.taskType !== 'FixedWork' && ganttProperties.duration !== 0) ? actualOneDayWork : 0) : 0)); //in hours
             }
-            if (ganttProperties.taskType === 'FixedWork' && totalResourceOneDayWork === 0 && this.parent['updateDuration']) {
+            if (ganttProperties.taskType === 'FixedWork' && (resourcesLength === 0 ||
+                    (resourcesLength > 0 && totalResourceOneDayWork === 0)) && totalResourceOneDayWork === 0 && this.parent['updateDuration']) {
                 totalResourceOneDayWork = actualOneDayWork;
             }
             const totalHours: number = this.getWorkInHour(ganttProperties.work, ganttProperties.workUnit);
@@ -1460,6 +1461,7 @@ export class TaskProcessor extends DateProcessor {
         const baselineStartDate: Date = this.getDateFromFormat(ganttProperties.baselineStartDate);
         const baselineEndDate: Date = this.getDateFromFormat(ganttProperties.baselineEndDate);
         if (baselineStartDate && baselineEndDate && (baselineStartDate.getTime() !== baselineEndDate.getTime())) {
+            this.isBaseline = true;
             return (this.getTaskWidth(baselineStartDate, baselineEndDate));
         } else {
             return 0;
@@ -1476,7 +1478,7 @@ export class TaskProcessor extends DateProcessor {
      */
     public getTaskWidth(startDate: Date, endDate: Date, ganttData?: ITaskData): number {
         const sDate: Date = new Date(startDate.getTime()); const eDate: Date = new Date(endDate.getTime());
-        let tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
+        let tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
             this.parent.timelineModule.customTimelineSettings.topTier.unit;
         const zoomOrTimeline: Object = this.parent.timelineModule.customTimelineSettings;
         let countValue: number = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'].count :
@@ -1489,6 +1491,13 @@ export class TaskProcessor extends DateProcessor {
         }
         if (!isNullOrUndefined(ganttData) && (ganttData.durationUnit === 'minute') || !isNullOrUndefined(ganttData) && ganttData.durationUnit === 'day' && ganttData.duration < 1) {
             modifiedsDate = new Date(modifiedsDate.getTime() + ganttData.duration * 60 * 1000);
+        }
+        if (this.isBaseline && tierMode === 'Day') {
+            const duration: number = this.getDuration(sDate, eDate, 'day', true, false);
+            this.isBaseline = false;
+            if (duration < 1) {
+                return (duration * this.parent.perDayWidth);
+            }
         }
         if (this.parent.weekWorkingTime.length > 0) {
             let date: Date = new Date(startDate.getTime());
@@ -1551,7 +1560,8 @@ export class TaskProcessor extends DateProcessor {
         const dateDiff: number = modifiedsDate.getTime() - sDate.getTime();
         let dayStartTime: number;
         let dayEndTime: number;
-        if (!isNullOrUndefined(ganttData) && (ganttData.durationUnit === 'minute' && ganttData.duration < (hour * 60)) || !isNullOrUndefined(ganttData) && ganttData.durationUnit === 'day' && /^\d+\.\d+$/.test(ganttData.duration.toString())) {
+        if (!isNullOrUndefined(ganttData) && (ganttData.durationUnit === 'minute' && ganttData.duration < (hour * 60)) || !isNullOrUndefined(ganttData) && ganttData.durationUnit === 'day' &&
+        !isNullOrUndefined(ganttData.duration) && /^\d+\.\d+$/.test(ganttData.duration.toString())) {
             if (tierMode === 'Day') {
                 if (this.parent.weekWorkingTime.length > 0) {
                     dayStartTime = this.parent['getStartTime'](sDate);
@@ -1702,7 +1712,7 @@ export class TaskProcessor extends DateProcessor {
     public getTaskLeft(startDate: Date, isMilestone: boolean, isFromTimelineVirtulization?: boolean): number {
         let isTimeSet: boolean = false;
         const date: Date = new Date(startDate.getTime());
-        let tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
+        let tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
             this.parent.timelineModule.customTimelineSettings.topTier.unit;
         const zoomOrTimeline: Object = this.parent.timelineModule.customTimelineSettings;
         let countValue: number = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'].count :

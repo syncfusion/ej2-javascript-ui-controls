@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.36 (2024-12-24)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I664732` - Fixed an issue where the overlay was displayed even when the popup was prevented from opening in mobile mode.
+
+- `#I664735` - Removed unnecessary conditional code for adding CSS classes based on device type.
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

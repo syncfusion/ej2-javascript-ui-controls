@@ -12,6 +12,12 @@ import { animationMode } from '@syncfusion/ej2-base';
  */
 
 export class WaterfallSeries extends ColumnBase {
+    /**
+     * Store the cumulative values of each index.
+     *
+     * @private
+     */
+    public cumulativeSums: number[] = [];
 
     /**
      * Render waterfall series.
@@ -94,11 +100,15 @@ export class WaterfallSeries extends ColumnBase {
                         direction = direction.concat('M' + ' ' + y + ' ' + (series.xAxis.isInversed ? (prevRegion.y + prevRegion.height) : prevRegion.y) + ' ' +
                             'L' + ' ' + y + ' ' + (series.xAxis.isInversed ? currentYValue : (currentYValue + currentRegion.height)) + ' ');
                     } else {
+                        let connectorX: number = prevRegion.x;
                         if (beforePoint.yValue === 0) {
-                            prevRegion.x = ((prevRegion.x + prevRegion.width / 2) - (rect.width / 2));
+                            connectorX = ((connectorX + prevRegion.width / 2) + (rect.width / 2)) - prevRegion.width;
                             currentXValue = ((currentRegion.x + currentRegion.width / 2) + (rect.width / 2)) - currentRegion.width;
                         }
-                        direction = direction.concat('M' + ' ' + (series.xAxis.isInversed ? prevRegion.x : (prevRegion.x + prevRegion.width)) + ' ' + y + ' ' +
+                        if (point.yValue === 0) {
+                            currentXValue = ((currentRegion.x + currentRegion.width / 2) - (rect.width / 2));
+                        }
+                        direction = direction.concat('M' + ' ' + (series.xAxis.isInversed ? connectorX : (connectorX + prevRegion.width)) + ' ' + y + ' ' +
                             'L' + ' ' + (series.xAxis.isInversed ? (currentXValue + currentRegion.width) : currentXValue) + ' ' + y + ' ');
                     }
                 }
@@ -206,6 +216,11 @@ export class WaterfallSeries extends ColumnBase {
         const data: Object[] = json; let index: number; let sumValue : number = 0;
         const intermediateSum: number[] = series.intermediateSumIndexes;
         const sumIndex: number[] = series.sumIndexes;
+        let cumulativeSum: number = 0;
+        for (let i: number = 0; i < data.length; i++) {
+            cumulativeSum += data[i as number][series.yName] !== undefined ? data[i as number][series.yName] : 0;
+            this.cumulativeSums.push(cumulativeSum);
+        }
         if (intermediateSum !== undefined && intermediateSum.length > 0) {
             for (let i: number = 0; i < intermediateSum.length; i++) {
                 for (let j: number = 0; j < data.length; j++) {

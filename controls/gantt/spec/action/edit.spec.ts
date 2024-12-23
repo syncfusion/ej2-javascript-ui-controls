@@ -103,7 +103,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [4]}];
             ganttObj.updateRecordByID(data[0]);
             expect(getValue('TaskName', ganttObj.flatData[3])).toBe('Milestone Task');
-            expect(getValue('Duration', ganttObj.flatData[3])).toBe(1);
+            expect(getValue('Duration', ganttObj.flatData[3])).toBe(0);
         });
     
         it('Update Record of parent data', () => {
@@ -2204,9 +2204,9 @@ describe('Gantt Edit support', () => {
               //checking work values for task after adding resource
               expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo.length).toBe(1);
               expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-              expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
-              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/04/2019');
-              expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
+              expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
+              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/02/2019');
+              expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
           }
       });
     });
@@ -5849,7 +5849,7 @@ describe('Resource update for Fixed Work', () => {
     it('Resource update for Fixed Work', () => {
         ganttRef.actionComplete = function (args: any): void {
             if (args.requestType === "save") {
-                expect(ganttRef.flatData[2].ganttProperties.resourceInfo[0]['resourceUnit']).toBe(75.08);
+                expect(ganttRef.flatData[2].ganttProperties.resourceInfo[0]['resourceUnit']).toBe(75);
             }
         };
         let checkbox: HTMLElement = document.querySelector('#' + ganttRef.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;

@@ -724,7 +724,6 @@ describe('Schedule Resources', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(201);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(12);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(23);
         });
@@ -740,7 +739,6 @@ describe('Schedule Resources', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(274);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(13);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });

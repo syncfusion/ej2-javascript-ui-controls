@@ -1562,6 +1562,206 @@ describe('ContextMenu', () => {
             contextMenu.dataBind();
             expect(contextMenu.enableScrolling).toBeFalsy();
         });
+
+        it('Context Menu With scroll enabled testing', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            let menuItems: MenuItemModel[] = [
+                {
+                  text: 'Cut',
+                  iconCss: 'e-cm-icons e-cut',
+                },
+                {
+                  text: 'Copy',
+                  iconCss: 'e-cm-icons e-copy',
+                },
+                {
+                  text: 'Paste',
+                  iconCss: 'e-cm-icons e-paste',
+                  items: [
+                    {
+                      text: 'Paste Text',
+                      iconCss: 'e-cm-icons e-pastetext',
+                    },
+                    {
+                      text: 'Paste Special',
+                      iconCss: 'e-cm-icons e-pastespecial',
+                    },
+                  ],
+                },
+                {
+                  separator: true,
+                },
+                {
+                  text: 'Link',
+                  iconCss: 'e-cm-icons e-link',
+                },
+                {
+                  text: 'New Comment',
+                  iconCss: 'e-cm-icons e-comment',
+                },
+                {
+                  text: 'Cut',
+                  iconCss: 'e-cm-icons e-cut',
+                },
+                {
+                  text: 'Copy',
+                  iconCss: 'e-cm-icons e-copy',
+                },
+                {
+                  text: 'Paste',
+                  iconCss: 'e-cm-icons e-paste',
+                  items: [
+                    {
+                      text: 'Paste Text',
+                      iconCss: 'e-cm-icons e-pastetext',
+                    },
+                    {
+                      text: 'Paste Special',
+                      iconCss: 'e-cm-icons e-pastespecial',
+                    },
+                  ],
+                },
+                {
+                  separator: true,
+                },
+                {
+                  text: 'Link',
+                  iconCss: 'e-cm-icons e-link',
+                },
+                {
+                  text: 'New Comment',
+                  iconCss: 'e-cm-icons e-comment',
+                },
+                {
+                  text: 'Cut',
+                  iconCss: 'e-cm-icons e-cut',
+                },
+                {
+                  text: 'Copy',
+                  iconCss: 'e-cm-icons e-copy',
+                },
+                {
+                  text: 'Paste',
+                  iconCss: 'e-cm-icons e-paste',
+                  items: [
+                    {
+                      text: 'Paste Text',
+                      iconCss: 'e-cm-icons e-pastetext',
+                    },
+                    {
+                      text: 'Paste Special',
+                      iconCss: 'e-cm-icons e-pastespecial',
+                    },
+                  ],
+                },
+                {
+                  separator: true,
+                },
+                {
+                  text: 'Link',
+                  iconCss: 'e-cm-icons e-link',
+                },
+                {
+                  text: 'New Comment',
+                  iconCss: 'e-cm-icons e-comment',
+                },
+                {
+                  text: 'Cut',
+                  iconCss: 'e-cm-icons e-cut',
+                },
+                {
+                  text: 'Copy',
+                  iconCss: 'e-cm-icons e-copy',
+                },
+                {
+                  text: 'Paste',
+                  iconCss: 'e-cm-icons e-paste',
+                  items: [
+                    {
+                      text: 'Paste Text',
+                      iconCss: 'e-cm-icons e-pastetext',
+                    },
+                    {
+                      text: 'Paste Special',
+                      iconCss: 'e-cm-icons e-pastespecial',
+                    },
+                  ],
+                },
+                {
+                  separator: true,
+                },
+                {
+                  text: 'Link',
+                  iconCss: 'e-cm-icons e-link',
+                },
+                {
+                  text: 'New Comment',
+                  iconCss: 'e-cm-icons e-comment',
+                },
+            ];
+            contextMenu = new ContextMenu(
+                {
+                    target: '#target',
+                    items: menuItems,
+                    enableScrolling: true,
+                    beforeOpen: (args: MenuEventArgs) => {
+                        args.element.parentElement.style.height = '150px';
+                    }
+                },
+            '#contextmenu');
+            contextMenu.open(40, 62);
+            const menuElement = document.querySelectorAll('.e-menu-vscroll')[0];
+            expect((menuElement as any).style.top).toBe('120px');
+        });
+    });
+
+    describe('Context Menu With Animation - Popup close', () => {
+        let contextMenu: ContextMenu;
+        let div: HTMLElement;
+        let ul: HTMLElement;
+    
+        beforeEach(() => {
+            div = document.createElement('div');
+            div.id = 'target';
+            document.body.appendChild(div);
+            ul = document.createElement('ul');
+            ul.id = 'contextmenu';
+            document.body.appendChild(ul);
+        });
+    
+        afterEach(() => {
+            // Destroy the context menu instance and clean up elements
+            if (contextMenu) {
+                contextMenu.destroy();
+            }
+            document.body.removeChild(div);
+            document.body.removeChild(ul);
+        });
+
+        const escapeEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            action: 'escape',
+            type: 'keyup'
+        };
+    
+        it('Context Menu With Animation - Popup close using Esc key', () => {
+            const items = [
+                { text: 'JavaScript' },
+                { text: 'TypeScript' },
+                { text: 'Angular' },
+                { text: 'React' },
+                { text: 'Vue' }
+            ];
+            contextMenu = new ContextMenu({
+                items: items,
+                target: '#target',
+                animationSettings: {effect: 'SlideDown', duration: 2000}
+            }, '#contextmenu');
+            contextMenu.open(40, 62);
+            (contextMenu as any).keyBoardHandler(escapeEventArgs);
+            expect(document.getElementById('contextmenu').style.display).toEqual("none");
+        });
     });
 
 });

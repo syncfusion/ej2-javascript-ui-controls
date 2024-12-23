@@ -582,7 +582,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.updateHeader(this.showHeader, this.chatHeader, this.viewWrapper);
         if (isNOU(this.messages) || this.messages.length <= 0) {
             this.renderBannerView(this.emptyChatTemplate, this.messageWrapper, 'emptyChatTemplate');
-            this.isEmptyChatTemplateRendered =  isNOU(this.messageWrapper.querySelector('.e-banner-view')) ? false : true;
+            this.isEmptyChatTemplateRendered =  isNOU(this.messageWrapper.querySelector('.e-empty-chat-template')) ? false : true;
         }
         this.wireEvents();
         this.renderTypingIndicator();
@@ -897,7 +897,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
     private renderNewMessage(msg: MessageModel, index: number): void {
         if (this.isEmptyChatTemplateRendered) {
-            const introContainer: HTMLElement = this.messageWrapper.querySelector('.e-banner-view');
+            const introContainer: HTMLElement = this.messageWrapper.querySelector('.e-empty-chat-template');
             this.messageWrapper.removeChild(introContainer);
             this.isEmptyChatTemplateRendered = false;
         }

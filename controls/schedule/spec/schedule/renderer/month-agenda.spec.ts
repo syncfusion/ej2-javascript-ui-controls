@@ -69,7 +69,6 @@ describe('Month-agenda view rendering', () => {
 
             it('work cells', () => {
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 1).getTime().toString());
                 expect(schObj.element.getAttribute('aria-labelledby')).toEqual(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('id'));
                 expect(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('aria-label')).
@@ -301,10 +300,8 @@ describe('Month-agenda view rendering', () => {
                 schObj = util.createSchedule(model, []);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-                expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 firstWorkCell.click();
                 expect(firstWorkCell.classList).toContain('e-selected-cell');
-                expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
                 expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             });
 
@@ -449,10 +446,8 @@ describe('Month-agenda view rendering', () => {
                 schObj = util.createSchedule(model, []);
                 const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
                 expect(workCell.classList).not.toContain('e-selected-cell');
-                expect(workCell.getAttribute('aria-selected')).toEqual('false');
                 workCell.click();
                 expect(workCell.classList).not.toContain('e-selected-cell');
-                expect(workCell.getAttribute('aria-selected')).toEqual('false');
             });
 
             it('date navigating', () => {
@@ -655,14 +650,10 @@ describe('Month-agenda view rendering', () => {
         it('mousedown key testing', () => {
             const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(workCells[17].classList).toContain('e-selected-cell');
-            expect(workCells[17].getAttribute('aria-selected')).toEqual('true');
             expect(workCells[12].classList).not.toContain('e-selected-cell');
-            expect(workCells[12].getAttribute('aria-selected')).toEqual('false');
             util.triggerMouseEvent(workCells[12], 'click');
             expect(workCells[12].classList).toContain('e-selected-cell');
-            expect(workCells[12].getAttribute('aria-selected')).toEqual('true');
             expect(workCells[17].classList).not.toContain('e-selected-cell');
-            expect(workCells[17].getAttribute('aria-selected')).toEqual('false');
         });
     });
 

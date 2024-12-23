@@ -1221,6 +1221,7 @@ describe('ComboBox', () => {
     describe('Dynamic Filtering in remote data', () => {
         let ddlObj: any;
         let element: HTMLInputElement;
+        let originalTimeout: number;
         let data: DataManager = new DataManager({
             url: 'https://services.syncfusion.com/js/production/api/Employees',
             adaptor: new WebApiAdaptor,
@@ -1231,6 +1232,8 @@ describe('ComboBox', () => {
             keyCode: 74
         };
         beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
             element = <HTMLInputElement>createElement('input', { id: 'combobox' });
             document.body.appendChild(element);
             ddlObj = new ComboBox({
@@ -1247,6 +1250,7 @@ describe('ComboBox', () => {
             ddlObj.allowFiltering = true;
         });
         afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             ddlObj.destroy();
             element.remove();
         });

@@ -3585,6 +3585,13 @@
         }
       }
 
+      .e-row .e-input-group .e-control.e-input {
+        @if $grid-skin == 'material3' or $grid-skin == 'material3-dark' {
+          padding-bottom: 1px;
+          padding-top: 2px;
+        }
+      }
+
       .e-rowdragdrop {
         @if $grid-skin == 'material3' or $grid-skin == 'material3-dark' or $grid-skin == 'material' or $grid-skin == 'material-dark' or $grid-skin == 'bootstrap4' or $grid-skin == 'fluent2' or $grid-skin == 'fluent2-dark' {
           border-width: $grid-rowcell-broder-width;

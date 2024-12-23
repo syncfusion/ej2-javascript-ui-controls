@@ -1285,6 +1285,17 @@ export let autoCheckHierarcialData: any = [
         { id: 6, name: 'Item 9', hasChild: true },
         { id: 7, pid: 6, name: 'Item 10' },
     ];
+	
+	export let localData13: { [key: string]: Object }[] = [
+        { id: 1, name: 'Item 1', hasChild: true, expanded: true },
+        { id: 2, pid: 1, name: 'Item 2' },
+        { id: 3, pid: 1, name: 'Item 3' },
+        { id: 4, pid: 1, name: 'Item 4' },
+        { id: 5, pid: 1, name: 'Item 5' },
+        { id: 6, pid: 1, name: 'Item 6' },
+        { id: 7, name: 'Item 7', hasChild: true },
+        { id: 8, pid: 7, name: 'Item 8' },
+    ];
 
 export let hierarchicalDataSource: { [key: string]: Object }[] = [
     {
@@ -1295,7 +1306,7 @@ export let hierarchicalDataSource: { [key: string]: Object }[] = [
         ]
     },
     {
-        code: 'AS', name: 'Asia', expanded: true, icon:'e-icons e-folder' , countries: [
+        code: 'AS', name: 'Asia', icon:'e-icons e-folder' , countries: [
             { code: 'CHN', name: 'China', icon:'e-icons e-folder' },
         ]
     },
@@ -1322,5 +1333,19 @@ export let hierarchicalDataSource1: { [key: string]: Object }[] = [
     {
         code: 'AS', name: 'Asia', expanded: true, icon:'e-icons e-folder' , countries: []
     },
+];
 
+export let hierarchicalDataSource2: { [key: string]: Object }[] = [
+    {
+        code: 'AF', name: 'Africa', expanded: true, icon:'e-icons e-folder', countries: [
+            { code: 'NGA', name: 'Nigeria', icon:'e-icons e-folder' },
+            { code: 'EGY', name: 'Egypt', icon:'e-icons e-folder' },
+            { code: 'ZAF', name: 'South Africa', icon:'e-icons e-folder' }
+        ]
+    },
+    {
+        code: 'AS', name: 'Asia', expanded: true, icon:'e-icons e-folder' , countries: [
+            { code: 'CHN', name: 'China', icon:'e-icons e-folder' },
+        ]
+    },
 ];

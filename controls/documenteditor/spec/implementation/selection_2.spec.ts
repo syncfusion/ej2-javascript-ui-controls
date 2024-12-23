@@ -563,3 +563,76 @@ describe('Cut and Copy operation without SfdtExport', () => {
 //         expect(() => { editor.editorModule.cut() }).not.toThrowError();
 //     });
 });
+
+describe('Content control keyboard validation', () => {
+    let editor: DocumentEditor;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+
+    it('Press home button in content control', () => {
+        console.log('Press home button in content control');
+        editor.openBlank();
+        editor.editorModule.insertText('Syncfusion');
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('software');
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('company');
+        editor.selectionModule.select('0;1;0', '0;1;8');
+        editor.editorModule.insertContentControl('RichText');
+        editor.selectionModule.select('0;1;4', '0;1;4');
+        editor.selectionModule.handleHomeKey();
+        expect(editor.selectionModule.start.offset).toBe(1);
+    });
+    it('Press end button in content control', () => {
+        console.log('Press end button in content control');
+        editor.selectionModule.select('0;1;4', '0;1;4');
+        editor.selectionModule.handleEndKey();
+        expect(editor.selectionModule.start.offset).toBe(9);
+    });
+    it('Press upkey button in content control', () => {
+        console.log('Press upkey button in content control');
+        editor.selectionModule.select('0;2;0', '0;2;0');
+        editor.selectionModule.handleUpKey();
+        expect(editor.selectionModule.start.offset).toBe(1);
+    });
+    it('Press downkey button in content control', () => {
+        console.log('Press downkey button in content control');
+        editor.selectionModule.select('0;0;10', '0;0;10');
+        editor.selectionModule.handleDownKey();
+        expect(editor.selectionModule.start.offset).toBe(9);
+    });
+    it('Press crtlshiftleftkey button in content control', () => {
+        console.log('Press crtlshiftleftkey button in content control');
+        editor.selectionModule.select('0;2;7', '0;2;7');
+        for (let i: number = 0; i < 5; i++) {
+            editor.selectionModule.handleControlShiftLeftKey();
+        }
+        expect(editor.selectionModule.endOffset).toBe('0;0;0');
+    });
+    it('Press crtlshiftrightkey button in content control', () => {
+        console.log('Press crtlshiftrightkey button in content control');
+        editor.selectionModule.select('0;0;0', '0;0;0');
+        for (let i: number = 0; i < 3; i++) {
+            editor.selectionModule.handleControlShiftRightKey();
+        }
+        expect(editor.selectionModule.endOffset).toBe('0;2;8');
+    });
+});

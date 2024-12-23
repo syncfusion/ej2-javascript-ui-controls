@@ -373,5 +373,12 @@
     .e-suggestions li:focus-visible {
       outline: 1px solid;
     }
+    .e-chat-header {
+      .e-toolbar-item {
+        &.e-overlay {
+          opacity: .5;
+        }
+      }
+    }
   }
 }

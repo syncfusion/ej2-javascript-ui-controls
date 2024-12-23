@@ -571,6 +571,7 @@ describe('FileManager control Grid view', () => {
                 expect(feObj.path).toBe('/');
                 sourceElement.element.querySelectorAll('li')[7].click();
                 (document.getElementById('rename') as any).value = 'Document';
+                expect(feObj.fileSystemData.filter((item: { [key: string]: Object; }) => item.parentId === '1')[0].filterPath).toEqual('\\Documents\\');
                 (document.getElementById('file_dialog') as any).querySelectorAll('.e-btn')[1].click();
                 setTimeout(function () {
                     let nli: any = document.getElementById('file_tree').querySelectorAll('li');
@@ -579,6 +580,7 @@ describe('FileManager control Grid view', () => {
                     expect(nli.length).toEqual(3);
                     expect(ntr.length).toEqual(5);
                     expect(nar.length).toEqual(1);
+                    expect(feObj.fileSystemData.filter((item: { [key: string]: Object; }) => item.parentId === '1')[0].filterPath).toEqual('\\Document\\');
                     expect(ntr[0].textContent).toBe('Document');
                     expect(nli[1].textContent).toBe('Document');
                     li = document.getElementById('file_tree').querySelectorAll('li');
@@ -680,8 +682,9 @@ describe('FileManager control Grid view', () => {
             (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
             setTimeout(function () {
                 let nli: any = document.getElementById('file_tree').querySelectorAll('li');
-                let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');;
+                let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');
                 let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(feObj.fileSystemData.filter((item: { [key: string]: Object; }) => item.name === 'New Folder')[0].filterPath).toEqual('\\');
                 expect(nli.length).toEqual(4);
                 expect(ntr.length).toEqual(6);
                 expect(nar.length).toEqual(1);

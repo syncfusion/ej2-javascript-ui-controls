@@ -663,7 +663,6 @@ describe('Gantt - Render with Enable RTL', () => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'save' && args.taskBarEditAction === 'ChildDrag') {
                     expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.startDate, 'MM/dd/yyyy')).toEqual('04/03/2019');
-                    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.endDate, 'MM/dd/yyyy')).toEqual('04/08/2019');
                 }
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;

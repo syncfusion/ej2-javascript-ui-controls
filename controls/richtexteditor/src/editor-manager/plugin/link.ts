@@ -201,6 +201,7 @@ export class LinkCommand {
             if (child && child.length === 1) {
                 e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
                 e.item.selection.endContainer = e.item.selection.startContainer;
+                e.item.selection.endOffset = child[child.length - 1].textContent.length;
             }
             e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         } else {

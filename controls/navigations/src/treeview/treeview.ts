@@ -4772,7 +4772,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.renderChildNodes(dropLi);
         }
         dropUl = select('.' + PARENTITEM, dropLi);
-        if (!isNOU(dropUl) && this.preventExpand === true) {
+        if (!isNOU(dropUl) && (this.preventExpand && !(dropLi.getAttribute('aria-expanded') === 'true'))) {
             (dropUl as HTMLElement).style.display = 'none';
         }
         if (!isNOU(dropUl) && this.preventExpand === false) {
@@ -4818,7 +4818,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.trigger('nodeExpanded', this.getExpandEvent(dropLi, null));
         }
         const collapseIcon: Element = select('div.' + COLLAPSIBLE, dropLi);
-        if (!isNOU(dropUl) && collapseIcon && this.preventExpand) {
+        if (!isNOU(dropUl) && collapseIcon && (this.preventExpand && !(dropLi.getAttribute('aria-expanded') === 'true'))) {
             removeClass([collapseIcon], COLLAPSIBLE);
             dropLi.setAttribute('aria-expanded', 'false');
             addClass([collapseIcon], EXPANDABLE);

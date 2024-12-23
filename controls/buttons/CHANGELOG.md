@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
-## 28.1.35 (2024-12-18)
+## 28.1.36 (2024-12-24)
+
+### Switch
+
+#### Bug Fixes
+
+- `#I664001`- The issue with "Form reset functionality does not work properly for the switch component when it is in a disabled state" has been resolved.
+
+## 28.1.33 (2024-12-12)
 
 ### Switch
 
 #### Features
 
-- The Switch component now includes a `beforeChange` event, allowing users to intercept and manage state changes before they occur, such as for validation or cancellation.
+- The Switch component now includes a `beforeChange` event, which enables users to intercept and manage state changes before they occur. This feature supports custom logic, such as validation or cancellation, thereby offering greater flexibility.
 
 ### Chip
 

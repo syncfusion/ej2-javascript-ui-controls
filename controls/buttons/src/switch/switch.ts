@@ -188,6 +188,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (!this.disabled) {
             this.unWireEvents();
         }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
         destroy(this, this.getWrapper() as Element, this.tagName);
         if (this.refreshing) {
             ['e-control', 'e-switch', 'e-lib'].forEach((key: string) => {
@@ -364,6 +367,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (!this.disabled) {
             this.wireEvents();
         }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         this.renderComplete();
         this.updateHtmlAttribute();
     }
@@ -505,9 +511,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'mouseleave', this.mouseLeaveHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
-        if (this.formElement) {
-            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
-        }
     }
     private unWireEvents(): void {
         const wrapper: Element = this.getWrapper() as Element;
@@ -519,9 +522,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'mouseleave', this.mouseLeaveHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
-        if (this.formElement) {
-            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
-        }
     }
 
     /**
@@ -546,4 +546,3 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         this.element.focus();
     }
 }
-

@@ -1,0 +1,73 @@
+{
+	"name": "@syncfusion/ej2-layouts",
+	"version": "28.1.33",
+	"description": "A package of Essential JS 2 layout pure CSS components such as card and avatar. The card is used as small container to show content in specific structure, whereas the avatars are icons, initials or figures representing particular person.",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"main": "./dist/ej2-layouts.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-layouts.es5.js",
+	"dependencies": {
+		"@syncfusion/ej2-base": "*",
+		"markdown-spellcheck": "^1.3.1"
+	},
+	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
+		"@types/chai": "^3.4.28",
+		"@types/jasmine": "2.8.9",
+		"@types/jasmine-ajax": "^3.1.27",
+		"@types/requirejs": "^2.1.26",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3",
+		"typescript": "2.3.4",
+		"canteen": "^1.0.5",
+		"jasmine-ajax": "^3.3.1",
+		"jasmine-core": "^2.6.1",
+		"karma": "6.4.2",
+		"karma-chrome-launcher": "^2.2.0",
+		"karma-generic-preprocessor": "^1.1.0",
+		"karma-htmlfile-reporter": "^0.3.5",
+		"karma-jasmine": "^1.1.0",
+		"karma-jasmine-ajax": "^0.1.13",
+		"karma-requirejs": "^1.1.0",
+		"nedb": "^1.8.0",
+		"simple-odata-server": "^0.3.1"
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"ej2-layout-components",
+		"ej2-cards",
+		"cards",
+		"ej2-avatar",
+		"avatar",
+		"circle avatar",
+		"cards css",
+		"avatar css",
+		"profile picture",
+		"round avatar",
+		"initials",
+		"image",
+		"picture",
+		"javascript-splitter",
+		"splitter",
+		"split-panes",
+		"split-layout",
+		"split-view",
+		"split-area",
+		"resizable-splitter",
+		"split-container"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/layouts"
+	},
+	"scripts": {
+		"build": "gulp build",
+		"test": "gulp test"
+	},
+	"typings": "index.d.ts"
+}

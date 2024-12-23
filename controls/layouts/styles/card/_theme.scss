@@ -1,0 +1,112 @@
+@include export-module('card-theme') {
+  /* stylelint-disable property-no-vendor-prefix */
+  .e-card {
+    -webkit-tap-highlight-color: $card-highlight-color;
+    background: $card-bg-color;
+    border: $card-brdr-size $card-brdr-type $card-brdr-color;
+    box-shadow: $card-box-shadow;
+    color: $card-font-color;
+    outline: none;
+
+    &:hover {
+      background-color: $card-hover-bg-color;
+      border-color: $card-hover-brdr-color;
+      @if $skin-name == 'material' {
+        box-shadow: $card-hover-box-shadow;
+      }
+    }
+
+    &:focus {
+      background-color: $card-focus-bg-color;
+      border-color: $card-focus-brdr-color;
+    }
+
+    &:active {
+      background-color: $card-active-bg-color;
+      border-color: $card-active-brdr-color;
+    }
+
+    .e-card-separator {
+      border-bottom: $card-sep-brdr-size $card-sep-brdr-type $card-sep-brdr-color;
+    }
+    .e-card-header-caption {
+      .e-card-header-title {
+        color: $card-header-txt-title-color;
+      }
+      .e-card-sub-title {
+        color: $card-header-txt-subtitle-color;
+      }
+    }
+    .e-card-image {
+
+      .e-card-title {
+        background-color: $card-image-title-bg;
+        color: $card-image-title-color;
+      }
+    }
+    .e-card-actions {
+
+      .e-card-btn span,
+      .e-card-btn span.e-icons {
+        color: $card-action-btn-icon-color;
+      }
+      .e-card-btn,
+      a {
+        @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+          background: $card-action-btn-bg-color;
+        }
+        @else {
+          background-color: $card-action-btn-bg-color;
+        }
+        border: $card-action-btn-border;
+        color: $card-action-btn-font-color;
+        outline: 0;
+        &:hover {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            background: $card-action-btn-hover-bg;
+          }
+          @else {
+            background-color: $card-action-btn-hover-bg;
+          }
+          border: $card-action-btn-hover-border;
+          color: $card-action-btn-hover-font;
+        }
+        &:focus {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            background: $card-action-btn-focus-bg;
+          }
+          @else {
+            background-color: $card-action-btn-focus-bg;
+          }
+          border: $card-action-btn-focus-border;
+          color: $card-action-btn-focus-font;
+        }
+        &:active {
+          @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+            background: $card-action-btn-pressed-bg;
+          }
+          @else {
+            background-color: $card-action-btn-pressed-bg;
+          }
+          border: $card-action-btn-pressed-border;
+          color: $card-action-btn-pressed-font;
+        }
+      }
+    }
+
+    .e-card-content {
+      color: $card-content-font-color;
+    }
+  }
+
+  @if $skin-name == 'FluentUI' {
+    .e-card-hover:hover {
+      box-shadow: $card-hover-class-box-shadow;
+    }
+
+    .e-card-active:active {
+      border: $card-selection-class-border;
+      box-shadow: $card-selection-class-box-shadow;
+    }
+  }
+}

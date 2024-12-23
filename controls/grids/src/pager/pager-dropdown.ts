@@ -164,6 +164,10 @@ export class PagerDropDown {
         if (this.dropDownListObject) {
             const isbeforeAll: boolean = this.pagerModule.isAllPage;
             this.pagerModule.isAllPage = this.isPageSizeAll(value);
+            if (this.pagerModule.isAllPage && typeof this.pagerModule.pageSizes === 'object' &&
+                this.pagerModule.pageSizes.indexOf('All') === -1) {
+                this.pagerModule.isAllPage = false;
+            }
             this.pagerModule.checkAll = (isbeforeAll && this.pagerModule.isAllPage) ? true : false;
             this.dropDownListObject[`${prop}`] = this.pagerModule.isAllPage ? this.pagerModule.getLocalizedLabel('All') : value;
         }

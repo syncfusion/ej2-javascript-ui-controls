@@ -699,6 +699,8 @@ export class UndoRedo {
         if (obj.connectors && obj.connectors.length > 0) {
             for (i = 0; i < obj.connectors.length; i++) {
                 connector = obj.connectors[parseInt(i.toString(), 10)];
+                // 927019: Undo/Redo Does Not Restore Connector Segment Changes
+                this.segmentChanged(connector, diagram);
                 this.connectionChanged(connector, diagram);
             }
         }

@@ -1248,6 +1248,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.treeObj.element.classList.remove('e-filtering');
                 } else if (args.preventDefaultAction) {
                     fields = args.fields;
+                    this.treeObj.element.classList.add('e-filtering');
                 } else {
                     if (this.treeDataType === 1) {
                         fields = this.selfReferencefilter(args.text, args.fields);

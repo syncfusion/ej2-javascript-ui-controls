@@ -556,6 +556,15 @@ export class NavigationPane {
     }
 
     private onDragEnd(args: ReadArgs): void {
+        if (isFileSystemData(this.parent)) {
+            this.moveNames = [];
+            const obj: object[] = this.parent.dragData;
+            for (let i: number = 0; i < obj.length; i++) {
+                if (getValue('isFile', obj[i as number]) === false) {
+                    this.moveNames.push(getValue('_fm_id', obj[i as number]));
+                }
+            }
+        }
         let moveNames: string[] = [];
         if (this.parent.isPasteError || this.parent.isSearchDrag) {
             moveNames = this.getMoveNames(args.files, this.parent.isSearchDrag, this.parent.dragPath);
@@ -656,11 +665,6 @@ export class NavigationPane {
     /* istanbul ignore next */
     private checkDropPath(args: ReadArgs): void {
         if (isFileSystemData(this.parent) && (this.parent.path === this.parent.dropPath || this.parent.targetModule === 'navigationpane')) {
-            return;
-        }
-        if (this.parent.hasId) {
-            this.parent.isDropEnd = !this.parent.isPasteError;
-            readDropPath(this.parent);
             return;
         }
         if ((this.parent.dropPath.indexOf(getDirectoryPath(this.parent, args)) === -1)) {

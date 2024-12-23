@@ -391,6 +391,9 @@ export class WUniqueFormat {
         if (property === 'underlineColor'){
             return 27;
         }
+        if (property === 'fontHintType') {
+            return 28;
+        }
         return 0;
     }
     private static getParaFormatPropertyType(property: string): number {
@@ -644,6 +647,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('underlineColor', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('fontHintType', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
         return true;

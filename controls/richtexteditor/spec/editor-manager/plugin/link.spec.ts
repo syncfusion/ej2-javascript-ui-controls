@@ -1,4 +1,5 @@
 import { RichTextEditor } from "../../../src";
+import { BASIC_MOUSE_EVENT_INIT, INSRT_LINK_EVENT_INIT } from "../../constant.spec";
 import { destroy, renderRTE } from "../../rich-text-editor/render.spec";
 
 describe('Link testing', ()=>{
@@ -573,6 +574,51 @@ describe('Link testing', ()=>{
                 expect(editor.inputElement.innerHTML).toBe(expectedElem);
                 done();
             }, 50);
+        });
+    });
+
+    describe('927184 - Link Selection Persists Improperly After Removing Link Using Quick Toolbar', ()=>{
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: '<p>A content with no format</p>'
+            })
+        });
+        afterAll(()=> {
+            destroy(editor)
+        });
+        it ('Should have proper selection after the removal of link.', (done: DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            const range = new Range();
+            const textNode: Text = editor.inputElement.querySelector('p').firstChild as Text;
+            range.setStart(textNode , 0);
+            range.setStart(textNode , textNode.textContent.length);
+            editor.inputElement.ownerDocument.getSelection().removeAllRanges();
+            editor.inputElement.ownerDocument.getSelection().addRange(range);
+            const insertLinkKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', INSRT_LINK_EVENT_INIT);
+            editor.inputElement.dispatchEvent(insertLinkKeyDownEvent);
+            const insertLinkKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', INSRT_LINK_EVENT_INIT);
+            editor.inputElement.dispatchEvent(insertLinkKeyUpEvent);
+            setTimeout(() => {
+                const urlInput: HTMLInputElement = editor.element.querySelector('.e-rte-link-dialog .e-rte-linkurl');
+                urlInput.value = 'https://www.google.com/';
+                const insertBtn: HTMLElement = editor.element.querySelector('.e-rte-link-dialog .e-insertLink');
+                insertBtn.click();
+                setTimeout(() => {
+                    const linkQuikToolbar: HTMLElement = document.querySelectorAll('.e-popup-open')[0] as HTMLElement;
+                    const removeBtn: HTMLButtonElement = linkQuikToolbar.querySelector('.e-remove-link');
+                    removeBtn.click();
+                    setTimeout(() => {
+                        const currentRange = document.getSelection().getRangeAt(0);
+                        expect(currentRange.startContainer.nodeName === '#text').toBe(true);
+                        expect(currentRange.endContainer.nodeName === '#text').toBe(true);
+                        expect(currentRange.startOffset).toBe(0);
+                        expect(currentRange.endOffset).toBe(textNode.textContent.length -1);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
         });
     });
 });

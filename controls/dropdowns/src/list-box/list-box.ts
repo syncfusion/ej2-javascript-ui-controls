@@ -2903,7 +2903,7 @@ export interface ListBoxChangeEventArgs extends BaseEventArgs {
     /**
      * Returns the selected state or selected list item in the ListBox.
      */
-    value: number | string | boolean;
+    value: number[] | string[] | boolean[];
     /**
      * Specifies the event.
      */

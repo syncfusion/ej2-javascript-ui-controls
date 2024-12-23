@@ -2,8 +2,8 @@
 $grid-icon-color: $icon-color !default;
 $grid-command-icon-color: $icon-color !default;
 $grid-maskedcell-virtual-background-color: rgba(0, 0, 0, .1) !default;
-$grid-frozen-shadow-background-color: rgba(0, 0, 0, .12) !default;
-$grid-frozen-row-shadow-background-color: rgba(0, 0, 0, .12) !default;
+$grid-frozen-shadow-background-color: $frozen-shadow !default;
+$grid-frozen-row-shadow-background-color: $frozen-shadow-2 !default;
 $grid-header-icon-color: $icon-color !default;
 $grid-sorted-header-color: $content-text-color !default;
 $grid-popup-bg-color: $content-bg-color !default;

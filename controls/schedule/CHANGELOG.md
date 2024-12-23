@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.1.36 (2024-12-24)
+
+### Schedule
+
+#### Bug fixes
+
+- `#F195371` - An issue where dragging all-day event in timeline views incorrectly occupies two days has been fixed.
+- `#I664757` - An accessibility issue where the `aria-selected` attribute was present on `<td>` elements and violated accessibility guidelines has been fixed.
+
 ## 28.1.35 (2024-12-18)
 
 ### Schedule

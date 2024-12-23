@@ -457,6 +457,13 @@ export interface IGrid extends Component<HTMLElement> {
      */
     isVirtualAdaptive?: boolean;
 
+    /**
+     * @hidden
+     * `isColumnMenuFilterClosing`used to handle the closing of the column menu filter on esc key.
+     * @default false
+     */
+    isColumnMenuFilterClosing?: boolean;
+
 
     /**
      * @hidden

@@ -27,6 +27,7 @@ export class ContextMenu {
     private currentElement: HTMLElement = null;
     private disabledItems: string[] = [];
     private targetNodeElement: HTMLElement;
+    private navUid: string;
     public menuItemData: object;
     /**
      * Constructor for the ContextMenu module
@@ -163,7 +164,7 @@ export class ContextMenu {
             } else if (closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
                 uid = closest(target, 'li').getAttribute('data-uid');
                 if (!isNOU(uid)) {
-                    this.parent.navigationpaneModule.treeObj.setProperties({selectedNodes: [uid]});
+                    this.navUid = uid;
                 }
                 treeFolder = true;
             }
@@ -299,8 +300,9 @@ export class ContextMenu {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.folder.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
         if (isTree) {
-            const selectedTreeNode: Element = select('[data-uid="' + this.parent.navigationpaneModule.treeObj.selectedNodes[0] + '"]', this.parent.navigationpaneModule.treeObj.element);
-            if (this.parent.pathNames[this.parent.pathNames.length - 1] === selectedTreeNode.querySelector('.e-list-text').innerHTML && this.parent.activeModule === 'navigationpane') {
+            const selectedTreeNode: Element = select('[data-uid="' + this.navUid + '"]', this.parent.navigationpaneModule.treeObj.element);
+            if (!isNOU(selectedTreeNode) &&
+                this.parent.pathNames[this.parent.pathNames.length - 1] === selectedTreeNode.querySelector('.e-list-text').innerHTML && this.parent.activeModule === 'navigationpane') {
                 this.disabledItems.push('Open');
             } else {
                 const indexToRemove: number = this.disabledItems.indexOf('Open');

@@ -250,7 +250,7 @@ function createNewItem(data: { [key: string]: any }, target: { [key: string]: an
         }
     }
     const currentDate: Date = new Date();
-    const folderPath: string = target.id !== 0 ? target.filterPath + target.name : '\\';
+    const folderPath: string = String(target.id) !== String(0) && !isNOU(target.parentId) ? target.filterPath + target.name + '\\' : '\\';
     Object.assign(newItem, {
         dateCreated: currentDate,
         dateModified: currentDate,
@@ -386,12 +386,35 @@ function triggerRenameOperation(parent: IFileManager, data: Object, eventArgs: B
         if (isFileSystemData(parent)) {
             if (!isFileExists(parent.fileSystemData, args.newName)) {
                 const fileData: { [key: string]: any; } = filterById(parent, (args.itemData[0] as any).id);
+                const oldName: string = fileData.name;
                 fileData.name = args.newName;
+                updateChildrenFilterPath(parent, fileData.id, oldName, args.newName);
             }
             else {
                 const message: string = 'Cannot rename' + (args.itemData[0] as { [key: string]: Object; }).name + 'to' + args.newName + ': destination already exists.';
                 createErrorObject(parent, message, '400', null);
             }
+        }
+    });
+}
+
+/**
+ * Function to update child item filter path.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {string | number} parentId - specifies the parent id.
+ * @param {string} oldName - specifies the previous name.
+ * @param {string} newName - specifies the new name.
+ * @returns {void}
+ * @private
+ */
+function updateChildrenFilterPath(parent: IFileManager, parentId: string | number, oldName: string, newName: string): void {
+    parent.fileSystemData.forEach((item: { [key: string]: any; }) => {
+        if (String(item.parentId) === String(parentId)) {
+            const oldPath: string = item.filterPath;
+            const newPath: string = oldPath.replace(oldName + '\\', newName + '\\');
+            item.filterPath = newPath;
+            updateChildrenFilterPath(parent, item.id, oldName, newName);
         }
     });
 }
@@ -457,11 +480,16 @@ function triggerMoveOrCopyOperation(parent: IFileManager, data: Object, eventArg
                     if (!isFileExists(getTargetFiles, currItem.name) || getValue('renameFiles', data).length > 0) {
                         if (!target.hasChild) {
                             target.hasChild = !currItem.isFile;
+                            const targetItem: { [key: string]: Object; }[] = parent.fileSystemData
+                                .filter((item: { [key: string]: Object; }) => String(item.id) === String(target.id));
+                            if (targetItem.length > 0) {
+                                targetItem[0].hasChild = target.hasChild;
+                            }
                         }
                         if (!currItem.isFile) {
                             //Check whether the source folder include other sub folders or not.
                             const subItems: Object[] = currItem.parentId !== 0
-                                ? filterByParent(parent, currItem.parentID) : [];
+                                ? filterByParent(parent, currItem.parentId) : [];
                             const itemData: any = filterById(parent, currItem.parentId);
                             itemData.hasChild = subItems.length > 1 ? true : false;
                         }
@@ -588,7 +616,6 @@ function createAjax(
                     ? getValue('path', data) : parent.path;
                 const pathArray: string[] = filePath.replace(/^\/|\/$/g, '').split('/');
                 const idValue: string = event === 'rename-end-parent' || (event === 'path-changed' && getValue('data', data).length !== 0 && isNOU(parent.renamedItem))
-                    || (event === 'paste-end' && (parent.targetModule === 'largeiconsview' || parent.targetModule === 'detailsview'))
                     ? getValue('data', data)[0].id : pathArray[pathArray.length - 1];
                 const action: string = getValue('action', data);
                 const isFileOperation: boolean = (action === 'move' || action === 'rename' || action === 'copy' || action === 'delete' || action === 'search') && event !== 'rename-end';

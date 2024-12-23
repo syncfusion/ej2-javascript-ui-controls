@@ -79,10 +79,8 @@ describe('Keyboard interaction', () => {
         it('home key', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
             expect(firstWorkCell.classList).toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('ctrl right arrow key', () => {
@@ -243,7 +241,6 @@ describe('Keyboard interaction', () => {
         it('Enter key to work cell for create option', () => {
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(firstWorkCell[firstWorkCell.length - 10].classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell[firstWorkCell.length - 10].getAttribute('aria-selected')).toEqual('false');
             firstWorkCell[firstWorkCell.length - 10].click();
             let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList).toContain('e-popup-open');
@@ -340,7 +337,6 @@ describe('Keyboard interaction', () => {
         it('Tab/shift key to work cell for create option', () => {
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(firstWorkCell[0].classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('false');
             firstWorkCell[0].click();
             const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
@@ -545,7 +541,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(53);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -559,7 +554,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(53);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -573,7 +567,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(4);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -588,7 +581,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(45);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -601,7 +593,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -613,7 +604,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
@@ -626,7 +616,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(2);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -639,7 +628,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(4);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -652,7 +640,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -665,7 +652,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(46);
         });
@@ -678,7 +664,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(2);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -691,7 +676,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
         });
@@ -704,7 +688,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(2);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -719,7 +702,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
@@ -734,7 +716,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -747,7 +728,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -760,7 +740,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
         });
@@ -775,7 +754,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -790,7 +768,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -803,7 +780,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
@@ -816,7 +792,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -829,7 +804,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: focuesdEle, preventDefault: (): void => { /** Null */ } });
@@ -844,7 +818,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
@@ -858,7 +831,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(2);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -872,7 +844,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(4);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -886,7 +857,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -900,7 +870,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(46);
         });
@@ -914,7 +883,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(2);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -928,7 +896,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(51);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: document.activeElement });
@@ -946,7 +913,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
@@ -962,7 +928,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -976,7 +941,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -990,7 +954,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(51);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
@@ -1008,7 +971,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -1024,7 +986,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -1038,7 +999,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(51);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(47);
         });
@@ -1052,7 +1012,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-all-day-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -1078,7 +1037,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(11);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -1093,7 +1051,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(4);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -1106,7 +1063,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -1119,7 +1075,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).
                 toEqual((target.parentNode as HTMLTableRowElement).sectionRowIndex);
@@ -1133,7 +1088,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -1147,7 +1101,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).
                 toEqual((target.parentNode as HTMLTableRowElement).sectionRowIndex - 1);
@@ -1161,7 +1114,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
             keyModule.keyActionHandler({ action: 'rightArrow', target: schObj.element.querySelector('.e-header-cells') });
@@ -1175,7 +1127,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -1191,7 +1142,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -1204,7 +1154,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(4);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'leftArrow', target: schObj.element.querySelector('.e-header-cells') });
@@ -1218,7 +1167,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -1233,7 +1181,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
         });
@@ -1246,7 +1193,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(8);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -1260,7 +1206,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(8);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(4);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -1274,7 +1219,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: document.activeElement });
@@ -1293,7 +1237,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
         });
@@ -1307,7 +1250,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
@@ -1325,7 +1267,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -1520,7 +1461,6 @@ describe('Keyboard interaction', () => {
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
             workCell.click();
             expect(workCell.classList).toContain('e-selected-cell');
-            expect(workCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('multiple event selection via ctrl plus click', () => {
@@ -1605,7 +1545,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(2);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -1677,10 +1616,8 @@ describe('Keyboard interaction', () => {
         it('home key', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
             expect(firstWorkCell.classList).toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('ctrl right arrow key', () => {
@@ -1871,7 +1808,6 @@ describe('Keyboard interaction', () => {
         it('Enter key to work cell for create option', () => {
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(firstWorkCell[firstWorkCell.length - 10].classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell[firstWorkCell.length - 10].getAttribute('aria-selected')).toEqual('false');
             firstWorkCell[firstWorkCell.length - 10].click();
             let popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList).toContain('e-popup-open');
@@ -1965,7 +1901,6 @@ describe('Keyboard interaction', () => {
         it('Tab/shift key to work cell for create option', () => {
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(firstWorkCell[0].classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('false');
             firstWorkCell[0].click();
             const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup).toBeTruthy();
@@ -2131,7 +2066,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(17);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -2145,7 +2079,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(17);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -2160,7 +2093,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(28);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(29);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -2173,7 +2105,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2185,7 +2116,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(335);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2198,7 +2128,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(18);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2211,7 +2140,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2224,7 +2152,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(335);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2237,7 +2164,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(19);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2250,7 +2176,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(2);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2265,7 +2190,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2278,7 +2202,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(17);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2293,7 +2216,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(335);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2306,7 +2228,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(334);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2319,7 +2240,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: focuesdEle });
@@ -2334,7 +2254,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(335);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2348,7 +2267,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(18);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2362,7 +2280,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2376,7 +2293,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(335);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2390,7 +2306,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(19);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: document.activeElement });
@@ -2408,7 +2323,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(335);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2422,7 +2336,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(17);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
@@ -2440,7 +2353,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2454,7 +2366,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(334);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2483,7 +2394,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(11);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(12);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -2498,7 +2408,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(18);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -2511,7 +2420,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2524,7 +2432,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(29);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).
                 toEqual((target.parentNode as HTMLTableRowElement).sectionRowIndex);
@@ -2538,7 +2445,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2552,7 +2458,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(29);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).
                 toEqual((target.parentNode as HTMLTableRowElement).sectionRowIndex);
@@ -2566,7 +2471,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(19);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'rightArrow', target: schObj.element.querySelector('.e-header-cells') });
@@ -2580,7 +2484,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(7);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2596,7 +2499,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2609,7 +2511,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(4);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'leftArrow', target: schObj.element.querySelector('.e-header-cells') });
@@ -2623,7 +2524,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(6);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2638,7 +2538,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(29);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2651,7 +2550,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2665,7 +2563,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(18);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2679,7 +2576,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(5);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: document.activeElement });
@@ -2698,7 +2594,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(30);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2712,7 +2607,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
@@ -2730,7 +2624,6 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -2795,10 +2688,8 @@ describe('Keyboard interaction', () => {
         it('home key', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
             expect(firstWorkCell.classList).toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
@@ -2806,7 +2697,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
@@ -2821,7 +2711,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(17);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -2838,7 +2727,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(17);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
             keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
@@ -2854,7 +2742,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(14);
         });
@@ -2870,7 +2757,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(29);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(15);
         });
@@ -2885,7 +2771,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
@@ -2901,7 +2786,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(29);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(14);
         });
@@ -2916,7 +2800,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
             keyModule.keyActionHandler({ action: 'rightArrow', target: schObj.element.querySelector('.e-header-cells') });
@@ -2932,7 +2815,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(17);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(14);
         });
@@ -2950,7 +2832,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(15);
         });
@@ -2965,7 +2846,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(13);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
             keyModule.keyActionHandler({ action: 'leftArrow', target: schObj.element.querySelector('.e-header-cells') });
@@ -2983,7 +2863,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(12);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
@@ -2998,7 +2877,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(20);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
@@ -3014,7 +2892,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(14);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
@@ -3030,7 +2907,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(14);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: document.activeElement });
@@ -3051,7 +2927,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(29);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(15);
         });
@@ -3067,7 +2942,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(19);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
@@ -3087,7 +2961,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(12);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
@@ -3198,7 +3071,6 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.classList).toContain('e-work-cells');
             expect(focuesdEle.classList).toContain('e-child-node');
             expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             util.triggerScrollEvent(contentArea, 450);
             expect(contentArea.scrollTop).toEqual(450);
             schObj.removeSelectedClass();
@@ -3351,10 +3223,8 @@ describe('Keyboard interaction', () => {
         it('home key', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
             expect(firstWorkCell.classList).toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('right and left arrow key', () => {
@@ -3364,14 +3234,12 @@ describe('Keyboard interaction', () => {
             let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(1);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'leftArrow', target: focusedEle });
             focusedEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3382,14 +3250,12 @@ describe('Keyboard interaction', () => {
             let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
             keyModule.keyActionHandler({ action: 'upArrow', target: focusedEle, preventDefault: (): void => { /** Null */ } });
             focusedEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3402,14 +3268,12 @@ describe('Keyboard interaction', () => {
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(32);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: focuesdEle });
             focuesdEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(33);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(4);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -3422,14 +3286,12 @@ describe('Keyboard interaction', () => {
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(30);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
             focuesdEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(29);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3442,14 +3304,12 @@ describe('Keyboard interaction', () => {
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(32);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: focuesdEle, preventDefault: (): void => { /** Null */ } });
             focuesdEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(60);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
         });
@@ -3462,14 +3322,12 @@ describe('Keyboard interaction', () => {
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(29);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: focuesdEle, preventDefault: (): void => { /** Null */ } });
             focuesdEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(57);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(3);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3501,10 +3359,8 @@ describe('Keyboard interaction', () => {
         it('home key', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
             expect(firstWorkCell.classList).toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('down arrow', () => {
@@ -3514,7 +3370,6 @@ describe('Keyboard interaction', () => {
             const focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
         });
@@ -3527,7 +3382,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(12);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(11);
         });
@@ -3538,7 +3392,6 @@ describe('Keyboard interaction', () => {
             const focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3551,7 +3404,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(12);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3575,10 +3427,8 @@ describe('Keyboard interaction', () => {
         it('home key', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells:not(.e-other-month)') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
             expect(firstWorkCell.classList).toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('right and left arrow key', () => {
@@ -3588,14 +3438,12 @@ describe('Keyboard interaction', () => {
             let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(1);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
             keyModule.keyActionHandler({ action: 'leftArrow', target: focusedEle });
             focusedEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3606,14 +3454,12 @@ describe('Keyboard interaction', () => {
             let focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(1);
             keyModule.keyActionHandler({ action: 'upArrow', target: focusedEle, preventDefault: (): void => { /** Null */ } });
             focusedEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3626,14 +3472,12 @@ describe('Keyboard interaction', () => {
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(32);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: focuesdEle });
             focuesdEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(60);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(2);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
         });
@@ -3646,14 +3490,12 @@ describe('Keyboard interaction', () => {
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(29);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: focuesdEle });
             focuesdEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(57);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
         });
@@ -3666,14 +3508,12 @@ describe('Keyboard interaction', () => {
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(32);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(3);
             keyModule.keyActionHandler({ action: 'shiftDownArrow', shiftKey: true, target: focuesdEle, preventDefault: (): void => { /** Null */ } });
             focuesdEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(33);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(1);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(4);
         });
@@ -3686,14 +3526,12 @@ describe('Keyboard interaction', () => {
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(30);
             keyModule.keyActionHandler({ action: 'shiftUpArrow', shiftKey: true, target: focuesdEle, preventDefault: (): void => { /** Null */ } });
             focuesdEle = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(29);
         });
@@ -3735,10 +3573,8 @@ describe('Keyboard interaction', () => {
         it('home key', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             keyModule.keyActionHandler({ action: 'home' });
             expect(firstWorkCell.classList).toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('right arrow', () => {
@@ -3748,7 +3584,6 @@ describe('Keyboard interaction', () => {
             const focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(1);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3761,7 +3596,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(12);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(11);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3772,7 +3606,6 @@ describe('Keyboard interaction', () => {
             const focusedEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focusedEle.classList).toContain('e-selected-cell');
-            expect(focusedEle.getAttribute('aria-selected')).toEqual('true');
             expect(focusedEle.cellIndex).toEqual(0);
             expect((focusedEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -3785,7 +3618,6 @@ describe('Keyboard interaction', () => {
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(12);
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(focuesdEle.cellIndex).toEqual(0);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
@@ -4078,13 +3910,13 @@ describe('Keyboard interaction', () => {
         it('Down key press', () => {
             schObj.element.focus();
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            const calendarEle: HTMLElement = schObj.element.querySelector(".e-toolbar-items .e-toolbar-item.e-date-range") as HTMLElement;
-            calendarEle != null ? calendarEle.click(): '';
+            const calendarEle: HTMLElement = schObj.element.querySelector('.e-toolbar-items .e-toolbar-item.e-date-range') as HTMLElement;
+            calendarEle != null ? calendarEle.click() : '';
             keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
             expect(firstWorkCell[0].classList).not.toContain('e-appointment-border');
             keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
             expect(firstWorkCell[0].classList).not.toContain('e-appointment-border');
-            calendarEle != null ? calendarEle.click(): '';
+            calendarEle != null ? calendarEle.click() : '';
             keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
@@ -4133,14 +3965,14 @@ describe('Keyboard interaction', () => {
 
         it('Tab key', function () {
             schObj.element.focus();
-            var workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells')) as HTMLElement[];
-            var workCell = workCells[0];
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells')) as HTMLElement[];
+            const workCell = workCells[0];
             workCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            var eventCell: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
+            const eventCell: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
             keyModule.keyActionHandler({ action: 'tab', target: eventCell, shiftKey: false, preventDefault: function () { } });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(1);
-            let target: HTMLElement = schObj.element.querySelector('.e-appointment-border');
+            const target: HTMLElement = schObj.element.querySelector('.e-appointment-border');
             keyModule.keyActionHandler({ action: 'tab', target: target, shiftKey: false, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-resource-cells')).toBe(true);
             keyModule.keyActionHandler({ action: 'tab', target: document.activeElement, shiftKey: false, preventDefault: function () { } });

@@ -48,6 +48,10 @@
       font-size: 10px;
       margin: 0;
     }
+    @if $fm-skin-name == 'tailwind3' {
+      @include size(16px, 16px);
+      margin: 4px 0 0 4px;
+    }
   }
 }
 
@@ -445,6 +449,13 @@
 
     .e-grid {
       @include checkbox($fe-cb-line-height);
+      @if ($fm-skin-name == 'tailwind3') {
+        .e-checkbox-wrapper {
+          .e-icons.e-check {
+            font-size: 10px;
+          }
+        }
+      }
       border-width: 0;
       float: left;
 
@@ -455,6 +466,12 @@
 
       .e-gridheader {
         border-width: 0 1px 1px;
+
+        @if ($fm-skin-name == 'tailwind3') {
+          .e-sortfilter .e-headercelldiv {
+            padding: 0 .5em;
+          }
+        }
 
         .e-headercell {
           height: $fe-grid-header-height;
@@ -482,11 +499,23 @@
         &:hover,
         .e-active {
           @include visibility(visible);
+          @if $fm-skin-name == 'tailwind3' {
+            .e-checkbox-wrapper {
+              position: relative;
+              z-index: 999;
+            }
+          }
         }
       }
 
       &.e-headercheck .e-gridheader .e-headercontent {
         @include visibility(visible);
+        @if $fm-skin-name == 'tailwind3' {
+          .e-checkbox-wrapper {
+            position: relative;
+            z-index: 999;
+          }
+        }
       }
 
       @if $fm-skin-name == 'FluentUI' {
@@ -696,7 +725,11 @@
     &.e-rtl .e-view-container .e-grid .e-gridheader {
       padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
-
+    @if $fm-skin-name == 'tailwind3' {
+      &.e-rtl .e-large-icons .e-checkbox-wrapper {
+        padding-right: 4px;
+      }
+    }
     .e-large-icons {
       @include checkbox($fe-cb-line-height);
       float: left;
@@ -765,6 +798,11 @@
         }
         @if $fm-skin-name == 'Material3' {
           margin: 4px;
+        }
+        @if ($fm-skin-name == 'tailwind3') {
+          .e-icons.e-check {
+            font-size: 10px;
+          }
         }
       }
 

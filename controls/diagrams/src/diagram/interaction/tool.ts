@@ -2248,7 +2248,8 @@ export class PolyLineDrawingTool extends ToolBase {
             const obj: Connector = (this.drawingObject as Connector);
             obj.targetPoint = this.currentPosition;
             // 920152: elementDraw event not triggered for Polyline Drawing tool
-            this.triggerElementDrawEvent(this.drawingObject, 'Progress', 'Connector', (this.drawingObject as ConnectorModel).type, false);
+            // 927554: ElementDraw Arguments updated wrongly for Polyline drawing
+            this.triggerElementDrawEvent(this.drawingObject, 'Progress', 'Connector', (this.commandHandler.diagram.drawingObject as ConnectorModel).type, false);
             this.commandHandler.updateConnectorPoints(obj);
         }
         return true;
@@ -2300,7 +2301,8 @@ export class PolyLineDrawingTool extends ToolBase {
                 (drawObject.segments[drawObject.segments.length - 1] as StraightSegment).point = { x: 0, y: 0 };
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
                 // 920152: elementDraw event not triggered for Polyline Drawing tool
-                this.triggerElementDrawEvent(this.drawingObject, 'Completed', 'Connector', (this.drawingObject as ConnectorModel).type, false);
+                // 927554: ElementDraw Arguments updated wrongly for Polyline drawing
+                this.triggerElementDrawEvent(this.drawingObject, 'Completed', 'Connector', (this.commandHandler.diagram.drawingObject as ConnectorModel).type, false);
             }
         }
         this.endAction();
@@ -2615,7 +2617,8 @@ export class FreeHandTool extends ToolBase {
             this.commandHandler.updateConnectorPoints(this.drawingObject);
             this.commandHandler.addObjectToDiagram(this.drawingObject);
             // 920152: elementDraw event not triggered for Freehand Drawing tool
-            this.triggerElementDrawEvent(this.drawingObject, 'Completed', 'Connector', (this.drawingObject as ConnectorModel).type, false);
+            // 927554: ElementDraw Arguments updated wrongly for Freehand drawing
+            this.triggerElementDrawEvent(this.drawingObject, 'Completed', 'Connector', (this.commandHandler.diagram.drawingObject as any).type, false);
             //(EJ2-70838)- Added code to resolve style property not added dynamically for freehand connector
             // Added code to resolve style property not added dynamically for freehand connector
             super.mouseUp(args);

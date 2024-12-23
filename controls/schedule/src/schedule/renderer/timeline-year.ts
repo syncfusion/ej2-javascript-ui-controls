@@ -213,7 +213,7 @@ export class TimelineYear extends Year {
                     skeleton: 'full', calendar: this.parent.getCalendarMode()
                 });
                 const td: HTMLElement = createElement('td', {
-                    className: cls.WORK_CELLS_CLASS, attrs: { 'aria-selected': 'false', 'aria-label': announcementText }
+                    className: cls.WORK_CELLS_CLASS, attrs: { 'aria-label': announcementText }
                 });
                 contentTr.appendChild(td);
                 const dateHeader: HTMLElement = createElement('div', {

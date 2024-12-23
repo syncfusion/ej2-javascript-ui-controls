@@ -214,7 +214,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
 
     private dataBoundEvent(): void {
         const dataBoundEve: string = 'dataBound'; const initialRowTop: string = 'initialRowTop';
-        if (this.parent.getRows().length && !isNullOrUndefined(this.parent.getRowByIndex(0)) && !this[`${initialRowTop}`]) {
+        if (!isNullOrUndefined(this.parent.getRows()) && this.parent.getRows().length && !isNullOrUndefined(this.parent.getRowByIndex(0)) && !this[`${initialRowTop}`]) {
             const rowTop: number = this.parent.getRowByIndex(0).getBoundingClientRect().top;
             const gridTop: number = this.parent.element.getBoundingClientRect().top;
             if (rowTop > 0){
@@ -422,7 +422,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             content = this.parent.getContent().querySelector('.e-content');
         }
         const scrollHeight: number = outBuffer * rowHeight;
-        const upScroll: boolean = (scrollArgs.offset.top - this.translateY) < 0;
+        const upScroll: boolean = (scrollArgs.offset.top - this.translateY) < 0 && this.activeKey !== 'downArrow';
         const downScroll: boolean = Math.ceil(scrollArgs.offset.top - this.translateY) + rowHeight >= scrollHeight;
         const selectedRowIndex: string = 'selectedRowIndex';
         const currentViewData: Object[] = this.parent.currentViewData; const indexValue: string = 'index';
@@ -446,7 +446,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.startIndex = (this.startIndex - remains) < 0 ? 0 : (this.startIndex - remains);
             }
             if (currentViewData.length && (currentViewData[0][`${indexValue}`] >= this.parent.pageSettings.pageSize / 2) &&
-                ((currentViewData[0][`${indexValue}`] - this.startIndex) < (this.parent.pageSettings.pageSize / 2)) && this.parent.selectionModule.isRowSelected) {
+                ((currentViewData[0][`${indexValue}`] - this.startIndex) < (this.parent.pageSettings.pageSize / 2)) &&
+                this.parent.selectionModule && this.parent.selectionModule.isRowSelected) {
                 this.startIndex = currentViewData[0][`${indexValue}`] - (this.parent.pageSettings.pageSize / 2);
                 this.endIndex = this.startIndex + this.parent.pageSettings.pageSize;
             }
@@ -502,7 +503,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.startIndex = lastIndex - (this.parent.pageSettings.pageSize / 2);
             }
             if (currentViewData.length && this.startIndex > currentViewData[0][`${indexValue}`] &&
-                ((this.startIndex - currentViewData[0][`${indexValue}`]) < (this.parent.pageSettings.pageSize / 2)) && this.parent.selectionModule.isRowSelected) {
+                ((this.startIndex - currentViewData[0][`${indexValue}`]) < (this.parent.pageSettings.pageSize / 2)) &&
+                this.parent.selectionModule && this.parent.selectionModule.isRowSelected) {
                 this.startIndex = currentViewData[0][`${indexValue}`] + (this.parent.pageSettings.pageSize / 2);
             }
             if (this.parent.root.isSelfReference) {

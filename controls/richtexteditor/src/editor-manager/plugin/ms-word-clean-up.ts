@@ -201,7 +201,8 @@ export class MsWordPaste {
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Graphic') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_s') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_i') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('img1') < 0) {
+                imgElem[i as number].getAttribute('v:shapes').indexOf('img1') < 0 &&
+                imgElem[i as number].getAttribute('v:shapes').indexOf('Immagine') < 0) {
                 imgElem[i as number].classList.add('e-rte-image-unsupported');
             }
             imgElem[i as number].removeAttribute('v:shapes');
@@ -215,7 +216,8 @@ export class MsWordPaste {
         if (imgElem.length > 0) {
             for (let i: number = 0; i < imgElem.length; i++) {
                 imgSrc.push(imgElem[i as number].getAttribute('src'));
-                imgName.push(imgElem[i as number].getAttribute('src').split('/')[imgElem[i as number].getAttribute('src').split('/').length - 1].split('.')[0]);
+                const imageName: string = imgElem[i as number].getAttribute('src').split('/')[imgElem[i as number].getAttribute('src').split('/').length - 1].split('.')[0] + i;
+                imgName.push(imageName);
             }
             const hexValue: { [key: string]: string | boolean | number }[] = this.hexConversion(rtfData);
             for (let i: number = 0; i < hexValue.length; i++) {

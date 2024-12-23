@@ -212,6 +212,10 @@ export class Editor {
     /**
      * @private
      */
+    public removedContentControlElements: ContentControl[] = [];
+    /**
+     * @private
+     */
     public tocBookmarkId: number = 0;
     /**
      * @private
@@ -293,6 +297,10 @@ export class Editor {
      * @private
      */
     public isXmlMapped: boolean = false;
+    /**
+     * @private
+     */
+    public restrictLayout: boolean = false;
     private isAutoList: boolean = false;
     private isLastParaMarkCopied: boolean = false;
     private combineLastBlock: boolean = false;
@@ -425,6 +433,23 @@ export class Editor {
     }
     private getModuleName(): string {
         return 'Editor';
+    }
+    /**
+     * Initiates a batch update mode where multiple editing operations can be grouped together. This prevents intermediate re-layout during the execution of grouped operations, improving performance for bulk updates.
+     *
+     * @returns {void}
+     */
+    public beginBatchEdit(): void {
+        this.restrictLayout = true;
+    }
+    /**
+     * Ends the batch update mode and triggers a single re-relayout or change notification to reflect all the modifications made during the batch update. 
+     *
+     * @returns {void}
+     */
+    public endBatchEdit(): void {
+        this.restrictLayout = false;
+        this.layoutWholeDocument();
     }
     /** 
      * Sets the field information for the selected field. 
@@ -4374,14 +4399,14 @@ export class Editor {
             return undefined;
         }
         let revisionId: string;
-        if (!isNullOrUndefined(parseRevisionId)) {
-            revisionId = parseRevisionId;
-        }
         if (!isNullOrUndefined(this.revisionData) && this.revisionData.length > 0) {
             let newRevisionData: MarkerInfo = this.revisionData.pop();
             author = newRevisionData.author;
             date = newRevisionData.date;
             revisionId = newRevisionData.revisionId;
+        }
+        if (!isNullOrUndefined(parseRevisionId)) {
+            revisionId = parseRevisionId;
         }
         author = !isNullOrUndefined(author) ? author : this.owner.currentUser ? this.owner.currentUser : 'Guest user';
         let currentDate: string = !isNullOrUndefined(date) ? date : HelperMethods.getUtcDate();
@@ -4911,7 +4936,11 @@ export class Editor {
 
     private updatePasteRevision(): void {
         for (let i: number = 0; i < this.remotePasteRevision.length; i++) {
-            this.updateRevisionCollection(this.remotePasteRevision[i]);
+            if (this.owner.revisions.changes.indexOf(this.remotePasteRevision[i]) < 0) {
+                this.updateRevisionCollection(this.remotePasteRevision[i]);
+            } else {
+                this.owner.trackChangesPane.updateCurrentTrackChanges(this.remotePasteRevision[i]);
+            }
         }
         this.remotePasteRevision = [];
     }
@@ -7443,7 +7472,9 @@ export class Editor {
             if (this.selection.pasteElement) {
                 this.selection.pasteElement.style.display = 'none';
             }
-            this.layoutWholeDocument(true);
+            if (!this.restrictLayout) {
+                this.layoutWholeDocument(true);
+            }
         }
         this.isPaste = false;
     }
@@ -7961,7 +7992,7 @@ export class Editor {
                             return layoutWholeDocument;
                         }
                     }
-                    this.insertBlockInternal(block, undefined, isSelectionInsideTable);
+                    this.insertBlockInternal(block, undefined, isSelectionInsideTable, this.isRemoteAction);
                 }
             }
         }
@@ -8892,7 +8923,7 @@ export class Editor {
         }
         this.fireContentChange();
     }
-    private insertBlockInternal(block: BlockWidget, isRemoved?: boolean, isSelectionInsideTable?: boolean): void {
+    private insertBlockInternal(block: BlockWidget, isRemoved?: boolean, isSelectionInsideTable?: boolean, isSkipRevision?: boolean): void {
         let selection: Selection = this.selection;
         let startPara: ParagraphWidget = this.selection.start.paragraph;
         let paraStart: boolean = this.selection.start.isAtParagraphStart;
@@ -8900,7 +8931,7 @@ export class Editor {
             if (block instanceof ParagraphWidget) {
                 let startPosition: TextPosition = selection.start.clone();
                 //let prevBlock: ParagraphWidget = (block as ParagraphWidget).clone()
-                if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking()) {
+                if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking() && !isSkipRevision) {
                     this.insertRevisionForBlock(block, 'Insertion');
                 }
                 if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo) {
@@ -8952,7 +8983,7 @@ export class Editor {
                 block.isGridUpdated = true;
             }
             this.updateNextBlocksIndex(block, true);
-            if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking() && block instanceof ParagraphWidget) {
+            if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking() && block instanceof ParagraphWidget && !isSkipRevision) {
                 this.insertRevisionForBlock(block, 'Insertion');
             } else if (block instanceof ParagraphWidget) {
                 this.constructRevisionsForBlock(block, true);
@@ -14593,6 +14624,24 @@ export class Editor {
     }
 
     private deleteSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, isDeletecell?: boolean): void {
+        //Handled special behaviour for content control start and end should not delete.
+        let isParaMark: boolean = end.offset === this.selection.getLineLength(end.currentWidget) + 1;
+        if (start.isAtParagraphStart && (isParaMark || end.isAtParagraphEnd)) {
+            let startInlineObj: ElementInfo = start.currentWidget.getInline(start.offset, 0);
+            let startInline: ElementBox = startInlineObj.element;
+            let endInlineObj: ElementInfo = end.currentWidget.getInline(end.offset, 0);
+            let endInline: ElementBox = endInlineObj.element;
+            if (startInline instanceof ContentControl && endInline instanceof ContentControl && startInline.reference === endInline) {
+                start.offset += 1;
+                end.offset -= isParaMark ? 2 : 1;
+                const blockInfo: ParagraphInfo = this.selection.getParagraphInfo(start);
+                selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+                //Updating for collaborative editing.
+                if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+                    this.editorHistory.currentBaseHistoryInfo.updateSelection();
+                }
+            }
+        }
         let indexInInline: number = 0;
         let inlineObj: ElementInfo = start.currentWidget.getInline(start.offset, indexInInline);
         let inline: ElementBox = inlineObj.element;
@@ -17341,6 +17390,8 @@ export class Editor {
                         }
                     } else if (inline instanceof EditRangeEndElementBox) {
                         this.removedEditRangeEndElements.push(inline);
+                    } else if (inline instanceof ContentControl && !this.isInsertingTOC) {
+                        this.removedContentControlElements.push(inline);
                     }
                     let previousNode: ElementBox = inline.previousNode;
                     lineWidget.children.splice(i, 1);
@@ -18565,7 +18616,7 @@ export class Editor {
                             this.editorHistory.updateHistory();
                         }
                         this.initInsertInline(bookMarkStart.clone(), undefined, true);
-                        if (this.editorHistory.currentHistoryInfo && i === this.removedBookmarkElements.length - 1 && this.removedEditRangeStartElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
+                        if (this.editorHistory.currentHistoryInfo && i === this.removedBookmarkElements.length - 1 && this.removedContentControlElements.length === 0 && this.removedEditRangeStartElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
                             this.editorHistory.updateComplexHistory();
                             isHandledComplexHistory = true;
                         }
@@ -18584,7 +18635,7 @@ export class Editor {
                             this.editorHistory.updateHistory();
                         }
                         this.initInsertInline(bookMarkEnd.clone(), undefined, true);
-                        if (this.editorHistory.currentHistoryInfo && i === this.removedBookmarkElements.length - 1 && this.removedEditRangeStartElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
+                        if (this.editorHistory.currentHistoryInfo && i === this.removedBookmarkElements.length - 1 && this.removedContentControlElements.length === 0 && this.removedEditRangeStartElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
                             this.editorHistory.updateComplexHistory();
                             isHandledComplexHistory = true;
                         }
@@ -18593,6 +18644,59 @@ export class Editor {
             }
         }
         this.removedBookmarkElements = [];
+        return isHandledComplexHistory;
+    }
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    public insertRemoveContentControlElements(isUpdateComplexHistory: boolean): boolean {
+        let isHandledComplexHistory: boolean = false;
+        if (!this.isRemoteAction) {
+            for (let i: number = 0; i < this.removedContentControlElements.length; i++) {
+                let contentControl: ContentControl = this.removedContentControlElements[i];
+                if (contentControl.type === 0) {
+                    let contentControlStart: ContentControl = contentControl;
+                    if (contentControlStart && contentControlStart.reference && this.removedContentControlElements.indexOf(contentControlStart.reference) !== -1) {
+                        let endIndex: number = this.removedContentControlElements.indexOf(contentControlStart.reference);
+                        let startIndex: number = this.removedContentControlElements.indexOf(contentControlStart);
+                        this.removedContentControlElements.splice(endIndex, 1);
+                        this.removedContentControlElements.splice(startIndex, 1);
+                        i--;
+                    } else {
+                        if (this.editorHistory.currentBaseHistoryInfo && !isUpdateComplexHistory) {
+                            this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
+                            this.editorHistory.updateHistory();
+                        }
+                        this.initInsertInline(contentControlStart.clone(), undefined, true);
+                        if (this.editorHistory.currentHistoryInfo && i === this.removedContentControlElements.length - 1 && this.removedBookmarkElements.length === 0 && this.removedEditRangeStartElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
+                            this.editorHistory.updateComplexHistory();
+                            isHandledComplexHistory = true;
+                        }
+                    }
+                } else {
+                    let contentControlEnd: ContentControl = contentControl;
+                    if (contentControlEnd && contentControlEnd.reference && this.removedContentControlElements.indexOf(contentControlEnd.reference) !== -1) {
+                        let endIndex: number = this.removedContentControlElements.indexOf(contentControlEnd.reference);
+                        let startIndex: number = this.removedContentControlElements.indexOf(contentControlEnd);
+                        this.removedContentControlElements.splice(endIndex, 1);
+                        this.removedContentControlElements.splice(startIndex, 1);
+                        i--;
+                    } else {
+                        if (this.editorHistory.currentBaseHistoryInfo && !isUpdateComplexHistory) {
+                            this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
+                            this.editorHistory.updateHistory();
+                        }
+                        this.initInsertInline(contentControlEnd.clone(), undefined, true);
+                        if (this.editorHistory.currentHistoryInfo && i === this.removedContentControlElements.length - 1 && this.removedBookmarkElements.length === 0 && this.removedEditRangeStartElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
+                            this.editorHistory.updateComplexHistory();
+                            isHandledComplexHistory = true;
+                        }
+                    }
+                }
+            }
+        }
+        this.removedContentControlElements = [];
         return isHandledComplexHistory;
     }
     /**
@@ -18618,7 +18722,7 @@ export class Editor {
                     this.initInsertInline(editRangeEndElementBox.clone(), undefined, true);
                     let inlineObj: ElementInfo = this.selection.start.paragraph.getInline(this.selection.start.offset, 0);
                     (inlineObj.element as EditRangeEndElementBox).editRangeStart.editRangeEnd = inlineObj.element as EditRangeEndElementBox;
-                    if (this.editorHistory.currentHistoryInfo && i === 0 && this.removedEditRangeStartElements.length === 0 && this.removedBookmarkElements.length === 0) {
+                    if (this.editorHistory.currentHistoryInfo && i === 0 && this.removedContentControlElements.length === 0 && this.removedEditRangeStartElements.length === 0 && this.removedBookmarkElements.length === 0) {
                         this.editorHistory.updateComplexHistory();
                         isHandledComplexHistory = true;
                     }
@@ -18651,7 +18755,7 @@ export class Editor {
                     this.initInsertInline(editRangeStartElementBox.clone(), undefined, true);
                     let inlineObj: ElementInfo = this.selection.start.paragraph.getInline(this.selection.start.offset, 0);
                     (inlineObj.element as EditRangeStartElementBox).editRangeEnd.editRangeStart = inlineObj.element as EditRangeStartElementBox;
-                    if (this.editorHistory.currentHistoryInfo && i === this.removedEditRangeStartElements.length - 1 && this.removedBookmarkElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
+                    if (this.editorHistory.currentHistoryInfo && i === this.removedEditRangeStartElements.length - 1 && this.removedContentControlElements.length === 0 && this.removedBookmarkElements.length === 0 && this.removedEditRangeEndElements.length === 0) {
                         this.editorHistory.updateComplexHistory();
                         isHandledComplexHistory = true;
                     }
@@ -21218,10 +21322,15 @@ export class Editor {
             this.owner.isShiftingEnabled = false;
             this.selection.fireSelectionChanged(true);
         }
+        this.fireContentChange();
+        if (this.documentHelper.contentControlCollection.length > 0) {
+            this.selection.contentControleditRegionHighlighters.clear();
+            this.selection.isHighlightContentControlEditRegion = true;
+            this.selection.onHighlightContentControl();
+        }
         if (this.owner.documentEditorSettings.showBookmarks == true) {
             this.viewer.updateScrollBars();
         }
-        this.fireContentChange();
     }
 
     /**
@@ -22555,6 +22664,7 @@ export class Editor {
         this.documentHelper = undefined;
         this.editRangeID = undefined;
         this.isCellFormatApplied = undefined;
+        this.removedContentControlElements = [];
     }
     /**
      * Updates the table of contents.

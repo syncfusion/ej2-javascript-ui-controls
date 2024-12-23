@@ -300,9 +300,12 @@ export class PdfForm {
             if (field._kidsCount > 0) {
                 for (let i: number = field._kidsCount - 1; i >= 0; i--) {
                     const item: PdfWidgetAnnotation = field.itemAt(i);
-                    const page: PdfPage = item._getPage();
-                    if (page) {
-                        page._removeAnnotation(item._ref);
+                    let page: PdfPage;
+                    if (item) {
+                        page = item._getPage();
+                        if (page) {
+                            page._removeAnnotation(item._ref);
+                        }
                     }
                 }
             } else if (field._dictionary.has('Subtype') && field._dictionary.get('Subtype').name === 'Widget') {
@@ -500,6 +503,7 @@ export class PdfForm {
         if (this._dictionary.has('Fields')) {
             fields = this._dictionary.get('Fields');
         }
+        let hasNoKids: boolean = false;
         let count: number = 0;
         const nodes = []; // eslint-disable-line
         while (typeof fields !== 'undefined' && fields !== null) {
@@ -508,6 +512,11 @@ export class PdfForm {
                 let fieldDictionary: _PdfDictionary;
                 if (ref && ref instanceof _PdfReference) {
                     fieldDictionary = this._crossReference._fetch(ref);
+                }
+                let fieldFlags: number = 0;
+                const flag: number = _getInheritableProperty(fieldDictionary, 'Ff', false, true, 'Parent');
+                if (typeof flag !== 'undefined') {
+                    fieldFlags = flag;
                 }
                 let fieldKids: [];
                 if (fieldDictionary && fieldDictionary.has('Kids')) {
@@ -520,6 +529,8 @@ export class PdfForm {
                                 if (typeof kidsDict !== 'undefined' && !kidsDict.has('Parent')) {
                                     kidsDict.update('Parent', ref);
                                 }
+                            } else if ((fieldFlags & _FieldFlag.radio) !== 0) {
+                                hasNoKids = true;
                             }
                         }
                     }
@@ -538,7 +549,11 @@ export class PdfForm {
                         count = -1;
                         fields = fieldKids;
                     } else {
-                        this._fields.push(ref);
+                        if (hasNoKids && (fieldFlags & _FieldFlag.radio) !== 0) {
+                            continue;
+                        } else {
+                            this._fields.push(ref);
+                        }
                     }
                 }
             }

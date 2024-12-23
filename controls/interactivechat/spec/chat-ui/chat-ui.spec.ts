@@ -759,7 +759,7 @@ describe('ChatUI Component', () => {
                 user: { id: 'user1', user: 'John Doe' }
             });
             chatUI.appendTo('#chatUI');
-            const initialBannerView = chatUIElem.querySelector('.e-banner-view');
+            const initialBannerView = chatUIElem.querySelector('.e-empty-chat-template');
             expect(initialBannerView).not.toBeNull();
             const textareaElem: HTMLTextAreaElement = chatUIElem.querySelector('.e-footer textarea');
             const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send');
@@ -856,7 +856,7 @@ describe('ChatUI Component', () => {
                 emptyChatTemplate: '#emptyChatTemplate'
             });
             chatUI.appendTo('#chatUI');
-            const bannerElem: HTMLElement = chatUIElem.querySelector('.e-banner-view');
+            const bannerElem: HTMLElement = chatUIElem.querySelector('.e-empty-chat-template');
             expect(bannerElem).not.toBeNull();
             expect(bannerElem.querySelector('h1').textContent).toEqual('Welcome to Chat');
             expect(bannerElem.querySelector('p').textContent).toEqual('Start your conversation');

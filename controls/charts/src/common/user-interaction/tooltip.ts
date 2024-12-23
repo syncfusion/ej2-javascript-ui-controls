@@ -353,7 +353,7 @@ export class BaseTooltip extends ChartData {
 
     public fadeOut(data: PointData[]): void {
         const svgElement: HTMLElement = this.chart.enableCanvas ? this.getElement(this.element.id + '_tooltip_group') :
-            this.getElement(this.element.id + '_tooltip_svg');
+            this.getElement(this.element.id + '_tooltip_svg') || this.getElement(this.element.id + '_tooltipparent_template');
         const isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         if (!isTooltip) {
             this.valueX = null;

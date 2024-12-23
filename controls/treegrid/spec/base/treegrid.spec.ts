@@ -3773,45 +3773,45 @@ describe('Remote data', () => {
     });
 });
 
-// describe('Remote data', () => {
-//     let gridObj: TreeGrid;
-//     let data: Object = new DataManager({
-//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-//         adaptor: new WebApiAdaptor,
-//         crossDomain: true
-//     });
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: data,
-//                 hasChildMapping: 'isParent',
-//                 idMapping: 'TaskID',
-//                 parentIdMapping: 'ParentItem',
-//                 enableVirtualization: true,
-//                 height: 400,
-//                 treeColumnIndex: 1,
-//                 columns: [
-//                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
-//                     { field: 'TaskName', headerText: 'Task Name', width: 150 },
-//                     { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
-//                 ],
-//             },
-//             done
-//         );
-//     });
-//     beforeEach((done: Function) => {
-//         gridObj.expandRow(gridObj.getRows()[0]);
-//         gridObj.collapseRow(gridObj.getRows()[0]);
-//         setTimeout(done, 500);
-//     });
-//     it('expand action with virtualization', (done: Function) => {
-//         expect(gridObj.grid.currentViewData.length == 10).toBe(true);
-//         done();
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//     });
-// });
+describe('Remote data', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                enableVirtualization: true,
+                height: 400,
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+            },
+            done
+        );
+    });
+    beforeEach((done: Function) => {
+        gridObj.expandRow(gridObj.getRows()[0]);
+        gridObj.collapseRow(gridObj.getRows()[0]);
+        setTimeout(done, 500);
+    });
+    it('expand action with virtualization', (done: Function) => {
+        expect(gridObj.grid.currentViewData.length == 10).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
 
 describe('code coverage improvement', () => {
     let gridObj: TreeGrid;

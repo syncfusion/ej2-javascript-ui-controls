@@ -232,6 +232,10 @@ export class Selection {
      * @private
      */
     public contentControl: ContentControl = undefined;
+    /**
+     * @private
+     */
+    public isHomeEnd: boolean = false;
     // Code for Comparing the offset calculated using old approach and optimized approach
     // /**
     //  * @private
@@ -1185,6 +1189,9 @@ export class Selection {
         let selectionWidget: SelectionWidgetInfo = undefined;
         let selectionWidgetCollection: SelectionWidgetInfo[] = undefined;
         if (this.isHighlightContentControlEditRegion && !isNullOrUndefined(contentControl)) {
+            if (width === 0) {
+                width = this.documentHelper.textHelper.getParagraphMarkSize(paragraph.characterFormat).Width;
+            }
             this.addContentControlEditRegionHighlight(lineWidget, left, width, contentControl);
             return;
         } else if (this.isHightlightEditRegionInternal) {
@@ -2319,6 +2326,7 @@ export class Selection {
      * @returns {void}
      */
     public handleControlEndKey(): void {
+        this.isHomeEnd = true;
         let documentEnd: TextPosition = undefined;
         if (!isNullOrUndefined(this.owner.documentEnd)) {
             documentEnd = this.owner.documentEnd;
@@ -2329,12 +2337,14 @@ export class Selection {
         if(this.owner.enableAutoFocus){
             this.checkForCursorVisibility();
         }
+        this.isHomeEnd = false;
     }
     /**
      * @private
      * @returns {void}
      */
     public handleControlHomeKey(): void {
+        this.isHomeEnd = true;
         let documentStart: TextPosition = undefined;
         if (!isNullOrUndefined(this.owner.documentStart)) {
             documentStart = this.owner.documentStart;
@@ -2345,6 +2355,7 @@ export class Selection {
         if(this.owner.enableAutoFocus){
             this.checkForCursorVisibility();
         }
+        this.isHomeEnd = false;
     }
     /**
      * @private
@@ -2522,8 +2533,10 @@ export class Selection {
      * @returns {void}
      */
     public handleEndKey(): void {
+        this.isHomeEnd = true;
         this.moveToLineEnd();
         this.checkForCursorVisibility();
+        this.isHomeEnd = false;
     }
     /**
      * Handles home key.
@@ -2532,8 +2545,10 @@ export class Selection {
      * @returns {void}
      */
     public handleHomeKey(): void {
+        this.isHomeEnd = true;
         this.moveToLineStart();
         this.checkForCursorVisibility();
+        this.isHomeEnd = false;
     }
     /**
      * Handles down key.
@@ -2554,8 +2569,10 @@ export class Selection {
      * @returns {void}
      */
     public handleShiftEndKey(): void {
+        this.isHomeEnd = true;
         this.extendToLineEnd();
         this.checkForCursorVisibility();
+        this.isHomeEnd = false;
     }
     /**
      * Handles shift home key.
@@ -2564,8 +2581,10 @@ export class Selection {
      * @returns {void}
      */
     public handleShiftHomeKey(): void {
+        this.isHomeEnd = true;
         this.extendToLineStart();
         this.checkForCursorVisibility();
+        this.isHomeEnd = false;
     }
     /**
      * Handles control shift end key.
@@ -2574,6 +2593,7 @@ export class Selection {
      * @returns {void}
      */
     public handleControlShiftEndKey(): void {
+        this.isHomeEnd = true;
         let documentEnd: TextPosition = undefined;
         if (!isNullOrUndefined(this.owner.documentEnd)) {
             documentEnd = this.owner.documentEnd;
@@ -2583,6 +2603,7 @@ export class Selection {
             this.fireSelectionChanged(true);
         }
         this.checkForCursorVisibility();
+        this.isHomeEnd = false;
     }
     /**
      * Handles control shift home key.
@@ -2591,6 +2612,7 @@ export class Selection {
      * @returns {void}
      */
     public handleControlShiftHomeKey(): void {
+        this.isHomeEnd = true;
         let documentStart: TextPosition = undefined;
         if (!isNullOrUndefined(this.owner.documentStart)) {
             documentStart = this.owner.documentStart;
@@ -2600,6 +2622,7 @@ export class Selection {
             this.fireSelectionChanged(true);
         }
         this.checkForCursorVisibility();
+        this.isHomeEnd = false;
     }
     /**
      * @private
@@ -2879,7 +2902,8 @@ export class Selection {
         if (!isNullOrUndefined(previousContentControl) && previousContentControl.contentControlProperties) {
             let data = { 'Text': this.owner.editor.getResultContentControlText(previousContentControl) };
             this.owner.trigger(aftercontentControlFillEvent, data);
-            if (!isNullOrUndefined(previousContentControl.contentControlProperties.xmlMapping) && previousContentControl.contentControlProperties.xmlMapping.isContentControlMapped) {
+            if (!isNullOrUndefined(previousContentControl.contentControlProperties.xmlMapping) && !isNullOrUndefined(this.owner.xmlPaneModule.mappedContentControl)
+                && this.owner.xmlPaneModule.mappedContentControl.contentControlProperties && previousContentControl.contentControlProperties.xmlMapping.xPath === this.owner.xmlPaneModule.mappedContentControl.contentControlProperties.xmlMapping.xPath) {
                 let xpath = previousContentControl.contentControlProperties.xmlMapping.xPath;
                 this.owner.xmlPaneModule.updateContent(data.Text, xpath);
             }
@@ -6060,7 +6084,7 @@ export class Selection {
             if (inline instanceof FieldElementBox && inline.fieldType === 1) {
                 element = inline;
             } else {
-                if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox || inline instanceof CommentCharacterElementBox) {
+                if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox || inline instanceof CommentCharacterElementBox || inline instanceof ContentControl) {
                     return this.getFieldCharacterPosition(inline);
                 }
                 return new Point(0, 0);
@@ -6173,7 +6197,7 @@ export class Selection {
      */
     public getElementBox(currentInline: ElementBox, index: number, moveToNextLine: boolean): ElementInfo {
         let elementBox: ElementBox = undefined;
-        if (!(currentInline instanceof FieldElementBox || currentInline instanceof BookmarkElementBox || currentInline instanceof CommentCharacterElementBox)) {
+        if (!(currentInline instanceof FieldElementBox || currentInline instanceof BookmarkElementBox || currentInline instanceof CommentCharacterElementBox || currentInline instanceof ContentControl)) {
             elementBox = currentInline;
         }
         return { 'element': elementBox, 'index': index };
@@ -7165,6 +7189,9 @@ export class Selection {
                 }
                 if (inline instanceof EditRangeEndElementBox) {
                     index = 0;
+                }
+                if (this.isMoveDownOrMoveUp && element instanceof ContentControl) {
+                    index = element.type === 0 ? (index + 1) : (index - 1);
                 }
                 if (!isNullOrUndefined(inline.previousElement) && inline.previousElement instanceof ShapeBase && inline.previousElement.textWrappingStyle !== 'Inline' && index == 0) {
                     inline = inline.previousElement;

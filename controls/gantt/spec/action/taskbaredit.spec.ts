@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue, crDialogEditData, projectSplitTask, MT887459, MT877459, predecessorMT877459, parentPredecessorMT877459, parentMT877459, sengmentData, sengmentCollection, cR893051, dateFormateData, editingResources3, normalResourceData } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue, crDialogEditData, projectSplitTask, MT887459, MT877459, predecessorMT877459, parentPredecessorMT877459, parentMT877459, sengmentData, sengmentCollection, cR893051, dateFormateData, editingResources3, normalResourceData, CR929550 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { falseLine } from '../../src/gantt/base/css-constants';
@@ -8105,6 +8105,106 @@ describe('Unschedule task offset', () => {
         args['element'] = dragElement;
         args['target'] =  dragElement;
         ganttObj.editModule.taskbarEditModule['editTooltip']['updateTooltipPosition'](args);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR:929550-Console error occurred while taskbar drag with null duration in queryCellInfo', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: CR929550,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                //notes: 'info',
+                //resourceInfo: 'resources',
+                manual: 'isManual'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            queryTaskbarInfo: function (args) {
+                if (args.data.hasChildRecords) {
+                    let visible = args.data.childRecords.filter(
+                        (child: any) => child.EndDate === null
+                    );
+                    if (visible && visible.length > 0) { // Check if the array is non-empty
+                        visible.forEach((child: any) => {
+                            child.ganttProperties.duration = null;
+                        });
+                        args.data.Duration = null;
+                    }
+                }
+            },
+            
+            queryCellInfo: function (args) {
+                if (
+                    args.data.hasChildRecords &&
+                    (args.column.field === 'StartDate' || args.column.field === 'EndDate')
+                ) {
+                    let allChildrenHaveNullEndDate = args.data.childRecords.every(
+                        (child: any) => child.EndDate === null
+                    );
+                    if (allChildrenHaveNullEndDate) {
+                        args.data.ganttProperties.duration = null;
+                        args.data.Duration = null;
+                    }
+                }
+            },
+            
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Drag taskbar with null duration', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ParentDrag');
+        };
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ParentDrag');
+        };
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr.gridrowtaskIdlevel0.e-chart-row > td > div.e-taskbar-main-container') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 100, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(null);
     });
     afterAll(() => {
         if (ganttObj) {

@@ -1021,3 +1021,133 @@ describe('updating parent row index properly', () => {
         }
     });
 });
+describe('Collapse root parent for custom task mode', () => {
+    let ganttObj: Gantt;
+    let sampleData: any = [
+        {
+            "nodeID": 1,
+            "nodeName": "Borgiallo",
+            "startDate": "2024-10-14T05:00:00.000Z",
+            "duration": 10,
+            "progress": 100,
+            "nodeType": 10000,
+            "hasSubNodes": true,
+            "parentID": null,
+      
+            "isManual" : true,
+            "baselineStartDate": "2024-10-15T05:00:00.000Z",
+            "baselineEndDate": "2024-10-24T05:00:00.000Z",
+        },
+        {
+            "nodeID": 2,
+            "nodeName": "Baseline",
+            "startDate": "2024-10-15T05:00:00.000Z",
+            "endDate": "2024-10-25T05:00:00.000Z",
+            "duration": 10,
+            "progress": 100,
+            "nodeType": 20000,
+            "hasSubNodes": true,
+            "isManual" : false,
+            "parentID": 1
+        },
+        {
+            "nodeID": 200,
+            "nodeName": "Collect",
+            "startDate": "2024-10-15T05:00:00.000Z",
+            "duration": 1,
+            "progress": 100,
+            "nodeType": 0,
+            "isManual" : false,
+            "parentID": 2
+        },
+        {
+            "nodeID": 304,
+            "nodeName": "Accept",
+            "startDate": "2024-10-24T05:00:00.000Z",
+            "duration": 1,
+            "progress": 100,
+            "nodeType": 4,
+            "isManual" : false,
+            "parentID": 2
+        },
+        {
+            "nodeID": 4,
+            "nodeName": "Actual",
+            "startDate": "2024-10-14T05:00:00.000Z",
+            "endDate": "2024-10-24T06:00:00.000Z",
+            "duration": 10,
+            "progress": 100,
+            "nodeType": 20000,
+            "hasSubNodes": true,
+            "isManual" : false,
+            "parentID": 1
+        },
+        {
+            "nodeID": 400,
+            "nodeName": "Collect",
+            "startDate": "2024-10-14T05:00:00.000Z",
+            "duration": 7,
+            "progress": 100,
+            "nodeType": 0,
+            "isManual" : false,
+            "parentID": 4
+        },  {
+            "nodeID": 404,
+            "nodeName": "Accept",
+            "startDate": "2024-10-23T05:00:00.000Z",
+            "duration": 1,
+            "progress": 100,
+            "nodeType": 4,
+            "isManual" : false,
+            "parentID": 4
+        }
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: sampleData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: "nodeID",
+                    name: "nodeName",
+                    startDate: "startDate",
+                    endDate: "endDate",
+                    duration: "duration",
+                    progress: "progress",
+                    parentID: "parentID",
+                    manual: 'isManual',
+                    baselineStartDate: 'baselineStartDate',
+                    baselineEndDate: 'baselineEndDate' 
+                },
+                enableMultiTaskbar: true,
+                renderBaseline: true,
+                taskMode:"Custom",
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                selectedRowIndex: 1,
+                columns:[
+                    { field: 'nodeName', headerText: 'Site', width: '400' },
+                    { field: 'nodeID', headerText: 'Node Id', visible: false}, // Aparently, app crashes on editing if Id field is not included.  So include but hide it.
+                  ]
+            }, done);
+    });
+    it('Collapse root parent for custom task mode', () => {
+        ganttObj.collapsed = () => {
+            expect(ganttObj.treeGrid.getRows()[0].getElementsByClassName('e-treegridexpand').length).toBe(0);
+        }
+        ganttObj.collapseByID(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

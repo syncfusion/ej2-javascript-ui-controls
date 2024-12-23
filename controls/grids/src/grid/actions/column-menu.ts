@@ -343,6 +343,10 @@ export class ColumnMenu implements IAction {
         } else if (args.event && args.event.target && (args.event.target as Element).classList.contains('e-filter-item') && (args.event as KeyboardEvent).key === 'Enter') {
             args.cancel = true;
         }
+        else if (this.parent.isColumnMenuFilterClosing) {
+            this.parent.isColumnMenuFilterClosing = false;
+            args.cancel = true;
+        }
     }
 
     private isChooserItem(item: ColumnMenuItemModel): boolean {
@@ -625,6 +629,24 @@ export class ColumnMenu implements IAction {
         const filterPopup: HTMLElement = this.getFilterPop();
         if (filterPopup) {
             filterPopup.style.display = !Browser.isDevice && isClose ? 'none' : 'block';
+            if (filterPopup.style.display !== 'none') {
+                if (this.parent.filterSettings.type === 'Menu') {
+                    if (filterPopup.querySelector('.e-flmenu-input')) {
+                        (filterPopup.querySelector('.e-flmenu-input') as HTMLInputElement).focus();
+                    }
+                    else if (filterPopup.querySelector('.e-flmenu-valuediv')) {
+                        const firstElementChild: Element = filterPopup.querySelector('.e-flmenu-valuediv').firstElementChild;
+                        if (!isNullOrUndefined(firstElementChild)) {
+                            (firstElementChild as HTMLElement).focus();
+                        }
+                    }
+                }
+                else if (this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel') {
+                    if (filterPopup.querySelector('.e-searchinput')) {
+                        (filterPopup.querySelector('.e-searchinput') as HTMLInputElement).focus();
+                    }
+                }
+            }
         } else {
             this.parent.notify(events.filterOpen, {
                 col: this.targetColumn, target: target, isClose: isClose, id: id

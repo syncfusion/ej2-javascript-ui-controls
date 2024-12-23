@@ -27,6 +27,33 @@ L10n.load({
 let datasource: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
 { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' }];
 
+let datasource1: { [key: string]: Object }[]=[];
+for (let i = 1; i <= 150; i++) {
+    let item: { [key: string]: Object } = {};
+    item.id = 'id' + i;
+    item.text = `Item ${i}`;
+
+    // Generate a random number between 1 and 4 to determine the group
+    const randomGroup = Math.floor(Math.random() * 4) + 1;
+    switch (randomGroup) {
+        case 1:
+            item.group = 'Group A';
+            break;
+        case 2:
+            item.group = 'Group B';
+            break;
+        case 3:
+            item.group = 'Group C';
+            break;
+        case 4:
+            item.group = 'Group D';
+            break;
+        default:
+            break;
+    }
+    datasource1.push(item);
+}
+
 let datasource2: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
 { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'Phython' }, { id: 'list5', text: 'Oracle' }];
 describe('DDList', () => {
@@ -320,6 +347,36 @@ describe('DDList', () => {
             listObj1.clear();
             expect(listObj1.list.querySelectorAll('li').length == 6).toBe(true);
             listObj1.resetValueHandler();
+        });
+    });
+    describe('large data Template support', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+        let dropObj: any;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('input', { id: 'DropDownList' });
+            document.body.appendChild(ele);
+            dropObj = new DropDownList({
+                dataSource: datasource1, popupHeight:'200px',allowFiltering:true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
+            });
+            dropObj.appendTo(ele);
+        });
+        afterAll(() => {
+            ele.remove();
+            dropObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('item template and value template', (done) => {
+            dropObj.showPopup();
+            dropObj.isPreventScrollAction = false
+            dropObj.list.scrollTop = 1068;
+            setTimeout(() => {
+                let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
+                expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
+                dropObj.noRecordsTemplate = "No data";
+                dropObj.l10nUpdate(true);
+                done();
+            }, 500);
         });
     });
 

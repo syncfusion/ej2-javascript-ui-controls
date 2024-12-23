@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 28.1.36 (2024-12-24)
+
+### Carousel
+
+#### Bug Fixes
+
+- `#I660150` - The issue with carousel slide continue to move, when mouse swiped out of the container has been resolved.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I664457` - The issue with "The context menu does not close when the Escape key is pressed immediately after opening it with animation enabled." has been resolved.
+
+- `#I627856` - Need to reposition the Context menu after setting the height for popup with `enableScrolling` support has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `FB63997` - Prevent expanded nodes from collapsing when using addNodes or moveNodes method with preventTargetExpand set to true in TreeView.
+
 ## 28.1.35 (2024-12-18)
 
 ### Accordion
@@ -9,7 +31,7 @@
 #### Bug Fixes
 
 - `#I660165` - The issue with " The accordion causing a script error when expanding it with the `expandMode` set to single" has been resolved.
-- `#I924619` - Added `cancel` support to the Accordion component's click event. This allows users to programmatically restrict the toggle behaviour expand or collapse by setting `cancel` as `true`.
+- `#I659692` - Added `cancel` support to the Accordion component's click event. This allows users to programmatically restrict the toggle behaviour expand or collapse by setting `cancel` as `true`.
 
 ## 28.1.33 (2024-12-12)
 

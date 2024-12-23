@@ -61,7 +61,6 @@ describe('Schedule Month view', () => {
 
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 1).getTime().toString());
             expect(schObj.element.getAttribute('aria-labelledby')).toEqual(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('id'));
             expect(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('aria-label')).
@@ -406,10 +405,8 @@ describe('Schedule Month view', () => {
             schObj = util.createSchedule(model, []);
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             firstWorkCell.click();
             expect(firstWorkCell.classList).toContain('e-selected-cell');
-            expect(firstWorkCell.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
 
@@ -545,7 +542,6 @@ describe('Schedule Month view', () => {
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(eventName1).toEqual('select');
             expect(eventName2).toEqual('cellClick');
@@ -566,7 +562,6 @@ describe('Schedule Month view', () => {
             util.triggerMouseEvent(workCells[5], 'mouseup');
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
             expect(eventName).toEqual('select');
         });
@@ -585,7 +580,6 @@ describe('Schedule Month view', () => {
             util.triggerMouseEvent(workCells[5], 'mouseup');
             const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
-            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
             expect(schObj.activeCellsData.startTime).toEqual(new Date(2017, 9, 4, 0, 0, 0));
             expect(schObj.activeCellsData.endTime).toEqual(new Date(2017, 9, 7, 0, 0, 0));
@@ -619,10 +613,8 @@ describe('Schedule Month view', () => {
             schObj = util.createSchedule(model, []);
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             expect(workCell.classList).not.toContain('e-selected-cell');
-            expect(workCell.getAttribute('aria-selected')).toEqual('false');
             workCell.click();
             expect(workCell.classList).not.toContain('e-selected-cell');
-            expect(workCell.getAttribute('aria-selected')).toEqual('false');
         });
 
         it('cell double click', () => {

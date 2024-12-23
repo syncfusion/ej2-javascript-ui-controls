@@ -842,7 +842,8 @@ export class SfdtExport {
                     && element.previousNode.characterFormat.isEqualFormat(element.characterFormat)
                     && element.previousNode.scriptType === element.scriptType
                     && element.revisions.length === 0 && element.previousNode.revisions.length === 0
-                    && (element.previousNode.text.length > 0 && element.previousNode.text[element.previousNode.text.length - 1] !== '-')) {
+                    && (element.previousNode.text.length > 0 && element.previousNode.text[element.previousNode.text.length - 1] !== '-')
+                    && inlines.length > 0) {
                     let elementText: string = element.text;
                     if (!this.isWriteEndFootNote && (isNullOrUndefined(this.owner.editorModule) || !this.owner.editorModule.isPaste)) {
                         elementText = HelperMethods.removeInvalidXmlChars(elementText);

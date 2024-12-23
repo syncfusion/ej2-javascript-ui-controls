@@ -4368,3 +4368,103 @@ describe('Convert milestone to task using context menu', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1);
     });
 });
+describe('CR:927770-Work not calculated correctly on parent task, after child outdent', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/03/2019'),
+                        Duration: 1,
+                        type: 'FixedDuration',
+                        work: 8,
+                        resources: [{ resourceId: 1, resourceUnit: 100 }]
+                    },
+                    {
+                        TaskID: 2,
+                        TaskName: 'Defining the product and its usage',
+                        StartDate: new Date('04/02/2019'),
+                        Progress: 30,
+                        Duration: 1,
+                        parentID: 1,
+                        type: 'FixedWork',
+                        work: 8,
+                        resources: [{ resourceId: 1, resourceUnit: 100 },{ resourceId: 2, resourceUnit: 100 }]
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    type: 'type',
+                    dependency: 'dependency',
+                    parentID: 'parentID'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                enableContextMenu: true,
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' }
+                ],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                workUnit: 'Hour',
+                taskType: 'FixedDuration',
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll'
+                ],
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                    { field: 'StartDate', headerText: 'Start Date' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'resources', headerText: 'Resources', width: '160' },
+                    { field: 'Work', width: '110' },
+                    { field: 'Duration', width: '100' },
+                    { field: 'type', headerText: 'Task Type', width: '110' }
+                ]
+            }, done);
+    });
+    it('Checking work value before & after record Outdent action', () => {
+        expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(8);
+        expect(ganttObj.currentViewData[0].hasChildRecords).toBe(true);
+        ganttObj.selectionModule.selectRow(1);
+        let Outdent: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Outdent' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(Outdent);
+        expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(4);
+        expect(ganttObj.currentViewData[0].hasChildRecords).toBe(false);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

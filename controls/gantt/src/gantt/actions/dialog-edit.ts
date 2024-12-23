@@ -1382,7 +1382,11 @@ export class DialogEdit {
                 this.parent.setRecordValue('isMilestone', false, ganttProp, true);
             } else if (isScheduledTask(ganttProp) || !isNullOrUndefined(ganttProp.startDate)) {
                 if (ganttData.ganttProperties.isMilestone && ganttData.ganttProperties.duration !== 0) {
-                    this.parent.dateValidationModule.checkStartDate(ganttProp.startDate);
+                    const updatedStartDate: Date = this.parent.dateValidationModule.checkStartDate(ganttProp.startDate);
+                    this.parent.setRecordValue('startDate', updatedStartDate, ganttProp, true);
+                    if (this.parent.taskFields.startDate) {
+                        this.parent.dataOperation.updateMappingData(ganttData, 'startDate');
+                    }
                 }
                 this.parent.dateValidationModule.calculateEndDate(ganttData);
             } else if (!isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.endDate)) {
@@ -2700,9 +2704,6 @@ export class DialogEdit {
                 }
             });
         }
-        if (this.editedRecord.ganttProperties.taskType !== 'FixedUnit') {
-            this.parent.dataOperation.updateUnitWithWork(this.editedRecord);
-        }
     }
     private renderCustomTab(itemName: string, isCustomTab: boolean): HTMLElement {
         return this.renderGeneralTab(itemName, isCustomTab);
@@ -3328,6 +3329,17 @@ export class DialogEdit {
             this.parent.dataOperation.updateMappingData(this.rowData, 'resourceInfo');
         }
     }
+    private getMatchingPrefix(preData: IPreData, idArray: string[]): string[] {
+        const parts: string[] = preData.name.split('-');
+        let current: string = '';
+        for (let i: number = 0; i < parts.length; i++) {
+            current = current === '' ? parts[i as number] : current + '-' + parts[i as number];
+            if (idArray.indexOf(current) !== -1) {
+                return [current];
+            }
+        }
+        return [];
+    }
     private updatePredecessorTab(preElement: HTMLElement): void {
         const gridObj: Grid = <Grid>(<EJ2Instance>preElement).ej2_instances[0];
         if (gridObj.isEdit) {
@@ -3341,9 +3353,8 @@ export class DialogEdit {
         const parentRecord: IGanttData[] = [];
         for (let i: number = 0; i < dataSource.length; i++) {
             const preData: IPreData = dataSource[i as number];
-            const lastIndex: number = preData.name.lastIndexOf('-');
-            const splitString: string[] = [preData.name.substring(0, lastIndex)];
-            if (isNullOrUndefined(preData.id) || preData.id !== splitString[0]) {
+            const splitString: string[] = this.getMatchingPrefix(preData, this.parent.ids);
+            if (isNullOrUndefined(preData.id) || (preData.id !== splitString[0] && !isNullOrUndefined(splitString[0]))) {
                 preData.id = splitString[0];
             }
             if (ids.indexOf(preData.id) === -1) {

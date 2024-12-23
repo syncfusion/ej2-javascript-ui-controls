@@ -4650,11 +4650,19 @@ Remove terinal segment in initial
                 if ((!Point.isEmptyPoint(segment.point1)) || (update)) {
                     segment.point1 = { x: segment.bezierPoint1.x, y: segment.bezierPoint1.y };
                 }
+                // 927005: Segment next to the target end of the connector always resets
+                if (( tx !== 0 || ty !== 0 ) && ((seg as BezierSegment).isInternalSegment === true)) {
+                    (seg as BezierSegment).isInternalSegment = false;
+                }
             } else if (value === 'BezierTargetThumb' || (value === 'ConnectorTargetEnd' && !update && isEmptyVector(segment.vector2))) {
                 segment.bezierPoint2.x += tx;
                 segment.bezierPoint2.y += ty;
                 if ((!Point.isEmptyPoint(segment.point2)) || (update)) {
                     segment.point2 = { x: segment.bezierPoint2.x, y: segment.bezierPoint2.y };
+                }
+                // 927005: Segment next to the target end of the connector always resets
+                if (( tx !== 0 || ty !== 0 ) && ((seg as BezierSegment).isInternalSegment === true)) {
+                    (seg as BezierSegment).isInternalSegment = false;
                 }
             }
         }

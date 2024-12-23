@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.1.36 (2024-12-24)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I647911` - Now, the display text with text wrapping functions correctly when the enter action is executed in the Rich Text Editor.
+
+- `#I664650` - Now, the font color and background color picker popup works properly in the Rich Text Editor.
+
+- `#I648421` - Now, the image shows properly when pasting from a Word document by removing the non-standard v:shapes attribute from the image element.
+
+- `#I640046` - Now, images are pasted properly without becoming blurry when copy pasting from Word and then focusing outside the Rich Text Editor.
+
 ## 28.1.35 (2024-12-18)
 
 ### RichTextEditor

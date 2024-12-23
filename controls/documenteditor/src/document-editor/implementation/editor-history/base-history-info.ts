@@ -1310,6 +1310,7 @@ export class BaseHistoryInfo {
             }
         }
         if (isRelayout) {
+            this.documentHelper.contentControlCollection = [];
             this.owner.editorModule.layoutWholeDocument(true);
         }
         deletedNodes = [];

@@ -1723,6 +1723,11 @@ export class DatePicker extends Calendar implements IInput {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     super.setOverlayIndex(this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice as any);
                     this.setAriaAttributes();
+                    if (Browser.isDevice) {
+                        const dlgOverlay: any = this.createElement('div', { className: 'e-dlg-overlay'});
+                        dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
+                        this.mobilePopupWrapper.appendChild(dlgOverlay);
+                    }
                 } else {
                     this.popupObj.destroy();
                     this.popupWrapper = this.popupObj = null;
@@ -1735,11 +1740,6 @@ export class DatePicker extends Calendar implements IInput {
                 }
                 EventHandler.add(document, 'mousedown touchstart', this.documentHandler, this);
             });
-            if (Browser.isDevice) {
-                const dlgOverlay: any = this.createElement('div', { className: 'e-dlg-overlay'});
-                dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
-                this.mobilePopupWrapper.appendChild(dlgOverlay);
-            }
         }
     }
     /**

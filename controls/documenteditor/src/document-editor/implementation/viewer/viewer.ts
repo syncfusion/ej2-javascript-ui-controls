@@ -338,7 +338,7 @@ export class DocumentHelper {
     /**
      * @private
      */
-    public renderedLevelOverrides: WLevelOverride[];
+    public renderedLevelOverrides: WList[];
     /**
      * @private
      */
@@ -648,7 +648,7 @@ export class DocumentHelper {
      */
     public isBookmarkInserted: boolean = true;
     private L10n: L10n;
-
+    private isMappedContentControlUpdated: boolean = true;
     private isAutoResizeCanStart: boolean = false;
     private isRestartNumbering: boolean = false;
     private hRuler:HTMLElement;
@@ -1925,6 +1925,7 @@ export class DocumentHelper {
         this.viewer.columnLayoutArea.clear();
         this.layout.isDocumentContainsRtl = false;
         this.layout.isMultiColumnDoc = false;
+        this.isMappedContentControlUpdated = true;
         this.updateAuthorIdentity();
         for (let i: number = 0; i < this.pages.length; i++) {
             for (let j: number = 0; j < this.pages[i].bodyWidgets.length; j++) {
@@ -2553,6 +2554,9 @@ export class DocumentHelper {
         if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer || this.owner.isTableMarkerDragging) {
             return;
         }
+        if (this.isMappedContentControlUpdated) {
+            this.mapContentControls();
+        }
         event.preventDefault();
         this.isListTextSelected = false;
         let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
@@ -2825,6 +2829,23 @@ export class DocumentHelper {
             }
         }
         return false;
+    }
+    private mapContentControls(): void {
+        if (this.contentControlCollection.length > 0) {
+            for (let i = 0; i < this.contentControlCollection.length; i++) {
+                for (let j = i + 1; j < this.contentControlCollection.length; j++) {
+                    if (!isNullOrUndefined(this.contentControlCollection[i].contentControlProperties.xmlMapping) && !isNullOrUndefined(this.contentControlCollection[j].contentControlProperties.xmlMapping) &&
+                        this.contentControlCollection[i].contentControlProperties.xmlMapping.xPath === this.contentControlCollection[i].contentControlProperties.xmlMapping.xPath) {
+                        let contentControlText1 = this.owner.editor.getResultContentControlText(this.contentControlCollection[i]);
+                        let contentControlText2 = this.owner.editor.getResultContentControlText(this.contentControlCollection[j]);
+                        if (contentControlText1 === contentControlText2) {
+                            this.owner.xmlPaneModule.mappedContentControl = this.contentControlCollection[i];
+                        }
+                    }
+                }
+            }
+            this.isMappedContentControlUpdated = false;
+        }
     }
     public isInShapeBorder(floatElement: ShapeBase, cursorPoint: Point): boolean {
         if (!isNullOrUndefined(floatElement)) {

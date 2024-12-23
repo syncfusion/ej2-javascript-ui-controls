@@ -726,12 +726,8 @@ export class Edit {
             case 'FixedUnit':
                 if (resources.length === 0) {
                     return;
-                }
-                else if (isAutoSchedule && resources.length) {
-                    if ((column === 'resource')) {
-                        this.parent.dataOperation.updateWorkWithDuration(currentData);
-                    }
-                    else if (column === 'work') {
+                } else if (isAutoSchedule && resources.length) {
+                    if (column === 'resource' || column === 'work') {
                         this.parent.dataOperation.updateDurationWithWork(currentData);
                     }
                     else if (column === 'duration' || column === 'endDate') {
@@ -4206,6 +4202,7 @@ export class Edit {
                         this.deleteDragRow();
                     }
                     const recordIndex1: number = this.treeGridData.indexOf(droppedRec);
+                    this.parent.editModule.updateResourceRelatedFields(droppedRec, '');
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRec.hasChildRecords) {
                             if (this.parent.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {

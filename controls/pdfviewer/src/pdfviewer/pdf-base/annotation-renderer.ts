@@ -2250,7 +2250,7 @@ export class AnnotationRenderer {
             cropValues.x = 0;
             cropValues.y = 0;
         }
-        const pageHeight: number = page._size[1];
+        const pageHeight: number = page.size[1];
         const pointList: number[] = [];
         for (let index: number = 0; index < points.length; index++) {
             const x: number = this.convertPixelToPoint(points[parseInt(index.toString(), 10)].x) + cropValues.x;

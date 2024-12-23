@@ -250,7 +250,9 @@ export class DragAndDrop extends ActionBase {
                     rows[rows.length - 1].option !== 'Date';
                 this.isTimelineDayProcess = !this.parent.activeViewOptions.timeScale.enable || this.isHeaderRows ||
                     this.parent.currentView === 'TimelineMonth' || (rows.length > 0 && rows[rows.length - 1].option === 'Date');
-                this.isStepDragging = !this.isTimelineDayProcess && (this.actionObj.slotInterval !== this.actionObj.interval);
+                this.isAllDayDrag = !this.isTimelineDayProcess && eventObj[this.parent.eventFields.isAllDay];
+                this.isStepDragging = !this.isTimelineDayProcess && !this.isAllDayDrag &&
+                    (this.actionObj.slotInterval !== this.actionObj.interval);
                 if (this.isTimelineDayProcess) {
                     this.timelineEventModule = new TimelineEvent(this.parent, 'day');
                 } else {
@@ -321,9 +323,11 @@ export class DragAndDrop extends ActionBase {
         this.heightUptoCursorPoint = (this.heightUptoCursorPoint === 0) ?
             Math.ceil((Math.abs(this.actionObj.clone.getBoundingClientRect().top - this.actionObj.Y) / this.heightPerMinute)) *
             this.heightPerMinute : this.heightUptoCursorPoint;
-        this.isAllDayDrag = (this.parent.activeViewOptions.timeScale.enable) ?
-            this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) :
-            this.actionObj.event[this.parent.eventFields.isAllDay] as boolean;
+        if (['Day', 'Week', 'WorkWeek'].indexOf(this.parent.currentView) > -1) {
+            this.isAllDayDrag = (this.parent.activeViewOptions.timeScale.enable) ?
+                this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) :
+                this.actionObj.event[this.parent.eventFields.isAllDay] as boolean;
+        }
         if (this.isStepDragging && this.minDiff === 0) {
             this.calculateMinutesDiff(eventObj);
         }
@@ -1088,6 +1092,7 @@ export class DragAndDrop extends ActionBase {
         index = index < 0 ? 0 : index;
         let eventStart: Date = this.isHeaderRows ? new Date(this.timelineEventModule.dateRender[parseInt(index.toString(), 10)].getTime()) :
             this.parent.getDateFromElement(<HTMLElement>tr.children[parseInt(index.toString(), 10)]);
+        eventStart = this.isAllDayDrag ? util.resetTime(eventStart) : eventStart;
         if (this.isStepDragging) {
             const widthDiff: number = this.getWidthDiff(tr, index);
             if (widthDiff !== 0) {
@@ -1109,22 +1114,22 @@ export class DragAndDrop extends ActionBase {
                 eventStart = this.actionObj.start;
             }
         } else {
-            if (this.isCursorAhead || cursorDrag) {
-                const minutes: number = this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval;
+            if ((this.isCursorAhead || cursorDrag) && !this.isAllDayDrag) {
+                const minutes: number = this.isTimelineDayProcess || this.isAllDayDrag ? MINUTES_PER_DAY : this.actionObj.slotInterval;
                 eventStart.setMinutes(eventStart.getMinutes() + minutes);
                 eventStart.setMilliseconds(-(eventDuration));
                 if (eventStart.getTime() === util.resetTime(eventStart).getTime() && eventStart.getMinutes() === 0 && eventDuration === 0) {
                     eventStart.setMinutes(-minutes);
                 }
             } else {
-                eventStart.setMinutes(eventStart.getMinutes() -
-                    (this.cursorPointIndex * (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval)));
+                eventStart.setMinutes(eventStart.getMinutes() - (this.cursorPointIndex *
+                    (this.isTimelineDayProcess || this.isAllDayDrag ? MINUTES_PER_DAY : this.actionObj.slotInterval)));
             }
         }
         if (!this.isStepDragging) {
             eventStart = this.calculateIntervalTime(eventStart);
         }
-        if (this.isTimelineDayProcess) {
+        if (this.isTimelineDayProcess || this.isAllDayDrag) {
             const eventSrt: Date = eventObj[this.parent.eventFields.startTime] as Date;
             eventStart.setHours(eventSrt.getHours(), eventSrt.getMinutes(), eventSrt.getSeconds());
         }
@@ -1260,12 +1265,13 @@ export class DragAndDrop extends ActionBase {
         const td: HTMLElement = (<HTMLElement>closest(e.target as Element, '.e-work-cells'));
         if (!isNullOrUndefined(td) && !this.isMorePopupOpened) {
             let targetDate: Date = this.parent.getDateFromElement(td);
+            targetDate = this.isAllDayDrag ? util.resetTime(targetDate) : targetDate;
             if (this.isHeaderRows) {
                 const currentIndex: number = Math.floor(left / this.actionObj.cellWidth);
                 targetDate = new Date(this.timelineEventModule.dateRender[currentIndex + index].getTime());
             }
             const timeDiff: number = targetDate.getTime() - (event[this.parent.eventFields.startTime] as Date).getTime();
-            if (this.isTimelineDayProcess) {
+            if (this.isTimelineDayProcess || this.isAllDayDrag) {
                 this.cursorPointIndex = Math.abs(Math.ceil(timeDiff / (util.MS_PER_DAY)));
             } else {
                 const widthDiff: number =

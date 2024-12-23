@@ -188,7 +188,14 @@ export class EnterKeyAction {
                                 let isMediaNode: boolean = false; // To check the image audio and video node cases
                                 let isFocusedFirst: boolean = false;
                                 const parentElement: HTMLElement = this.range.startContainer.parentElement;
-                                const isPreWrapApplied: boolean = parentElement ? this.parent.contentModule.getDocument().defaultView.getComputedStyle(parentElement, null).getPropertyValue('white-space') === 'pre-wrap' : false;
+                                let isPreWrapApplied: boolean = false;
+                                let isTextWrapApplied: boolean = false;
+                                if (parentElement) {
+                                    // eslint-disable-next-line max-len
+                                    const computedStyle: CSSStyleDeclaration = this.parent.contentModule.getDocument().defaultView.getComputedStyle(parentElement);
+                                    isPreWrapApplied = computedStyle.getPropertyValue('white-space') === 'pre-wrap';
+                                    isTextWrapApplied = computedStyle.getPropertyValue('text-wrap') === 'nowrap';
+                                }
                                 if (this.range.startOffset !== 0 && this.range.endOffset !== 0 &&
                                     this.range.startContainer === this.range.endContainer && !(!isNOU(nearBlockNode.childNodes[0])
                                     && (nearBlockNode.childNodes[0].nodeName === 'IMG' || nearBlockNode.querySelectorAll('img, audio, video').length > 0))) {
@@ -198,9 +205,9 @@ export class EnterKeyAction {
                                     const isSplitTextEmpty: boolean = splitFirstText.trim().length === 0;
                                     const hasContentAfterCursor: boolean = startNodeText.slice(this.range.startOffset).trim().length !== 0;
                                     const isCursorAtStartNonPreWrap: boolean = lastCharBeforeCursor !== 160
-                                        && isSplitTextEmpty && !isPreWrapApplied;
+                                        && isSplitTextEmpty && !isPreWrapApplied && !isTextWrapApplied;
                                     const isCursorAtStartPreWrapWithContent: boolean = lastCharBeforeCursor === 32
-                                        && isPreWrapApplied && isSplitTextEmpty && hasContentAfterCursor;
+                                        && (isPreWrapApplied || isTextWrapApplied) && isSplitTextEmpty && hasContentAfterCursor;
                                     if (isCursorAtStartNonPreWrap || isCursorAtStartPreWrapWithContent) {
                                         isFocusedFirst = true;
                                     }

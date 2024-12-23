@@ -41,6 +41,7 @@ export const boldProperty: string[] = ['bold', 'b'];
 export const italicProperty: string[] = ['italic', 'i'];
 export const underlineProperty: string[] = ['underline', 'u'];
 export const underlineColorProperty: string[] = ['underlineColor', 'uc'];
+export const fontHintTypeProperty: string[] = ['fontHintType', 'fht'];
 export const baselineAlignmentProperty: string[] = ['baselineAlignment', 'ba'];
 export const strikethroughProperty: string[] = ['strikethrough', 'st'];
 export const highlightColorProperty: string[] = ['highlightColor', 'hc'];

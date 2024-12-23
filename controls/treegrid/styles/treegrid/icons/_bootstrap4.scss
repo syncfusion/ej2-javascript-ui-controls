@@ -11,11 +11,6 @@
   }
 
   .e-treegrid {
-    .e-treegridexpand::before,
-    .e-treegridcollapse::before {
-      content: '\e70b';
-    }
-
     .e-toolbar-item {
       .e-expand::before {
         content: '\e7db';
@@ -32,6 +27,14 @@
       .e-outdent::before {
         content: '\e722';
       }
+    }
+  }
+  
+  .e-treegrid,
+  .e-grid {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: '\e70b';
     }
   }
 

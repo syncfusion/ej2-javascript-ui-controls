@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 28.1.36 (2024-12-24)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I662730` - The segment next to the target end of a Bezier connector now retains user-defined adjustments when the connector is moved.
+- `#I662735` - The undo/redo functionality now restores intermediate connector segments.
+- `#I663194` - Connectors now retain their previous state after undoing runtime source and target ID changes.
+- `#I663672` - The `elementType` in the `elementDraw` event now correctly updates for `Polyline` and `Freehand` in the completed state.
+
 ## 28.1.35 (2024-12-18)
 
 ### Diagram

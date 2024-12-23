@@ -319,6 +319,15 @@ export class WParagraphFormat {
                         currentFormat = baseStyle.paragraphFormat;
                         break;
                     } else if (!isNullOrUndefined(listParaFormat) && listParaFormat.hasValue(property)) {
+                        if (baseStyle.paragraphFormat.listFormat.listLevelNumber !== this.listFormat.listLevelNumber) {
+                            const level: WListLevel = this.listFormat.listLevel;
+                            const propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
+                            if (!isNullOrUndefined(level) && !isNullOrUndefined(level.paragraphFormat.uniqueParagraphFormat) &&
+                                level.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+                                currentFormat = level.paragraphFormat;
+                                break;
+                            }
+                        }
                         currentFormat = listParaFormat;
                         break;
                     } else {

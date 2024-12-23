@@ -2661,6 +2661,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     addClass([this.inputWrapper.container], FOCUS);
                     EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
                     this.setOverlayIndex(this.mobileTimePopupWrap, this.popupObj.element, this.modal, Browser.isDevice as any);
+                    if (Browser.isDevice) {
+                        const dlgOverlay: HTMLElement = this.createElement('div', { className: 'e-dlg-overlay'});
+                        dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
+                        this.mobileTimePopupWrap.appendChild(dlgOverlay);
+                    }
                 } else {
                     this.popupObj.destroy();
                     this.popupWrapper = this.listTag = undefined;
@@ -2668,11 +2673,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.popupObj = null;
                 }
             });
-            if (Browser.isDevice) {
-                const dlgOverlay: HTMLElement = this.createElement('div', { className: 'e-dlg-overlay'});
-                dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
-                this.mobileTimePopupWrap.appendChild(dlgOverlay);
-            }
         }
     }
     /* eslint-enable valid-jsdoc, jsdoc/require-param */

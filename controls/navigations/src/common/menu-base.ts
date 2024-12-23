@@ -613,6 +613,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.delegateMouseDownHandler = this.mouseDownHandler.bind(this);
             EventHandler.add(this.isMenu ? document : wrapper, 'mouseover', this.delegateMoverHandler, this);
             EventHandler.add(document, 'mousedown', this.delegateMouseDownHandler, this);
+            EventHandler.add(document, 'keydown', this.domKeyHandler, this);
             if (!this.isMenu && !this.target) {
                 EventHandler.add(document, 'scroll', this.scrollHandler, this);
             }
@@ -655,6 +656,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (e.target && ((e.target as Element).classList.contains('e-contextmenu') || (e.target as Element).classList.contains('e-menu-item'))) {
                 e.preventDefault();
             }
+        }
+    }
+
+    private domKeyHandler(e: KeyboardEventArgs): void {
+        if (e.keyCode === 27) {
+            e.action = ESCAPE;
+            this.leftEscKeyHandler(e);
         }
     }
 
@@ -720,9 +728,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             } else {
                 this.rightEnterKeyHandler(e);
             }
-            break;
-        case ESCAPE:
-            this.leftEscKeyHandler(e);
             break;
         }
         if (actionNeeded) {
@@ -1244,6 +1249,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         const eventArgs: BeforeOpenCloseMenuEventArgs = {
             element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left, showSubMenuOn: 'Auto' };
         const menuType: string = type;
+        let observedElement: HTMLElement;
         this.trigger('beforeOpen', eventArgs, (observedOpenArgs: BeforeOpenCloseMenuEventArgs) => {
             switch (menuType) {
             case 'menu':
@@ -1287,6 +1293,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             case 'none':
                 this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;
                 this.isContextMenuClosed = true;
+                observedElement = observedOpenArgs.element;
+                if (this.enableScrolling && this.isCMenu && observedElement && observedElement.parentElement) {
+                    observedElement.style.height = observedElement.parentElement.style.height;
+                }
                 break;
             case 'hamburger':
                 if (!observedOpenArgs.cancel) {
@@ -1448,6 +1458,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         }
         this.toggleVisiblity(ul, false);
+        if (this.isCMenu && this.enableScrolling && ul) {
+            ul.style.height = '';
+        }
         const wrapper: HTMLElement = closest(this.element, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement;
         if (!this.isMenu && this.enableScrolling && ul && wrapper && wrapper.offsetHeight > 0) {
             const menuVScroll: Element = closest(ul, '.e-menu-vscroll');
@@ -2138,6 +2151,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (!Browser.isDevice) {
             EventHandler.remove(this.isMenu ? document : wrapper, 'mouseover', this.delegateMoverHandler);
             EventHandler.remove(document, 'mousedown', this.delegateMouseDownHandler);
+            EventHandler.remove(document, 'keydown', this.domKeyHandler);
             if (!this.isMenu && !this.target) {
                 EventHandler.remove(document, 'scroll', this.scrollHandler);
             }
@@ -2293,7 +2307,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         level = isCallBack ? level + 1 : 0;
         for (let i: number = 0, len: number = items.length; i < len; i++) {
             item = items[i as number];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const currentField: any = isUniqueId ? (<obj>item)[this.getField('itemId', level)] : (<obj>item)[this.getField('text', level)];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const itemId: string = (item.htmlAttributes && 'id' in item.htmlAttributes) ? (item.htmlAttributes as Record<string, any>).id : currentField;
             if (itemId === data) {
                 nIndex.push(i);

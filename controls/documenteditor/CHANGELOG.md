@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 28.1.36 (2024-12-24)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I664697` - Implemented image cropping for metafile images in the Document Editor.
+- `#I662670` - Fixed the navigation pane issue where it moved to the start position when clicking sub-level headings. The selected heading is now properly highlighted.
+- `#I653747` - Resolved the font family rendering issue for special characters when the `FontHintType` property is applied in the character format.
+- `#I658305` - Corrected the updating of ordered list numbers when the list includes level overrides.
+- `#I662705` - The `setDefaultCharacterFormat` API now functions correctly in the Document Editor.
+- `#I652850` - Fixed cursor position updates and keyboard navigation issues for content controls in the Document Editor.
+- `#I668350` - Addressed the bullet list symbol rendering issue in exported DOCX documents after inserting a bullet list in the Document Editor.
+- `#I662244` - Resolved the track changes inconsistency issue in collaborative mode.
+- `#I660426` - Fixed the undo issue that occurred after merging table cells.
+- `#I661535` - Resolved the issue of span elements being present in comment data.
+
 ## 28.1.35 (2024-12-18)
 
 ### DocumentEditor

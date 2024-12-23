@@ -1,0 +1,39 @@
+@mixin bigger-header-style {
+  font-size: $panel-bigger-header-font-size;
+  font-weight: $panel-bigger-header-font-weight;
+  height: $panel-bigger-header-height;
+  padding: $panel-bigger-header-padding;
+  @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3') {
+    line-height: $panel-bigger-header-line-height;
+  }
+}
+
+@include export-module('dashboardlayout-bigger') {
+  .e-bigger {
+    .e-dashboardlayout.e-control {
+      & .e-panel {
+        & .e-panel-header {
+          @include bigger-header-style;
+        }
+
+        & .e-panel-content {
+          @if $skin-name == 'tailwind' {
+            padding: $panel-bigger-content-padding;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger {
+    & .e-panel-header {
+      color: $panel-bigger-header-color;
+    }
+  }
+
+  .e-bigger {
+    & .e-panel-header {
+      @include bigger-header-style;
+    }
+  }
+}

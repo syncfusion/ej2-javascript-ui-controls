@@ -498,4 +498,39 @@ describe('Column freeze render module', () => {
             destroy(gridObj as any);
         });
     });
+
+
+    describe('EJ2-928093 - Frozen columns with column virtualization causes blank space', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    width: 600,
+                    height: 400,
+                    frozenColumns: 3,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', width: 120, isPrimaryKey: true },
+                        { headerText: 'CustomerID', width: 150, },
+                        { field: 'Freight', format: 'C2', width: 130, textAlign: 'Right' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 130 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 150 },
+                    ]
+                }, done);
+        });
+        it('Scroll the Right position ', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollLeft = 200;
+            setTimeout(done, 200);
+        });
+        it('Ensure 1st cell sticky position ', () => {
+            expect((gridObj.getRows()[0] as any).cells[0].style.left).toBe('0px');
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj as any);
+        });
+    });
 });

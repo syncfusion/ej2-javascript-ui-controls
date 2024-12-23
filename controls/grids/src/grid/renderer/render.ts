@@ -166,15 +166,6 @@ export class Render {
                     gObj.pagerModule.pagerObj.totalRecordsCount = count;
                 }
             }
-            if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.allowFiltering && gObj.pagerModule.pagerObj.isAllPage &&
-                typeof gObj.pageSettings.pageSizes === 'object' && gObj.pageSettings.pageSizes.indexOf('All') === -1 &&
-                    (args.action === 'clear-filter' || args.action === 'clearFilter' || args.action === 'filter' ||
-                        gObj.filterModule.isClearFiltering)) {
-                gObj.pagerModule.pagerObj.isAllPage = false;
-            }
-            if (gObj.filterModule) {
-                gObj.filterModule.isClearFiltering = false;
-            }
             if (args.requestType === 'reorder' && this.parent.dataSource && 'result' in this.parent.dataSource ) {
                 this.contentRenderer.refreshContentRows(args);
             } else if ((args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')

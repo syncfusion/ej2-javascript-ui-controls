@@ -241,7 +241,7 @@ export class TimelineViews extends VerticalView {
     public getContentRows(): Element[] {
         const rows: Element[] = [];
         const tr: Element = createElement('tr');
-        const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
+        const td: Element = createElement('td');
         const trCount: number = this.getRowCount();
         const existingGroupIndices: number[] = this.getGroupIndices();
         for (let i: number = 0; i < trCount; i++) {

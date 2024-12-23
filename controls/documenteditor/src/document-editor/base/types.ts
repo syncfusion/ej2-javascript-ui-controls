@@ -1696,20 +1696,14 @@ export enum FontScriptType {
     Arabic = 4,
     Hebrew = 5,
     Japanese = 6,
-    Thai = 7
+    Thai = 7,
+    SpecialCharacter = 8
     //To-Do : Should add a enum field for other known scripts. Such as Tamil, Malayalam, Telugu, etc.
 }
 /**
  * @private
  */
-export enum FontHintType {
-    //0x00 - default
-    Default = 0,
-    //0x01 - eastAsia
-    EastAsia = 1,
-    //0x02 - cs
-    CS = 2
-}
+export type FontHintType = 'Default' | 'EastAsia' | 'CS';
 /**
  * Specifies the server action types.
  */

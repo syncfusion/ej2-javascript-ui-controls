@@ -964,6 +964,9 @@ export class TextPosition {
         } else if (inline instanceof CommentCharacterElementBox) {
 
             this.getNextWordOffsetComment(inline as CommentCharacterElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
+        } else if (inline instanceof ContentControl) {
+
+            this.getNextWordOffsetContentControl(inline as ContentControl, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
         }
     }
 
@@ -1116,6 +1119,13 @@ export class TextPosition {
         }
     }
 
+    private getNextWordOffsetContentControl(contentControl: ElementBox, indexInInline: number, type: number, isInField: boolean, endSelection: boolean, endPosition: TextPosition, excludeSpace: boolean): void {
+        if (!isNullOrUndefined(contentControl.nextNode)) {
+            this.getNextWordOffset(contentControl.nextNode, 0, type, isInField, endSelection, endPosition, excludeSpace);
+        } else {
+            endPosition.setPositionParagraph(contentControl.line, contentControl.line.getEndOffset());
+        }
+    }
 
     private getNextWordOffsetFieldEnd(fieldEnd: FieldElementBox, indexInInline: number, type: number, isInField: boolean, endSelection: boolean, endPosition: TextPosition, excludeSpace: boolean): void {
         const startOffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
@@ -1162,6 +1172,9 @@ export class TextPosition {
         } else if (inline instanceof CommentCharacterElementBox) {
 
             this.getPreviousWordOffsetComment(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
+        } else if (inline instanceof ContentControl) {
+
+            this.getPreviousWordOffsetContentControl(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
         }
     }
 
@@ -1231,6 +1244,14 @@ export class TextPosition {
             }
         } else {
             endPosition.setPositionParagraph(comment.line, selection.getStartLineOffset(comment.line));
+        }
+    }
+
+    private getPreviousWordOffsetContentControl(contentControl: ElementBox, selection: Selection, indexInInline: number, type: number, isInField: boolean, isStarted: boolean, endSelection: boolean, endPosition: TextPosition): void {
+        if (contentControl.previousNode) {
+            this.getPreviousWordOffset(contentControl.previousNode, selection, contentControl.previousNode.length, type, isInField, isStarted, endSelection, endPosition);
+        } else {
+            endPosition.setPositionParagraph(contentControl.line, selection.getStartLineOffset(contentControl.line));
         }
     }
 
@@ -1729,7 +1750,7 @@ export class TextPosition {
             }
         } else if (!isNullOrUndefined(firstElement)) {
             let indexInInline: number = 0;
-            indexInInline += firstElement instanceof ContentControl ? (firstElement as ContentControl).length: 0;
+            indexInInline += (firstElement instanceof ContentControl && selection.isHomeEnd) ? (firstElement as ContentControl).length : 0;
             this.currentWidget = firstElement.line;
             this.offset = this.currentWidget.getOffset(firstElement, indexInInline);
 
@@ -1912,7 +1933,7 @@ export class TextPosition {
                 }
             }
             let index: number = 0;
-            index += lastElement instanceof TextElementBox ? (lastElement as TextElementBox).length : lastElement instanceof ContentControl ? 0: 1;
+            index += lastElement instanceof TextElementBox ? (lastElement as TextElementBox).length : (lastElement instanceof ContentControl && selection.isHomeEnd) ? 0 : 1;
             this.currentWidget = lastElement.line;
             if (index === lastElement.length
                 && isNullOrUndefined(lastElement.nextNode) && selection.isParagraphLastLine(this.currentWidget)) {

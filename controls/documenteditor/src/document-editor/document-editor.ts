@@ -3437,9 +3437,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
                 const incrementalOps: Record<string, ActionInfo[]> = {};
+                const sections: BodyWidget[] = this.parser.convertJsonToDocument(sfdtText as string, incrementalOps);
                 this.documentHelper.setDefaultDocumentFormat();
-                this.documentHelper.onDocumentChanged(
-                    this.parser.convertJsonToDocument(sfdtText as string, incrementalOps), incrementalOps);
+                this.documentHelper.onDocumentChanged(sections, incrementalOps);
             }
             if (this.isSpellCheck) {
                 if (this.isSpellCheck && !this.spellCheckerModule.enableOptimizedSpellCheck) {

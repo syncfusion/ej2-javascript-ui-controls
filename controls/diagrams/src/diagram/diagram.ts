@@ -1802,12 +1802,40 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 const index: number = Number(key);
                                 const actualObject: Connector = this.connectors[parseInt(index.toString(), 10)] as Connector;
                                 const changedProp: Connector = newProp.connectors[parseInt(index.toString(), 10)] as Connector;
+                                // 927220: Improper Connector State After Undo When Connecting via Button
+                                const changedPoints: any = {
+                                    sourcePoint: {x:actualObject.sourcePoint.x,y:actualObject.sourcePoint.y},
+                                    targetPoint: {x:actualObject.targetPoint.x,y:actualObject.targetPoint.y}
+                                };
                                 if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
                                     this.diagramActions |= DiagramAction.DecoratorPropertyChange;
                                 }
                                 this.connectorPropertyChange(actualObject,
                                                              oldProp.connectors[parseInt(index.toString(), 10)] as Connector,
                                                              changedProp, true, true);
+                                // 927220: Improper Connector State After Undo When Connecting via Button
+                                if (newProp.connectors[parseInt(index.toString(), 10)].sourceID &&
+                                !newProp.connectors[parseInt(index.toString(), 10)].sourcePoint) {
+                                    oldProp.connectors[parseInt(index.toString(), 10)].sourcePoint = {
+                                        x:changedPoints.sourcePoint.x,
+                                        y:changedPoints.sourcePoint.y
+                                    };
+                                    newProp.connectors[parseInt(index.toString(), 10)].sourcePoint = {
+                                        x:actualObject.sourcePoint.x,
+                                        y:actualObject.sourcePoint.y
+                                    };
+                                }
+                                if (newProp.connectors[parseInt(index.toString(), 10)].targetID &&
+                                !newProp.connectors[parseInt(index.toString(), 10)].targetPoint) {
+                                    oldProp.connectors[parseInt(index.toString(), 10)].targetPoint = {
+                                        x:changedPoints.targetPoint.x,
+                                        y:changedPoints.targetPoint.y
+                                    };
+                                    newProp.connectors[parseInt(index.toString(), 10)].targetPoint = {
+                                        x:actualObject.targetPoint.x,
+                                        y:actualObject.targetPoint.y
+                                    };
+                                }
                                 if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
                                     this.diagramActions = this.diagramActions & ~DiagramAction.DecoratorPropertyChange;
                                 }

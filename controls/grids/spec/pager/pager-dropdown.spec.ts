@@ -138,7 +138,7 @@ describe('Pagerdropdown module', () => {
             let created: EmitType<Object> = () => { done(); };
             document.body.appendChild(elem);
             pagerObj = new Pager({
-                totalRecordsCount: 103, currentPage: 8, pageCount: 5, pageSizes: [10, 30, 40, 50], created: created,
+                totalRecordsCount: 103, currentPage: 8, pageCount: 5, pageSizes: ['All', 10, 30, 40, 50], created: created,
                 dropDownChanged: dropDownChanged
             });
             pagerObj.appendTo('#Pager');

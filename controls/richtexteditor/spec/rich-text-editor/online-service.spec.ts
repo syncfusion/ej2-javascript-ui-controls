@@ -30,29 +30,30 @@ export function getImageBlob(): Blob {
     const blob: Blob = new Blob([byteArray], { type: 'image/png' });
     return blob;
 }
+async function checkServiceStatus() {
+    try {
+        const response = await fetch(hostURL + 'api/Test');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.text();
+        return data === '["value1","value2"]';
+    } catch (error) {
+        console.error('There was a problem with the service.   ' + hostURL + ' responded with error.');
+        return false;
+    }
+}
 
 describe('Test case with online service', () => {
-    let isOnline: boolean = false;
-    beforeEach(async () => {
-        try {
-            const response = await fetch(hostURL + 'api/Test');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.text();
-            isOnline = data === '["value1","value2"]';
-        } catch (error) {
-            console.error('There was a problem with the service. Image Service status offline.');
-            isOnline = false;
-        }
-    });
-    xdescribe('901364 - After image delete is called multiple times when the CTRL + A is pressed multiple times.', ()=> {
+    describe('901364 - After image delete is called multiple times when the CTRL + A is pressed multiple times.', ()=> {
         let editor: RichTextEditor;
         let imageSuccess: boolean = false;
         let imageRemove: boolean = false;
         let imageRemoveEvent: boolean  = false;
         let imageBeforeUpload: boolean = false;
-        beforeEach((done: DoneFn) => {
+        let isServerOnline: boolean = false;
+        beforeEach(async (done: DoneFn) => {
+            isServerOnline= await checkServiceStatus();
             editor = renderRTE({
                 insertImageSettings: {
                     saveUrl: hostURL + 'api/RichTextEditor/SaveFile',
@@ -89,13 +90,16 @@ describe('Test case with online service', () => {
                 const dataTransfer: DataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 inputElem.files = dataTransfer.files;
-                inputElem.dispatchEvent(new Event('change', {
-                    bubbles: true,
-                    cancelable: true,
-                    composed: true,
-                    view: window
-                } as EventInit));
-                if (isOnline) {
+                if (!isServerOnline) {
+                    console.warn('The service is offline. So, the test case is skipped.');
+                    done();
+                } else {
+                    inputElem.dispatchEvent(new Event('change', {
+                        bubbles: true,
+                        cancelable: true,
+                        composed: true,
+                        view: window
+                    } as EventInit));
                     setTimeout(() => {
                         (dialogElem.querySelector('.e-insertImage') as HTMLElement).click();
                         setTimeout(() => {
@@ -106,10 +110,7 @@ describe('Test case with online service', () => {
                             expect(editor.inputElement.querySelectorAll('img').length).toBe(1);
                             done();
                         }, 100);
-                    }, 2000);
-                } else {
-                    console.warn('The service is offline. So, the test case is skipped.');
-                    done();
+                    }, 1000);
                 }
             }, 100);
         });
@@ -124,13 +125,16 @@ describe('Test case with online service', () => {
                 const dataTransfer: DataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 inputElem.files = dataTransfer.files;
-                inputElem.dispatchEvent(new Event('change', {
-                    bubbles: true,
-                    cancelable: true,
-                    composed: true,
-                    view: window
-                } as EventInit));
-                if (isOnline) {
+                if (!isServerOnline) {
+                    console.warn('The service is offline. So, the test case is skipped.');
+                    done();
+                } else {
+                    inputElem.dispatchEvent(new Event('change', {
+                        bubbles: true,
+                        cancelable: true,
+                        composed: true,
+                        view: window
+                    } as EventInit));
                     setTimeout(() => {
                         (dialogElem.querySelector('.e-cancel') as HTMLElement).click();
                         setTimeout(() => {
@@ -139,18 +143,17 @@ describe('Test case with online service', () => {
                             expect(editor.inputElement.querySelectorAll('img').length).toBe(0);
                             done();
                         }, 100);
-                    }, 100);
-                } else {
-                    console.warn('The service is offline. So, the test case is skipped.');
-                    done();
+                    }, 1000);
                 }
             }, 100);
         });
     });
 
-    xdescribe('908236: Web URL is disabled and not able to enter URL after uploading and deleting the image in Insert image pop up.', () => {
+    describe('908236: Web URL is disabled and not able to enter URL after uploading and deleting the image in Insert image pop up.', () => {
         let editor: RichTextEditor;
-        beforeAll((done: Function) => {
+        let isServerOnline: boolean = false;
+        beforeAll(async (done: Function) => {
+            isServerOnline = await checkServiceStatus();
             editor = renderRTE({
                 insertImageSettings: {
                     saveUrl: hostURL + 'api/RichTextEditor/SaveFile',
@@ -176,13 +179,16 @@ describe('Test case with online service', () => {
                 dataTransfer.items.add(file);
                 const inputElem: HTMLInputElement = dialogElem.querySelector('input.e-uploader');
                 inputElem.files = dataTransfer.files;
-                inputElem.dispatchEvent(new Event('change', {
-                    bubbles: true,
-                    cancelable: true,
-                    composed: true,
-                    view: window
-                } as EventInit));
-                if (isOnline) {
+                if (!isServerOnline) {
+                    console.warn('The service is offline. So, the test case is skipped.');
+                    done();
+                } else {
+                    inputElem.dispatchEvent(new Event('change', {
+                        bubbles: true,
+                        cancelable: true,
+                        composed: true,
+                        view: window
+                    } as EventInit));
                     setTimeout(() => {
                         expect((editor.element.querySelector('.e-img-url') as HTMLInputElement).disabled).toBe(true);
                         (editor.element.querySelector('.e-file-delete-btn') as HTMLElement).click();
@@ -190,10 +196,7 @@ describe('Test case with online service', () => {
                             expect((editor.element.querySelector('.e-img-url') as HTMLInputElement).disabled).toBe(false);
                             done();
                         }, 100);
-                    }, 2000);
-                } else {
-                    console.warn('The service is offline. So, the test case is skipped.');
-                    done();
+                    }, 1000);
                 }
             }, 100);
         });
@@ -202,7 +205,9 @@ describe('Test case with online service', () => {
     describe('882579 - Pasted Blob images are not uploaded to the server in RichTextEditor', () => {
         let editor: RichTextEditor;
         const content: string = '\n\n\x3C!--StartFragment--><img src="" class="e-rte-image e-imginline" alt="QuickFormatToolbarImage" width="auto" height="auto" style="box-sizing: border-box; border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 946px; position: relative; padding: 1px; z-index: 1000; color: rgb(33, 37, 41); font-family: system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, arial, &quot;Noto Sans&quot;, &quot;Liberation Sans&quot;, sans-serif, &quot;apple color emoji&quot;, &quot;Segoe UI emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Noto color emoji&quot;; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; min-width: 0px; min-height: 0px;">\x3C!--EndFragment-->\n\n'
-        beforeAll(() => {
+        let isServerOnline: boolean = false;
+        beforeAll(async (done: DoneFn) => {
+            isServerOnline = await checkServiceStatus();
             editor = renderRTE({
                 pasteCleanupSettings: {
                     keepFormat: true
@@ -212,6 +217,7 @@ describe('Test case with online service', () => {
                     path: "../Images/"
                 },
             });
+            done();
         });
 
         afterAll(() => {
@@ -226,20 +232,27 @@ describe('Test case with online service', () => {
             imgElement.src = blobURL;
             const dataTransfer = new DataTransfer();
             dataTransfer.setData('text/html', contenElem.innerHTML);
-            const pasteEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
-            editor.inputElement.dispatchEvent(pasteEvent);
-            setTimeout(() => {
-                expect(editor.inputElement.querySelector('img').src.includes('base64')).toBe(true);
-                URL.revokeObjectURL(blobURL);
+            if (!isServerOnline) {
+                console.warn('The service is offline. So, the test case is skipped.');
                 done();
-            }, 50);
+            } else {
+                const pasteEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+                editor.inputElement.dispatchEvent(pasteEvent);
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelector('img').src.includes('base64')).toBe(true);
+                    URL.revokeObjectURL(blobURL);
+                    done();
+                }, 50);
+            }
         });
     });
 
     describe('882579 - Pasted Blob images are not uploaded to the server in RichTextEditor', () => {
         let editor: RichTextEditor;
+        let isServerOnline: boolean = false;
         const content: string = '\n\n\x3C!--StartFragment--><img src="" class="e-rte-image e-imginline" alt="QuickFormatToolbarImage" width="auto" height="auto" style="box-sizing: border-box; border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 946px; position: relative; padding: 1px; z-index: 1000; color: rgb(33, 37, 41); font-family: system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, arial, &quot;Noto Sans&quot;, &quot;Liberation Sans&quot;, sans-serif, &quot;apple color emoji&quot;, &quot;Segoe UI emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Noto color emoji&quot;; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; min-width: 0px; min-height: 0px;">\x3C!--EndFragment-->\n\n'
-        beforeAll(() => {
+        beforeAll(async (done: DoneFn) => {
+            isServerOnline = await checkServiceStatus();
             editor = renderRTE({
                 pasteCleanupSettings: {
                     keepFormat: true
@@ -252,6 +265,7 @@ describe('Test case with online service', () => {
                     enable: true
                 }
             });
+            done();
         });
 
         afterAll(() => {
@@ -266,13 +280,18 @@ describe('Test case with online service', () => {
             imgElement.src = blobURL;
             const dataTransfer = new DataTransfer();
             dataTransfer.setData('text/html', contenElem.innerHTML);
-            const pasteEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
-            editor.inputElement.dispatchEvent(pasteEvent);
-            setTimeout(() => {
-                expect(editor.inputElement.querySelector('img').src.includes('base64')).toBe(true);
-                URL.revokeObjectURL(blobURL);
+            if (!isServerOnline) {
+                console.warn('The service is offline. So, the test case is skipped.');
                 done();
-            }, 50);
+            } else {
+                const pasteEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+                editor.inputElement.dispatchEvent(pasteEvent);
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelector('img').src.includes('base64')).toBe(true);
+                    URL.revokeObjectURL(blobURL);
+                    done();
+                }, 50);
+            }
         });
     });
 });

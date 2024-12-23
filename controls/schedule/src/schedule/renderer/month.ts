@@ -487,7 +487,7 @@ export class Month extends ViewBase implements IRenderer {
     public getContentRows(): Element[] {
         const trows: Element[] = [];
         const tr: Element = createElement('tr');
-        const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
+        const td: Element = createElement('td');
         const slotDatas: TdData[][] = this.getContentSlots();
         const isTimeline: boolean = this.parent.currentView === 'TimelineMonth';
         const existingGroupIndices: number[] = isTimeline ? this.getGroupIndices() : [];

@@ -3822,4 +3822,41 @@ describe('coverage improvemnet.', () => {
             destroy(gridObj);
         });
     });
+    
+    describe('925868 - Checkbox Filter Dialog Gets Cut Off When Rendering Grid Inside Accordion Component with filter.type Set as CheckBox and filterSettings.type Set as Menu =>', () => {
+        let gridObj: Grid;
+        let checkBoxFilter: Element;
+        let actionComplete: (e?: any) => void;
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: fdata.slice(0, 3),
+                allowFiltering: true,
+                filterSettings: {
+                    type: "Menu"
+                },
+                columns: [
+                    { field: 'OrderID', width: 120 },
+                    { field: 'ShipCity', width: 120, filter: { type: 'CheckBox' } },
+                    { field: 'Verified', width: 120 },
+                ],
+                actionComplete: actionComplete,
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('open filter menu filtering', (done: Function) => {
+            actionComplete = (e: any) => {
+                checkBoxFilter = document.querySelector('.e-checkboxfilter');
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        }); 
+
+        afterAll((done) => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
 });

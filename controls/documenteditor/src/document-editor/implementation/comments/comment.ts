@@ -1244,7 +1244,7 @@ export class CommentView {
     }
 
     private postReply(): void {
-        const replyText: string = (this.replyViewTextBox.innerHTML);
+        const replyText: string = (this.replyViewTextBox.innerText);
         this.cancelReply();
         this.updateReplyTextAreaHeight();
         this.owner.editorModule.replyComment(this.comment, replyText, this.itemData);

@@ -2012,6 +2012,31 @@ describe('Hierarchial data filter testing', () => {
                     done();
                 }, 350);
             }, 350);
+        });
+        it('filtering class name with preventDefaultAction', (done) => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { loadOnDemand: true },
+                showCheckBox: true,
+                showSelectAll: true,
+                filtering : (args:DdtFilteringEventArgs)=>{
+                    args.preventDefaultAction = true;
+                    args.fields.dataSource = filteredhierarchicalData3;
+                },
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'j';
+            filterObj.value = 'j';
+            let eventArgs: any = { value: 'j', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.classList.contains('e-filtering')).toBe(true);
+                done();
+            },350);
         });  
     });
 });

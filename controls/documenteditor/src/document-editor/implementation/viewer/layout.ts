@@ -5733,9 +5733,9 @@ export class Layout {
         let listLevel: WListLevel = this.getListLevel(list, listFormat.listLevelNumber);
         let levelOverride: WLevelOverride = !isNullOrUndefined(list.levelOverrides) ? list.levelOverrides[levelNumber] as WLevelOverride : undefined;
         // If LevelOverride exists and have either override list level or StartAtOverride, then only list numbering will be restarted.
-        if (!isNullOrUndefined(levelOverride) && this.documentHelper.renderedLevelOverrides.indexOf(levelOverride) === -1 && isNullOrUndefined(levelOverride.overrideListLevel)) {
+        if (!isNullOrUndefined(levelOverride) && this.documentHelper.renderedLevelOverrides.indexOf(list) === -1 && isNullOrUndefined(levelOverride.overrideListLevel)) {
             //Add List Override style
-            this.documentHelper.renderedLevelOverrides.push(levelOverride);
+            this.documentHelper.renderedLevelOverrides.push(list);
             let abstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
             if (this.documentHelper.renderedLists.containsKey(abstractList)) {
                 let levels: Dictionary<number, number> = this.documentHelper.renderedLists.get(abstractList);
@@ -9274,7 +9274,7 @@ export class Layout {
 
     /* eslint-disable-next-line max-len */
     public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
-        if(this.isReplaceAll) {
+        if (this.isReplaceAll || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout)) {
             return;
         }
         this.isRelayout = true;
@@ -9409,6 +9409,9 @@ export class Layout {
     }
 
     public reLayoutTable(block: BlockWidget, isFootnoteReLayout?: boolean): void {
+        if (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout) {
+            return;
+        }
         //Get Top level owner of block
         const table: TableWidget = this.getParentTable(block);
         if (table.header) {
@@ -9580,11 +9583,14 @@ export class Layout {
 
     /* eslint-disable-next-line max-len */
     public layoutBodyWidgetCollection(blockIndex: number, bodyWidget: Widget, block: BlockWidget, shiftNextWidget: boolean, isSkipShifting?: boolean, isSelectionInsideTable?: boolean): void {
-        if (!isNullOrUndefined(block) && block.isFieldCodeBlock) {
+        if ((!isNullOrUndefined(block) && block.isFieldCodeBlock)) {
             return;
         }
         if (!isNullOrUndefined(this.documentHelper.owner)
             && this.documentHelper.owner.isLayoutEnabled) {
+            if (this.viewer.owner.editorModule && this.viewer.owner.editor.restrictLayout) {
+                return;
+            }
             if (bodyWidget instanceof BlockContainer || bodyWidget instanceof TextFrame) {
                 let curretBlock: BlockWidget = this.checkAndGetBlock(bodyWidget, blockIndex);
                 if (bodyWidget instanceof BodyWidget && isNullOrUndefined(curretBlock) && !isNullOrUndefined(bodyWidget.nextRenderedWidget) && (bodyWidget.nextRenderedWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak' ) {
@@ -10395,7 +10401,7 @@ export class Layout {
     //#region Shifting
 
     public shiftLayoutedItems(reLayout: boolean, isMultiColumnShift?: boolean): void {
-        if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget)) {
+        if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget) || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout)) {
             this.documentHelper.blockToShift = undefined;
             this.checkAndShiftEndnote();
             if (!reLayout) {

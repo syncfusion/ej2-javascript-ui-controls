@@ -82,6 +82,8 @@ export function PdfiumRunner(): void {
         (FPDF as any).GetCharBox = PDFiumModule.cwrap('FPDFText_GetCharBox', 'number', ['number', 'number', 'number', 'number', 'number']);
         (FPDF as any).GetPageRotation = PDFiumModule.cwrap('FPDFPage_GetRotation', 'number', ['number']);
         (FPDF as any).GetCharAngle = PDFiumModule.cwrap('FPDFText_GetCharAngle', 'number', ['number']);
+        (FPDF as any).GetPageHeight = PDFiumModule.cwrap('FPDF_GetPageHeight', 'number', ['number']);
+        (FPDF as any).GetPageWidth = PDFiumModule.cwrap('FPDF_GetPageWidth', 'number', ['number']);
         (pdfiumWindow as any).heap = (J: any, s: number) => {
             let E: any;
             switch (J) {
@@ -1016,7 +1018,12 @@ export function PdfiumRunner(): void {
         public render(n: number = 0, message: any, zoomFactor: number, isTextNeed: boolean, printScaleFactor: any,
                       printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean,
                       cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
-            const [w, h] = this.getPageSize(n);
+            let [w, h] = this.getPageSize(n);
+            if (w !== null && w !== undefined && h !== undefined && h !== null) {
+                const page: any = FPDF.LoadPage(this.wasmData.wasm, n);
+                h = FPDF.GetPageHeight(page);
+                w = FPDF.GetPageWidth(page);
+            }
             const scaleFactor: number = 1.5;
             const thumbnailWidth: number = 99.7;
             const thumbnailHeight: number = 141;

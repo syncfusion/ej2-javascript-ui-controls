@@ -3633,9 +3633,6 @@ export class DateRangePicker extends CalendarBase {
 
         if (this.isMobile) {
             this.popupObj.element.classList.add(DEVICE);
-            if (!this.isMobile) {
-                this.popupObj.element.classList.add('e-bigger');
-            }
         }
         if (this.isMobile && this.isCustomWindow) {
             addClass([this.modal], [DEVICE, ROOT, 'e-range-modal']);
@@ -4556,13 +4553,13 @@ export class DateRangePicker extends CalendarBase {
                             this.popupObj.element,
                             this.modal,
                             this.isMobile || Browser.isDevice);
+                        if (Browser.isDevice) {
+                            const dlgOverlay: HTMLElement = this.createElement('div', { className: 'e-dlg-overlay' });
+                            dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
+                            this.mobileRangePopupWrap.appendChild(dlgOverlay);
+                        }
                     }
                 });
-                if (Browser.isDevice) {
-                    const dlgOverlay: HTMLElement = this.createElement('div', { className: 'e-dlg-overlay'});
-                    dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
-                    this.mobileRangePopupWrap.appendChild(dlgOverlay);
-                }
             }
         }
     }

@@ -338,7 +338,6 @@ export class XmlPane {
                         this.getXmlPath();
                     }
                     this.documentHelper.owner.selection.selectContentInternal(contentControl);
-                    contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
                     this.mappedContentControl = contentControl;
                     if (contentControl.contentControlProperties.type !== 'CheckBox') {
                         this.insertContent();
@@ -408,12 +407,6 @@ export class XmlPane {
                     break;
             }
         }
-        contentControl = this.documentHelper.owner.editor.getContentControl();
-        if (!isNullOrUndefined(this.mappedContentControl)) {
-            if (contentControl.contentControlProperties.xmlMapping.xPath === this.mappedContentControl.contentControlProperties.xmlMapping.xPath) {
-                contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
-            }
-        }
     }
     /**
     * To insert Content inside the content control.
@@ -441,17 +434,15 @@ export class XmlPane {
             this.updateCheckBoxContentControl(updatedText, xpath);
         }
         else {
-            this.updateXMLData(updatedText);
+            if (this.documentHelper.owner.xmlPaneModule.isXmlPaneShow) {
+                this.updateXMLData(updatedText);
+            }
             const start = this.documentHelper.selection.start.clone();
             const end = this.documentHelper.selection.end.clone();
             for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
                 let contentControl = this.documentHelper.contentControlCollection[i];
                 if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type !== 'CheckBox') {
-                    contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
                     this.updateContentControl(contentControl, updatedText);
-                }
-                else if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type === 'CheckBox') {
-                    contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
                 }
             }
             this.documentHelper.selection.selectRange(start, end);
@@ -471,17 +462,17 @@ export class XmlPane {
         else if (updatedText === String.fromCharCode(9744)) {
             isChecked = 'false';
         }
-        this.updateXMLData(isChecked);
+        if (this.documentHelper.owner.xmlPaneModule.isXmlPaneShow) {
+            this.updateXMLData(updatedText);
+        }
         const start = this.documentHelper.selection.start.clone();
         const end = this.documentHelper.selection.end.clone();
         for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
             let contentControl = this.documentHelper.contentControlCollection[i];
             if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type !== 'CheckBox') {
-                contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
                 this.updateContentControl(contentControl, isChecked);
             }
             else if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type === 'CheckBox') {
-                contentControl.contentControlProperties.xmlMapping.isContentControlMapped = true;
                 this.updateContentControl(contentControl, updatedText);
             }
         }

@@ -534,6 +534,37 @@ describe('MultiSelect_Virtualization', () => {
                 }, 850);
             });
         });
+        describe('Virtualization scroll to end', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+            let multiObj: any;
+            let ele: HTMLElement;
+            beforeAll(() => {
+                ele = createElement('input', { id: 'Multiselect' });
+                document.body.appendChild(ele);
+                multiObj = new MultiSelect({
+                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
+                });
+                multiObj.appendTo(ele);
+            });
+            afterAll(() => {
+                ele.remove();
+                multiObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it('scroll to end', (done) => {
+                multiObj.showPopup();
+                multiObj.isPreventScrollAction = false;
+                multiObj.list.scrollTop = 5068;
+                setTimeout(() => {
+                    multiObj.isPreventScrollAction = false
+                    multiObj.list.scrollTop = multiObj.list.scrollHeight - multiObj.list.clientHeight;
+                    setTimeout(() => {
+                        let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
+                        done();
+                    }, 1050);
+                }, 1050);
+            });
+        });
         describe('Virtualization with clear value', () => {
             let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
             let multiObj: any;

@@ -292,3 +292,36 @@ describe('Apply bidi for the RTL text', () => {
         expect(container.selectionModule.characterFormat.fontSizeBidi).toBe(20);
     });
 });
+
+describe('Applying the default Character Format to document', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.setDefaultCharacterFormat({ fontSize: 14 });
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Applying the default font size to document', function () {
+        console.log('Applying the default font size to document');
+        container.openBlank();
+        container.editor.insertText("Default font size")
+        container.selection.selectAll();
+        expect(container.selection.characterFormat.fontSize).toBe(14);
+    });
+});

@@ -11,11 +11,6 @@
   }
 
   .e-treegrid {
-    .e-treegridexpand::before,
-    .e-treegridcollapse::before {
-      content: '\e75c';
-    }
-
     .e-toolbar-item {
       .e-expand::before {
         content: '\e7c9';
@@ -34,7 +29,15 @@
       }
     }
   }
-
+  
+  .e-treegrid,
+  .e-grid {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: '\e75c';
+    }
+  }
+  
   .e-treelistgrid.e-print-grid-layout {
     .e-treegridexpand::before,
     .e-treegridcollapse::before {

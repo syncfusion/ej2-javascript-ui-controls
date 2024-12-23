@@ -882,7 +882,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             for (let i: number = 0; i < totalSkeletonCount; i++) {
                 const liElement: HTMLElement = this.createElement('li', { className: dropDownBaseClasses.virtualList, styles: 'overflow: inherit' });
                 if (this.isVirtualizationEnabled && this.itemTemplate) {
-                    liElement.style.height = this.listItemHeight + 'px';
+                    liElement.style.height = (this.listItemHeight - parseInt(window.getComputedStyle(this.getItems()[1] as HTMLElement).marginBottom, 10)) + 'px';
                 }
                 const skeleton: Skeleton = new Skeleton({
                     shape: 'Text',

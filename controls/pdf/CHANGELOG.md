@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.36 (2024-12-24)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with preserving radio button fields during flattening.
+
 ## 28.1.35 (2024-12-18)
 
 ### PDF Parser

@@ -786,6 +786,98 @@ describe('column menu module', () => {
            gridObj.focusModule.currentInfo = {};
            (gridObj as any).columnMenuModule.keyPressHandler({ action: 'altDownArrow' });
         });
+
+        it('coverage issue for columnMenuOnOpen ', function () {
+            var divElement = document.createElement('div');
+            document.body.appendChild(divElement);
+            divElement.className = 'e-menu-parent e-ul ';
+            divElement.style.height = (window.innerHeight + 100) + 'px';
+            (gridObj.columnMenuModule as any).columnMenuOnOpen({ element: divElement });
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Coverage Improvement ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                showColumnMenu: true,
+                height: 300,
+                allowSorting: true,
+                allowFiltering: true,
+                filterSettings: { type: 'Menu' },
+                toolbar: ['ColumnChooser'],
+                allowPaging: true,
+                groupSettings: { showGroupedColumn: true },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 120},
+                    { field: 'ShipCity', headerText: 'Ship City', width: 170, filterTemplate: '<input></input>'},
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150, visible: false, textAlign: 'Right' }
+                ]
+            }, done);
+        });
+        it('column menu open for ship name column', (done: Function) => {
+            gridObj.columnMenuModule.openColumnMenuByField('EmployeeID');
+            document.getElementById(gridObj.element.id +'_colmenu_Filter').click();
+            document.getElementById(gridObj.element.id +'_colmenu_ColumnChooser').click();
+            document.getElementById(gridObj.element.id +'_colmenu_Filter').click();
+            done();
+        });
+
+        it('column menu open shipcity for filter template', (done: Function) => {
+            gridObj.columnMenuModule.openColumnMenuByField('ShipCity');
+            document.getElementById(gridObj.element.id +'_colmenu_Filter').click();
+            (gridObj.columnMenuModule as any).getFilter()
+            done();
+        });
+        
+        it('columnMenuBeforeClose coverage', (done: Function) => {
+            (gridObj as any).isColumnMenuFilterClosing = true;
+            (gridObj.columnMenuModule as any).columnMenuBeforeClose({cancel: true});
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Coverage for adaptive condition lines', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 24),
+                    allowPaging: true,
+                    showColumnMenu: true,
+                    height: 300,
+                    allowSorting: true,
+                    enableAdaptiveUI: true,
+                    rowRenderingMode: 'Horizontal',
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu' },
+                    toolbar: ['ColumnChooser'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 120},
+                        { field: 'ShipCity', headerText: 'Ship City', width: 170, },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150, visible: false, textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('coverage issue for columnMenuHandlerClick method in adptive', function () {
+            (gridObj.element.querySelector('.e-columnmenu') as any).click();
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

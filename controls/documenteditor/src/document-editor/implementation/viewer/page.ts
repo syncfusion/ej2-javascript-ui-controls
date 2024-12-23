@@ -1219,7 +1219,7 @@ export class ParagraphWidget extends BlockWidget {
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                     || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
                     || inline instanceof ChartElementBox || inline instanceof ShapeElementBox
-                    || inline instanceof ContentControl
+                    || inline instanceof ContentControl || inline instanceof CommentCharacterElementBox
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                     return false;
                 }
@@ -1245,7 +1245,7 @@ export class ParagraphWidget extends BlockWidget {
                         || inline instanceof ShapeElementBox
                         || inline instanceof BookmarkElementBox || inline instanceof FieldElementBox
                         && HelperMethods.isLinkedFieldCharacter(inline as FieldElementBox))
-                        || inline instanceof ChartElementBox || inline instanceof ContentControl) {
+                        || inline instanceof ChartElementBox || inline instanceof ContentControl || inline instanceof CommentCharacterElementBox) {
                         isStarted = true;
                     }
 
@@ -1490,8 +1490,11 @@ export class ParagraphWidget extends BlockWidget {
             || (character >= String.fromCharCode(0xF900) && character <= String.fromCharCode(0xFAFF))
         );
     }
+    private isSpecialCharacters(character: string): boolean {
+        return ((character >= String.fromCharCode(8192) && character <= String.fromCharCode(10175)));
+    }
 
-    private getFontScriptType(inputCharacter: string): FontScriptType {
+    private getFontScriptType(inputCharacter: string, hasHintType: boolean): FontScriptType {
         // Return FontScriptType as Hindi, if input character is in-between Hindi character ranges.
         if (this.isHindiChar(inputCharacter))
             return FontScriptType.Hindi;
@@ -1513,12 +1516,15 @@ export class ParagraphWidget extends BlockWidget {
         // Return FontScriptType as Thai, if input character is in-between Thai character ranges.
         else if (this.isThaiCharacter(inputCharacter))
             return FontScriptType.Thai;
+        // Return FontScriptType as SpecialCharacter, if input character is in-between SpecialCharacter character ranges.
+        else if (this.isSpecialCharacters(inputCharacter) && hasHintType)
+            return FontScriptType.SpecialCharacter;
         // Return FontScriptType as English, for remaining character ranges.
         else
             return FontScriptType.English;
     }
 
-    public splitTextByFontScriptType(inputText: string, fontScriptTypes: FontScriptType[]): string[] {
+    public splitTextByFontScriptType(inputText: string, fontScriptTypes: FontScriptType[], hasHintType: boolean): string[] {
         let splittedText: string[] = [];
         //Retrun the empty array, if input text is Null or Empty.
         if (isNullOrUndefined(inputText)
@@ -1536,7 +1542,7 @@ export class ParagraphWidget extends BlockWidget {
             // So, that we can avoid a text splitting based on space character.
             if (inputText[i] != String.fromCharCode(32) && !surrogateRegex.test(inputText[i])) {
                 // && !(char.IsHighSurrogate(inputText.charAt(i)) || char.IsLowSurrogate(inputText.charAt(i)))) { //Skip the setting of script type for surrogate character.
-                currCharacterType = this.getFontScriptType(inputText[i]);
+                currCharacterType = this.getFontScriptType(inputText[i], hasHintType);
             }
 
             //Add a current text into splitted text collection, when previous character type is not equival to current type.
@@ -1598,10 +1604,11 @@ export class ParagraphWidget extends BlockWidget {
                 }
 
                 if (textElement != undefined && !isField) {
-                    // let hasHintPath: boolean = textElement.characterFormat.IdctHint != FontHintType.Default;
+                    // ToDo: Need to handle CS font hint type
+                    let hasHintType: boolean = textElement.characterFormat.fontHintType === 'EastAsia' && textElement.characterFormat.hasValue('fontFamilyFarEast');
                     let fontScriptTypes: FontScriptType[] = [];
                     // Split a current text part text based on FontScriptType.
-                    let splitedTextCollection: string[] = this.splitTextByFontScriptType(textElement.text, fontScriptTypes);
+                    let splitedTextCollection: string[] = this.splitTextByFontScriptType(textElement.text, fontScriptTypes, hasHintType);
 
                     if (splitedTextCollection.length > 1) {
                         for (let j: number = 0; j < splitedTextCollection.length; j++) {
@@ -6564,10 +6571,6 @@ export class XmlMapping {
      * @private
      */
     public isMapped: boolean;
-    /**
-     * @private
-     */
-    public isContentControlMapped: boolean = false;
     /**
      * @private
      */

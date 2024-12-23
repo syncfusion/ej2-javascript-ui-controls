@@ -2,12 +2,22 @@
 
 ## [Unreleased]
 
+## 28.1.36 (2024-12-24)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `I662513` - Resolved a script error that occurred when scrolling in the virtualization sample with `allowSelection` set to `false`
+- `I664039` - Resolved a console warning that occurred on using freeze feature in treegrid.
+
 ## 28.1.35 (2024-12-18)
 
 ### Tree Grid
 
 #### Bug Fixes
 
+- `#I641521` - Keyboard selection with down key navigation now working properly when virtualization is enabled.
 - `#I641521`,`#I643607` - `SelectRow` and `selectedRowIndex` now navigates properly to the selected records  when virtualization is enabled.
 
 ### Tree Grid

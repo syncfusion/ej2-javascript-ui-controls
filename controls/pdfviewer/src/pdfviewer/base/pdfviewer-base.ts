@@ -4425,7 +4425,8 @@ export class PdfViewerBase {
             this.fireCustomCommands(event);
         }
         if ((!this.pdfViewer.pageOrganizerModule) ||
-        (this.pdfViewer.pageOrganizerModule && !this.pdfViewer.pageOrganizerModule.isOrganizeWindowOpen)) {
+            (this.pdfViewer.pageOrganizerModule && (!this.pdfViewer.pageOrganizerModule.isOrganizeWindowOpen
+                || ((event.ctrlKey || event.metaKey) && event.altKey && event.keyCode === 51 && !event.shiftKey)))) {
             if ((this.isFreeTextAnnotationModule() && this.pdfViewer.annotationModule
             && (this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus === true
                 || this.pdfViewer.annotationModule.inputElementModule.isInFocus === true))) {

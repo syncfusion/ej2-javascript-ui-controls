@@ -1882,8 +1882,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const freezePresent: Function[] = this.injectedModules.filter((e: Function) => {
             return e.prototype.getModuleName() === 'freeze';
         });
+        const hasFreezeProp: boolean = Array.isArray(this.columns) &&
+        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
         if ((this.frozenColumns || this.frozenRows || this.getFrozenColumns() ||
-            this.grid.getFrozenLeftColumnsCount() || this.grid.getFrozenRightColumnsCount()) && freezePresent.length > 0) {
+            hasFreezeProp) && freezePresent.length > 0) {
             modules.push({
                 member: 'freeze', args: [this],
                 name: 'Freeze'

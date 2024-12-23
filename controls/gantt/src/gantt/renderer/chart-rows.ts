@@ -1721,6 +1721,7 @@ export class ChartRows extends DateProcessor {
                 const manualTaskbar: NodeList = this.getManualTaskbar();
                 if (!isNullOrUndefined(manualTaskbar[0])) {
                     if (this.parent.allowParentDependency) {
+                        connectorLineLeftNode = this.getLeftPointNode();
                         manualTaskbar[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
                         const connectorLineRightNode: NodeList = this.getRightPointNode();
                         manualTaskbar[0].appendChild([].slice.call(connectorLineRightNode)[0]);

@@ -83,8 +83,11 @@ export class FilterMenuRenderer {
         const elem: Element = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
             const argument: Object = { cancel: false, column: this.col, target: target, element: elem };
+            if ((<{ cancel?: boolean }>argument).cancel) {
+                this.parent.isColumnMenuFilterClosing = false;
+                return;
+            }
             this.parent.notify(events.filterMenuClose, argument);
-            if ((<{ cancel?: boolean }>argument).cancel) { return; }
             this.isDialogOpen = false;
             if (this.isMenuCheck) {
                 this.menuFilterBase.unWireEvents();
@@ -109,6 +112,9 @@ export class FilterMenuRenderer {
             else {
                 this.dlgObj.destroy();
                 remove(elem);
+            }
+            if (this.parent.isColumnMenuFilterClosing) {
+                document.getElementById(this.parent.element.id + '_columnmenu').focus();
             }
         }
         this.parent.notify(events.filterDialogClose, {});

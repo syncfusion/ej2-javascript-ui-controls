@@ -1,6 +1,6 @@
 import { TextElementBox, ParagraphWidget, LineWidget } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
-import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride, FontScriptType } from '../../base/types';
+import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride, FontScriptType, FontHintType } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle, WCharacterStyle } from './style';
@@ -71,6 +71,12 @@ export class WCharacterFormat {
     }
     public set underlineColor(value: string) {
         this.setPropertyValue('underlineColor', value);
+    }
+    public get fontHintType(): FontHintType {
+        return this.getPropertyValue('fontHintType') as FontHintType;
+    }
+    public set fontHintType(value: FontHintType) {
+        this.setPropertyValue('fontHintType', value);
     }
     public get strikethrough(): Strikethrough {
         return this.getPropertyValue('strikethrough') as Strikethrough;
@@ -358,6 +364,7 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('italic', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('underline', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('underlineColor', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontHintType', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('strikethrough', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('baselineAlignment', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('highlightColor', property, propValue, uniqueCharFormatTemp);
@@ -409,6 +416,9 @@ export class WCharacterFormat {
             break;
         case 'underlineColor':
             value = undefined;
+            break;
+        case 'fontHintType':
+            value = 'Default';
             break;
         case 'strikethrough':
             value = 'None';
@@ -653,6 +663,9 @@ export class WCharacterFormat {
         if (isNullOrUndefined(this.getValue('underline'))) {
             this.underline = format.getValue('underline') as Underline;
         }
+        if (isNullOrUndefined(this.getValue('fontHintType'))) {
+            this.fontHintType = format.getValue('fontHintType') as FontHintType;
+        }
         if (isNullOrUndefined(this.getValue('strikethrough'))) {
             this.strikethrough = format.getValue('strikethrough') as Strikethrough;
         }
@@ -744,6 +757,9 @@ export class WCharacterFormat {
         }
         if (format.hasValue('underline')) {
             this.underline = format.getValue('underline') as Underline;
+        }
+        if (format.hasValue('fontHintType')) {
+            this.fontHintType = format.getValue('fontHintType') as FontHintType;
         }
         if (format.hasValue('strikethrough')) {
             this.strikethrough = format.getValue('strikethrough') as Strikethrough;

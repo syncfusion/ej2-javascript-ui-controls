@@ -324,7 +324,8 @@ export class Selection {
                     }
                     if ((e.target as HTMLElement).classList.contains('e-autofill')) {
                         this.isautoFillClicked = true;
-                        const autoFillDdb: Element = (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
+                        const autoFillDdb: Element = (e.target as HTMLElement).parentElement &&
+                            (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
                         if (!autoFillDdb || autoFillDdb.classList.contains('e-hide')) {
                             this.dAutoFillCell = sheet.selectedRange;
                         }
@@ -465,32 +466,27 @@ export class Selection {
             return;
         }
         const frozenRow: number = this.parent.frozenRowCount(sheet);
-        let isScrollDown: boolean = clientY > bottom && rowIdx < sheet.rowCount;
-        let isScrollUp: boolean = clientY < top && rowIdx >= 0 && !this.isColSelected && !!verticalContent.scrollTop;
-        if (frozenRow > rowIdx) {
-            isScrollDown = false;
-            isScrollUp = false;
-        }
-        let isScrollRight: boolean = clientX > right && colIdx < sheet.colCount;
-        let isScrollLeft: boolean = clientX < left && colIdx >= 0 && !this.isRowSelected && !!horizontalContent.scrollLeft;
-        if (frozenCol > colIdx) {
-            isScrollRight = false;
-            isScrollLeft = false;
-        }
+        prevIndex = getCellIndexes(sheet.activeCell);
+        const isScrollDown: boolean = clientY > bottom && !this.isColSelected && rowIdx < sheet.rowCount;
+        const isScrollUp: boolean = clientY < top && rowIdx >= 0 && !this.isColSelected &&
+            !!verticalContent.scrollTop && (!frozenRow || prevIndex[0] >= frozenRow);
+        const isScrollRight: boolean = clientX > right && !this.isRowSelected && colIdx < sheet.colCount;
+        const isScrollLeft: boolean = clientX < left && colIdx >= 0 && !this.isRowSelected &&
+            !!horizontalContent.scrollLeft && (!frozenCol || prevIndex[1] >= frozenCol);
         this.clearInterval(); let scrollUpRowIdx: number; let scrollUpColIdx: number;
-        if (!isFormulaEdit && !this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
             if (isScrollUp || isScrollLeft) { scrollUpRowIdx = rowIdx; scrollUpColIdx = colIdx; }
             const scrollSelection: Function = () => {
-                if ((isScrollDown || isScrollUp) && !this.isColSelected) {
+                if (isScrollDown || isScrollUp) {
                     rowIdx = this.getRowIdxFromClientY({ clientY: isScrollDown ? bottom : top });
                     if (rowIdx >= sheet.rowCount) { // clear interval when scroll up
-                        this.clearInterval(); return;
+                        this.clearInterval();
+                        return;
                     }
                     verticalContent.scrollTop += (isScrollDown ? 1 : -1) * getRowHeight(sheet, rowIdx);
                 }
-                if ((isScrollRight || isScrollLeft) && !this.isRowSelected) {
-                    colIdx = this.getColIdxFromClientX({ clientX: isScrollRight ? right : left });
+                if (isScrollRight || isScrollLeft) {
+                    colIdx = this.getColIdxFromClientX({ clientX: isScrollRight ? right : left, isFScroll: true });
                     if (colIdx >= sheet.colCount) { // clear interval when scroll left
                         this.clearInterval();
                         return;
@@ -564,7 +560,8 @@ export class Selection {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
             if (!(this.isColSelected && indexes[1] === colIdx) && !(this.isRowSelected && indexes[0] === rowIdx)) {
-                const autoFillDdb: Element = (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
+                const autoFillDdb: Element = (e.target as HTMLElement).parentElement &&
+                    (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
                 if (!autoFillDdb || autoFillDdb.classList.contains('e-hide')) {
                     this.dAutoFillCell = sheet.selectedRange;
                 }
@@ -655,7 +652,7 @@ export class Selection {
         this.selectRangeByIdx(args.range, <MouseEvent>args, false, false, false, false, undefined, args.preventAnimation);
     }
 
-    private getColIdxFromClientX(e: { clientX: number, isImage?: boolean, target?: Element, size?: number }): number {
+    private getColIdxFromClientX(e: { clientX: number, isImage?: boolean, target?: Element, size?: number, isFScroll?: boolean }): number {
         let width: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
         let left: number = 0;
@@ -674,7 +671,8 @@ export class Selection {
                 return parseInt(frozenCol.style[this.parent.enableRtl ? 'right' : 'left'], 10) / this.parent.viewport.scaleX;
             };
             if ((!e.target || (!closest(e.target, '.e-row-header') && !closest(e.target, '.e-selectall-container')) ||
-                this.isScrollableArea(e.clientX, e.target, true)) && (!this.parent.frozenColCount(sheet) || left > frozenColPosition())) {
+                this.isScrollableArea(e.clientX, e.target, true)) && (!this.parent.frozenColCount(sheet) ||
+                    left > frozenColPosition() || e.isFScroll)) {
                 left += (this.getScrollLeft() / this.parent.viewport.scaleX);
             }
         }

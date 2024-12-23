@@ -1345,6 +1345,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 addClass([].slice.call(navigator.childNodes), CLS_HOVER_ARROWS);
             }
             removeClass([this.element], CLS_HOVER);
+            if (this.isSwipe) {
+                this.swipStop();
+            }
             break;
         }
         this.autoSlide();

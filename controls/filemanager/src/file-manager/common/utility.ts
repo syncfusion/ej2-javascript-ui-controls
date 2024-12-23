@@ -1037,9 +1037,9 @@ export function getDirectoryPath(parent: IFileManager, args: ReadArgs): string {
     const fPath: string = getValue(parent.hasId && !isNullOrUndefined(parent.ajaxSettings.url) ? 'filterId' : 'filterPath', args.cwd);
     if (!isNOU(fPath)) {
         if (fPath === '') {
-            return parent.hasId && !isNullOrUndefined(parent.ajaxSettings.url) ? filePath : '/';
+            return '/';
         }
-        return fPath.replace(/\\/g, '/') + filePath;
+        return fPath.replace(/\\/g, '/').replace(/^.*?(?=\/)/, '') + filePath;
     } else {
         return isFileSystemData(parent) ? filePath : parent.path + filePath;
     }

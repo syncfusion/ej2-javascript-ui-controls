@@ -195,7 +195,8 @@ export class DragAndDrop {
                             this.dragObj.pageY;
                         const height: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? target.offsetHeight :
                             (target.offsetHeight / 2);
-                        if ((pageY - (this.kanbanObj.element.getBoundingClientRect().top + target.offsetTop)) < height) {
+                        const relativeTop: number = target.getBoundingClientRect().top - this.kanbanObj.element.getBoundingClientRect().top;
+                        if ((pageY - relativeTop) < height) {
                             this.insertClone = 'beforebegin';
                         }
                     }

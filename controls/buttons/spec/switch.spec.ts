@@ -612,7 +612,47 @@ describe('Switch', () => {
             specSwitch = new Switch({ enablePersistence: undefined }, '#specSwitch');
             expect(specSwitch.htmlAttributes).toEqual({});
         });
+    });
 
+    describe('Form reset behavior testing', () => {
+        let formElement: HTMLFormElement;
+        beforeEach(() => {
+            formElement = createElement('form', {
+                id: 'form'
+            }) as HTMLFormElement;
+            document.body.appendChild(formElement);
+        });
+        afterEach(() => {
+            formElement.remove();
+        });
+        it('Form reset should reset switches even when some are disabled', () => {
+            const switches: { [key: string]: Switch } = {};
+            [1, 2, 3, 4].forEach((item) => {
+                const input = createElement('input', { id: `element${item}`, type: 'checkbox' } as any);
+              formElement.appendChild(input);
+              switches[`element${item}`] = new Switch({ onLabel: 'On', offLabel: 'Off' }, `#element${item}`);
+            });
+            const data = {
+              element1: 1,
+              element2: 0,
+              element3: 0,
+              element4: 1
+            };
+            [1, 2, 3, 4].forEach((item) => {
+              const attr = `element${item}` as keyof typeof data;
+              switches[attr].checked = true;
+              switches[attr].disabled = data[attr] === 0;
+            });
+            formElement.reset();
+            [1, 2, 3, 4].forEach((item) => {
+              const attr = `element${item}` as keyof typeof data;
+              // Ensure checked state is reset
+              expect(switches[attr].checked).toBeFalsy();
+              // Check if switch is disabled or not
+              expect(switches[attr].disabled).toBe(data[attr] === 0);
+            });
+          });
     });
 });
+
 

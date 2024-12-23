@@ -383,6 +383,10 @@ export class EditorHistory {
                 && this.owner.editorModule.insertRemovedEditRangeStartElements(isHandledComplexHistory)) {
                 isHandledComplexHistory = true;
             }
+            if (this.owner.editorModule.removedContentControlElements.length > 0
+                && this.owner.editorModule.insertRemoveContentControlElements(isHandledComplexHistory)) {
+                isHandledComplexHistory = true;
+            }
         }
         if (this.documentHelper.owner.enableHistoryMode && !isNullOrUndefined(this.currentHistoryInfo)) {
             if (this.currentHistoryInfo.action !== 'Grouping') {
@@ -441,7 +445,7 @@ export class EditorHistory {
                 this.documentHelper.removeEmptyPages();
             }
         }
-        if (this.owner.showRevisions) {
+        if (this.owner.showRevisions && !this.owner.editorModule.restrictLayout) {
             this.owner.trackChangesPane.updateTrackChanges();
         }
         selection.owner.isShiftingEnabled = false;
@@ -460,7 +464,9 @@ export class EditorHistory {
         }
         selection.upDownSelectionLength = selection.end.location.x;
         this.documentHelper.isScrollHandler = true;
-        this.viewer.updateScrollBars();
+        if (!this.owner.editorModule.restrictLayout) {
+            this.viewer.updateScrollBars();
+        }
         selection.fireSelectionChanged(true);
         this.documentHelper.isScrollHandler = false;
         if (this.owner.enableAutoFocus)

@@ -5146,3 +5146,202 @@ describe('CR-924995 dst coverage', () => {
         }
     });
 });
+describe('Check baseline width for day mode', () => {        
+    let ganttObj: Gantt;
+    let morphUTCDateStringToLocalDate = (date: any) => {
+        const initialDate = new Date(date);
+        console.log('initialDate', initialDate);
+        const actual = new Date(
+          initialDate.getUTCFullYear(),
+          initialDate.getUTCMonth(),
+          initialDate.getUTCDate(),
+          initialDate.getUTCHours(),
+          initialDate.getUTCMinutes()
+        );
+        console.log('Actual', actual);
+        return actual;
+      };
+    let GanttData= [
+        {
+          id: '1',
+          duration: 0.1,
+          name: '0.1 task 1',
+          currentstartdate: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          currentfinishdate: morphUTCDateStringToLocalDate('2024-11-25T08:48:00Z'),
+          targetstart: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          targetfinish: morphUTCDateStringToLocalDate('2024-11-25T08:48:00Z'),
+        },
+        {
+          id: '2',
+          duration: 0.2,
+          name: '0.2 task',
+          currentstartdate: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          currentfinishdate: morphUTCDateStringToLocalDate('2024-11-25T09:36:00Z'),
+          targetstart: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          targetfinish: morphUTCDateStringToLocalDate('2024-11-25T09:36:00Z'),
+        },
+        {
+          id: '3',
+          duration: 0.3,
+          name: '0.3 task',
+          targetstart: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          targetfinish: morphUTCDateStringToLocalDate('2024-11-25T10:24:00Z'),
+          currentstartdate: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          currentfinishdate: morphUTCDateStringToLocalDate('2024-11-25T10:24:00Z'),
+        },
+        {
+          id: '4',
+          duration: 0.4,
+          name: '0.4 task',
+          currentstartdate: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          currentfinishdate: morphUTCDateStringToLocalDate('2024-11-25T11:12:00Z'),
+          targetfinish: morphUTCDateStringToLocalDate('2024-11-25T11:12:00Z'),
+          targetstart: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+        },
+        {
+          id: '5',
+          duration: 0.5,
+          currentstartdate: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          targetfinish: morphUTCDateStringToLocalDate('2024-11-25T12:00:00Z'),
+          currentfinishdate: morphUTCDateStringToLocalDate('2024-11-25T12:00:00Z'),
+          targetstart: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          name: '0.5 task',
+        },
+        {
+          id: '6',
+          duration: 0.6,
+          name: '0.6 task',
+          targetfinish: morphUTCDateStringToLocalDate('2024-11-25T13:48:00Z'),
+          targetstart: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          currentstartdate: morphUTCDateStringToLocalDate('2024-11-25T08:00:00Z'),
+          currentfinishdate: morphUTCDateStringToLocalDate('2024-11-25T13:48:00Z'),
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: (GanttData),
+  taskFields: {
+    id: 'id',
+    name: 'name',
+    startDate: 'currentstartdate',
+    endDate: 'currentfinishdate',
+    baselineStartDate: 'targetstart',
+    baselineEndDate: 'targetfinish',
+    duration: 'duration',
+  },
+  renderBaseline: true,
+  editSettings: {
+    allowAdding: true,
+    allowEditing: true,
+    allowDeleting: true,
+    allowTaskbarEditing: true,
+    showDeleteConfirmDialog: true,
+  },
+  enableContextMenu: true,
+  resourceFields: {
+    id: 'resourceId',
+    name: 'resourceName',
+    unit: 'Unit',
+  },
+  workUnit: 'Hour',
+  taskType: 'FixedDuration',
+  toolbar: [
+    'Add',
+    'Edit',
+    'Update',
+    'Delete',
+    'Cancel',
+    'ExpandAll',
+    'CollapseAll',
+    'Refresh',
+    'ZoomIn',
+  ],
+  allowSelection: true,
+  height: '450px',
+  treeColumnIndex: 1,
+  columns: [
+    { field: 'TaskID', visible: false },
+    { field: 'TaskName', headerText: 'Task Name', width: '180' },
+    {
+      field: 'StartDate',
+      headerText: 'Start Date',
+    },
+    {
+      field: 'EndDate',
+      headerText: 'End Date',
+    },
+    { field: 'resources', headerText: 'Resources', width: '160' },
+    { field: 'Work', width: '110' },
+    { field: 'Duration', width: '100' },
+    { field: 'taskType', headerText: 'Task Type', width: '110' },
+  ],
+        }, done);
+    });
+    it('Check baseline width value', () => {
+        expect(ganttObj.flatData[0].ganttProperties.baselineWidth).toBe(3.3000000000000003);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Check left for a task', () => {        
+    let ganttObj: Gantt;
+    let GanttData= [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('03/31/2024'),
+            EndDate: new Date('04/21/2024')
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: (GanttData),
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            splitterSettings: {
+                columnIndex: 1
+            },
+            treeColumnIndex: 1,
+            allowSelection: true,
+            showColumnMenu: false,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Day',
+                },
+                timelineUnitSize: 200,
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: 300 },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Progress', headerText: 'Progress' },
+            ],
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/31/2024'),
+            projectEndDate: new Date('04/23/2024'),
+        }, done);
+    });
+    it('check left for a task', () => {
+        expect(ganttObj.currentViewData[0].ganttProperties.left).toBe(200);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

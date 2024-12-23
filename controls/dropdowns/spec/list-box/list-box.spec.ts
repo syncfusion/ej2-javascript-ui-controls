@@ -2,7 +2,7 @@
  * 
  */
 import { createElement, EventHandler } from '@syncfusion/ej2-base';
-import { ListBox, SelectionSettings } from '../../src/index';
+import { ListBox, ListBoxChangeEventArgs, SelectionSettings } from '../../src/index';
 import { cssClass } from '@syncfusion/ej2-lists';
 import { CheckBoxSelection } from '../../src/multi-select/checkbox-selection';
 import { Query } from '@syncfusion/ej2-data';
@@ -1871,6 +1871,31 @@ describe('ListBox', () => {
             listObj1.moveAllTo();
             listObj1.toolbarAction = "moveAllTo";
             listObj1.moveTo();
+        });
+    });
+
+    describe('ListBox Change Event Args', () => {
+        let listObj: any;
+        let elem: HTMLElement = createElement('input');
+
+        beforeAll(() => {
+            document.body.appendChild(elem);
+        });
+
+        afterEach(() => {
+            listObj.destroy();
+        });
+
+        it('should emit change event with value as string[]', () => {
+            listObj = new ListBox({ dataSource: ['Java', 'JavaScript', 'Python'], value: ['Java'], selectionSettings: { showCheckbox: false } }, elem);
+            let changeArgs: string[] | number[] | boolean[];
+            listObj.change = (args: ListBoxChangeEventArgs) => {
+                changeArgs = args.value;
+            };
+            let index = 1; // JavaScript
+            let li = listObj.getItems()[index];
+            li.click();
+            expect(Array.isArray(changeArgs)).toBe(true);
         });
     });
 });

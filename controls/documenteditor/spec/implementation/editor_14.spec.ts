@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget, SfdtExport } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, SfdtExport, ContentControl } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition, DocumentEditorContainer, Toolbar } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
@@ -284,4 +284,79 @@ describe('Resolve script error issue while delete content after search text', ()
         expect(() => { container.documentEditor.editor.delete(); }).not.toThrowError();
     });
 
+});
+
+describe('Content control delete', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
+
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Select the whole paragraph and delete', () => {
+        console.log('Select the whole paragraph and delete');
+        editor.editorModule.insertText('Syncfusion');
+        editor.selectionModule.selectAll();
+        editor.editorModule.insertContentControl('RichText');
+        editor.selectionModule.selectAll();
+        editor.editorModule.onBackSpace();
+        expect(editor.selection.start.currentWidget.children[0] instanceof ContentControl).toBe(true);
+        expect(editor.selection.start.currentWidget.children[1] instanceof ContentControl).toBe(true);
+
+    });
+    it('Start is inside content control and End is outside content control', () => {
+        console.log('Start is inside content control and End is outside content control');
+        editor.openBlank();
+        editor.editorModule.insertText('Hello world');
+        editor.selectionModule.select('0;0;0', '0;0;5');
+        editor.editorModule.insertContentControl('Text');
+        editor.selectionModule.select('0;0;3', '0;0;8');
+        editor.editorModule.onBackSpace();
+        expect(editor.selection.start.currentWidget.children[0] instanceof ContentControl).toBe(true);
+        expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('He');
+        expect(editor.selection.start.currentWidget.children[2] instanceof ContentControl).toBe(true);
+        expect(editor.selection.start.currentWidget.children[3] instanceof TextElementBox).toBe(true);
+    });
+    it('Start is outside content control and End is inside content control', () => {
+        console.log('Start is outside content control and End is inside content control');
+        editor.openBlank();
+        editor.editorModule.insertText('Hello world');
+        editor.selectionModule.select('0;0;6', '0;0;11');
+        editor.editorModule.insertContentControl('RichText');
+        editor.selectionModule.select('0;0;3', '0;0;9');
+        editor.editorModule.onBackSpace();
+        expect(editor.selection.start.currentWidget.children[0] instanceof TextElementBox).toBe(true);
+        expect(editor.selection.start.currentWidget.children[1] instanceof ContentControl).toBe(true);
+        expect((editor.selection.start.currentWidget.children[2] as TextElementBox).text).toBe('rld');
+        expect(editor.selection.start.currentWidget.children[3] instanceof ContentControl).toBe(true);
+    });
+    it('Select the whole paragraph and insert text', () => {
+        console.log('Select the whole paragraph and insert text');
+        editor.openBlank();
+        editor.editorModule.insertText('Syncfusion');
+        editor.selectionModule.selectAll();
+        editor.editorModule.insertContentControl('Text');
+        editor.selectionModule.selectAll();
+        editor.editorModule.insertText('Syncfusion');
+        expect(editor.selection.start.currentWidget.children[0] instanceof ContentControl).toBe(true);
+        expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('Syncfusion');
+        expect(editor.selection.start.currentWidget.children[2] instanceof ContentControl).toBe(true);
+    });
 });

@@ -548,7 +548,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         const ntr: Element = trEle.cloneNode() as Element;
         const appointmentExpandCollapse: Element = createElement('div', {
             attrs: {
-                'tabindex': '0', 'role': 'list',
+                'tabindex': '0', 'role': 'button',
                 title: this.parent.localeObj.getConstant('expandAllDaySection'), 'aria-disabled': 'false',
                 'aria-label': this.parent.localeObj.getConstant('expandAllDaySection')
             },
@@ -689,7 +689,7 @@ export class VerticalView extends ViewBase implements IRenderer {
     public getContentRows(): Element[] {
         const rows: Element[] = [];
         const tr: Element = createElement('tr');
-        const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
+        const td: Element = createElement('td');
         const existingGroupIndices: number[] = this.getGroupIndices();
         const handler: CallbackFunction = (r: TimeSlotData): TimeSlotData => {
             const ntr: Element = tr.cloneNode() as Element;

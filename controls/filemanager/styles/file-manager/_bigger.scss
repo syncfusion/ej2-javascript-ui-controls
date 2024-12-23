@@ -28,7 +28,8 @@
       margin: 0;
     }
     @if $fm-skin-name == 'tailwind3' {
-      line-height: 16px;
+      line-height: 21px;
+      @include size(24px, 24px);
     }
   }
 }
@@ -611,7 +612,11 @@
 
     .e-grid {
       @include checkbox($fe-big-cb-line-height);
-
+      @if $fm-skin-name == 'tailwind3' {
+        .e-checkbox-wrapper .e-frame {
+          margin: 0;
+        }
+      }
       .e-gridheader {
         .e-headercell {
           height: $fe-big-grid-header-height;
@@ -670,7 +675,7 @@
       }
 
       .e-fe-icon {
-        @if $fm-skin-name == 'tailwind' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind3' {
           @include size(24px, 24px);
         }
         @else {
