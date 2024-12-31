@@ -1206,19 +1206,25 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         if (this instanceof Series) {
             if (this.chart.errorBarModule) {
                 let maxVerticalError: number;
+                let minVerticalError: number;
                 if (this.errorBar.verticalError) {
                     for (let i: number = 0; i < this.points.length; i++) {
                         const verticalErrors: number[] = [];
+                        const minVerticalErrorValue: number[] = [];
                         for (let i: number = 0; i < this.points.length; i++) {
                             const point: Points = this.points[i as number];
                             if (point.verticalError) {
                                 verticalErrors.push(point.verticalError);
+                                minVerticalErrorValue.push(point.yValue - point.verticalError);
                             }
                         }
                         maxVerticalError = verticalErrors && verticalErrors.length > 0 ? Math.max(...verticalErrors) : 0;
+                        minVerticalError = verticalErrors && verticalErrors.length > 0 ? Math.min(...minVerticalErrorValue) : 0;
                     }
                 }
-                this.yMax += !isNaN(maxVerticalError) ? maxVerticalError : 0;
+                this.yMax += !isNaN(maxVerticalError) && isNullOrUndefined(this.yAxis.maximum) ? maxVerticalError : 0;
+                this.yMin = !isNaN(minVerticalError) && minVerticalError < this.yMin && isNullOrUndefined(this.yAxis.minimum) ?
+                    minVerticalError : this.yMin;
             }
         }
     }

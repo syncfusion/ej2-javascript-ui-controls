@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.36 (2024-12-24)
+## 28.1.37 (2024-12-31)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I667040` - Issue with "previous and current index are not return proper values in `listbox` while drag and drop event" has been resolved.
+
+## 28.1.33 (2024-12-12)
 
 ### ListView
 

@@ -608,6 +608,10 @@
       border-bottom: 0;
       border-style: solid;
 
+      @if ($skin-name =='tailwind3') {
+        border-radius: 0;
+      }
+
       @if ($skin-name =='FluentUI') {
         box-shadow: none;
       }

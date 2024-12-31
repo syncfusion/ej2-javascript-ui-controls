@@ -63,7 +63,9 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
                         const tempID: string = '';
                         if (!isNullOrUndefined(tempObj)) {
                             const tempValue: NodeList = tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID);
-                            if (this.parent.isReact && typeof column.groupCaptionTemplate !== 'string') {
+                            const isReactPrintGrid: boolean = this.parent.printGridParent
+                                && this.parent.printGridParent.isReact;
+                            if ((this.parent.isReact || isReactPrintGrid) && typeof column.groupCaptionTemplate !== 'string') {
                                 this.parent.renderTemplates(function (): void {
                                     if (tempValue && tempValue.length) {
                                         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
@@ -95,7 +97,8 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
                 (gObj.groupSettings.captionTemplate as Function).prototype.CSPTemplate);
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
-            if (isReactCompiler || isReactChild) {
+            const isReactPrintGrid: boolean = this.parent.printGridParent && this.parent.printGridParent.isReact;
+            if (isReactCompiler || isReactChild || isReactPrintGrid) {
                 const tempID: string = gObj.element.id + 'captionTemplate';
                 templateCompiler(gObj.groupSettings.captionTemplate as string)(data, this.parent, 'captionTemplate', tempID, null, null, node);
                 this.parent.renderTemplates();
@@ -106,7 +109,7 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             } else {
                 result = templateCompiler(gObj.groupSettings.captionTemplate as string)(data);
             }
-            if (!isReactCompiler && !isReactChild) {
+            if (!isReactCompiler && !isReactChild && !isReactPrintGrid) {
                 appendChildren(node, result);
                 if (gTemplateValue && gTemplateValue.length && gTemplateValue[0].textContent) {
                     node.appendChild(gTemplateValue[0]);

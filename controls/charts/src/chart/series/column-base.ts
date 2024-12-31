@@ -31,7 +31,7 @@ export class ColumnBase {
     public element: HTMLElement;
     protected getSideBySideInfo(series: Series): DoubleRange {
         series.isRectSeries = true;
-        if (series.chart.enableSideBySidePlacement && !series.position) {
+        if ((series.chart.enableSideBySidePlacement && !series.position) || !isNullOrUndefined(series.columnWidthInPixel)) {
             this.getSideBySidePositions(series);
         }
         if (series.columnWidthInPixel) {

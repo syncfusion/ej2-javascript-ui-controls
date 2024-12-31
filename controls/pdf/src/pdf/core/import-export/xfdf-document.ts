@@ -1334,6 +1334,7 @@ export class _XfdfDocument extends _ExportHelper {
         return value;
     }
     _writeAttribute(writer: _XmlWriter, key: string, primitive: any): void { // eslint-disable-line
+        let bytes: Uint8Array;
         if (this._annotationAttributes && this._annotationAttributes.indexOf(key) === -1) {
             switch (key) {
             case 'C':
@@ -1459,7 +1460,10 @@ export class _XfdfDocument extends _ExportHelper {
             case 'Vertices':
             case 'GroupNesting':
             case 'ITEx':
+                break;
             case 'TextMarkupContent':
+                bytes = _stringToBytes(primitive) as Uint8Array;
+                this._writeAttributeString(writer, key.toLowerCase(), _byteArrayToHexString(bytes));
                 break;
             default:
                 this._writeAttributeString(writer, key.toLowerCase(), primitive);

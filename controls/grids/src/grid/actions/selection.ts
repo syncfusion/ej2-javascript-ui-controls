@@ -384,7 +384,7 @@ export class Selection implements IAction {
             if (isRowSelected && this.selectionSettings.persistSelection && !(this.selectionSettings.checkboxMode === 'ResetOnRowClick')) {
                 this.clearSelectedRow(index);
                 this.selectRowCallBack();
-            } else if (!isRowSelected && this.selectionSettings.persistSelection &&
+            } else if (!isRowSelected && this.selectionSettings.persistSelection && this.parent.isCheckBoxSelection &&
                 this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
                 this.selectRowCallBack();
             }

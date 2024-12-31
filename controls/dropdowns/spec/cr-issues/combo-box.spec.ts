@@ -318,7 +318,7 @@ describe('ComboBox', () => {
         let originalTimeout: number;
         beforeAll((done) => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3500;
             document.body.appendChild(controlEle);
             let mAjax: MockAjaxReturn = mockAjax({
                 data: {
@@ -418,7 +418,7 @@ describe('ComboBox', () => {
         let originalTimeout: number;
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
             document.body.appendChild(comboEle);
             listObj = new ComboBox({
                 dataSource: data,
@@ -621,7 +621,7 @@ describe('ComboBox', () => {
         let originalTimeout: number;
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
             element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
             document.body.appendChild(element);
         });

@@ -3413,7 +3413,7 @@
         white-space: nowrap;
       }
 
-      & .e-stackedheader .e-columnheader {
+      & .e-stackedheader .e-columnheader :not(.e-columnsheader) {
         .e-stackedheadercelldiv,
         .e-headercelldiv {
           max-height: $grid-rowcell-wrap-max-height;

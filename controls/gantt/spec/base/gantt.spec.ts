@@ -5345,3 +5345,64 @@ describe('Check left for a task', () => {
         }
     });
 });
+describe('Check left for a event marker', () => {        
+    let ganttObj: Gantt;
+    let GanttData= [
+        {
+            TaskID: 1,
+            TaskName: 'Product concept',
+            StartDate: new Date('04/02/2024'),
+            EndDate: new Date('04/21/2024'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2024'), Duration: 3, Progress: 30 }
+            ]
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: (GanttData),
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+            },
+            dayWorkingTime: [
+                { from: 0,
+                    to: 23 }
+            ],
+            columns: [
+                { field: 'TaskID', width: 80 },
+                { field: 'TaskName', width: 250 },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Predecessor' },
+                { field: 'Progress' },
+            ],
+            projectStartDate: new Date('12/01/2024'),
+            projectEndDate: new Date('12/31/2024'),
+            labelSettings: {
+                leftLabel: 'TaskName',
+            },
+            eventMarkers: [
+                {
+                    day: new Date('12/20/2024 12:00'),
+                    label: new Date('12/20/2024 12:00').toLocaleString(),
+                }
+            ],
+            highlightWeekends: true
+        }, done);
+    });
+    it('check left for a event markers', () => {
+        expect(ganttObj.eventMarkerColloction[0].left).toBe(643.5);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

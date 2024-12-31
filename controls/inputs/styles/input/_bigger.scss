@@ -1201,9 +1201,6 @@
     @else {
       padding-left: $input-bigger-text-indent;
     }
-    @if $input-skin-name == 'tailwind3' {
-      padding-right: $input-bigger-text-indent;
-    }
     text-indent: 0;
   }
 

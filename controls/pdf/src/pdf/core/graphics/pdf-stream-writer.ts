@@ -2,6 +2,7 @@ import { _PdfContentStream } from './../base-stream';
 import { _PdfTransformationMatrix } from './pdf-graphics';
 import { _PdfName } from './../pdf-primitives';
 import { _escapePdfName } from './../utils';
+import { _PdfColorSpace } from '../enumerator';
 export class _PdfStreamWriter {
     _stream: _PdfContentStream;
     _newLine: string = '\r\n';
@@ -36,9 +37,32 @@ export class _PdfStreamWriter {
         this._stream.write(`${matrix._toString()} `);
         this._writeOperator('Tm');
     }
-    _setColorSpace(value: string, forStroking: boolean): void {
-        this._stream.write(`/${value} `);
-        this._writeOperator(forStroking ? 'CS' : 'cs');
+    _setColorSpace(value: string, forStroking: boolean): void;
+    _setColorSpace(value: number[], colorSpace: _PdfColorSpace, forStroking: boolean): void;
+    _setColorSpace(value: string | number[], arg2: boolean | _PdfColorSpace, arg3?: boolean): void {
+        if (typeof value === 'string' && typeof arg2 === 'boolean') {
+            this._stream.write(`/${value} `);
+            this._writeOperator(arg2 ? 'CS' : 'cs');
+        } else if (Array.isArray(value) && typeof arg2 === 'number' && typeof arg3 === 'boolean') {
+            let colorSpaceName: string;
+            switch (arg2) {
+            case _PdfColorSpace.rgb:
+                colorSpaceName = 'DeviceRGB';
+                break;
+            case _PdfColorSpace.cmyk:
+                colorSpaceName = 'DeviceCMYK';
+                break;
+            case _PdfColorSpace.grayScale:
+                colorSpaceName = 'DeviceGray';
+                break;
+            default:
+                colorSpaceName = 'DeviceRGB';
+                break;
+            }
+            this._stream.write(`/${colorSpaceName} `);
+            this._writeOperator(arg3 ? 'CS' : 'cs');
+            this._setColor(value, arg3);
+        }
     }
     _setColor(color: number[], forStroking: boolean): void {
         this._stream.write(`${(color[0] / 255).toFixed(3)} ${(color[1] / 255).toFixed(3)} ${(color[2] / 255).toFixed(3)} `);

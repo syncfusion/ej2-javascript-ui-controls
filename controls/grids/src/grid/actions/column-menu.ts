@@ -326,7 +326,9 @@ export class ColumnMenu implements IAction {
 
     private columnMenuBeforeClose(args: ColumnMenuOpenEventArgs): void {
         if (args.event && args.event.target instanceof Document && args.event.type === 'scroll') {
-            args.cancel = true;
+            if (!this.parent.enableStickyHeader) {
+                args.cancel = true;
+            }
             return;
         }
         const colChooser: Element = args.event ? closest(args.event.target as Node, '.e-menu-item') : null;
@@ -669,6 +671,9 @@ export class ColumnMenu implements IAction {
         }
         if (top + gridPos.top < 0) {
             top = 0;
+        }
+        if (this.parent.enableStickyHeader && gridPos.top <= 0) {
+            top = liPos.top - gridPos.top;
         }
         left += (this.parent.enableRtl ? - ul.offsetWidth : liPos.width);
         if (gridPos.width <= left + ul.offsetWidth) {

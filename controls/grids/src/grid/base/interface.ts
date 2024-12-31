@@ -681,6 +681,7 @@ export interface IGrid extends Component<HTMLElement> {
     isVue3?: boolean;
     adaptiveDlgTarget?: HTMLElement;
     parentDetails?: ParentDetails;
+    printGridParent?: IGrid;
 
     /**
      * @hidden

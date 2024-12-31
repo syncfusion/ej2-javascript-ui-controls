@@ -2121,32 +2121,38 @@ export class Table {
     // eslint-disable-next-line
     private applyProperties(args: ITableNotifyArgs, e: MouseEvent): void {
         const dialogEle: Element = this.editdlgObj.element;
-        const table: HTMLTableElement = closest((args as ITableNotifyArgs).selectNode[0] as HTMLElement, 'table') as HTMLTableElement;
-        table.style.width = dialogEle.querySelector('.e-table-width') ? (dialogEle.querySelector('.e-table-width') as HTMLInputElement).value + 'px'
-            : table.style.width;
-        if (dialogEle.querySelector('.e-cell-padding') && (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value !== '') {
-            const tdElm: NodeListOf<HTMLElement> = table.querySelectorAll('td');
-            for (let i: number = 0; i < tdElm.length; i++) {
-                let padVal: string = '';
-                if (tdElm[i as number].style.padding === '') {
-                    padVal = tdElm[i as number].getAttribute('style') + ' padding:' +
-                    (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px;';
-                } else {
-                    tdElm[i as number].style.padding = (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px';
-                    padVal = tdElm[i as number].getAttribute('style');
+        if (dialogEle && args && args.selectNode.length > 0 && args.selectNode[0]) {
+            const selectedElement: HTMLElement = (args.selectNode[0] && args.selectNode[0].nodeType === 3 ?
+                args.selectNode[0].parentNode : args.selectNode[0]) as HTMLElement;
+            const table: HTMLTableElement = selectedElement ? closest(selectedElement, 'table') as HTMLTableElement : null;
+            if (table) {
+                table.style.width = dialogEle.querySelector('.e-table-width') ? (dialogEle.querySelector('.e-table-width') as HTMLInputElement).value + 'px'
+                    : table.style.width;
+                if (dialogEle.querySelector('.e-cell-padding') && (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value !== '') {
+                    const tdElm: NodeListOf<HTMLElement> = table.querySelectorAll('td');
+                    for (let i: number = 0; i < tdElm.length; i++) {
+                        let padVal: string = '';
+                        if (tdElm[i as number].style.padding === '') {
+                            padVal = tdElm[i as number].getAttribute('style') + ' padding:' +
+                                (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px;';
+                        } else {
+                            tdElm[i as number].style.padding = (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px';
+                            padVal = tdElm[i as number].getAttribute('style');
+                        }
+                        tdElm[i as number].setAttribute('style', padVal);
+                    }
                 }
-                tdElm[i as number].setAttribute('style', padVal);
+                table.cellSpacing = dialogEle.querySelector('.e-cell-spacing') ? (dialogEle.querySelector('.e-cell-spacing') as HTMLInputElement).value
+                    : table.cellSpacing;
+                if (!isNOU(table.cellSpacing) && table.cellSpacing !== '0') {
+                    addClass([table], classes.CLS_TABLE_BORDER);
+                } else {
+                    removeClassWithAttr([table], classes.CLS_TABLE_BORDER);
+                }
+                this.parent.formatter.saveData();
+                this.editdlgObj.hide({ returnValue: true } as Event);
             }
         }
-        table.cellSpacing = dialogEle.querySelector('.e-cell-spacing') ? (dialogEle.querySelector('.e-cell-spacing') as HTMLInputElement).value
-            : table.cellSpacing;
-        if (!isNOU(table.cellSpacing) && table.cellSpacing !== '0') {
-            addClass([table], classes.CLS_TABLE_BORDER);
-        } else {
-            removeClassWithAttr([table], classes.CLS_TABLE_BORDER);
-        }
-        this.parent.formatter.saveData();
-        this.editdlgObj.hide({ returnValue: true } as Event);
     }
     private tableDlgContent(e: ITableNotifyArgs): HTMLElement {
         const selectNode: HTMLElement = (e as ITableNotifyArgs).selectParent[0] as HTMLElement;

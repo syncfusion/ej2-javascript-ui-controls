@@ -16,13 +16,21 @@
 }
 
 @include export-module('pivotview-theme') {
-  .e-pivotview.e-pivotview-autofit .e-grid .e-columnsheader .e-headercelldiv {
-    margin-right: 4px;
+  .e-pivotview.e-pivotview-autofit .e-grid {
+    .e-columnsheader .e-headercelldiv {
+      margin-right: 4px;
 
-    @if ($skin-name == 'FluentUI') or ($skin-name =='fluent2') or ($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') or ($skin-name == 'Material3') {
-      &:has(> .e-pivotcell-container .e-value-sort-icon) {
-        margin-right: $pivotgrid-value-sort-icon-font-size;
+      @if ($skin-name =='FluentUI') or ($skin-name =='fluent2') or ($skin-name =='tailwind') or ($skin-name =='tailwind-dark') or ($skin-name =='Material3') {
+        &:has(> .e-pivotcell-container .e-value-sort-icon) {
+          margin-right: $pivotgrid-value-sort-icon-font-size;
+        }
       }
+    }
+
+    .e-columnsheader {
+      /* stylelint-disable */
+      padding-right: 0 !important;
+      /* stylelint-enable */
     }
   }
 
@@ -338,7 +346,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
       height: inherit;
-      box-shadow: none !important;
 
       @if ($skin-name == 'tailwind') {
         padding-left: 12px;
@@ -360,10 +367,6 @@
           }
         }
       }
-    }
-
-    .e-grid .e-rowsheader:not(.e-tabular-layout-header) {
-      display: flex;
     }
 
     .e-grid {
@@ -460,7 +463,7 @@
     .e-stackedheadertext.e-cellvalue,
     .e-stackedheadercelldiv.e-cellvalue {
       display: inline-block;
-      padding-left: 12px !important;
+      padding-left: $pivotview-header-text-padding !important;
     }
 
     .e-headercelldiv.e-cellvalue {
@@ -1535,7 +1538,7 @@
       /* stylelint-disable */
       .e-stackedheadertext.e-cellvalue,
       .e-stackedheadercelldiv.e-cellvalue {
-        padding-right: 12px !important;
+        padding-right: $pivotview-header-text-padding !important;
       }
 
       .e-sortfilterdiv {

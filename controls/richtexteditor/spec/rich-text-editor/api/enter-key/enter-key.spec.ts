@@ -142,6 +142,68 @@ describe('EJ2-59705 - Console error thrown when pressing enter key at firefox br
     });
 });
 
+describe('927517: Link functionality breaks with enter action in Firefox browser.', () => {
+    let defaultUserAgent= navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p><a class="e-rte-anchor" href="http://d" title="http://d" target="_blank" aria-label="Open in new window">link</a>   3</p>`
+        });
+        done();
+    });
+
+    it('Link functionality breaks with enter action in Firefox browser', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('p');
+        new NodeSelection().setSelectionText(document, startNode.childNodes[1], startNode.childNodes[1], 3, 3);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === '<p><a class="e-rte-anchor" href="http://d" title="http://d" target="_blank" aria-label="Open in new window">link</a>   </p><p>3</p>').toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+        Browser.userAgent =defaultUserAgent;
+    });
+});
+
+describe('Bug 927528: Console error thrown when pressing enter at the beginning of text in the editor at firefox browser', () => {
+    let defaultUserAgent = navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode">hello</p>`
+        });
+        done();
+    });
+
+    it('Console error thrown when pressing enter key at the beginning of text at firefox browser', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode').childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<p><br></p><p><br></p><p class=\"focusNode\">hello</p>`).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+        Browser.userAgent = defaultUserAgent;
+    });
+});
+
 describe('EJ2-62544 - Enter key press after pressing backspace key on the start of the first list removes the previous content', () => {
     let defaultUserAgent= navigator.userAgent;
     let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";

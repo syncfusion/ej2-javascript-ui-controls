@@ -444,6 +444,11 @@
       font-size: $pivotview-bigger-grid-header-font-size;
       font-weight: $pivotview-grid-header-font-weight !important;
     }
+
+    .e-stackedheadertext.e-cellvalue,
+    .e-stackedheadercelldiv.e-cellvalue {
+      padding-left: $pivotview-touch-header-text-padding !important;
+    }
     
     .e-grid .e-columnsheader {
       padding-right: 16px !important;

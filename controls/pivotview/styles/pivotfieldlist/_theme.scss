@@ -295,7 +295,7 @@
       padding: 2px;
       width: 100%;
 
-      @if ($skin-name =='bootstrap5' or $skin-name =='bootstrap5.3')
+      @if ($skin-name =='bootstrap5' or $skin-name =='bootstrap5.3' or $skin-name == 'tailwind3')
       {
         align-items: center;
       }
@@ -1408,7 +1408,7 @@
               vertical-align: middle;
               width: 70%;
 
-              @if ($skin-name =='bootstrap5') or ($skin-name =='fluent2') or ($skin-name =='fluent') or ($skin-name =='bootstrap5.3') or ($skin-name =='tailwind') {
+              @if ($skin-name =='bootstrap5') or ($skin-name =='fluent2') or ($skin-name =='fluent') or ($skin-name =='bootstrap5.3') or ($skin-name =='tailwind') or ($skin-name =='tailwind3') {
                 color: $field-list-default-font-color;
               }
             }

@@ -140,7 +140,12 @@ describe('Grouping module => ', () => {
             expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(18);
         });
 
-        it('Expandcollase row - selection disable testing', () => {
+        it('Expandcollase row - selection disable testing', (done: Function) => {
+            let actionComplete = (e: any) => {
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
             gridObj.allowSelection = false;
             gridObj.dataBind();
             (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('altUpArrow'));

@@ -5154,3 +5154,32 @@ describe('Second coverage for 916454: actionBegin event triggered multiple times
         gridObj = null;
     });
 });
+
+describe('EJ2-927038: Script Error with Grid AutoFit: Undefined First Column Width and Hidden Visibility', () => {
+    let gridObj: Grid;
+    let table: HTMLElement;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 10),
+                autoFit: true,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', visible: false },
+                    { headerText: 'ShipCountry', field: 'ShipCountry', width: 100 }
+                ]
+            }, done);
+    });
+
+    it('Get the table', () => {
+        table = gridObj.getContentTable() as HTMLElement;
+    });
+
+    it('Check the table width', () => {
+        expect(table.style.width).toBe('100px');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

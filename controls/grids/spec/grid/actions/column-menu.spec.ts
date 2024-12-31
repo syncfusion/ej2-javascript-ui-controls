@@ -817,7 +817,7 @@ describe('column menu module', () => {
                     { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
                     { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
                     { field: 'ShipName', headerText: 'Ship Name', width: 120},
-                    { field: 'ShipCity', headerText: 'Ship City', width: 170, filterTemplate: '<input></input>'},
+                    { field: 'ShipCity', headerText: 'Ship City', width: 170},
                     { field: 'CustomerID', headerText: 'Customer ID', width: 150, visible: false, textAlign: 'Right' }
                 ]
             }, done);
@@ -833,6 +833,7 @@ describe('column menu module', () => {
         it('column menu open shipcity for filter template', (done: Function) => {
             gridObj.columnMenuModule.openColumnMenuByField('ShipCity');
             document.getElementById(gridObj.element.id +'_colmenu_Filter').click();
+            document.querySelector('.e-flmenu-input').remove();
             (gridObj.columnMenuModule as any).getFilter()
             done();
         });

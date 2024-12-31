@@ -4289,6 +4289,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
     // Internal method to handle the rows expand
     private expandRows(row: HTMLTableRowElement, record: Object, parentRec: Object): void {
+        const initialTotalRecordsCount: number = this.grid.totalDataRecordsCount;
         this.expandCollapse('expand', row, record);
         const children: string = 'Children';
         if (!(isRemoteData(this) && !isOffline(this)) && (!isCountRequired(this) || !isNullOrUndefined(record[`${children}`]))) {
@@ -4307,6 +4308,18 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             else if (!this.isExpandAll) {
                 this.trigger(events.expanded, expandArgs);
+            }
+        }
+        if (this.enableVirtualization) {
+            const index: number = this.grid.currentViewData.indexOf(record);
+            const expandedRow: HTMLTableRowElement = isNullOrUndefined(row) ? this.getRows()[parseInt(index.toString(), 10)] : row;
+            if (!isNullOrUndefined(expandedRow)) {
+                const rowIndex: number = +expandedRow.getAttribute('data-rowindex');
+                const outBuffer: number = this.grid.pageSettings.pageSize - Math.ceil(this.grid.pageSettings.pageSize / 2);
+                const lastBlockIdx: number = initialTotalRecordsCount - outBuffer;
+                if (rowIndex > lastBlockIdx) {
+                    this.grid.getContent().firstElementChild.scrollTop = rowIndex * this.grid.getRowHeight();
+                }
             }
         }
     }
@@ -4422,6 +4435,18 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 const scrollTop: number = this.grid.getContent().firstElementChild.scrollTop;
                 if ((scrollHeight - scrollTop) < this.grid.getRowHeight() + +this.height) {
                     this.grid.getContent().firstElementChild.scrollBy(0, this.grid.getRowHeight());
+                }
+            }
+            if (this.enableVirtualization ) {
+                const index: number = this.grid.currentViewData.indexOf(record);
+                const collapsedRow: HTMLTableRowElement = isNullOrUndefined(row) ? this.getRows()[parseInt(index.toString(), 10)] : row;
+                if (!isNullOrUndefined(collapsedRow)) {
+                    const rowIndex: number = +collapsedRow.getAttribute('data-rowindex');
+                    const outBuffer: number = this.grid.pageSettings.pageSize - Math.ceil(this.grid.pageSettings.pageSize / 2);
+                    const lastBlockIdx: number = this.grid.totalDataRecordsCount - outBuffer;
+                    if (rowIndex > lastBlockIdx) {
+                        this.grid.getContent().firstElementChild.scrollBy(0, (rowIndex - lastBlockIdx) * this.grid.getRowHeight());
+                    }
                 }
             }
         }

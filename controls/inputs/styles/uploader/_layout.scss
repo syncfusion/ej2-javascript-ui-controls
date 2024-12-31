@@ -321,7 +321,6 @@
     #{if(&, '&', '*')} .e-upload-actions .e-btn {
       font-family: $upload-font-family;
       @if $skin-name == 'tailwind3' {
-        color: $secondary-text-color-focus;
         font-weight: 600;
       }
     }

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.1.37 (2024-12-31)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I665346` - Now, the table edit properties are applied properly without any errors when editing a table using the `TableEditProperties` quick toolbar option in the Rich Text Editor.
+
+- `#I659461` - Now, the link functionality works properly when pressing the `Enter` key in the Firefox browser in the Rich Text Editor.
+
+- `#I666517` - Now, the image `src` is updated properly when the `actionBegin` event argument is changed in the Rich Text Editor.
+
+- `#I664456` - Now, when the backspace key is pressed at the beginning of a line, it correctly merges only the adjacent lines instead of all lines in the Rich Text Editor.
+
 ## 28.1.36 (2024-12-24)
 
 ### RichTextEditor
@@ -9,6 +23,8 @@
 #### Bug Fixes
 
 - `#I647911` - Now, the display text with text wrapping functions correctly when the enter action is executed in the Rich Text Editor.
+
+- `#I665113` - Now, performing the enter action at the beginning of the text in Firefox works correctly without generating any console errors.
 
 - `#I664650` - Now, the font color and background color picker popup works properly in the Rich Text Editor.
 

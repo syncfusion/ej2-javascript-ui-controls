@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.1.37 (2024-12-31)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I664086` - Bezier settings are now applied to freehand connectors during the drawing process.
+- `#I664088` - Segment points are now draggable even when the pointer is positioned on the outer part of an increased segment thumb size.
+
 ## 28.1.36 (2024-12-24)
 
 ### Diagram
@@ -12,6 +21,7 @@
 - `#I662735` - The undo/redo functionality now restores intermediate connector segments.
 - `#I663194` - Connectors now retain their previous state after undoing runtime source and target ID changes.
 - `#I663672` - The `elementType` in the `elementDraw` event now correctly updates for `Polyline` and `Freehand` in the completed state.
+- `#I663175` - The diagram page no longer flickers during pinch zoom.
 
 ## 28.1.35 (2024-12-18)
 

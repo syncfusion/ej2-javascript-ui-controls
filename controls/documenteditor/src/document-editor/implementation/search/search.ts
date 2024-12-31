@@ -173,7 +173,10 @@ export class Search {
         const textToFind: string = this.textSearchResults.currentSearchResult.text;
         const pattern: RegExp = this.viewer.owner.searchModule.textSearch.stringToRegex(textToFind, findOptions);
         let index: string = this.owner.selectionModule.end.getHierarchicalIndexInternal();
-        let result: TextSearchResult = this.viewer.owner.searchModule.textSearch.findNext(pattern, findOptions, index);
+        let result: TextSearchResult = this.textSearchResults.currentSearchResult;
+        if (isNullOrUndefined(result)) {
+            result = this.viewer.owner.searchModule.textSearch.findNext(pattern, findOptions, index);
+        }
         if (!isNullOrUndefined(result)) {
             this.navigate(result);
             this.textSearchResults.addResult();
@@ -273,11 +276,11 @@ export class Search {
      */
     public navigate(textSearchResult: TextSearchResult): void {
         if (textSearchResult) {
-            const start: TextPosition = textSearchResult.start;
-            const end: TextPosition = textSearchResult.end;
+            const start: string = textSearchResult.startOffset;
+            const end: string = textSearchResult.endOffset;
             if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.selectionModule) && !isNullOrUndefined(start) &&
-                !isNullOrUndefined(end) && !isNullOrUndefined(start.paragraph) && !isNullOrUndefined(end.paragraph)) {
-                this.owner.selectionModule.selectRange(start, end);
+                !isNullOrUndefined(end)) {
+                this.owner.selectionModule.select(start, end);
                 this.documentHelper.updateFocus();
             }
         }

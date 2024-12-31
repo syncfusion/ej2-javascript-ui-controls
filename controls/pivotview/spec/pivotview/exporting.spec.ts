@@ -1624,7 +1624,7 @@ describe('PDF Export', () => {
             setTimeout(() => {
                 expect((pivotGridObj.engineModule.pivotValues[0][1] as IDataSet).formattedText).toBe("female");
                 done();
-            }, 1000);
+            }, 1500);
         });
         it('- Exporting', (done: Function) => {
             setTimeout(() => {

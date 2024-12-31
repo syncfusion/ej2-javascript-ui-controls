@@ -305,4 +305,32 @@ describe('Toolbar - Renderer', () => {
             destroy(rteObj);
         });
     });
+    describe('927099: Applying background colors without focusing on the editor leads to a console error.', function () {
+        let rteObj : any;
+        let rteEle : any;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['BackgroundColor']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        it('Check the format dropdown active element', function () {
+            const backgroundColorButton: HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[0];
+            if (backgroundColorButton) {
+                backgroundColorButton.click();
+                const firstTile = document.querySelectorAll('.e-dropdown-popup .e-tile.e-rte-square-palette.e-custom-tile')[1] as HTMLElement;
+                firstTile.click();
+                const applyButton: HTMLElement  = document.querySelector('.e-apply');
+                applyButton.click();
+                backgroundColorButton.click();
+                const isTileSelected = firstTile.classList.contains('e-selected');
+                expect(isTileSelected).toBe(true); 
+            }
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+    });
 });

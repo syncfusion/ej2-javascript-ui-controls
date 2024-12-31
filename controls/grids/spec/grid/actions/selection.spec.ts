@@ -1741,9 +1741,17 @@ describe('Grid Selection module', () => {
                 }, done);
         });
 
-        it('enable selection testing', () => {
+        it('enable selection testing', (done: Function) => {
+            let actionComplete = (e: any) => {
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
             gridObj.allowSelection = true;
             gridObj.dataBind();
+        });
+
+        it('selection the row', () => {
             selectionModule = gridObj.selectionModule;
             rows = gridObj.getRows();
             cell = rows[0].firstChild as HTMLElement;
@@ -7165,6 +7173,36 @@ describe('EJ2-898361 - SelectedRowIndex property is not reset before rowDeselect
     it('rowDeselected count - 2', () => {
        gridObj.selectRow(0, true);
        expect(count).toBe(1);
+    });
+
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-929184 - When allowSelection is enabled dynamically, the SelectedRowIndex does not updated', () =>{
+    let gridObj: Grid;
+    beforeAll((done) => {
+        gridObj = createGrid({
+                dataSource: data,
+                allowSelection: false,
+                selectedRowIndex: 2,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' }
+                ],
+            }, done);
+        });
+    it('enable the selection', (done: Function) => {
+        let actionComplete = (args: any) => {
+            expect(args.rows[2].isSelected).toBeTruthy();
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.allowSelection = true;
     });
 
     afterAll(function () {

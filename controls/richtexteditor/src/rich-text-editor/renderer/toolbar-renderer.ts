@@ -698,16 +698,20 @@ export class ToolbarRenderer implements IRenderer {
                     value: colorpickerValue
                 };
                 proxy.parent.notify(events.selectionRestore, {});
-                (proxy.currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor = colorpickerValue;
+                if (proxy.currentElement) {
+                    (proxy.currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor = colorpickerValue;
+                }
                 const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                 const closestElement: Element = closest(range.startContainer.parentNode, 'table');
                 if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' || range.startContainer.nodeName === 'BODY' ||
-                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed && args.subCommand === 'BackgroundColor' && (closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable)) {
+                    (range.startContainer.parentNode && closest(range.startContainer.parentNode, 'td,th'))) && range.collapsed && args.subCommand === 'BackgroundColor' && (closestElement && closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable)) {
                     proxy.parent.notify(events.tableColorPickerChanged, colorPickerArgs);
                 } else {
                     proxy.parent.notify(events.colorPickerChanged, colorPickerArgs);
                 }
-                proxy.currentDropdown.toggle();
+                if (proxy.currentDropdown) {
+                    proxy.currentDropdown.toggle();
+                }
             },
             beforeModeSwitch: (args: ModeSwitchEventArgs): void => {
                 value = colorPicker.value;

@@ -3723,14 +3723,17 @@ export class Selection {
             // If the row contains a vertically merged cell and the cell count differs between the current row and the split row. So, we have added the following code to update the split cell widget for selection.
             if (!isNullOrUndefined(childWidget) && childWidget instanceof TableRowWidget && childWidget.nextSplitWidget && this.documentHelper.layout.isVerticalMergedCellContinue(childWidget)) {
                 let positionIndex: string = position.index;
-                let index: number = positionIndex.indexOf(';')
+                let index: number = positionIndex.indexOf(';');
                 let cellIndexValue: string = positionIndex.substring(0, index);
                 positionIndex = positionIndex.substring(index).replace(';', '');
-                let cell: TableCellWidget = this.getBlockByIndex(childWidget, parseInt(cellIndexValue, 10) - 1) as TableCellWidget;
-                index = positionIndex.indexOf(';')
+                let currentCell: TableCellWidget = this.getBlockByIndex(childWidget, parseInt(cellIndexValue, 10)) as TableCellWidget;
+                index = positionIndex.indexOf(';');
                 let blockIndexValue: string = positionIndex.substring(0, index);
-                if (cell && cell instanceof TableCellWidget && cell.childWidgets.length > 0 && (cell.lastChild as BlockWidget).index < parseInt(blockIndexValue, 10)) {
-                    return this.getBlockByIndex(container.nextSplitWidget, blockIndex, position);
+                if (currentCell && currentCell instanceof TableCellWidget && currentCell.childWidgets.length > 0 && (currentCell.lastChild as BlockWidget).index < parseInt(blockIndexValue, 10)) {
+                    let prevCell: TableCellWidget = this.getBlockByIndex(childWidget, parseInt(cellIndexValue, 10) - 1) as TableCellWidget;
+                    if (prevCell && prevCell instanceof TableCellWidget && prevCell.childWidgets.length > 0 && (prevCell.lastChild as BlockWidget).index < parseInt(blockIndexValue, 10)) {
+                        return this.getBlockByIndex(container.nextSplitWidget, blockIndex, position);
+                    }
                 }
             }
             if (!childWidget && !(container instanceof HeaderFooterWidget)) {
@@ -5915,18 +5918,23 @@ export class Selection {
      */
     public getNextParagraphCell(cell: TableCellWidget): ParagraphWidget {
         if ((cell as TableCellWidget).nextRenderedWidget && cell.nextRenderedWidget instanceof TableCellWidget) {
-            //Return first paragraph in cell.
-            cell = cell.nextRenderedWidget as TableCellWidget;
-            if (cell.getSplitWidgets()[0] instanceof TableCellWidget) {
-                cell = cell.getSplitWidgets()[0] as TableCellWidget;
-            }
-            const block: BlockWidget = cell.firstChild as BlockWidget;
-            if (block) {
-                return this.documentHelper.getFirstParagraphBlock(block);
+            if (cell.ownerRow.index === cell.nextRenderedWidget.rowIndex) {
+                //Return first paragraph in cell.
+                cell = cell.nextRenderedWidget as TableCellWidget;
+                if (cell.getSplitWidgets()[0] instanceof TableCellWidget) {
+                    cell = cell.getSplitWidgets()[0] as TableCellWidget;
+                }
+                const block: BlockWidget = cell.firstChild as BlockWidget;
+                if (block) {
+                    return this.documentHelper.getFirstParagraphBlock(block);
+                } else {
+                    return this.getNextParagraphCell(cell);
+                }
             } else {
+                cell = cell.nextRenderedWidget;
                 return this.getNextParagraphCell(cell);
             }
-        } else if(cell.nextSplitWidget && cell.nextSplitWidget.childWidgets.length === 0){
+        } else if (cell.nextSplitWidget && cell.nextSplitWidget.childWidgets.length === 0) {
             cell = cell.getSplitWidgets().pop() as TableCellWidget;
         }
         return this.getNextParagraphRow((cell as TableCellWidget).containerWidget as BlockWidget);
@@ -7304,6 +7312,9 @@ export class Selection {
             if (element instanceof ListTextElementBox && !paragraphFormat.bidi) {     //after list implementation
                 if (i === 0) {
                     left += element.margin.left + element.width;
+                    if (element.padding) {
+                        left += element.padding.left;
+                    }
                 } else {
                     left += element.width;
                 }
@@ -7349,7 +7360,7 @@ export class Selection {
                     left += element.margin.left;
                     element = undefined;
                 } else {
-                    left += element.margin.left + element.width;
+                    left += element.margin.left + element.width + element.padding.left;
                     element = undefined;
                 }
                 // }
@@ -7462,6 +7473,9 @@ export class Selection {
             }
             if (i === 1 && widgetInternal instanceof ListTextElementBox) {
                 left += widgetInternal.width;
+                if(widgetInternal.padding && widgetInternal.padding.left) {
+                    left += widgetInternal.padding.left;
+                }
             } else if (widgetInternal instanceof TabElementBox && elementBox === widgetInternal) {
                 left += widgetInternal.margin.left;
             } else {
@@ -11473,17 +11487,19 @@ export class Selection {
      */
     public highlightContentControlEditRegionInternal(editRangeStart: ContentControl): void {
         let positionInfo: PositionInfo = this.getPosition(editRangeStart);
-        let startPosition: TextPosition = positionInfo.startPosition;
-        let endPosition: TextPosition = positionInfo.endPosition;
-        this.highlight(editRangeStart.line.paragraph, startPosition, endPosition, editRangeStart);
-        let currentParagraph : ParagraphWidget = editRangeStart.line.paragraph;
-        while(currentParagraph !== endPosition.paragraph){
-            if(currentParagraph.nextRenderedWidget instanceof ParagraphWidget){
-                currentParagraph = currentParagraph.nextRenderedWidget;
-                this.highlight(currentParagraph,startPosition,endPosition,editRangeStart);
-            }
-            else{
-                return;
+        if (!isNullOrUndefined(positionInfo.startPosition) && !isNullOrUndefined(positionInfo.endPosition)) {
+            let startPosition: TextPosition = positionInfo.startPosition;
+            let endPosition: TextPosition = positionInfo.endPosition;
+            this.highlight(editRangeStart.line.paragraph, startPosition, endPosition, editRangeStart);
+            let currentParagraph: ParagraphWidget = editRangeStart.line.paragraph;
+            while (currentParagraph !== endPosition.paragraph) {
+                if (currentParagraph.nextRenderedWidget instanceof ParagraphWidget) {
+                    currentParagraph = currentParagraph.nextRenderedWidget;
+                    this.highlight(currentParagraph, startPosition, endPosition, editRangeStart);
+                }
+                else {
+                    return;
+                }
             }
         }
     }

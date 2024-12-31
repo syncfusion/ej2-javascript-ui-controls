@@ -266,8 +266,8 @@ export class VirtualScroll {
                                 let query: Query = this.parent.value && (this.parent.value as any).length > 0 ?
                                     this.parent.getForQuery(this.parent.value as any).clone() :  new Query;
                                 if (
-                                    this.parent.viewPortInfo.endIndex === this.parent.totalItemCount + (this.parent.value as any).length &&
-                                    this.parent.hideSelectedItem
+                                    this.parent.value && (this.parent.viewPortInfo.endIndex === this.parent.totalItemCount +
+                                        (this.parent.value as any).length) && this.parent.hideSelectedItem
                                 ) {
                                     query = query.skip(this.parent.totalItemCount - this.parent.itemCount);
                                 } else {

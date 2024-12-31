@@ -553,6 +553,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public isLinuxOS: boolean = false;
+    /**
+     * @private
+     */
     public visibleBoundsIn: Rect;
 
     /**
@@ -965,6 +969,7 @@ export class DocumentHelper {
         this.editRanges = new Dictionary<string, EditRangeStartElementBox[]>();
         this.isIosDevice = typeof window !== 'undefined' ? /Mac|iPad|iPod/i.test(navigator.userAgent) : false;
         this.isMobileDevice = typeof window !== 'undefined' ? /Android|Windows Phone|webOS/i.test(navigator.userAgent) : false;
+        this.isLinuxOS = typeof window !== 'undefined' ? /Linux/i.test(navigator.userAgent) : false;
         this.formFillPopup = new FormFieldPopUp(this.owner);
         this.contentDropDown = new ContentControlPopUp(this.owner);
         this.customXmlData = new Dictionary<string, string>();
@@ -3996,7 +4001,7 @@ export class DocumentHelper {
                         scrollToLastPage = false;
                     }
                 }
-                if (!isNullOrUndefined(this.pages[j])) {
+                if (this.pages.indexOf(page) !==-1 && !isNullOrUndefined(this.pages[j])) {
                     this.removePage(this.pages[j]);
                 }
                 j--;

@@ -2799,6 +2799,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns {void}
      */
      public refreshActiveTabBorder(): void {
+        if (this.heightAdjustMode === 'None' && this.height !== 'auto' && this.cntEle && !this.isVertical()) {
+            const hdrEle: HTEle = this.getTabHeader();
+            setStyle(this.cntEle, { 'height': (this.element.clientHeight - hdrEle.offsetHeight) + 'px' });
+        }
         const activeEle: Element = select('.' + CLS_TB_ITEM + '.' + CLS_TB_POPUP + '.' + CLS_ACTIVE, this.element);
         if (!isNOU(activeEle) && this.reorderActiveTab) {
             this.select(this.getEleIndex(<HTEle>activeEle));

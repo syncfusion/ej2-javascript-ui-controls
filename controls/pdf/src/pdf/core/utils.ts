@@ -3673,7 +3673,7 @@ export function _tryParseFontStream(widgetDictionary: _PdfDictionary, crossRefer
                                     annotation: PdfAnnotation | PdfField): Uint8Array {
     let fontData: Uint8Array;
     const apperance: _PdfDictionary = widgetDictionary.get('AP');
-    if (apperance && apperance.has('N')) {
+    if (apperance && apperance instanceof _PdfDictionary && apperance.has('N')) {
         const normal: _PdfStream = apperance.get('N');
         if (normal && normal instanceof _PdfStream && normal.dictionary.has('Resources')) {
             const resourcesDictionary: _PdfDictionary = normal.dictionary.get('Resources');

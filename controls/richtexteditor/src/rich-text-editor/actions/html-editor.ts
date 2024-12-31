@@ -138,7 +138,7 @@ export class HtmlEditor {
     private onSelectionRestore(e: IToolbarOptions): void {
         this.parent.isBlur = false;
         (this.contentRenderer.getEditPanel() as HTMLElement).focus({preventScroll: true});
-        if (isNullOrUndefined(e.items) || e.items) {
+        if ((isNullOrUndefined(e.items) || e.items) && (!isNullOrUndefined(this.saveSelection))) {
             this.saveSelection.restore();
         }
     }
@@ -595,7 +595,7 @@ export class HtmlEditor {
                 let checkParent : boolean = false;
                 if (this.oldRangeElement && this.oldRangeElement.nodeName !== '#text' && this.oldRangeElement.querySelectorAll('BR').length === 1) {
                     const brElement: HTMLElement = this.oldRangeElement.querySelector('BR');
-                    if (brElement) {
+                    if (brElement && isNOU(brElement.nextSibling)) {
                         const brParentElement: HTMLElement = brElement.parentNode as HTMLElement | null;
                         const currentState: string = this.oldRangeElement.innerHTML;
                         this.parent.formatter.saveData(currentState);

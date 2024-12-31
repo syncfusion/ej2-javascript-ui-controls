@@ -39,6 +39,7 @@ export class KeyboardNavigation {
 
     private keyDownHandler(e: KeyboardEvent): void {
         const target: Element = e.target as Element;
+        const isRtl: boolean = this.parent.enableRtl;
         /*alt + up to close filter popup*/
         if (e.altKey && e.keyCode === 38 && this.parent.element.lastElementChild.classList.contains('e-filter-popup')) {
             this.parent.notify(filterCellKeyDown, { closePopup: true });
@@ -277,7 +278,7 @@ export class KeyboardNavigation {
                 if (e.shiftKey) {
                     if (e.keyCode === 40) { /* ctrl+shift+down */
                         selectIdx[2] = this.getNextNonEmptyCell(selectIdx[2], actIdxes[1], 'down');
-                    } else if (e.keyCode === 39) { /* ctrl+shift+right */
+                    } else if ((e.keyCode === 39 && !isRtl) || (e.keyCode === 37 && isRtl)) { /* ctrl+shift+right */
                         selectIdx[3] = this.getNextNonEmptyCell(actIdxes[0], selectIdx[3], 'right');
                     } else if (e.keyCode === 38) { /* ctrl+shift+up */
                         selectIdx[2] = this.getNextNonEmptyCell(selectIdx[2], actIdxes[1], 'top');
@@ -287,11 +288,11 @@ export class KeyboardNavigation {
                     this.updateSelection(sheet, selectIdx, e);
                     this.scrollNavigation([selectIdx[2], selectIdx[3]], true);
                 } else {
-                    if (e.keyCode === 37) { /*ctrl + left*/
+                    if ((e.keyCode === 37 && !isRtl) || (e.keyCode === 39 && isRtl)) { /*ctrl + left*/
                         actIdxes[1] = this.getNextNonEmptyCell(actIdxes[0], actIdxes[1], 'left');
                     } else if (e.keyCode === 38) {  /*ctrl + up*/
                         actIdxes[0] = this.getNextNonEmptyCell(actIdxes[0], actIdxes[1], 'top');
-                    } else if (e.keyCode === 39) { /*ctrl+ right*/
+                    } else if ((e.keyCode === 39 && !isRtl) || (e.keyCode === 37 && isRtl)) { /*ctrl+ right*/
                         actIdxes[1] = this.getNextNonEmptyCell(actIdxes[0], actIdxes[1], 'right');
                     } else { /*ctrl+ down*/
                         actIdxes[0] = this.getNextNonEmptyCell(actIdxes[0], actIdxes[1], 'down');
@@ -918,6 +919,7 @@ export class KeyboardNavigation {
         const selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
         const swapRange: number[] = getSwapRange(selectedRange);
         let noHidden: boolean = true;
+        const isRtl: boolean = this.parent.enableRtl;
         if (e.keyCode === 38) { /*shift + up arrow*/
             for (let i: number = swapRange[1]; i <= swapRange[3]; i++) {
                 const cell: CellModel = getCell(selectedRange[2], i, sheet);
@@ -954,7 +956,7 @@ export class KeyboardNavigation {
                 }
             }
         }
-        if (e.keyCode === 39) { /*shift + right arrow*/
+        if ((e.keyCode === 39 && !isRtl) || (e.keyCode === 37 && isRtl)) { /*shift + right arrow*/
             for (let i: number = swapRange[0]; i <= swapRange[2]; i++) {
                 const cell: CellModel = getCell(i, selectedRange[3], sheet);
                 if (!isNullOrUndefined(cell) && cell.colSpan && cell.colSpan > 0) {
@@ -973,7 +975,7 @@ export class KeyboardNavigation {
                 }
             }
         }
-        if (e.keyCode === 37) { /*shift + left arrow*/
+        if ((e.keyCode === 37 && !isRtl) || (e.keyCode === 39 && isRtl)) { /*shift + left arrow*/
             for (let i: number = swapRange[0]; i <= swapRange[2]; i++) {
                 const cell: CellModel = getCell(i, selectedRange[3], sheet);
                 if (!isNullOrUndefined(cell) && cell.colSpan && cell.colSpan < 0) {

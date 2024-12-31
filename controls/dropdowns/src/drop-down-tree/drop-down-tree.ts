@@ -1582,8 +1582,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
             addClass([this.inputEle], CHIP_INPUT);
             this.updateOverFlowView();
-            this.ensurePlaceHolder();
         }
+        this.ensurePlaceHolder();
     }
 
     private triggerChangeEvent(event?: MouseEvent | KeyboardEvent): void {
@@ -2198,10 +2198,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.value !== null && this.value.length !== 0) {
             let data: { [key: string]: Object };
             if (this.showCheckBox || this.allowMultiSelection) {
-                for (let i: number = 0; i < this.value.length; i++) {
+                for (let i: number = this.value.length - 1; i >= 0; i--) {
                     data = this.treeObj.getTreeData(this.value[i as number])[0];
                     if (isNOU(data)) {
-                        this.value.splice(this.value.indexOf(this.value[i as number]), 1);
+                        this.value.splice(i, 1);
                     }
                 }
                 if (this.value.length !== 0) {
@@ -2255,7 +2255,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private setSelectedValue(): void {
-        if (this.value != null) {
+        if (this.value !== null && !(this.value.length === 0)) {
             return;
         }
         if (!this.isInitialized) {
@@ -2667,7 +2667,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.isFilteredData) { this.treeObj.expandAll(); }
         if (this.isFilterRestore) {
             this.restoreFilterSelection();
-            this.isFilterRestore = false;
+            if (!this.showSelectAll) {
+                this.isFilterRestore = false;
+            }
         }
     }
 
@@ -2931,14 +2933,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.ensurePlaceHolder();
         }
         if (this.showSelectAll && this.checkBoxElement) {
+            const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
             const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li[aria-checked=true]');
             const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
-            if (wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0 || (!isNOU(args.data[0]) && args.data[0].isChecked === 'false'))) {
+            if ((wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0 ||
+                (!isNOU(args.data[0]) && args.data[0].isChecked === 'false'))) || !args.isInteracted && this.isFilterRestore) {
+                this.isFilterRestore = false;
                 this.isReverseUpdate = true;
                 this.changeState(wrap, 'uncheck');
                 this.isReverseUpdate = false;
             } else if (wrap && args.action === 'check'
-                && checkedNodes.length === (this.fields.dataSource as { [key: string]: Object; }[]).length
+                && checkedNodes.length === nodes.length
                 && (args.isInteracted || this.isCheckAllCalled || (!isNOU(args.data[0]) && args.data[0].isChecked === 'true'))) {
                 this.isReverseUpdate = true;
                 this.isCheckAllCalled = false;
@@ -3041,7 +3046,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private ensurePlaceHolder(): void {
-        if (isNOU(this.value) || (this.value && this.value.length === 0)) {
+        if (isNOU(this.value) || (this.value !== null && this.value.length === 0)) {
             removeClass([this.inputEle], CHIP_INPUT);
             if (this.chipWrapper) {
                 addClass([this.chipWrapper], HIDEICON);
@@ -3336,7 +3341,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private setTagValues(): void {
-        if (this.value === null || this.text == null) { return; }
+        if (this.value === null || this.text == null || this.value.length === 0) {
+            if (this.inputWrapper.contains(this.chipWrapper)) {
+                addClass([this.chipWrapper], HIDEICON);
+            }
+            return;
+        }
         if (!this.inputWrapper.contains(this.chipWrapper)) {
             this.createChip();
         }

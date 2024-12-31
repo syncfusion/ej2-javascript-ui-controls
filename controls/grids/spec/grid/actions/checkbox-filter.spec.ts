@@ -15,7 +15,7 @@ import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { Query, DataManager } from '@syncfusion/ej2-data';
+import { Query, DataManager, ODataV4Adaptor, Predicate } from '@syncfusion/ej2-data';
 import { FilterSearchBeginEventArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
@@ -3854,6 +3854,49 @@ describe('coverage improvemnet.', () => {
         }); 
 
         afterAll((done) => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
+    describe('Code coverage - 1 =>', () => {
+        let gridObj: Grid;
+        let actionComplete: (e?: any) => void;
+        const firstPredicate: Predicate = new Predicate( 'OrderID', 'greaterthan', 10249 );
+        const secondPredicate: Predicate = new Predicate( 'OrderID', 'lessthan', 10280 );
+        const thirdPredicate: Predicate = new Predicate( 'Freight', 'lessthan', 50);
+        let query = new Query().where(firstPredicate.and(secondPredicate.and(thirdPredicate)));
+        beforeAll((done: Function) => {
+            let options: Object = {
+            dataSource: fdata,
+            filterSettings: { type: 'CheckBox' },
+            allowFiltering: true,
+            query: query,
+            columns: [
+                { field: 'OrderID' ,headerText:"Order ID"},
+                { field: 'Freight',headerText:"Freight"},
+                { field: 'ShipCountry', headerText:"Ship Country" }],
+                actionComplete: actionComplete
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('open filter menu', (done: Function) => {
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+            done();
+        });
+
+        it('addDistinct Coverage', (done: Function) => {
+            (gridObj.filterModule as any).filterModule.checkBoxBase.options.dataManager = new DataManager({
+                    url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+                    adaptor: new ODataV4Adaptor
+            });
+            (gridObj.filterModule as any).filterModule.checkBoxBase.addDistinct(query);
+            done();
+        });
+
+        afterAll(() => {
             destroy(gridObj);
             gridObj = actionComplete = null;
         });

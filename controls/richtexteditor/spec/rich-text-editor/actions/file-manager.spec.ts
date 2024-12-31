@@ -3,6 +3,7 @@
  */
 import { detach, isNullOrUndefined, Browser } from "@syncfusion/ej2-base";
 import { IRenderer, RichTextEditor, QuickToolbar } from "../../../src/rich-text-editor/index";
+import { ActionBeginEventArgs } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy } from "./../render.spec";
 
 let hostUrl: string = 'https://ej2-aspcore-service.azurewebsites.net/';
@@ -349,6 +350,76 @@ describe('FileManager module', () => {
             insertBtn.removeAttribute('disabled');
             insertBtn.click();
             expect(rteObj.element.querySelectorAll('.e-content img').length).toBe(1);
+        });
+    });
+
+    describe('929530: Image src not updated when the action begin event argument are changed.', () => {
+        let rteObj: RichTextEditor;
+        let trg: HTMLElement;
+        let rteEle: HTMLElement;
+        let QTBarModule: IRenderer;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FileManager']
+                },
+                fileManagerSettings: {
+                    enable: true,
+                    path: '/Pictures/Employees',
+                    ajaxSettings: {
+                        url: hostUrl + 'api/FileManager/FileOperations',
+                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
+                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                    }
+                },
+                actionBegin: onActionBegin,
+            });
+             function onActionBegin(e: ActionBeginEventArgs) {
+                 if (e.requestType === 'File' || e.requestType === 'Replace') {
+                     const url: string = e.itemCollection.url;
+                     if (url.indexOf('?path') > -1) {
+                         const newURL: string = url.replace('?path=', '');
+                         e.itemCollection.url = newURL;
+                     }
+                 }
+             }
+             rteEle = rteObj.element;
+             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+             clickEvent.initEvent("mousedown", true, true);
+             trg.dispatchEvent(clickEvent);
+             QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the image src when insert image', (done: Function) => {
+            setTimeout(() => {
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: {  filterPath: '\\Pictures\\Employees', name: 'Adam.png', isFile: true, type: '.png' } });
+            let insertBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-primary');
+            insertBtn.click();
+            let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
+            expect(imageElement.src).toBe('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/EmployeesAdam.png');
+            done();
+        }, 500);
+        });
+        it('Check the image src when replace image', (done: Function) => {
+            rteObj.value = '<img src="https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
+            rteObj.dataBind();
+            let imageElement: HTMLImageElement = rteObj.element.querySelector('.e-content .e-rte-image') as HTMLImageElement;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, imageElement);
+            QTBarModule.imageQTBar.showPopup(0, 0, imageElement);
+            setTimeout(() => {
+                let pop: Element = document.body.querySelector('.e-rte-quick-popup');
+                (pop.querySelector('.e-toolbar-item button') as HTMLElement).click();
+                (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures\\Employees', name: 'Andrew.png', isFile: true, type: '.png' } });
+                let insertBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-primary');
+                insertBtn.click();
+                let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
+                expect(imageElement.src).toBe('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/EmployeesAndrew.png');
+                done();
+            }, 500);
         });
     });
 });

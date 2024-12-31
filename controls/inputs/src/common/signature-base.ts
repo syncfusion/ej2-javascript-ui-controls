@@ -265,6 +265,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.canvasContext.canvas.width = this.element.offsetWidth;
             this.canvasContext.canvas.height = this.element.offsetHeight;
             this.canvasContext.scale(1, 1);
+            this.canvasContext.fillStyle = this.strokeColor;
             const pointSize: number = (this.minStrokeWidth + this.maxStrokeWidth) / 2;
             for (let i: number = 0; i < this.signRatioPointsColl.length; i++) {
                 this.arcDraw((this.signRatioPointsColl[i as number].x * this.canvasContext.canvas.width),

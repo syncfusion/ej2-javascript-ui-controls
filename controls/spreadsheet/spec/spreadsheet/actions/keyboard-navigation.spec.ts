@@ -894,7 +894,38 @@ describe('Spreadsheet cell navigation module ->', () => {
                 done();
             });
         });
-
+        describe('EJ2-929110 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Shift plus arrow key navigation is not working properly in RTL mode', (done: Function) => {
+                helper.setModel('enableRtl', true);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['H5']);
+                    helper.triggerKeyNativeEvent(37, false, true);
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('H5:I5');
+                    helper.invoke('selectRange', ['H5']);
+                    helper.triggerKeyNativeEvent(39, false, true);
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('H5:G5');
+                    helper.invoke('selectRange', ['A5']);
+                    helper.triggerKeyNativeEvent(37, true, true);
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:H5');
+                    helper.invoke('selectRange', ['H5']);
+                    helper.triggerKeyNativeEvent(39, true, true);
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('H5:A5');
+                    helper.invoke('selectRange', ['A5']);
+                    helper.triggerKeyNativeEvent(37, true);
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('H5:H5');
+                    helper.invoke('selectRange', ['H5']);
+                    helper.triggerKeyNativeEvent(39, true);
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
+                    done();
+                });
+            });
+        })
         describe('I348582, EJ2-60424 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ isProtected: true, protectSettings: { selectCells: true } }] }, done);

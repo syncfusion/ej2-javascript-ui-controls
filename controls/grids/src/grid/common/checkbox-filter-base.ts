@@ -43,6 +43,7 @@ export class CheckBoxFilterBase {
     protected sInput: HTMLInputElement;
     protected sIcon: Element;
     protected isExecuteLocal: boolean = false;
+    private queryFilteredColumn: Object[] = [];
     /** @hidden */
     public options: IFilterArgs;
     protected customQuery: boolean;
@@ -974,13 +975,15 @@ export class CheckBoxFilterBase {
             (this.parent as IGrid).query instanceof Query) {
             const gridQuery: Query = (this.parent as IGrid).query;
             for (let i: number = 0; i < gridQuery.queries.length; i++) {
-                if (gridQuery.queries[parseInt(i.toString(), 10)].fn === 'onWhere') {
-                    const queryFilteredColumn: Object[] =  DataUtil.distinct([gridQuery.queries[parseInt(i.toString(), 10)].e], 'field');
-                    queryFilteredColumn.map((field: string) => {
+                const queryOptions: QueryOptions = gridQuery.queries[parseInt(i.toString(), 10)];
+                if (queryOptions.fn === 'onWhere') {
+                    this.getPredicateFields(queryOptions.e);
+                    this.queryFilteredColumn.map((field: string) => {
                         if (filteredColumn.indexOf(field) === -1) {
                             filteredColumn.push(field);
                         }
                     });
+                    this.queryFilteredColumn = [];
                 }
             }
         }
@@ -1009,6 +1012,25 @@ export class CheckBoxFilterBase {
             }
         }
         return query;
+    }
+
+    private getPredicateFields(query: QueryOptions): void {
+        if (query.isComplex && query.predicates) {
+            query.predicates.forEach((predicate: Predicate) => {
+                if (Array.isArray(predicate)) {
+                    predicate.forEach((p: Predicate) => this.getPredicateFields(p));
+                } else {
+                    this.getPredicateFields(predicate);
+                }
+            });
+        }
+        else {
+            if (query.field && !query.isComplex) {
+                if (this.queryFilteredColumn.indexOf(query.field) <= -1) {
+                    this.queryFilteredColumn = this.queryFilteredColumn.concat(DataUtil.distinct([query.field], 'field'));
+                }
+            }
+        }
     }
 
     private filterEvent(args: Object, query: Query): void {

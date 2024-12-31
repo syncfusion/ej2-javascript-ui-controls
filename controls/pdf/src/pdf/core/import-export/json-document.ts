@@ -294,6 +294,7 @@ export class _JsonDocument extends _ExportHelper {
     _writeAttribute(key: string, primitive: any, dictionary: _PdfDictionary): void { // eslint-disable-line
         let value: string;
         let rcValue: string;
+        let bytes: Uint8Array;
         switch (key) {
         case 'C':
             this._writeColor(primitive, 'color', 'c');
@@ -471,7 +472,10 @@ export class _JsonDocument extends _ExportHelper {
         case 'MeasurementTypes':
         case 'GroupNesting':
         case 'ITEx':
+            break;
         case 'TextMarkupContent':
+            bytes = _stringToBytes(primitive) as Uint8Array;
+            this._writeAttributeString(key, _byteArrayToHexString(bytes));
             break;
         case 'Border':
         case 'A':

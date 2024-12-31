@@ -147,7 +147,7 @@ export class Formatter {
                         }
                     }
                     const command: string = actionBeginArgs.item.subCommand.toLocaleLowerCase();
-                    if (command === 'image') {
+                    if (command === 'image' || command === 'file' || command === 'replace') {
                         value = actionBeginArgs.itemCollection;
                     }
                     if (command === 'paste' || command === 'cut' || command === 'copy') {

@@ -4906,7 +4906,7 @@ export class Editor {
                     }
                 }
             }
-            if (!isTOC && !skipParaMark) {
+            if (!skipParaMark) {
                 widget.characterFormat.revisions.push(revision);
                 revision.range.push(widget.characterFormat);
             }
@@ -7332,10 +7332,6 @@ export class Editor {
             let pastedComments: CommentElementBox[] = [];
             const widgets: BodyWidget[] = this.getBlocks(content, true, undefined, pastedComments);
             this.pasteContentsInternal(widgets, true, currentFormat, pasteOptions, pastedComments);
-            if (this.isRemoteAction) {
-                this.updatePasteRevision();
-                this.owner.trackChangesPane.updateTrackChanges();
-            }
             if (!isNullOrUndefined(pastedComments) && pastedComments.length > 0) {
                 this.documentHelper.layout.layoutComments(pastedComments);
             }
@@ -7441,6 +7437,10 @@ export class Editor {
             layoutWholeDocument = this.pasteContent(widgets, currentFormat);
             if(this.owner.enableTrackChanges && this.isInsertingTOC && isNullOrUndefined(this.owner.documentHelper.blockToShift)){
                 this.owner.documentHelper.blockToShift = this.selection.start.paragraph as BlockWidget;
+            }
+            if (this.isRemoteAction) {
+                this.updatePasteRevision();
+                this.owner.trackChangesPane.updateTrackChanges();
             }
         } else if (this.editorHistory) {
             this.editorHistory.currentBaseHistoryInfo = undefined;
@@ -8586,6 +8586,7 @@ export class Editor {
                     }
                 }
             }
+            paragraph.textWrapWidth = false;
             this.viewer.updateClientAreaForBlock(paragraph, true);
             paragraph.x = this.viewer.clientActiveArea.x;
         }
@@ -9830,6 +9831,7 @@ export class Editor {
         let cellInfo: CellInfo = this.updateSelectedCellsInTable(start, end, endCellLeft, endCellRight);
         start = cellInfo.start;
         end = cellInfo.end;
+        let endCellRowSpan: number = endCell.cellFormat.rowSpan;
         let count: number = table.childWidgets.indexOf(endCell.ownerRow);
         let rowStartIndex: number = table.childWidgets.indexOf(startCell.ownerRow);
         let mergedCell: TableCellWidget = undefined;
@@ -9890,7 +9892,7 @@ export class Editor {
             }
         }
         if (!isNullOrUndefined(mergedCell) && rowStartIndex < count) {
-            mergedCell.cellFormat.rowSpan = count - rowStartIndex + 1;
+            mergedCell.cellFormat.rowSpan = count - rowStartIndex + endCellRowSpan;
         }
         this.updateBlockIndexAfterMerge(mergedCell);
         table.updateRowIndex(0);
@@ -10394,10 +10396,8 @@ export class Editor {
                   let foot: FootNoteWidget = selection.start.paragraph.bodyWidget.page.endnoteWidget;
                   //this.documentHelper.layout.layoutfootNote(foot);
               }*/
-            if (!this.isRemoteAction) {
-                this.selection.contentControleditRegionHighlighters.clear();
-                this.selection.onHighlightContentControl();
-            }
+            this.selection.contentControleditRegionHighlighters.clear();
+            this.selection.onHighlightContentControl();
             if (!this.documentHelper.owner.enableHeaderAndFooter) {
                 this.owner.viewer.updateScrollBars();
             }
@@ -10406,6 +10406,9 @@ export class Editor {
                 this.startParagraph = undefined;
                 this.endParagraph = undefined;
             }
+        } else if (this.isRemoteAction) {
+            this.selection.contentControleditRegionHighlighters.clear();
+            this.selection.onHighlightContentControl();
         }
         if (isNullOrUndefined(isSelectionChanged)) {
             isSelectionChanged = selection.isEmpty;
@@ -21098,7 +21101,7 @@ export class Editor {
             if (isUpdate) {
                 const prevWidth: number = element.width;
                 element.text = text;
-                if (this.documentHelper.isIosDevice) {
+                if (this.documentHelper.isIosDevice || this.documentHelper.isLinuxOS) {
                     let listText: string = element.text;
                     listText = listText === String.fromCharCode(61623) ? String.fromCharCode(9679) : listText === String.fromCharCode(61551) + String.fromCharCode(32) ? String.fromCharCode(9675) : listText;
                     if (listText !== element.text) {

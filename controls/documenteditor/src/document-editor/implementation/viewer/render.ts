@@ -1809,6 +1809,7 @@ private calculatePathBounds(data: string): Rect {
 
             }
             if (elementBox instanceof ListTextElementBox) {
+                left += elementBox.padding.left;
                 this.renderListTextElementBox(elementBox, left, top, underlineY);
             } else if (elementBox instanceof ImageElementBox) {
                 left += elementBox.padding.left;
@@ -2116,7 +2117,7 @@ private calculatePathBounds(data: string): Rect {
         let bold: string = '';
         let italic: string = '';
         let fontFamily: string = format.hasValue('fontFamily') ? format.fontFamily : breakCharacterFormat.fontFamily;
-        if (this.documentHelper.isIosDevice && (elementBox.text === String.fromCharCode(9679) || elementBox.text === String.fromCharCode(9675))) {
+        if ((this.documentHelper.isIosDevice || this.documentHelper.isLinuxOS)  && (elementBox.text === String.fromCharCode(9679) || elementBox.text === String.fromCharCode(9675))) {
             fontFamily = '';
         }
         let fontSize: number = format.hasValue('fontSize') ? format.fontSize : breakCharacterFormat.fontSize;

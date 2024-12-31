@@ -200,6 +200,9 @@ export class _FdfDocument extends _ExportHelper {
                                     annotation._ref = reference;
                                     const index: number = annotations._annotations.length;
                                     annotations._annotations.push(reference);
+                                    if (annotations._comments && annotations._comments.length > 0) {
+                                        annotations._comments = [];
+                                    }
                                     pageDictionary.set('Annots', annotations._annotations);
                                     pageDictionary._updated = true;
                                     annotations._parsedAnnotations.set(index, annotation);
@@ -210,6 +213,23 @@ export class _FdfDocument extends _ExportHelper {
                     }
                 }
             });
+            if (this._groupHolders && this._groupHolders.length > 0) {
+                for (let i: number = 0; i < this._groupHolders.length; i++) {
+                    const dictionary: _PdfDictionary = this._groupHolders[Number.parseInt(i.toString(), 10)];
+                    if (dictionary && dictionary.has('IRT')) {
+                        const inReplyTo: string = dictionary.get('IRT');
+                        if (inReplyTo) {
+                            if (this._groupReferences && this._groupReferences.has(inReplyTo)) {
+                                dictionary.update('IRT', this._groupReferences.get(inReplyTo));
+                            } else {
+                                delete dictionary._map.IRT;
+                            }
+                        }
+                    }
+                }
+            }
+            this._groupHolders = [];
+            this._groupReferences = new Map<string, _PdfReference>();
         }
         else {
             token = parser.getObject();
@@ -501,10 +521,13 @@ export class _FdfDocument extends _ExportHelper {
                         this.fdfString += ' ' + this._annotationID + ' 0 R';
                         this.fdfString += '/Page ' + pageNumber;
                     } else if (key === 'IRT') {
-                        if (dictionary.has('NM')) {
-                            const name: string = dictionary.get('NM');
-                            if (name !== null) {
-                                this.fdfString += '(' + this._getFormattedString(name) + ')';
+                        if (this._crossReference && this._crossReference._fetch && primitive) {
+                            const inReplyToDictionary: _PdfDictionary = this._crossReference._fetch(primitive);
+                            if (inReplyToDictionary && inReplyToDictionary.has('NM')) {
+                                const input: string = inReplyToDictionary.get('NM');
+                                if (input !== null && typeof input !== 'undefined') {
+                                    this.fdfString += '(' + this._getFormattedString(input) + ')';
+                                }
                             }
                         }
                     } else if (key !== 'P') {

@@ -153,6 +153,7 @@ export class Annotation {
      * @private
      */
     public isUndoRedoAction: boolean = false;
+    private isFreeTextFontsizeChanged: boolean = false;
     private isUndoAction: boolean = false;
     private annotationSelected: boolean = true;
     private isAnnotDeletionApiCall: boolean = false;
@@ -1737,6 +1738,7 @@ export class Annotation {
                 this.pdfViewer.renderDrawing();
                 break;
             case 'fontSize':
+                this.isFreeTextFontsizeChanged = true;
                 this.pdfViewer.nodePropertyChange(actionObject.annotation, { fontSize: actionObject.undoElement.fontSize });
                 this.modifyInCollections(actionObject.annotation, 'fontSize');
                 this.pdfViewer.renderDrawing();
@@ -2065,6 +2067,7 @@ export class Annotation {
                 this.pdfViewer.renderDrawing();
                 break;
             case 'fontSize':
+                this.isFreeTextFontsizeChanged = true;
                 this.pdfViewer.nodePropertyChange(actionObject.annotation, { fontSize: actionObject.redoElement.fontSize });
                 this.modifyInCollections(actionObject.annotation, 'fontSize');
                 this.pdfViewer.renderDrawing();
@@ -2559,16 +2562,13 @@ export class Annotation {
             if (currentAnnotation) {
                 if (currentAnnotation.previousFontSize !== currentValue) {
                     freeTextAnnotation.inputBoxElement.style.height = 'auto';
-                    if (isInteracted){
+                    if (isInteracted || this.isFreeTextFontsizeChanged
+                        || freeTextAnnotation.inputBoxElement.scrollHeight + 5 > currentAnnotation.bounds.height) {
+                        this.isFreeTextFontsizeChanged = false;
                         freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.scrollHeight + 5 + 'px';
                     }
-                    else{
-                        if (freeTextAnnotation.inputBoxElement.scrollHeight + 5 > currentAnnotation.bounds.height){
-                            freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.scrollHeight + 5 + 'px';
-                        }
-                        else{
-                            freeTextAnnotation.inputBoxElement.style.height = currentAnnotation.bounds.height + 'px';
-                        }
+                    else {
+                        freeTextAnnotation.inputBoxElement.style.height = currentAnnotation.bounds.height + 'px';
                     }
                 }
                 let inputEleHeight: number = parseFloat(freeTextAnnotation.inputBoxElement.style.height);

@@ -7,7 +7,7 @@ import { PointModel } from '../primitives/point-model';
 import { Node, DiagramShape } from '../objects/node';
 import { Connector, BezierSegment, StraightSegment } from '../objects/connector';
 import { NodeModel, BasicShapeModel, SwimLaneModel, PathModel } from '../objects/node-model';
-import { BezierSegmentModel, ConnectorModel, StraightSegmentModel } from '../objects/connector-model';
+import { BezierSegmentModel, ConnectorModel, StraightSegmentModel, BezierSettingsModel } from '../objects/connector-model';
 import { Point } from '../primitives/point';
 import { BpmnSubEvent } from '../objects/node';
 import { PointPort } from '../objects/port';
@@ -2038,7 +2038,10 @@ export class ZoomPanTool extends ToolBase {
                 const moveTouch1: ITouches = args.moveTouches[1];
                 const scale: number = this.getDistance(moveTouch0, moveTouch1) / this.getDistance(startTouch0, startTouch1);
                 const focusPoint: PointModel = args.position;
-                this.commandHandler.zoom(scale, 0, 0, focusPoint);
+                // 927527: Diagram flickers while performing pinch zoom
+                if (scale !== 1) {
+                    this.commandHandler.zoom(scale, 0, 0, focusPoint);
+                }
                 this.updateTouch(startTouch0, moveTouch0);
                 this.updateTouch(startTouch1, moveTouch1);
             }
@@ -2605,12 +2608,20 @@ export class FreeHandTool extends ToolBase {
             let prevObj = this.commandHandler.diagram.nameTable[`${prevId}`];
             this.commandHandler.diagram.remove(prevObj);
             points = this.pointReduction(points, tolerance);
+            // 927557: controlPointsVisibility Property values not considered in Freehand drawing
+            let bezierSettings: BezierSettingsModel = {};
+            if ((this.commandHandler.diagram.drawingObject as ConnectorModel).bezierSettings) {
+                bezierSettings = (this.commandHandler.diagram.drawingObject as ConnectorModel).bezierSettings;
+            }
+            if (bezierSettings.allowSegmentsReset === undefined) {
+                bezierSettings.allowSegmentsReset = false;
+            }
             //EJ2-69816 - Added below code to set the allow segment reset as false to avoid the unwanted segment reset.
             const newObj: ConnectorModel = {
                 id: 'newConnector' + randomId(), type: 'Bezier',
                 sourcePoint: { x: points[0].x, y: points[0].y }, targetPoint: { x: points[points.length - 1].x, y: points[points.length - 1].y },
                 //EJ2-873504[BUG]- Source and target decorator for free hand connector is not rendered.
-                segments: [], bezierSettings: { allowSegmentsReset: false }
+                segments: [], bezierSettings: bezierSettings
             };
             this.drawingObject = this.commandHandler.drawObject(newObj as Connector);
             this.drawingObject = this.bezierCurveSmoothness(points, smoothValue, this.drawingObject, obj);

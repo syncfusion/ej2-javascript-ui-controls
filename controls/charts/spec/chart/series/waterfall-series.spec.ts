@@ -1224,6 +1224,26 @@ describe('Waterfall Series', () => {
             chart.series[0].intermediateSumIndexes = [4, 7];
             chart.refresh();
         });
+        it('Checking with sum index', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let point: number = args.chart.visibleSeries[0].points[8].y as number;
+                expect(point).toBe(3685);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource = [   { x: 'Income', y: 4711 },
+                { x: 'Sales', y: -1015 },
+                { x: 'Development', y: -688 },
+                { x: 'Revenue', y: 1030 },
+                { x: 'Balance' },
+                { x: 'Administrative', y: -780 },
+                { x: 'Expense', y: -261 },
+                { x: 'Tax', y: 0 },
+                { x: 'Net Profit' },];
+            chart.series[0].sumIndexes = [8];
+            chart.series[0].intermediateSumIndexes = [2, 4, 7];
+            chart.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

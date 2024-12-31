@@ -2497,6 +2497,7 @@ export class BaseHistoryInfo {
                 break;
             case 'ClearRevisions':
             case 'TrackingPageBreak':
+            case 'AcceptTOC':
                 if (this.editorHistory.isUndoing || this.editorHistory.isRedoing) {
                     if (this.removedNodes.length > 0) {
                         let deleteOperation: Operation = this.getDeleteOperation(action);

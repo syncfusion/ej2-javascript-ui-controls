@@ -5068,8 +5068,8 @@ describe('922786 - Unable to navigate to editTemplate with keyboard while adding
     it('check add record input length', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'add') {
-                expect(gridObj.editModule.formObj.element
-                    .querySelectorAll('input:not([type="hidden"],.e-numeric-hidden,.e-disabled), select:not([aria-hidden="true"]), button:not(.e-hide)').length).toBe(3);
+                expect(gridObj.editModule.formObj.element.querySelectorAll(
+                    'input:not([type="hidden"],.e-numeric-hidden,.e-disabled), select:not([aria-hidden="true"]), button:not(.e-hide), textarea:not(.e-hide,.e-disabled,[disabled])').length).toBe(3);
                 done();
             }
         };

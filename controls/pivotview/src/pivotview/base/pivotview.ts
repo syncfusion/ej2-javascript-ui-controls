@@ -4322,19 +4322,24 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public excelExport(
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: Workbook, isBlob?: boolean
     ): void {
-        if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)) && this.dataSourceSettings.mode !== 'Server') {
-            this.excelExportModule.exportToExcel('Excel', excelExportProperties, isBlob);
+        if (this.dataSourceSettings.mode === 'Server') {
+            this.getEngine('onExcelExport', null, null, null, null, null, null, null, null, excelExportProperties);
         } else {
-            this.exportType = 'Excel';
-            this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
-        }
-        this.actionObj.actionName = this.getActionCompleteName();
-        const actionInfo: PivotActionInfo = {
-            exportInfo: { type: this.exportType, info: excelExportProperties }
-        };
-        this.actionObj.actionInfo = actionInfo;
-        if (this.actionObj.actionName) {
-            this.actionCompleteMethod();
+            if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting
+                 && this.dataSourceSettings.conditionalFormatSettings.length > 0))) {
+                this.excelExportModule.exportToExcel('Excel', excelExportProperties, isBlob);
+            } else {
+                this.exportType = 'Excel';
+                this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
+            }
+            this.actionObj.actionName = this.getActionCompleteName();
+            const actionInfo: PivotActionInfo = {
+                exportInfo: { type: this.exportType, info: excelExportProperties }
+            };
+            this.actionObj.actionInfo = actionInfo;
+            if (this.actionObj.actionName) {
+                this.actionCompleteMethod();
+            }
         }
     }
 
@@ -4349,19 +4354,24 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public csvExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: Workbook,
                      isBlob?: boolean): void {
-        if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)) && this.dataSourceSettings.mode !== 'Server') {
-            this.excelExportModule.exportToExcel('CSV', excelExportProperties, isBlob);
+        if (this.dataSourceSettings.mode === 'Server') {
+            this.getEngine('onCsvExport', null, null, null, null, null, null, null, null, excelExportProperties);
         } else {
-            this.exportType = 'CSV';
-            this.grid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob);
-        }
-        this.actionObj.actionName = this.getActionCompleteName();
-        const actionInfo: PivotActionInfo = {
-            exportInfo: { type: this.exportType, info: excelExportProperties }
-        };
-        this.actionObj.actionInfo = actionInfo;
-        if (this.actionObj.actionName) {
-            this.actionCompleteMethod();
+            if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting
+                 && this.dataSourceSettings.conditionalFormatSettings.length > 0))) {
+                this.excelExportModule.exportToExcel('CSV', excelExportProperties, isBlob);
+            } else {
+                this.exportType = 'CSV';
+                this.grid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob);
+            }
+            this.actionObj.actionName = this.getActionCompleteName();
+            const actionInfo: PivotActionInfo = {
+                exportInfo: { type: this.exportType, info: excelExportProperties }
+            };
+            this.actionObj.actionInfo = actionInfo;
+            if (this.actionObj.actionName) {
+                this.actionCompleteMethod();
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-import { Component, EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, closest, attributes, append, compile, detach, KeyboardEvents } from '@syncfusion/ej2-base';
+import { Component, EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, closest, attributes, append, compile, detach, KeyboardEvents, getValue } from '@syncfusion/ej2-base';
 import { ChildProperty, prepend, Collection, getUniqueID, Complex, isNullOrUndefined as isNOU, select, L10n, Browser } from '@syncfusion/ej2-base';
 import { formatUnit, addClass, removeClass, NumberFormatOptions, DateFormatOptions, Event, EmitType, AnimationModel, Animation, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
@@ -1084,8 +1084,16 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private isRowMatching(data: any, selectedValue: string, selectedText: string): boolean {
-        const values: any = (Object as any).values(data).map(String);
-        return values.includes(selectedValue) && values.includes(selectedText);
+        const flattenData: Function = (data: any): string[] => {
+            const result: string[] = [];
+            if (data && typeof data === 'object') {
+                if (Array.isArray(data)) { data.forEach((item: any) => result.push(...flattenData(item))); }
+                else { Object.keys(data).forEach((key: string) => result.push(...flattenData(data[`${key}`]))); }
+            } else if (data != null) { result.push(String(data)); }
+            return result;
+        };
+        const flattenedValues: string[] = flattenData(data);
+        return (flattenedValues.indexOf(selectedValue) !== -1 && flattenedValues.indexOf(selectedText) !== -1);
     }
 
     private updateRowSelection(args: any): void {
@@ -1312,6 +1320,11 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.inputWrapper.setAttribute('aria-disabled', value);
     }
 
+    private updateFieldValue(fieldValue: string, dataObj: object): string {
+        const fieldVal: string = getValue(fieldValue, dataObj).toString();
+        return fieldVal;
+    }
+
     private initValue(isRerender?: boolean, isValue?: boolean, isInitial?: boolean): void {
         const prevItemData: { text: string, value: string } = this.gridObj.getSelectedRecords()[0] as { text: string, value: string };
         const prevItemEle: HTMLElement = this.gridObj.getSelectedRows()[0] as HTMLElement;
@@ -1336,8 +1349,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const dataLists: { [key: string]: Object }[] = (e as any).result;
                     const filteredData: { [key: string]: Object }[] = dataLists.filter((item: { [key: string]: Object }) => {
-                        return item[isRerender ? (isValue ? this.fields.value : this.fields.text) :
-                            !isNOU(this.value) ? this.fields.value : this.fields.text].toString() === value;
+                        const fieldVal: string = this.updateFieldValue(isRerender ? (isValue ? this.fields.value : this.fields.text) :
+                            !isNOU(this.value) ? this.fields.value : this.fields.text, item);
+                        return fieldVal === value;
                     });
                     if (filteredData.length > 0) {
                         item = filteredData[0];
@@ -1349,8 +1363,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 });
             } else if (!isNOU(this.dataSource) && this.dataSource instanceof Array) {
                 item = (<{ [key: string]: Object }[]>this.dataSource).filter((data: { [key: string]: Object }) => {
-                    return data[isRerender ? (isValue ? this.fields.value : this.fields.text) :
-                        !isNOU(this.value) ? this.fields.value : this.fields.text].toString() === value;
+                    const fieldVal: string = this.updateFieldValue(isRerender ? (isValue ? this.fields.value : this.fields.text) :
+                        !isNOU(this.value) ? this.fields.value : this.fields.text, data);
+                    return fieldVal === value;
                 })[0];
                 updateValues(this.dataSource);
             }
@@ -1401,8 +1416,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private updateChangeEvent(item: { [key: string]: Object }, prevItemData: { text: string, value: string }, prevItemEle: HTMLElement,
                               currentValue: string, currentText: string, currentIndex: number,
                               isRerender?: boolean, isInitial?: boolean ): void {
+        const fieldValue: string = item ? this.updateFieldValue(this.fields.value, item) : null;
         const ChangeEventArgs: ChangeEventArgs = {
-            value: item ? item[this.fields.value].toString() : null,
+            value: item ? fieldValue : null,
             itemData: { text: currentText, value: currentValue },
             item: this.getDataByValue(this.value),
             previousItemData: prevItemData,
@@ -1417,10 +1433,12 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private updateCurrentValues(item: { [key: string]: Object }, dataList: { [key: string]: Object }[]): { currentValue: string | null,
         currentText: string | null, currentIndex: number } {
         if (!isNOU(item)) {
-            Input.setValue(item[this.fields.text].toString(), this.inputEle, this.floatLabelType, this.showClearButton);
+            const fieldText: string = this.updateFieldValue(this.fields.text, item);
+            const fieldValue: string = this.updateFieldValue(this.fields.value, item);
+            Input.setValue(fieldText, this.inputEle, this.floatLabelType, this.showClearButton);
             return {
-                currentValue: item[this.fields.value].toString(),
-                currentText: item[this.fields.text].toString(),
+                currentValue: fieldValue,
+                currentText: fieldText,
                 currentIndex: dataList.indexOf(item)
             };
         }
@@ -1592,16 +1610,16 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             cancel: false
         };
         const selectedRecords: { [key: string]: Object } = this.gridObj.getSelectedRecords()[0] as { [key: string]: Object };
-        const fieldText: string = selectedRecords ? selectedRecords[this.fields.text].toString() : '';
-        const fieldValue: string = selectedRecords ? selectedRecords[this.fields.value].toString() : '';
+        const dataText: string = selectedRecords ? this.updateFieldValue(this.fields.text, selectedRecords) : '';
+        const dataValue: string = selectedRecords ? this.updateFieldValue(this.fields.value, selectedRecords) : '';
         const ChangeEventArgs: ChangeEventArgs = {
             isInteracted: e ? true : false,
             item: selectedRecords,
             itemElement: row as HTMLElement,
-            itemData: { text: fieldText, value: fieldValue },
+            itemData: { text: selectedRecords ? dataText : '', value: selectedRecords ? dataValue : '' },
             event: e,
             cancel: false,
-            value: fieldValue,
+            value: selectedRecords ? dataValue : '',
             previousItemData: { text: this.text, value: this.value },
             previousItemElement: this.previousItemElement
         };
@@ -1611,10 +1629,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 const event: KeyboardEvent = e as KeyboardEvent;
                 const isUpdateVal: boolean = event.key === 'Enter' || event.key === 'Tab' || event.shiftKey && event.key === 'Tab' || event.altKey && event.key === 'ArrowUp';
                 if (!isKeyNav || (isKeyNav && isUpdateVal)) {
-                    this.updateValues(selectedRecord[this.fields.value] as string,
-                                      selectedRecord[this.fields.text] as string, this.gridObj.selectedRowIndex, ChangeEventArgs);
+                    this.updateValues(selectedRecords ? dataValue : '', selectedRecords ? dataText : '', this.gridObj.selectedRowIndex, ChangeEventArgs);
                 }
-                Input.setValue(selectedRecord[this.fields.text] as string, this.inputEle, this.floatLabelType, this.showClearButton);
+                Input.setValue(selectedRecords ? dataText : '', this.inputEle, this.floatLabelType, this.showClearButton);
                 if (!isKeyNav || (isKeyNav && isUpdateVal)) { this.hidePopup(e as KeyboardEventArgs); }
             }
         });
@@ -1686,10 +1703,12 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private filterDatas(dataSource: { [key: string]: Object }[], inputValue: string): { data: { [key: string]: Object }[],
         exactData: { [key: string]: Object }[] } {
         const data: { [key: string]: Object }[] = dataSource.filter((item: { [key: string]: Object }) => {
-            return item[this.fields.text].toString().toLowerCase().startsWith(inputValue.toLowerCase());
+            const fieldText: string = this.updateFieldValue(this.fields.text, item);
+            return fieldText.toLowerCase().startsWith(inputValue.toLowerCase());
         });
         const exactData: { [key: string]: Object }[] = dataSource.filter((item: { [key: string]: Object }) => {
-            return item[this.fields.text].toString() === inputValue;
+            const fieldText: string = this.updateFieldValue(this.fields.text, item);
+            return fieldText === inputValue;
         });
         return { data, exactData };
     }
@@ -1751,7 +1770,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     }
 
     private filterData(item: { [key: string]: Object }, filterType: string, inputValue: string, fields: FieldSettingsModel): boolean {
-        const itemValue: string = item[fields ? fields.text : this.fields.text].toString().toLowerCase();
+        const dataValue: string = this.updateFieldValue(fields ? fields.text : this.fields.text, item);
+        const itemValue: string = dataValue.toLowerCase();
         switch (filterType) {
         case 'startswith':
             return itemValue.startsWith(inputValue);
@@ -1865,31 +1885,34 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         else {
             if (!target.classList.contains('e-multicolumncombobox') && !target.classList.contains('e-clear-icon')) {
                 if (!isNOU(this.text)) { this.updateInputValue(this.text); }
-                this.updateValuesOnInput(e);
+                const isClearVal: boolean = this.inputEle.value === '' ? true : false;
+                this.updateValuesOnInput(e, null, isClearVal);
             }
         }
     }
 
-    private updateValuesOnInput(mouseEvent?: MouseEvent, keyEvent?: KeyboardEventArgs, isClearValues: boolean = false,
+    private updateValuesOnInput(mouseEvent?: MouseEvent, keyEvent?: KeyboardEventArgs, isClearValues?: boolean,
                                 isKeyDown: boolean = false): void {
         const e: MouseEvent | KeyboardEventArgs = mouseEvent ? mouseEvent : keyEvent;
         const val: { [key: string]: Object } = isKeyDown ? this.matchedContent : this.exactMatchedContent;
         if (!val) { this.inputEle.value = this.value = this.index = this.text = null; }
         this.hidePopup(e);
         if (this.matchedRowEle && !isClearValues && val) {
-            const prevOnChange: boolean = this.isProtectedOnChange;
-            this.isProtectedOnChange = true;
             setTimeout((): void => {
-                this.inputEle.value = this.matchedContent[this.fields.text].toString();
-                this.value = this.matchedContent[this.fields.value].toString();
+                const prevOnChange: boolean = this.isProtectedOnChange;
+                this.isProtectedOnChange = true;
+                const fieldText: string = this.updateFieldValue(this.fields.text, this.matchedContent);
+                const fieldValue: string = this.updateFieldValue(this.fields.value, this.matchedContent);
+                this.inputEle.value = fieldText;
+                this.value = fieldValue;
                 const selectIndex: number = this.findIndex(this.gridObj.currentViewData, this.matchedContent);
                 this.index = selectIndex;
-                this.text = this.matchedContent[this.fields.text].toString();
+                this.text = fieldText;
                 this.gridObj.selectRow(selectIndex);
                 this.selectedGridRow(this.gridObj.getRowByIndex(selectIndex), e);
                 this.previousItemElement = this.gridObj.getSelectedRows()[0] as HTMLElement;
+                this.isProtectedOnChange = prevOnChange;
             }, 100);
-            this.isProtectedOnChange = prevOnChange;
         }
         else {
             if (this.isDataFiltered) {
@@ -2206,7 +2229,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     public getDataByValue(value: string): { [key: string]: Object } {
         if (!isNOU(this.dataSource) && this.dataSource instanceof Array) {
             return (<{ [key: string]: Object }[]>this.dataSource).filter((item: { [key: string]: Object }) => {
-                return item[this.fields.value].toString() === value;
+                const fieldValue: string = this.updateFieldValue(this.fields.value, item);
+                return fieldValue === value;
             })[0];
         }
         else if (!isNOU(this.dataSource) && this.dataSource instanceof DataManager){
@@ -2214,7 +2238,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const dataLists: { [key: string]: Object }[] = (e as any).result;
                 return dataLists.filter((item: { [key: string]: Object }) => {
-                    return item[this.fields.value].toString() === value;
+                    const fieldValue: string = this.updateFieldValue(this.fields.value, item);
+                    return fieldValue === value;
                 })[0];
             });
         }

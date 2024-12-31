@@ -671,8 +671,8 @@ export class FocusStrategy {
         }
         if (this.parent.isEdit && (e.action === 'tab' || e.action === 'shiftTab') && this.parent.editSettings.mode === 'Normal'
             && !this.parent.editSettings.showAddNewRow && !isNullOrUndefined(parentsUntil(target, 'e-addedrow'))) {
-            const inputElements: NodeListOf<Element> = this.parent.editModule.formObj.element
-                .querySelectorAll('input:not([type="hidden"],.e-numeric-hidden,.e-disabled), select:not([aria-hidden="true"]), button:not(.e-hide)');
+            const inputElements: NodeListOf<Element> = this.parent.editModule.formObj.element.querySelectorAll(
+                'input:not([type="hidden"],.e-numeric-hidden,.e-disabled), select:not([aria-hidden="true"]), button:not(.e-hide), textarea:not(.e-hide,.e-disabled,[disabled])');
             const inputTarget: HTMLElement = target.classList.contains('e-ddl') ? target.querySelector('input') : target;
             const firstEditCell: boolean = e.action === 'tab' && inputTarget === inputElements[inputElements.length - 1];
             const lastEditCell: boolean = e.action === 'shiftTab' && inputTarget === inputElements[0];

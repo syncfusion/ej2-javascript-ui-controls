@@ -1495,7 +1495,7 @@ export class TaskProcessor extends DateProcessor {
         if (this.isBaseline && tierMode === 'Day') {
             const duration: number = this.getDuration(sDate, eDate, 'day', true, false);
             this.isBaseline = false;
-            if (duration < 1) {
+            if (duration > 0 && duration < 1) {
                 return (duration * this.parent.perDayWidth);
             }
         }
@@ -1770,7 +1770,8 @@ export class TaskProcessor extends DateProcessor {
             }
             else {
                 let width: number;
-                if (this.parent.timelineModule.bottomTier === 'Day' && this.getSecondsInDecimal(date) !== this.parent.defaultStartTime && this.getSecondsInDecimal(date) !== 0 && !isTimeSet) {
+                if (this.parent.timelineModule.bottomTier === 'Day' && this.getSecondsInDecimal(date) !== this.parent.defaultStartTime && this.getSecondsInDecimal(date) !== 0 &&
+                    !isTimeSet && !this.parent['isFromEventMarker']) {
                     const newDate: Date = new Date(startDate.getTime());
                     const setStartDate: Date = new Date(newDate.setHours(0, 0, 0, 0));
                     const duration: number = this.getDuration(setStartDate, startDate, 'day', true, false);

@@ -135,6 +135,7 @@ export class Print {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (printGrid as any).vueInstance = (this.parent as any).vueInstance;
         }
+        printGrid.printGridParent = gObj;
         printGrid.appendTo(element as HTMLElement);
         if (!gObj.isVue3) {
             printGrid.trigger = gObj.trigger;
@@ -163,7 +164,13 @@ export class Print {
                 return;
             }
             if (!this.isAsyncPrint) {
-                this.printGrid();
+                if (this.parent.printGridParent && this.parent.printGridParent.isReact) {
+                    this.parent.printGridParent.renderTemplates((): void => {
+                        this.printGrid();
+                    });
+                } else {
+                    this.printGrid();
+                }
             }
         }
     }

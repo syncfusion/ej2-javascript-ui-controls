@@ -602,52 +602,54 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (isTextByValue) {
             value = text;
         }
-        const dataSource: { [key: string]: Object }[] = this.listData as { [key: string]: Object }[];
-        const fields: FieldSettingsModel = this.fields;
-        const type: string = this.typeOfData(dataSource).typeof as string;
-        if (type === 'string' || type === 'number' || type === 'boolean') {
-            for (const item of dataSource) {
-                if (!isNullOrUndefined(item)) {
-                    if (ignoreAccent) {
-                        value = this.checkingAccent(String(item), text, ignoreCase);
-                    } else {
-                        if (ignoreCase) {
-                            if (this.checkIgnoreCase(String(item), text)) {
-                                value = this.getItemValue(String(item), text, ignoreCase);
-                            }
+        if (!isNullOrUndefined(this.listData)) {
+            const dataSource: { [key: string]: Object }[] = this.listData as { [key: string]: Object }[];
+            const fields: FieldSettingsModel = this.fields;
+            const type: string = this.typeOfData(dataSource).typeof as string;
+            if (type === 'string' || type === 'number' || type === 'boolean') {
+                for (const item of dataSource) {
+                    if (!isNullOrUndefined(item)) {
+                        if (ignoreAccent) {
+                            value = this.checkingAccent(String(item), text, ignoreCase);
                         } else {
-                            if (this.checkNonIgnoreCase(String(item), text)) {
-                                value = this.getItemValue(String(item), text, ignoreCase, isTextByValue);
+                            if (ignoreCase) {
+                                if (this.checkIgnoreCase(String(item), text)) {
+                                    value = this.getItemValue(String(item), text, ignoreCase);
+                                }
+                            } else {
+                                if (this.checkNonIgnoreCase(String(item), text)) {
+                                    value = this.getItemValue(String(item), text, ignoreCase, isTextByValue);
+                                }
                             }
                         }
                     }
                 }
-            }
-        } else {
-            if (ignoreCase) {
-                (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) => {
-                    const itemValue: string | number = getValue(fields.value, item);
-                    if (!isNullOrUndefined(itemValue) && this.checkIgnoreCase(getValue(fields.text, item).toString(), text)) {
-                        value = <string>getValue(fields.value, item);
-                    }
-                });
             } else {
-                if (isTextByValue) {
-                    let compareValue: string | number = null;
-                    compareValue = value;
-                    dataSource.filter((item: { [key: string]: Object }) => {
+                if (ignoreCase) {
+                    (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) => {
                         const itemValue: string | number = getValue(fields.value, item);
-                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) &&
-                            itemValue.toString() === compareValue.toString()) {
-                            value = getValue(fields.text, item) as string;
-                        }
-                    });
-                } else {
-                    dataSource.filter((item: { [key: string]: Object }) => {
-                        if (this.checkNonIgnoreCase(getValue(fields.text, item), text)) {
+                        if (!isNullOrUndefined(itemValue) && this.checkIgnoreCase(getValue(fields.text, item).toString(), text)) {
                             value = <string>getValue(fields.value, item);
                         }
                     });
+                } else {
+                    if (isTextByValue) {
+                        let compareValue: string | number = null;
+                        compareValue = value;
+                        dataSource.filter((item: { [key: string]: Object }) => {
+                            const itemValue: string | number = getValue(fields.value, item);
+                            if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) &&
+                                itemValue.toString() === compareValue.toString()) {
+                                value = getValue(fields.text, item) as string;
+                            }
+                        });
+                    } else {
+                        dataSource.filter((item: { [key: string]: Object }) => {
+                            if (this.checkNonIgnoreCase(getValue(fields.text, item), text)) {
+                                value = <string>getValue(fields.value, item);
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -1185,7 +1187,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     this.isRequested = false;
                                     this.bindChildItems(listItems, ulElement, fields, e);
                                     if (this.getInitialData){
-                                        this.setListData(dataSource, fields, query, event);
                                         this.getInitialData = false;
                                         this.preventPopupOpen = false;
                                         return;
@@ -1614,7 +1615,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     protected scrollStop(e?: Event, isDownkey?: boolean): void {
         const target: Element = !isNullOrUndefined(e) ? <Element>e.target : this.list;
-        const liHeight: number = parseInt(getComputedStyle(this.getValidLi(), null).getPropertyValue('height'), 10);
+        const computedHeight: string = getComputedStyle(this.getValidLi(), null).getPropertyValue('height');
+        const liHeight: number = this.getModuleName() === 'multiselect' ? parseFloat(computedHeight) : parseInt(computedHeight, 10);
         const topIndex: number = Math.round(target.scrollTop / liHeight);
         const liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li' + ':not(.e-hide-listitem)');
         const virtualListCount: number = this.list.querySelectorAll('.e-virtual-list').length;

@@ -1,7 +1,7 @@
 import { Browser, createElement, detach } from '@syncfusion/ej2-base';
-import { DropDownTree } from '../../src/drop-down-tree/drop-down-tree';
+import { DdtChangeEventArgs, DropDownTree } from '../../src/drop-down-tree/drop-down-tree';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { listData , hierarchicalData3, popupClosedata } from '../../spec/drop-down-tree/dataSource.spec'
+import { listData , hierarchicalData3, popupClosedata, hierarchicalDataString } from '../../spec/drop-down-tree/dataSource.spec'
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 describe('DropDownTree control', () => {
@@ -1297,10 +1297,30 @@ describe('DropdownTree Null or undefined value testing ', () => {
 });
 
 describe('DropdownTree', () => {
-
+    let mouseEventArgs: any;
+    let originalTimeout: any;
+    let tapEvent: any;
     let ddtreeObj: DropDownTree;
-
+    let argsValue: any;
+    let changed: boolean = false;
+    function onChange(args: DdtChangeEventArgs): void {
+        changed = true;
+        argsValue = args;
+    }
     beforeEach((): void => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        mouseEventArgs = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        tapEvent = {
+            originalEvent: mouseEventArgs,
+        };
         ddtreeObj = undefined;
         let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
         document.body.appendChild(ele);
@@ -1362,6 +1382,34 @@ describe('DropdownTree', () => {
         (ddtreeObj as any).onFocusOut();
     });
 
+    it('change event args value testing while checking child node', () => {
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: hierarchicalDataString, value: "id", text: "name", expanded: 'expanded', child: "subChild" },
+            allowFiltering: true,
+            showCheckBox: true,
+            allowMultiSelection: true,
+            showSelectAll: true,
+            treeSettings: {
+                expandOn: 'Auto',
+                loadOnDemand: true,
+                autoCheck: true,
+                checkDisabledChildren: false
+            },
+            changeOnBlur: false,
+            enabled: true,
+            change: onChange
+        }, '#ddtree');
+        let li: any = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+        mouseEventArgs.target = li[1].querySelector('.e-list-text');
+        (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+        expect(changed).toBe(true);
+        changed = false;
+        expect(argsValue.value.length).toBe(ddtreeObj.value.length);
+        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+        (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+        expect(changed).toBe(true);
+        expect(argsValue.value.length).toBe(ddtreeObj.value.length);
+    });
 });
 
 describe('DropdownTree', () => {
@@ -1446,5 +1494,74 @@ describe('DropdownTree', () => {
             expect((ddtreeObj as any).isPopupOpen).toBe(false);
             done();
         }, 450);
+    });
+});
+
+describe('DropDownTree Chip Visibility Tests', () => {
+    let mouseEventArgs: any;
+    let originalTimeout: any;
+    let tapEvent: any;
+    let ddtreeObj: DropDownTree;
+    beforeEach((): void => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        mouseEventArgs = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        tapEvent = {
+            originalEvent: mouseEventArgs,
+        };
+        ddtreeObj = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (ddtreeObj)
+            ddtreeObj.destroy();
+        document.body.innerHTML = '';
+    });
+
+    it('Should hide chip elements when value is an empty string', () => {
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowMultiSelection: true,
+            placeholder: "Select items",
+            value: ['']
+        }, '#ddtree');
+        let chipWrapper: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-chips-wrapper');
+        expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
+        let overflowEle: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-overflow');
+        expect(overflowEle.classList.contains('e-icon-hide')).toBe(true);
+    });
+
+    it('Should hide chip elements when multiple empty strings are assigned to value property', () => {
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowMultiSelection: true,
+            placeholder: "Select items",
+            value: ['', '']
+        }, '#ddtree');
+        let chipWrapper: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-chips-wrapper');
+        expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
+        let overflowEle: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-overflow');
+        expect(overflowEle.classList.contains('e-icon-hide')).toBe(true);
+    });
+
+    it('Should hide chip elements when ivalid values are assigned to value property', () => {
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowMultiSelection: true,
+            placeholder: "Select items",
+            value: ['1000']
+        }, '#ddtree');
+        let chipWrapper: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-chips-wrapper');
+        expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
+        let overflowEle: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-overflow');
+        expect(overflowEle.classList.contains('e-icon-hide')).toBe(true);
     });
 });

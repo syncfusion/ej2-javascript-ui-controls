@@ -8783,4 +8783,27 @@ describe('923382: Apply background color to the table in iframe', () => {
     });
 });
 
+describe('927297: When the Backspace key is pressed at the beginning of a line, it incorrectly merges all the lines into one.', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    it('Checking the BR tag', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>Rich<br>Text</p><p class="focusNode">Editor</p>`,
+        });
+        let node: any = (rteObj as any).inputElement.querySelector('.focusNode');
+        setCursorPoint(document, node, 0);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML).toBe('<p>Rich<br>TextEditor</p>');
+            done();
+        }, 100);
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+});
+
 });

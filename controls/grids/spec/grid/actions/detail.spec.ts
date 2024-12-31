@@ -274,9 +274,17 @@ describe('Detail template module', () => {
         });
 
         it('Alt Down shortcut with grouping testing', (done: Function) => {
+            let actionComplete = () => {
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
             gridObj.element.focus();
             gridObj.allowSelection = true;
             gridObj.dataBind();
+        });
+
+        it('Select the row', (done: Function) => {
             gridObj.rowSelected = () => {
                 let args: any = { action: 'altDownArrow', preventDefault: () => { }, target: createElement('div') };
                 let leftArgs: any = { action: 'rightArrow', preventDefault: () => { }, target: createElement('div') };
@@ -530,9 +538,17 @@ describe('Detail template module', () => {
             gridObj.groupModule.groupColumn('EmployeeID');
         });
 
-        it('Alt Down shortcut with grouping testing', () => {
+        it('Alt Down shortcut with grouping testing', (done: Function) => {
+            let actionComplete = () => {
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
             gridObj.allowSelection = true;
             gridObj.dataBind();
+        });
+
+        it('Select the row', () => {
             gridObj.selectRow(1, true);
             let leftArgs: any = { action: 'rightArrow', preventDefault: () => { }, target: createElement('div') };
             gridObj.keyboardModule.keyAction(leftArgs);

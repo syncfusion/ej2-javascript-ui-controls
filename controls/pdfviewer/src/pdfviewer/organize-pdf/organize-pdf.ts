@@ -2199,7 +2199,7 @@ export class PageOrganizer {
                         this.organizeDialog.hide();
                         this.undoOrganizeCollection = [];
                         this.redoOrganizeCollection = [];
-                        this.pdfViewer.load(base64, null);
+                        this.pdfViewer.loadDocInternally(base64, null, false);
                         this.pdfViewerBase.updateDocumentEditedProperty(true);
                         this.pdfViewer.fileName = fileName;
                         if (!isNullOrUndefined(downloadFileName)) {
@@ -3192,7 +3192,7 @@ export class PageOrganizer {
             const documentId: string = this.pdfViewerBase.createGUID();
             const isbase64: boolean = documentData.includes('pdf;base64,');
             const base64DocumentData: string = documentData;
-            documentData = this.pdfViewerBase.checkDocumentData(documentData);
+            documentData = this.pdfViewerBase.checkDocumentData(documentData, false);
             const jsonObject: any = this.pdfViewerBase.constructJsonObject(documentData, password, isbase64);
             if (this.pdfViewer.serverActionSettings) {
                 this.pdfViewerBase.loadRequestHandler = new AjaxHandler(this.pdfViewer);

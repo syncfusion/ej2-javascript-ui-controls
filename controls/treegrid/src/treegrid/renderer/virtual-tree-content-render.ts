@@ -8,7 +8,7 @@ import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-gene
 import * as events from '../base/constant';
 import { isNullOrUndefined, EventHandler, getValue, setValue, Browser, KeyboardEventArgs, debounce } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
-import { isCountRequired } from '../utils';
+import { isCountRequired, isRemoteData } from '../utils';
 
 export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     public getModelGenerator(): IModelGenerator<Column> {
@@ -533,13 +533,28 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 }
             }
         }
-        if (((downScroll && (scrollArgs.offset.top < (rowHeight * this.totalRecords)))
+        if (isRemoteData(this.parent) || ((downScroll && (scrollArgs.offset.top < (rowHeight * this.totalRecords)))
             || (upScroll)) || (scrollArgs.direction === 'right' || scrollArgs.direction === 'left') ||
             ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
         && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') && (downScroll || upScroll) || isCountRequired(this.parent))
         ) {
             const viewInfo: VirtualInfo = this.currentInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
             this.previousInfo = viewInfo;
+            if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
+                || ((info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString())
+                    || (this.parent.isFrozenGrid() && this.parent.getVisibleFrozenLeftCount() >= viewInfo.columnIndexes[0]
+                        && this.prevInfo.columnIndexes.toString().includes(viewInfo.columnIndexes.toString()))))) {
+                this.parent.removeMaskRow();
+                this.parent.notify('removeGanttShimmer', { requestType: 'hideShimmer'});
+                if (Browser.isIE) {
+                    this.parent.hideSpinner();
+                }
+                this.requestType = this.requestType === 'virtualscroll' ? this['empty'] as string : this.requestType;
+                if (info.axis === 'Y') {
+                    this['restoreEdit']();
+                }
+                return;
+            }
             this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
             const page: number = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
             this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
@@ -565,7 +580,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs) : void {
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent) || isRemoteData(this.parent)) {
             if (getValue('isExpandCollapse', e)) {
                 this.isRemoteExpand = true;
             }

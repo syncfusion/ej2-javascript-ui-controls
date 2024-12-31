@@ -1004,6 +1004,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     @Property()
     public parentDetails: ParentDetails;
     /** @hidden */
+    public printGridParent: IGrid;
+    /** @hidden */
     public isEdit: boolean;
     /** @hidden */
     public commonQuery: Query;
@@ -3903,6 +3905,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 break;
             case 'allowSelection':
                 this.notify(events.uiUpdate, { module: 'selection', enable: this.allowSelection });
+                this.renderModule.refresh();
                 break;
             case 'cssClass':
                 this.setCSSClass(oldProp.cssClass);
@@ -4091,6 +4094,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.removeTextWrap();
             }
             this.notify(events.freezeRender, { case: 'textwrap', isModeChg: (prop === 'textWrapSettings') });
+            this.refreshHeader();
+            if (this.height === '100%') {
+                this.scrollModule.refresh();
+            }
             break;
         case 'dataSource':
             // eslint-disable-next-line no-case-declarations
@@ -6900,7 +6907,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private isPercentageWidthGrid(): boolean {
-        return this.getColumns()[0].width.toString().indexOf('%') > -1;
+        const column: Column = this.getColumns().find((col: Column) => { return !isNullOrUndefined(col.width); });
+        return column ? column.width.toString().indexOf('%') > -1 : false;
     }
 
     /**
@@ -8480,10 +8488,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     // eslint-disable-next-line
     public renderTemplates(callBack?: any): void {
         const isReactChild: boolean = this.parentDetails && this.parentDetails.parentInstObj && this.parentDetails.parentInstObj.isReact;
-        if (isReactChild && this['portals']) {
-            this.parentDetails.parentInstObj['portals'] = this.parentDetails.parentInstObj['portals']
-                .concat(this['portals']);
-            this.parentDetails.parentInstObj.renderTemplates(callBack);
+        const isReactPrintGrid: boolean = this.printGridParent && this.printGridParent.isReact;
+        if ((isReactChild || isReactPrintGrid) && this['portals']) {
+            const parentInstObj: IGrid = isReactPrintGrid ? this.printGridParent : this.parentDetails.parentInstObj;
+            parentInstObj['portals'] = parentInstObj['portals'].concat(this['portals']);
+            parentInstObj.renderTemplates(callBack);
             this['portals'] = undefined;
         }
         else {

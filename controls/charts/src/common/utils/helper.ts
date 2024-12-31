@@ -333,8 +333,8 @@ export function subArraySum(values: Object[], first: number, last: number, index
     let isFirst: boolean = true;
     if (index !== null) {
         for (let i: number = (first + 1); i < last; i++) {
-            if (index.indexOf(i) === -1 && (i !== series.intermediateSumIndexes[sumIndex as number] ||
-                (i === series.intermediateSumIndexes[sumIndex as number] && isFirst))) {
+            if (index.indexOf(i) === -1 && (i === series.intermediateSumIndexes[sumIndex as number] ||
+                series.intermediateSumIndexes[series.intermediateSumIndexes.length - 1] < i)) {
                 sum += values[i as number][series.yName] as number;
                 if (i === series.intermediateSumIndexes[sumIndex as number]) {
                     isFirst = false;
@@ -343,9 +343,9 @@ export function subArraySum(values: Object[], first: number, last: number, index
             }
         }
     } else {
-
         for (let i: number = (first + 1); i < last; i++) {
-            if (!isNullOrUndefined(values[i as number][series.yName])) {
+            if (!isNullOrUndefined(values[i as number][series.yName]) && !isNullOrUndefined(series.sumIndexes) &&
+                series.sumIndexes.indexOf(i) === -1) {
                 sum += values[i as number][series.yName] as number;
             }
         }

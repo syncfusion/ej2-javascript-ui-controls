@@ -599,7 +599,7 @@ export class PageRenderer{
         stampDocument.removePage(0);
         // Save the PDF document which have appearance template
         let data: string = 'data:application/pdf;base64,' + _encode(stampDocument.save());
-        data = this.pdfViewerBase.checkDocumentData(data);
+        data = this.pdfViewerBase.checkDocumentData(data, false);
         const fileByteArray: any = this.pdfViewerBase.convertBase64(data);
         if (isFormField) {
             this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder, isFormField: isFormField, formFieldName: formFieldName, formFieldList: JSON.stringify(formFieldList), rubberStampAnnotation: rubberStampAnnotation, PageIndex: PageIndex });
@@ -625,7 +625,6 @@ export class PageRenderer{
         canvasContext.putImageData(imageData, 0, 0);
         const imageUrl: string = canvas.toDataURL();
         this.pdfViewerBase.releaseCanvas(canvas);
-        const base64string: string = this.pdfViewerBase.checkDocumentData(imageUrl);
         const Json: any = { imagedata: imageUrl };
         const id: any = data.annotName;
         let annotOrder: any = [];

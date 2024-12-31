@@ -111,6 +111,87 @@ let data: { [key: string]: Object }[] = [
     }
 ];
 
+let complexData: Object[] = [{
+    'EmployeeID': 1,
+    'Name': {
+    'LastName': 'Davolio',
+    'FirstName': 'Nancy'},
+    'Names': [{
+        'LastName' : 'Davolio',
+        'FirstName': 'Nancy'}],
+    'Title': 'Sales Representative'
+},
+{
+    'EmployeeID': 2,
+    'Name':{
+    'LastName': 'Fuller',
+    'FirstName': 'Andrew'},
+    'Names': [{
+    'LastName': 'Fuller',
+    'FirstName': 'Andrew'}],
+    'Title': 'Vice President, Sales'
+},
+{
+    'EmployeeID': 3,
+    'Name':{
+    'LastName': 'Leverling',
+    'FirstName': 'Janet'},
+    'Names': [{
+        'LastName': 'Leverling',
+        'FirstName': 'Janet'}],
+    'Title': 'Sales Representative'
+},
+{
+    'EmployeeID': 4,
+    'Name':{
+    'LastName': 'Peacock',
+    'FirstName': 'Margaret'},
+    'Names': [{
+        'LastName': 'Peacock',
+        'FirstName': 'Margaret'}],
+    'Title': 'Sales Representative'
+},
+{
+    'EmployeeID': 5,
+    'Name':{
+    'LastName': 'Buchanan',
+    'FirstName': 'Steven'},
+    'Names': [{
+        'LastName': 'Buchanan',
+        'FirstName': 'Steven'}],
+    'Title': 'Sales Manager'
+},
+{
+    'EmployeeID': 6,
+    'Name':{
+    'LastName': 'Suyama',
+    'FirstName': 'Michael'},
+    'Title': 'Sales Representative',
+    'TitleOfCourtesy': 'Mr.'
+},
+{
+    'EmployeeID': 7,
+    'Name':{
+    'LastName': 'King',
+    'FirstName': 'Robert'},
+    'Title': 'Sales Representative',
+    'TitleOfCourtesy': 'Mr.'
+},
+{
+    'EmployeeID': 8,
+    'Name': {
+    'LastName': 'Callahan',
+    'FirstName': 'Laura'},
+    'Title': 'Inside Sales Coordinator'
+},
+{
+    'EmployeeID': 9,
+    'Name': {
+    'LastName': 'Dodsworth',
+    'FirstName': 'Anne'},
+    'Title': 'Sales Representative'
+}];
+
 describe('MultiColumnComboBox control', () => {
     beforeAll(() => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
@@ -163,7 +244,7 @@ describe('MultiColumnComboBox control', () => {
             const multiColEle: HTMLInputElement = <HTMLInputElement>createElement('input', { });
             document.body.appendChild(multiColEle);
             multiColObj.appendTo(multiColEle);
-            expect(multiColEle.getAttribute('id') != element.getAttribute('id')).toEqual(true);
+            expect(multiColEle.getAttribute('id') !== element.getAttribute('id')).toEqual(true);
             expect(isNullOrUndefined(multiColEle.id)).toBe(false);
             multiColObj.destroy();
             multiColObj = undefined;
@@ -2521,8 +2602,9 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj2 = new MultiColumnComboBox({
                 dataSource: dataSource,
-                fields: { text: 'text', value: 'id' },
-                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                fields: { text: 'ContactName', value: 'CustomerID' },
+                columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
+                          { field: 'CustomerID', width: 140, header: 'Customer ID' }],
                 filtering: (args: FilteringEventArgs) => {
                     filtering = true;
                 }
@@ -2780,7 +2862,7 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj = new MultiColumnComboBox({
                 dataSource: dataSource,
-                fields: { text: 'text', value: 'id' },
+                fields: { text: 'ContactName', value: 'CustomerID' },
                 filtering: (args: FilteringEventArgs) => {
                     filtering = true;
                 }
@@ -2790,6 +2872,104 @@ describe('MultiColumnComboBox control', () => {
                 expect((multiColObj as any).gridEle.querySelectorAll('.e-row').length).toBe(20);
                 done();
             }, 2000);
+        });
+    });
+    describe('Complex data rendering', () => {
+        let multiColObj: MultiColumnComboBox;
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            action: null,
+            key: null,
+            target: null,
+            currentTarget: null,
+            stopImmediatePropagation: (): void => { /** NO Code */ }
+        };
+        let element: HTMLInputElement;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multicolumn-combobox' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (multiColObj) {
+                multiColObj.destroy();
+                multiColObj = undefined;
+            }
+            remove(element);
+        });
+        it('Selection behaviour selected item is clicked with complex data', (done) => {
+            let isPopupOpen: boolean = false;
+            multiColObj = new MultiColumnComboBox({
+                dataSource: complexData,
+                fields: { text: 'Name.FirstName', value: 'EmployeeID' },
+                columns: [{ field: 'EmployeeID', header: 'Employee ID' }, { field: 'Name.FirstName', header: 'First Name' }],
+                open: (): void => {
+                    isPopupOpen = true;
+                }
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                const rowCell: HTMLElement = (multiColObj as any).gridEle.querySelector('.e-rowcell');
+                keyEventArgs.target = rowCell;
+                keyEventArgs.key = '';
+                (multiColObj as any).gridObj.selectedRowIndex = 0;
+                setTimeout(() => {
+                    (multiColObj as any).onMouseClick(keyEventArgs);
+                    expect((multiColObj as any).inputEle.value).toBe('Nancy');
+                    (multiColObj as any).showPopup();
+                    expect(isPopupOpen).toBe(true);
+                    keyEventArgs.target = document.body;
+                    (multiColObj as any).onDocumentClick(keyEventArgs);
+                    done();
+                }, 1200);
+            }, 1200);
+        });
+        it('Initial value selection with complex data', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: complexData,
+                fields: { text: 'Name.FirstName', value: 'EmployeeID' },
+                columns: [{ field: 'EmployeeID', header: 'Employee ID' }, { field: 'Name.FirstName', header: 'First Name' }],
+                value: '1'
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                expect(multiColObj.value).toBe('1');
+                expect(multiColObj.index).toBe(0);
+                expect(multiColObj.text).toBe('Nancy');
+                expect((multiColObj as any).inputEle.value).toBe('Nancy');
+                done();
+            }, 1200);
+        });
+        it('Initial index selection with complex data', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: complexData,
+                fields: { text: 'Name.FirstName', value: 'EmployeeID' },
+                columns: [{ field: 'EmployeeID', header: 'Employee ID' }, { field: 'Name.FirstName', header: 'First Name' }],
+                index: 0
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                expect(multiColObj.value).toBe('1');
+                expect(multiColObj.index).toBe(0);
+                expect(multiColObj.text).toBe('Nancy');
+                expect((multiColObj as any).inputEle.value).toBe('Nancy');
+                done();
+            }, 1200);
+        });
+        it('Initial text selection with complex data', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: complexData,
+                fields: { text: 'Name.FirstName', value: 'EmployeeID' },
+                columns: [{ field: 'EmployeeID', header: 'Employee ID' }, { field: 'Name.FirstName', header: 'First Name' }],
+                text: 'Andrew'
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                expect(multiColObj.value).toBe('2');
+                expect(multiColObj.index).toBe(1);
+                expect(multiColObj.text).toBe('Andrew');
+                expect((multiColObj as any).inputEle.value).toBe('Andrew');
+                done();
+            }, 1200);
         });
     });
 });

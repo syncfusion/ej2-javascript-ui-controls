@@ -164,6 +164,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private resizeWidth: number;
     private isUpdateHeaderHeight: boolean = false;
     private isUpdateFooterHeight: boolean = false;
+    private filterArgs: KeyboardEventArgs;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -2307,6 +2308,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected onFilterUp(e: KeyboardEventArgs): void {
         if (!(e.ctrlKey && e.keyCode === 86) && (this.isValidKey || e.keyCode === 40 || e.keyCode === 38)) {
             this.isValidKey = false;
+            this.filterArgs = e;
             this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
             switch (e.keyCode) {
             case 38:  //up arrow
@@ -2357,7 +2359,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 this.typedString = this.filterInput.value;
                 this.preventAutoFill = false;
-                this.searchLists(e);
+                if (!this.getInitialData) {
+                    this.searchLists(e);
+                }
                 if ((this.enableVirtualization && this.getModuleName() !== 'autocomplete') || (this.getModuleName() === 'autocomplete' && !(this.dataSource instanceof DataManager)) ||  (this.getModuleName() === 'autocomplete' && (this.dataSource instanceof DataManager) && this.totalItemCount !== 0 )) {
                     this.getFilteringSkeletonCount();
                 }
@@ -2709,6 +2713,9 @@ export class DropDownList extends DropDownBase implements IInput {
     protected pasteHandler(e: KeyboardEventArgs): void {
         setTimeout((): void => {
             this.typedString = this.filterInput.value;
+            if (this.getModuleName() === 'combobox' && this.isFiltering() && isNullOrUndefined(this.list)) {
+                this.renderList();
+            }
             this.searchLists(e);
         });
     }
@@ -2736,10 +2743,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (this.getInitialData){
             this.updateActionCompleteDataValues(ulElement, list);
-        }
-        if (!this.preventPopupOpen && this.getModuleName() === 'combobox'){
-            this.beforePopupOpen = true;
-            this.preventPopupOpen = true;
+            this.getInitialData = false;
+            this.searchLists(this.filterArgs);
+            return;
         }
         const tempItemCount: number = this.itemCount;
         if (this.isActive || !isNullOrUndefined(ulElement)) {

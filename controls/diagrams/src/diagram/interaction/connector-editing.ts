@@ -7,7 +7,7 @@ import { Rect } from '../primitives/rect';
 import { intersect3, cloneBlazorObject } from '../utility/diagram-util';
 import { cloneObject } from '../utility/base-util';
 import { HistoryEntry } from '../diagram/history';
-import { Direction, DiagramEvent } from './../enum/enum';
+import { Direction, DiagramEvent, ConnectorConstraints } from './../enum/enum';
 import { contains } from './actions';
 import { SelectorModel } from '../objects/node-model';
 import { MouseEventArgs } from './event-handlers';
@@ -54,6 +54,12 @@ export class ConnectorEditing extends ToolBase {
             this.inAction = true;
             this.undoElement = cloneObject(args.source);
             super.mouseDown(args);
+            // 927583: Segment points cannot be dragged when the pointer is in the outer part of the segmentThumb
+            const inheritSegmentThumbSize: number = (connectors.constraints & ConnectorConstraints.InheritSegmentThumbSize);
+            const segmentThumbSize: number = inheritSegmentThumbSize ?
+                this.commandHandler.diagram.segmentThumbSize : connectors.segmentThumbSize;
+            let padding: number = (segmentThumbSize > 20) && connectors.type !== 'Straight' ? segmentThumbSize / 2 : 10;
+            padding = padding / this.commandHandler.diagram.scrollSettings.currentZoom;
             // Sets the selected segment
             for (let i: number = 0; i < connectors.segments.length; i++) {
                 const segment: BezierSegment = connectors.segments[parseInt(i.toString(), 10)] as BezierSegment;
@@ -62,13 +68,13 @@ export class ConnectorEditing extends ToolBase {
                         const segPoint: PointModel = { x: 0, y: 0 };
                         segPoint.x = ((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2);
                         segPoint.y = ((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2);
-                        if (contains(this.currentPosition, segPoint, 30)) {
+                        if (contains(this.currentPosition, segPoint, padding)) {
                             this.selectedSegment = segment;
                             this.segmentIndex = j;
                         }
                     }
                 } else {
-                    if (contains(this.currentPosition, segment.point, 10)) {
+                    if (contains(this.currentPosition, segment.point, padding)) {
                         this.selectedSegment = segment;
                     }
                 }

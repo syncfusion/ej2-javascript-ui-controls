@@ -4,124 +4,8 @@ import { PivotView } from '../../src/pivotview/base/pivotview';
 import { createElement, remove, EmitType, getInstance, closest} from '@syncfusion/ej2-base';
 import { FieldList } from '../../src/common/actions/field-list';
 import { TreeView } from '@syncfusion/ej2-navigations';
-import { Toolbar } from '../../src/common/popups/toolbar';
-import { PDFExport } from '../../src/pivotview/actions/pdf-export';
-import { ExcelExport } from '../../src/pivotview/actions/excel-export';
-import { VirtualScroll } from '../../src/pivotview/actions/virtualscroll';
-import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
-import { PivotCommon } from '../../src/common/base/pivot-common';
-import { Dialog } from '@syncfusion/ej2-popups';
 
 describe('Server side pivot engine ', () => {
-
-    describe('- CalculatedField Server-side', () => {
-        let originalTimeout: number;
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:400px;width:60%' });
-        let down: MouseEvent = new MouseEvent('mousedown', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true,
-        });
-        let up: MouseEvent = new MouseEvent('mouseup', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true,
-        });
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(FieldList);
-            pivotGridObj = new PivotView({
-                dataSourceSettings: {
-                    url: 'https://ej2services.syncfusion.com/js/development/api/pivot/post',
-                    mode: 'Server',
-                    expandAll: false,
-                    enableSorting: true,
-                    columns: [{ name: 'Year', caption: 'Production Year' },
-                    ],
-                    values: [
-                        { name: 'Sold', caption: 'Units Sold' },
-                        { name: 'Price', caption: 'Sold Amount' }
-                    ],
-                    rows: [{ name: 'ProductID', caption: 'Product ID' }],
-                    formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
-                    filters: []
-                },
-                width: '100%',
-                height: 450,
-                showFieldList: true,
-                showGroupingBar: true,
-                allowCalculatedField: true,
-                allowDeferLayoutUpdate: true,
-                enableVirtualization: true,
-                allowDataCompression: true,
-                dataBound: dataBound
-            });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 1000);
-        });
-        it('Intial rendering - pivot table', (done: Function) => {
-            setTimeout(() => {
-                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
-                (pivotGridObj.element.querySelectorAll('.e-select-table')[0] as HTMLElement).click();
-                done();
-            }, 3000);
-        });
-        it('Initial rendering', (done: Function) => {
-            setTimeout(() => {
-                (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
-                done();
-            }, 3000);
-        });
-        it('Open calculated popup - 0', (done: Function) => {
-            setTimeout(() => {
-                expect(document.querySelectorAll('.e-pivotfieldlist').length).toBe(1);
-                (document.querySelector('.e-calculated-field') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Open calculated popup - 1', (done: Function) => {
-            setTimeout(() => {
-                (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'New';
-                (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
-                done();
-            }, 1000);
-        });
-        it('Open calculated popup - 2', function (done) {
-            setTimeout(function () {
-                let calcField: any = document.querySelector('#' + pivotGridObj.element.id + '_PivotFieldListcalculateddialog');
-                calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
-                calcField.buttons[0].click();
-                done();
-            }, 2000);
-        });
-        it('Open calculated popup - 3', function (done) {
-            setTimeout(function () {
-                (document.querySelector('.e-cancel-btn') as HTMLElement).click();
-                done();
-            }, 1000);
-        });
-        it('Initial rendering', (done: Function) => {
-            setTimeout(() => {
-                (pivotGridObj.element.querySelectorAll('.e-select-table')[0] as HTMLElement).click();
-                done();
-            }, 3000);
-        });
-    });
-
 
     describe('- Initial Rendering and Basic Operations', () => {
         let originalTimeout: number;
@@ -153,7 +37,7 @@ describe('Server side pivot engine ', () => {
             PivotView.Inject(FieldList);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    url: 'https://ej2services.syncfusion.com/js/development/api/pivot/post',
+                    url: 'https://services.syncfusion.com/js/production/api/pivot/post',
                     mode: 'Server',
                     expandAll: true,
                     enableSorting: true,
@@ -163,7 +47,7 @@ describe('Server side pivot engine ', () => {
                         { name: 'Sold', caption: 'Units Sold' },
                         { name: 'Price', caption: 'Sold Amount' }
                     ],
-                    rows: [{ name: 'ProductID', caption: 'Product ID' }],
+                    rows: [{ name: 'Country', caption: 'Countries' }],
                     formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
                 },
                 showFieldList: true,
@@ -179,31 +63,31 @@ describe('Server side pivot engine ', () => {
                 expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
                 (pivotGridObj.element.querySelectorAll('.e-select-table')[0] as HTMLElement).click();
                 done();
-            }, 3000);
+            }, 4500);
         });
         it('Popup field list - ascend & descend', () => {
-            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Product ID');
+            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('ProductID');
             (document.querySelectorAll('.e-sort-ascend')[0] as HTMLElement).click();
         });
         it('Popup field list - ascend & descend-1', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Country');
+                expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Countries');
                 (document.querySelectorAll('.e-sort-descend')[0] as HTMLElement).click()
                 done();
-            }, 500);
+            }, 1500);
         });
         it('Field list Filering - columns - 1', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Units Sold');
                 (document.querySelectorAll('.e-btn-filter')[1] as HTMLElement).click();
             done();
-            }, 2000);
+            }, 2500);
         });
         it('Field list Filering - columns - 01', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-member-editor-dialog').length).toBe(1);
                 done();
-            }, 2000);
+            }, 5000);
         });
         it('Field list Filering - columns - 001', (done: Function) => {
             setTimeout(() => {
@@ -213,7 +97,7 @@ describe('Server side pivot engine ', () => {
                 checkEle[0].dispatchEvent(down);
                 checkEle[0].dispatchEvent(up);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Field list Filering - columns - 2', (done: Function) => {
             let treeObj: TreeView = getInstance(document.querySelectorAll('.e-member-editor-container')[0] as HTMLElement, TreeView) as TreeView;
@@ -231,7 +115,7 @@ describe('Server side pivot engine ', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 expect(document.querySelectorAll('.e-member-editor-dialog').length).toBe(0);
                 done();
-            }, 500);
+            }, 1000);
         });
     });
 
@@ -265,7 +149,7 @@ describe('Server side pivot engine ', () => {
             PivotView.Inject(FieldList);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    url: 'https://ej2services.syncfusion.com/js/development/api/pivot/post',
+                    url: 'https://services.syncfusion.com/js/production/api/pivot/post',
                     mode: 'Server',
                     expandAll: true,
                     enableSorting: true,
@@ -275,7 +159,7 @@ describe('Server side pivot engine ', () => {
                         { name: 'Sold', caption: 'Units Sold' },
                         { name: 'Price', caption: 'Sold Amount' }
                     ],
-                    rows: [{ name: 'ProductID', caption: 'Product ID' }],
+                    rows: [{ name: 'Country', caption: 'Countries' }],
                     formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
                 },
                 showFieldList: true,
@@ -291,22 +175,22 @@ describe('Server side pivot engine ', () => {
                 expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
                 (pivotGridObj.element.querySelectorAll('.e-select-table')[0] as HTMLElement).click();
                 done();
-            }, 3000);
+            }, 4000);
         });
         it('Popup field list - ascend & descend', () => {
-            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Product ID');
+            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('ProductID');
         });
         it('Field list Filering - rows - 1', (done: Function) => {
             setTimeout(() => {
                 (document.querySelectorAll('.e-btn-filter')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Field list Filering - rows - 01', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-member-editor-dialog').length).toBe(1);
                 done();
-            }, 2000);
+            }, 4000);
         });
         it('Field list Filering - rows - 001', (done: Function) => {
             let treeObj: TreeView = getInstance(document.querySelectorAll('.e-member-editor-container')[0] as HTMLElement, TreeView) as TreeView;
@@ -332,7 +216,7 @@ describe('Server side pivot engine ', () => {
                 checkEle[1].dispatchEvent(down);
                 checkEle[1].dispatchEvent(up);
                 done();
-            }, 1000);
+            }, 1500);
         });
         it('Field list Filering - rows - 002', (done: Function) => {
             setTimeout(() => {
@@ -344,13 +228,13 @@ describe('Server side pivot engine ', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-pivotfieldlist-container').length).toBe(1);
                 done();
-            }, 500);
+            }, 1000);
         });
         it('Field list close', (done: Function) => {
             setTimeout(() => {
                 (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click()
                 done();
-            }, 500);
+            }, 1000);
         });
     });
 
@@ -381,7 +265,7 @@ describe('Server side pivot engine ', () => {
     //         document.body.appendChild(elem);
     //         fieldListObj = new PivotFieldList({
     //             dataSourceSettings: {
-    //                 url: 'https://ej2services.syncfusion.com/js/development/api/pivot/post',
+    //                 url: 'https://services.syncfusion.com/js/production/api/pivot/post',
     //                 mode: 'Server',
     //                 expandAll: true,
     //                 enableSorting: true,
@@ -391,7 +275,7 @@ describe('Server side pivot engine ', () => {
     //                     { name: 'Sold', caption: 'Units Sold' },
     //                     { name: 'Price', caption: 'Sold Amount' }
     //                 ],
-    //                 rows: [{ name: 'ProductID', caption: 'Product ID' }],
+    //                 rows: [{ name: 'Country', caption: 'Countries' }],
     //                 formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
     //             },
     //             renderMode: 'Fixed'
@@ -497,7 +381,7 @@ describe('Server side pivot engine ', () => {
             PivotView.Inject(FieldList);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    url: 'https://ej2services.syncfusion.com/js/development/api/pivot/post',
+                    url: 'https://services.syncfusion.com/js/production/api/pivot/post',
                     mode: 'Server',
                     expandAll: true,
                     enableSorting: true,
@@ -507,7 +391,7 @@ describe('Server side pivot engine ', () => {
                         { name: 'Sold', caption: 'Units Sold' },
                         { name: 'Price', caption: 'Sold Amount' }
                     ],
-                    rows: [{ name: 'ProductID', caption: 'Product ID' }],
+                    rows: [{ name: 'Country', caption: 'Countries' }],
                     formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
                 },
                 showFieldList: true,

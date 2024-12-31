@@ -71,11 +71,12 @@ export class CellRenderer implements ICellRenderer<Column> {
             const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string' && !(cell.column.template.prototype && cell.column.template.prototype.CSPTemplate);
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
+            const isReactPrintGrid: boolean = this.parent.printGridParent && this.parent.printGridParent.isReact;
             const literals: string[] = ['index'];
             const dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
             const templateID: string = this.parent.element.id + cell.column.uid;
             const str: string = 'isStringTemplate';
-            if (isReactCompiler || isReactChild) {
+            if (isReactCompiler || isReactChild || isReactPrintGrid) {
                 const copied: Object = { 'index': attributes[literals[0]] };
                 cell.column.getColumnTemplate()(
                     extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[`${str}`], null, node);
@@ -83,7 +84,7 @@ export class CellRenderer implements ICellRenderer<Column> {
                 result = cell.column.getColumnTemplate()(
                     extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[`${str}`], undefined, undefined, this.parent['root']);
             }
-            if (!isReactCompiler && !isReactChild) {
+            if (!isReactCompiler && !isReactChild && !isReactPrintGrid) {
                 appendChildren(node, result);
             }
             this.parent.notify('template-result', { template: result });

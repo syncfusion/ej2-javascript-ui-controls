@@ -31,7 +31,7 @@ import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-ann
 import { Drawing, ClipBoardObject } from './drawing/drawing';
 import { Selector } from './drawing/selector';
 import { SelectorModel } from './drawing/selector-model';
-import { PointModel, IElement, Rect, Point, Size } from '@syncfusion/ej2-drawings';
+import { PointModel, IElement, Rect, Point, Size, processPathData, splitArrayCollection } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 
@@ -8769,6 +8769,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public load(document: string | Uint8Array, password: string): void {
+        this.loadDocInternally(document, password);
+    }
+
+    /**
+     * Loads the given PDF document internally in the PDF viewer control
+     *
+     * @param  {string} document - Specifies the document name for load
+     * @param  {string} password - Specifies the Given document password
+     * @param  {boolean} isSkipDocumentId - It indicates whether we need to skip removing the jsonDocumentId
+     * @private
+     * @returns {void}
+     */
+    public loadDocInternally(document: string | Uint8Array, password: string, isSkipDocumentId: boolean = true): void {
         if (this.pageCount !== 0) {
             this.viewerBase.clear(true);
         } else {
@@ -8788,7 +8801,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             const base64String: string = this.convertByteArrayToBase64(this.viewerBase.documentPathByteArray);
             this.viewerBase.initiatePageRender(base64String, password);
         } else {
-            this.viewerBase.initiatePageRender(document, password);
+            this.viewerBase.initiatePageRender(document, password, isSkipDocumentId);
         }
     }
 
@@ -9053,30 +9066,45 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
             }
         } else {
-            const data: string = this.viewerBase.getItemFromSessionStorage('_formfields');
-            if (isNullOrUndefined(data))
-            {
-                const data1: string = this.viewerBase.getItemFromSessionStorage('_formDesigner');
-                const FormFieldsData1 : any = JSON.parse(data1);
+            const designerData: string = this.viewerBase.getItemFromSessionStorage('_formDesigner');
+            if (!isNullOrUndefined(designerData)) {
+                const FormFieldsData : any = JSON.parse(designerData);
                 const filteredCollection : any = this.viewerBase.formFieldCollection.filter((field: any) => {
                     return field.FormField.id.split('_')[0] === fieldValue.id;
                 });
-
+                let csData: object[];
+                if (fieldValue.signatureType === 'Path') {
+                    const collectionData: object[] = processPathData(fieldValue.value);
+                    csData = splitArrayCollection(collectionData);
+                }
                 filteredCollection.forEach((field: any) => {
                     field.FormField.signatureType = fieldValue.signatureType;
-                    field.FormField.value = fieldValue.value;
+                    if (fieldValue.signatureType === 'Path') {
+                        field.FormField.value = JSON.stringify(csData);
+                    }
+                    else {
+                        field.FormField.value = fieldValue.value;
+                    }
                 });
-                for (let m: number = 0; m < FormFieldsData1.length; m++) {
+                for (let m: number = 0; m < FormFieldsData.length; m++) {
                     // eslint-disable-next-line
-                    if (FormFieldsData1[parseInt(m.toString(), 10)].FormField.id.split('_')[0] == fieldValue.id) {
-                        FormFieldsData1[parseInt(m.toString(), 10)].FormField.value = fieldValue.value;
-                        FormFieldsData1[parseInt(m.toString(), 10)].FormField.signatureType = fieldValue.signatureType;
+                    const field: any = FormFieldsData[parseInt(m.toString(), 10)].FormField;
+                    if (field.id.split('_')[0] === fieldValue.id) {
+                        if (fieldValue.signatureType === 'Path') {
+                            FormFieldsData[parseInt(m.toString(), 10)].FormField.value = JSON.stringify(csData);
+                        }
+                        else {
+                            FormFieldsData[parseInt(m.toString(), 10)].FormField.value = fieldValue.value;
+                        }
+                        FormFieldsData[parseInt(m.toString(), 10)].FormField.signatureType = fieldValue.signatureType;
+                        this.viewerBase.setItemInSessionStorage(FormFieldsData, '_formDesigner');
+                        break;
                     }
                 }
             }
-
-            else {
-                const FormFieldsData: any = JSON.parse(data);
+            const fieldsData: string =  this.viewerBase.getItemFromSessionStorage('_formfields');
+            if (!isNullOrUndefined(fieldsData)) {
+                const FormFieldsData: any = JSON.parse(fieldsData);
                 for (let m: number = 0; m < FormFieldsData.length; m++) {
                     let currentData: any = FormFieldsData[parseInt(m.toString(), 10)];
                     let fieldName: string;

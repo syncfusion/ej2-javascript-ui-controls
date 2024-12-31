@@ -591,12 +591,6 @@ export class SfdtExport {
             firstElement = child.children[2];
             secondElement = child.children[3];
         }
-        if(!isNullOrUndefined(widget.contentControlProperties)
-            && widget.containerWidget instanceof TableCellWidget
-            && !isNullOrUndefined(widget.containerWidget.containerWidget)
-            && !isNullOrUndefined((widget.containerWidget.containerWidget.containerWidget as TableWidget).contentControlProperties)) {
-                blocks = [];
-        }
         if (this.nestedBlockEnabled) {
             blocks = [];
         }
@@ -719,6 +713,10 @@ export class SfdtExport {
         if (widget.childWidgets.length === 0) {
             this.nextBlock = widget.nextWidget;
             return undefined;
+        }
+        if (!this.isBlockClosed && this.nestedBlockContent && !isNullOrUndefined(widget.associatedCell) && !isNullOrUndefined(widget.associatedCell.ownerTable)
+            && !isNullOrUndefined(widget.associatedCell.ownerTable.contentControlProperties)) {
+            this.nestedBlockEnabled = true;
         }
         block[blocksProperty[this.keywordIndex]] = this.writeParagraphs(widget);    
         if (!isNullOrUndefined(this.nextBlock)) {

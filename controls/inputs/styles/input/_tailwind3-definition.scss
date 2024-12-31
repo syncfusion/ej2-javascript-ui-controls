@@ -39,7 +39,7 @@ $input-warning-focus-box-shadow: 0 0 0 1px $warning !default;
 $input-error-focus-box-shadow: 0 0 0 1px $danger !default;
 $input-group-icon-border-radius: 3px !default;
 $input-group-child-border-width: $zero-value !default;
-$input-padding: 0 8px 0 0 !default;
+$input-padding: $zero-value !default;
 $float-input-padding: $zero-value !default;
 $float-label-padding: $text-xxs !default;
 $float-input-wrap-padding-top: $zero-value !default;

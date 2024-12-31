@@ -2,7 +2,20 @@
 
 ## [Unreleased]
 
-## 28.1.36 (2024-12-24)
+## 28.1.37 (2024-12-31)
+
+### Grid
+
+#### Bug fixes
+
+- `#I662531` - The script error that occurred when autofit was enabled in the Grid, the width of the first column was undefined, and its visibility was set to false has been resolved.
+- `#I661447` - Resolved an issue where templates were not rendered in the printed output of the React Grid.
+- `#I664462` - Resolved the issue where `SelectedRowIndex` was not updating correctly when `allowSelection` was enabled dynamically.
+- `#I666371` - Resolved the issue where the `rowSelected` event was triggered twice when persist selection was enabled.
+- `#FB63898` - The script issue caused by an initial filter query with complex predicates when using the `ODataV4Adaptor` has been resolved.
+- `#I665773` - Fixed the issue where the `Column Menu popup` was not positioned correctly when the `StickyHeader` feature was enabled, and the screen was zoomed.
+
+## 28.1.36
 
 ### Grid
 

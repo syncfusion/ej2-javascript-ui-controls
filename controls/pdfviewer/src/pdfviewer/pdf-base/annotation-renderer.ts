@@ -553,12 +553,8 @@ export class AnnotationRenderer {
         const bounds: Rect = JSON.parse(inkSignatureAnnotation.bounds);
         const stampObjects: any = JSON.parse(inkSignatureAnnotation.data.toString());
         const rotationAngle: number = this.getInkRotateAngle(page.rotation.toString());
-        const cropValues: PointBase = this.getCropBoxValue(page, false);
-        const left: number = cropValues.x + this.convertPixelToPoint(bounds.x);
-        let top: number = this.convertPixelToPoint(bounds.y);
-        if (!(cropValues.x === 0 && (page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]))) {
-            top -= cropValues.y;
-        }
+        const left: number = this.convertPixelToPoint(bounds.x);
+        const top: number = this.convertPixelToPoint(bounds.y);
         const width: number = this.convertPixelToPoint(bounds.width);
         const height: number = this.convertPixelToPoint(bounds.height);
         const opacity: number = inkSignatureAnnotation.opacity;
@@ -2245,17 +2241,12 @@ export class AnnotationRenderer {
     }
 
     private getSaveVertexPoints(points: any, page: PdfPage): number[] {
-        const cropValues : PointBase = this.getCropBoxValue(page, false);
-        if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
-            cropValues.x = 0;
-            cropValues.y = 0;
-        }
         const pageHeight: number = page.size[1];
         const pointList: number[] = [];
         for (let index: number = 0; index < points.length; index++) {
-            const x: number = this.convertPixelToPoint(points[parseInt(index.toString(), 10)].x) + cropValues.x;
+            const x: number = this.convertPixelToPoint(points[parseInt(index.toString(), 10)].x);
             pointList.push(x);
-            const y: number = pageHeight - this.convertPixelToPoint(points[parseInt(index.toString(), 10)].y) + cropValues.y;
+            const y: number = pageHeight - this.convertPixelToPoint(points[parseInt(index.toString(), 10)].y);
             pointList.push(y);
         }
         return pointList;

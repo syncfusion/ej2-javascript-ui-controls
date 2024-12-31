@@ -4474,6 +4474,50 @@ export class FormDesigner {
                             currentData.signatureBound = boundsObjects;
                             image = null;
                         }
+                        else if (currentData.signatureType === 'Path') {
+                            let boundsObjects: any = {
+                                x: currentData.lineBound.X, y: currentData.lineBound.Y,
+                                width: currentData.lineBound.Width, height: currentData.lineBound.Height
+                            };
+                            if (this.pdfViewer.signatureFitMode === 'Default') {
+                                const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
+                                currentData.LineBounds = {X: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.X),
+                                    Y: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Y),
+                                    Width: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Width),
+                                    Height: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Height)};
+                                const signatureBounds: any = this.pdfViewerBase.signatureModule.
+                                    updateSignatureAspectRatio(filteredField[0].value, false, null, currentData);
+                                boundsObjects = this.pdfViewer.formFieldsModule.
+                                    getSignBounds(i, currentData.rotation, currentData.pageNumber,
+                                                  zoomvalue, currentData.lineBound.X, currentData.lineBound.Y,
+                                                  signatureBounds.width, signatureBounds.height, true);
+                                boundsObjects.x = boundsObjects.x + signatureBounds.left;
+                                boundsObjects.y = boundsObjects.y + signatureBounds.top;
+                            }
+                            currentData.signatureBound = boundsObjects;
+                            const collectionData: Object[] = processPathData(filteredField[0].value);
+                            const csData: Object[] = splitArrayCollection(collectionData);
+                            currentData.value = JSON.stringify(csData);
+                        }
+                        else if (currentData.signatureType === 'Type') {
+                            const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
+                            let bounds: any = this.pdfViewer.formFieldsModule.
+                                getSignBounds(i, currentData.rotation, currentData.pageNumber, zoomvalue, currentData.lineBound.X,
+                                              currentData.lineBound.Y, currentData.lineBound.Width, currentData.lineBound.Height);
+                            if (this.pdfViewer.signatureFitMode === 'Default') {
+                                bounds = this.pdfViewer.formFieldsModule.getDefaultBoundsforSign(bounds);
+                            }
+                            currentData.signatureBound = bounds;
+                            currentData.signatureType = 'Text';
+                            const fontSize: number = bounds.height / this.pdfViewer.formFieldsModule.signatureFontSizeConstent;
+                            const textWidth: number = this.pdfViewer.formFieldsModule.
+                                getTextWidth(currentData.value, fontSize, currentData.fontFamily);
+                            let widthRatio: number = 1;
+                            if (textWidth > bounds.width) {
+                                widthRatio = bounds.width / textWidth;
+                            }
+                            currentData.fontSize = this.pdfViewer.formFieldsModule.getFontSize(Math.floor((fontSize * widthRatio)));
+                        }
                     }
                 }
                 currentData.Multiline = currentData.isMultiline;

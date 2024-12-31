@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 28.1.36 (2024-12-24)
+## 28.1.37 (2024-12-31)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I667080` - The column series now renders properly when the width is set in pixels and `enableSideBySidePlacement` is set to false.
+- `#I654525` - The y-axis now dynamically adjusts to accommodate negative ranges when the negative error bar exceeds the minimum value.
+
+## 28.1.36
 
 ### Chart
 

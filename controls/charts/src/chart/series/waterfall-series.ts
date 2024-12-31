@@ -5,7 +5,7 @@ import { Series, Points } from './chart-series';
 import { DoubleRange } from '../utils/double-range';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
-import { animationMode } from '@syncfusion/ej2-base';
+import { animationMode, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * The `WaterfallSeries` module is used to render the waterfall series.
@@ -214,8 +214,10 @@ export class WaterfallSeries extends ColumnBase {
      */
     public processInternalData(json: Object[], series: Series): Object[] {
         const data: Object[] = json; let index: number; let sumValue : number = 0;
-        const intermediateSum: number[] = series.intermediateSumIndexes;
-        const sumIndex: number[] = series.sumIndexes;
+        const intermediateSum: number[] = (!isNullOrUndefined(series.intermediateSumIndexes) && series.intermediateSumIndexes.length > 0) ?
+            series.intermediateSumIndexes.sort() : series.intermediateSumIndexes;
+        const sumIndex: number[] = (!isNullOrUndefined(series.sumIndexes) && series.sumIndexes.length > 0) ? series.sumIndexes.sort() :
+            series.sumIndexes;
         let cumulativeSum: number = 0;
         for (let i: number = 0; i < data.length; i++) {
             cumulativeSum += data[i as number][series.yName] !== undefined ? data[i as number][series.yName] : 0;
@@ -241,7 +243,8 @@ export class WaterfallSeries extends ColumnBase {
                 for (let j: number = 0; j < data.length; j++) {
                     if (j === sumIndex[k as number]) {
                         if (intermediateSum !== undefined && intermediateSum.length > intermediateSumCount &&
-                            intermediateSum[k as number] !== sumIndex[k as number]) {
+                            intermediateSum[k as number] !== sumIndex[k as number] && intermediateSum[k as number] <
+                            sumIndex[k as number]) {
                             index = subArraySum(data, intermediateSum.length <= 1 ? intermediateSum[0] - 1 :
                                 intermediateSum[k as number] - 1, sumIndex[k as number], sumIndex, series);
                             intermediateSumCount += 1;
@@ -249,7 +252,7 @@ export class WaterfallSeries extends ColumnBase {
                             if (k === 0) {
                                 index = subArraySum(data, -1, sumIndex[k as number], null, series);
                             } else {
-                                index = subArraySum(data, sumIndex[k - 1], sumIndex[k as number], null, series);
+                                index = subArraySum(data, sumIndex[k as number - 1], sumIndex[k as number], null, series);
                             }
                         }
                         sumValue += index;

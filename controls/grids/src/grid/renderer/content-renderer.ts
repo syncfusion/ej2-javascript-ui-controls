@@ -299,14 +299,15 @@ export class ContentRender implements IRenderer {
         }
         const dataSource: Object = this.currentMovableRows || gObj.currentViewData;
         const isReact: boolean = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
-        let frag: DocumentFragment | HTMLElement = isReact ? gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }) : document.createDocumentFragment();
+        const isReactPrintGrid: boolean = this.parent.printGridParent && this.parent.printGridParent.isReact;
+        let frag: DocumentFragment | HTMLElement = isReact || isReactPrintGrid ? gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }) : document.createDocumentFragment();
         if (!this.initialPageRecords) {
             this.initialPageRecords = extend([], dataSource);
         }
         const hdrfrag: DocumentFragment = isReact ? gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }) : document.createDocumentFragment();
         let refFrag: DocumentFragment | HTMLElement;
         let refHdrfrag: DocumentFragment;
-        if (gObj.isReact && gObj.rowTemplate) {
+        if ((gObj.isReact || isReactPrintGrid) && gObj.rowTemplate) {
             refFrag = frag;
             refHdrfrag = hdrfrag;
         }
@@ -472,7 +473,7 @@ export class ContentRender implements IRenderer {
             } else {
                 const rowTemplateID: string = gObj.element.id + 'rowTemplate';
                 let elements: NodeList;
-                if (gObj.isReact) {
+                if (gObj.isReact || isReactPrintGrid) {
                     const isHeader: boolean = gObj.frozenRows && i < gObj.frozenRows;
                     const copied: Object = extend({ index: i }, dataSource[parseInt(i.toString(), 10)]);
                     gObj.getRowTemplate()(copied, gObj, 'rowTemplate', rowTemplateID, null, null, isHeader ? hdrfrag : frag);

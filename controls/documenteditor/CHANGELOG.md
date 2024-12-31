@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.1.37 (2024-12-31)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I646103` - Fixed the rendering issue of dot and circle bullets in the Ubuntu environment.
+- `#I664612` - Fixed the application hanging issue when searching for text within a split cell widget using the find option.
+- `#I665316` - Fixed the layout issue during editing actions caused by field start and end tags being in different paragraphs.
+- `#I656347` - Fixed the issue where an empty cell was not added in a split row widget.
+- `#I662866` - Fixed a script error that occurred when opening a document with block content controls inside a cell with revisions.
+- `#I660441` - Fixed the issue where a table became corrupt after merging cells.
+- `#I660453` - Fixed the issue where the replace API was not working when using a pattern to find and replace text.
+
 ## 28.1.36 (2024-12-24)
 
 ### DocumentEditor

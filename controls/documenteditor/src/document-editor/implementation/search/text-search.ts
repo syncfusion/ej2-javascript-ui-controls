@@ -194,6 +194,7 @@ export class TextSearch {
                     result.start = this.getTextPosition(span.line, offset.toString());
                     result.start.location = this.owner.selectionModule.getPhysicalPositionInternal(span.line, offset, true);
                     result.start.setPositionParagraph(span.line, offset);
+                    result.startOffset = this.owner.selectionModule.getHierarchicalIndexByPosition(result.start);
                 }
                 if (match.index + match[0].length <= startIndex + spanLength) {
                     let index: number = (match.index + match[0].length) - startIndex;
@@ -229,6 +230,7 @@ export class TextSearch {
                     result.end = this.getTextPosition(span.line, offset.toString());
                     result.end.location = this.owner.selectionModule.getPhysicalPositionInternal(span.line, offset, true);
                     result.end.setPositionParagraph(span.line, offset);
+                    result.endOffset = this.owner.selectionModule.getHierarchicalIndexByPosition(result.end);
                     isMatched = true;
                     break;
                 }

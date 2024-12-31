@@ -130,8 +130,9 @@ export class DetailRow {
                         !(gObj.detailTemplate.prototype && gObj.detailTemplate.prototype.CSPTemplate);
                     isReactChild = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                         this.parent.parentDetails.parentInstObj.isReact;
+                    const isReactPrintGrid: boolean = this.parent.printGridParent && this.parent.printGridParent.isReact;
                     const detailTemplateID: string = gObj.element.id + 'detailTemplate';
-                    if (isReactCompiler || isReactChild) {
+                    if (isReactCompiler || isReactChild || isReactPrintGrid) {
                         gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID, null, null, detailCell);
                         this.parent.renderTemplates(function(): void {
                             gObj.trigger(events.detailDataBound, { detailElement: detailCell, data: data, childGrid: childGrid });
@@ -161,6 +162,9 @@ export class DetailRow {
                     else if (gObj.parentDetails && gObj.parentDetails.parentInstObj && (gObj.parentDetails.parentInstObj.isReact
                         || gObj.parentDetails.parentInstObj.isVue)) {
                         childGrid.parentDetails.parentInstObj = gObj.parentDetails.parentInstObj;
+                    }
+                    if (gObj.printGridParent && gObj.printGridParent.isReact) {
+                        childGrid.printGridParent = gObj.printGridParent;
                     }
                     (<{ isLegacyTemplate?: boolean }>childGrid).isLegacyTemplate = gObj.isReact
                         || (<{ isLegacyTemplate?: boolean }>gObj).isLegacyTemplate;

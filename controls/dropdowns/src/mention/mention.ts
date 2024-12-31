@@ -613,6 +613,7 @@ export class Mention extends DropDownBase {
                 e.preventDefault();
                 const li: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
                 if (li) {
+                    this.isSelected = true;
                     this.setSelection(li, e);
                 }
                 if (this.isPopupOpen) { this.hidePopup(e); }

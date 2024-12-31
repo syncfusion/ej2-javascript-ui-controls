@@ -326,6 +326,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public isExpandCollapseLevelMethod: boolean = false;
     /** @hidden */
+    private isFromEventMarker: boolean = false;
+    /** @hidden */
     public isDynamicData: boolean = false;
     /** @hidden */
     public contentHeight: number;
@@ -2877,7 +2879,7 @@ export class Gantt extends Component<HTMLElement>
      */
     private updateRowHeightInConnectorLine(collection: IConnectorLineObject[]): void {
         if (collection && collection.length) {
-            const rowHeight: number = this.ganttChartModule.getChartRows()[0]
+            const rowHeight: number = !isNullOrUndefined(this.ganttChartModule) && this.ganttChartModule.getChartRows()[0]
                 && this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
             if (rowHeight && !isNaN(rowHeight)) {
                 for (let count: number = 0; count < collection.length; count++) {
@@ -2969,8 +2971,8 @@ export class Gantt extends Component<HTMLElement>
                     this.currentViewData : this.getExpandedRecords(this.currentViewData);
                 this.expandedRecords = expandedRecords;
                 let height: number;
-                const chartRow: Element = !isNullOrUndefined(this.ganttChartModule.getChartRows()) ?
-                    this.ganttChartModule.getChartRows()[0] : null;
+                const chartRow: Element = (!isNullOrUndefined(this.ganttChartModule) &&
+                     !isNullOrUndefined(this.ganttChartModule.getChartRows())) ? this.ganttChartModule.getChartRows()[0] : null;
                 if (!isNullOrUndefined(chartRow) && (chartRow as HTMLElement).offsetHeight > 0) {
                     height = (chartRow as HTMLElement).offsetHeight;
                 } else {

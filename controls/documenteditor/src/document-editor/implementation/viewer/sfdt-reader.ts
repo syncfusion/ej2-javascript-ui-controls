@@ -312,7 +312,7 @@ export class SfdtReader {
                 const revision: Revision = this.parseRevision(revisionData);
                 let revisionCheck: boolean = true;
                 if (!this.documentHelper.owner.sfdtExportModule.copyWithTrackChange && this.isPaste) {
-                    if (this.getRevisionType(revisionData[revisionTypeProperty[this.keywordIndex]]) === 'Insertion' && this.isPaste && this.documentHelper.owner.enableTrackChanges) {
+                    if (this.getRevisionType(revisionData[revisionTypeProperty[this.keywordIndex]]) === 'Insertion' && this.isPaste && this.documentHelper.owner.enableTrackChanges && !this.documentHelper.owner.editorModule.isRemoteAction) {
                         // var editor = this.documentHelper.owner.editor;
                         // if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
                         //     this.documentHelper.owner.editor.revisionData.push(this.documentHelper.owner.editor.getMarkerData(undefined, undefined, revision));

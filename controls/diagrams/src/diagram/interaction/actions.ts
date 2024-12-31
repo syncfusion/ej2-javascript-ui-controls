@@ -14,7 +14,7 @@ import { canShowCorner, canResizeCorner } from '../utility/diagram-util';
 import { Point } from '../primitives/point';
 import { ITouches } from '../objects/interface/interfaces';
 import { TextElement } from '../core/elements/text-element';
-import { PortConstraints, DiagramTools, PortVisibility, ThumbsConstraints } from '../enum/enum';
+import { PortConstraints, DiagramTools, PortVisibility, ThumbsConstraints, ConnectorConstraints } from '../enum/enum';
 import { Selector } from '../objects/node';
 import { SelectorModel } from '../objects/node-model';
 import { PointPortModel, PortModel } from './../objects/port-model';
@@ -215,12 +215,17 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
         }
     }
     if (diagram.connectorEditingToolModule && canDragSegmentThumb(conn as Connector)) {
+        // 927583: Segment points cannot be dragged when the pointer is in the outer part of the segmentThumb
+        const inheritSegmentThumbSize: number = (conn.constraints & ConnectorConstraints.InheritSegmentThumbSize);
+        const segmentThumbSize: number = inheritSegmentThumbSize ? diagram.segmentThumbSize : conn.segmentThumbSize;
+        let padding: number = (segmentThumbSize > 20) && conn.type !== 'Straight' ? segmentThumbSize / 2 : 10;
+        padding = padding / diagram.scrollSettings.currentZoom;
         if (conn.type === 'Straight' || conn.type === 'Bezier') {
             for (let i: number = 0; i < conn.segments.length; i++) {
                 //let segment: StraightSegmentModel | BezierSegmentModel;
                 const segment: StraightSegmentModel | BezierSegmentModel
                     = (conn.segments)[parseInt(i.toString(), 10)] as StraightSegmentModel | BezierSegmentModel;
-                if (contains(position, segment.point, 10)) {
+                if (contains(position, segment.point, padding)) {
                     return 'SegmentEnd';
                 }
             }
@@ -236,7 +241,7 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
                             segPoint.y = ((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2);
                             //Bug 857928: Issue in connector selection while enabling segment thumb.
                             //Instead of setting static value 30, we have set the hit padding of connector.
-                            const padding: number = conn.hitPadding ? conn.hitPadding : 10;
+                            // 927583: Segment points cannot be dragged when the pointer is in the outer part of the segmentThumb
                             if (contains(position, segPoint, padding)) {
                                 return 'OrthoThumb';
                             }

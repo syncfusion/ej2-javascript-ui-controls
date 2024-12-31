@@ -150,8 +150,10 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     }
                     const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                         this.parent.parentDetails.parentInstObj.isReact;
+                    const isReactPrintGrid: boolean = this.parent.printGridParent && this.parent.printGridParent.isReact;
                     if (((this.parent.isReact && this.parent.requireTemplateRef) || (isReactChild &&
-                        this.parent.parentDetails.parentInstObj.requireTemplateRef)) && cell.isTemplate) {
+                        this.parent.parentDetails.parentInstObj.requireTemplateRef) || (isReactPrintGrid
+                        && this.parent.printGridParent.requireTemplateRef)) && cell.isTemplate) {
                         // eslint-disable-next-line @typescript-eslint/no-this-alias
                         const thisRef: RowRenderer<T> = this;
                         thisRef.parent.renderTemplates(function(): void {

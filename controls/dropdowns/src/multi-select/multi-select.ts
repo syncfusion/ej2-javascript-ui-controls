@@ -1527,6 +1527,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.isFiltered) {
             if ((this.enableVirtualization && !isNullOrUndefined(this.customFilterQuery))) {
                 filterQuery = this.customFilterQuery.clone() as Query;
+                return this.virtualFilterQuery(filterQuery);
             }
             else if (!this.enableVirtualization){
                 return filterQuery;
@@ -3398,7 +3399,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     getValue(((this.fields.value) ? this.fields.value : ''), this.value[this.value.length - 1]) :
                     this.value[this.value.length - 1];
                 const temp: string = text;
-                const textValues: string = this.text != null && this.text !== '' ? this.text + ',' + temp : temp;
+                const textValues: string = this.text != null && this.text !== '' ? this.text + this.delimiterChar + temp : temp;
                 currentText.push(textValues);
                 this.setProperties({ text: currentText.toString() }, true);
             }
@@ -3992,7 +3993,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.list.scrollTop = 0;
                 this.virtualListInfo = null;
                 this.previousStartIndex = 0;
-                this.previousEndIndex = 0;
+                this.previousEndIndex = this.itemCount;
             }
             this.isClearAllAction = false;
         }
@@ -4364,7 +4365,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 text = this.text.split(delimiterChar);
                             } else {
                                 temp = isInitialVirtualData && delim ? this.text : this.getTextByValue(value);
-                                const textValues: string = isInitialVirtualData ? this.text : (this.text && this.text !== '' ? this.text + ',' + temp : temp);
+                                const textValues: string = isInitialVirtualData ? this.text : (this.text && this.text !== '' ? this.text + this.delimiterChar + temp : temp);
                                 data += temp + delimiterChar + ' ';
                                 text.push(textValues);
                                 hiddenElementContent = this.hiddenElement.innerHTML;
@@ -4523,7 +4524,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             (this.mode === 'Box' || this.mode === 'Default'))) ||
                         (this.enableVirtualization && value != null && text != null && !isCustomData)) {
                         const currentText: string[] = [];
-                        const textValues: string = this.text != null && this.text !== '' ? this.text + ',' + text : text;
+                        const textValues: string = this.text != null && this.text !== '' ? this.text + this.delimiterChar + text : text;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
                         this.addChip(text, value);
@@ -4564,7 +4565,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             this.wireListEvents();
                         }
                         const currentText: string[] = [];
-                        const textValues: string = this.text != null && this.text !== '' ? this.text + ',' + text : text;
+                        const textValues: string = this.text != null && this.text !== '' ? this.text + this.delimiterChar + text : text;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
                         this.addChip(text, value);
@@ -6212,7 +6213,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             this.viewPortInfo.endIndex : this.itemCount;
                         this.virtualListInfo = this.viewPortInfo;
                         this.previousStartIndex = 0;
-                        this.previousEndIndex = 0;
+                        this.previousEndIndex = this.itemCount;
                     }
                     let dataSourceCount: number;
                     if (this.dataSource instanceof DataManager) {

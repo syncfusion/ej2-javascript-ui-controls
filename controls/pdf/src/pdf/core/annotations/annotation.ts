@@ -1,7 +1,7 @@
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
-import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfDestinationMode, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType } from './../enumerator';
+import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfDestinationMode, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace } from './../enumerator';
 import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _stringToBytes, _isNullOrUndefined } from './../utils';
 import { PdfField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
@@ -3774,11 +3774,16 @@ export class PdfLineAnnotation extends PdfComment {
             const angle: number = this._getAngle(this._linePoints);
             let leaderLine: number = 0;
             let lineAngle: number = 0;
-            if (this.leaderLine < 0) {
-                leaderLine = -(this.leaderLine);
+            let leaderLineValue: number = this.leaderLine;
+            if (leaderLineValue === null || typeof leaderLineValue === 'undefined') {
+                this._leaderLine = 0;
+                leaderLineValue = 0;
+            }
+            if (leaderLineValue < 0) {
+                leaderLine = -(leaderLineValue);
                 lineAngle = angle + 180;
             } else {
-                leaderLine = this.leaderLine;
+                leaderLine = leaderLineValue;
                 lineAngle = angle;
             }
             const offset: number = (typeof this.leaderOffset !== 'undefined') ? (leaderLine + this.leaderOffset) : leaderLine;
@@ -7382,6 +7387,18 @@ export class PdfPopupAnnotation extends PdfComment {
     _ref: _PdfReference;
     _isReview: boolean = false;
     _isComment: boolean = false;
+    _comment: string = 'q 1 1 1 rg 0 i 1 w 4 M 1 j 0 J []0 d 1 0 0 1 9 5.0908 cm 7.74 12.616 m -7.74 12.616 l -8.274 12.616 -8.707 12.184 -8.707 11.649 c h f Q 0 G ';
+    _commentSecondHalf: string = '0 i 0.60 w 4 M 1 j 0 J [0 100]1 d  1 0 0 1 9 5.0908 cm 4.1 1.71 m -0.54 -2.29 l  -0.54 1.71 l  -5.5 1.71 l  -5.5 14.42 l  10.5 14.42 l  10.5 1.71 l  4.1 1.71 l -2.33 9.66 m 7.34 9.66 l 7.34 8.83 l -2.33 8.83 l -2.33 9.66 l -2.33 7.28 m 5.88 7.28 l 5.88 6.46 l -2.33 6.46 l -2.33 7.28 l 14.9 23.1235 m -14.9 23.1235 l -14.9 -20.345 l 14.9 -20.345 l 14.9 23.1235 l b ';
+    _note: string = '0 G 0 i 0.61 w 4 M 0 j 0 J []0 d  q 1 0 0 1 16.959 1.3672 cm 0 0 m 0 -0.434 -0.352 -0.785 -0.784 -0.785 c -14.911 -0.785 l -15.345 -0.785 -15.696 -0.434 -15.696 0 c -15.696 17.266 l -15.696 17.699 -15.345 18.051 -14.911 18.051 c -0.784 18.051 l -0.352 18.051 0 17.699 0 17.266 c h b Q q 1 0 0 1 4.4023 13.9243 cm 0 0 m 9.418 0 l S Q q 1 0 0 1 4.4019 11.2207 cm 0 0 m 9.418 0 l S Q q 1 0 0 1 4.4023 8.5176 cm 0 0 m 9.418 0 l S Q q 1 0 0 1 4.4023 5.8135 cm 0 0 m 9.418 0 l S Q ';
+    _help: string = 'q 1 1 1 rg 0 i 1 w 4 M 1 j 0 J []0 d 1 0 0 1 12.1465 10.5137 cm -2.146 9.403 m -7.589 9.403 -12.001 4.99 -12.001 -0.453 c -12.001 -5.895 -7.589 -10.309 -2.146 -10.309 c 3.296 -10.309 7.709 -5.895 7.709 -0.453 c 7.709 4.99 3.296 9.403 -2.146 9.403 c h f Q ';
+    _helpSecondHalf: string = ' 0 G 0 i 0.59 w 4 M 1 j 0 J []0 d  1 0 0 1 12.1465 10.5137 cm 0 0 m -0.682 -0.756 -0.958 -1.472 -0.938 -2.302 c -0.938 -2.632 l -3.385 -2.632 l -3.403 -2.154 l -3.459 -1.216 -3.147 -0.259 -2.316 0.716 c -1.729 1.433 -1.251 2.022 -1.251 2.647 c -1.251 3.291 -1.674 3.715 -2.594 3.751 c -3.202 3.751 -3.937 3.531 -4.417 3.2 c -5.041 5.205 l -4.361 5.591 -3.274 5.959 -1.968 5.959 c 0.46 5.959 1.563 4.616 1.563 3.089 c 1.563 1.691 0.699 0.771 0 0 c -2.227 -6.863 m -2.245 -6.863 l -3.202 -6.863 -3.864 -6.146 -3.864 -5.189 c -3.864 -4.196 -3.182 -3.516 -2.227 -3.516 c -1.233 -3.516 -0.589 -4.196 -0.57 -5.189 c -0.57 -6.146 -1.233 -6.863 -2.227 -6.863 c -2.146 9.403 m -7.589 9.403 -12.001 4.99 -12.001 -0.453 c -12.001 -5.895 -7.589 -10.309 -2.146 -10.309 c 3.296 -10.309 7.709 -5.895 7.709 -0.453 c 7.709 4.99 3.296 9.403 -2.146 9.403 c b ';
+    _insert: string = ' 0 i 0.59 w 4 M 0 j 0 J []0 d  1 0 0 1 8.5386 19.8545 cm 0 0 m -8.39 -19.719 l 8.388 -19.719 l h B ';
+    _key: string = 'q 1 1 1 rg 0 i 1 w 4 M 1 j 0 J []0 d 1 0 0 1 6.5 12.6729 cm 0.001 5.138 m -2.543 5.138 -4.604 3.077 -4.604 0.534 c -4.604 -1.368 -3.449 -3.001 -1.802 -3.702 c -1.802 -4.712 l -0.795 -5.719 l -1.896 -6.82 l -0.677 -8.039 l -1.595 -8.958 l -0.602 -9.949 l -1.479 -10.829 l -0.085 -12.483 l 1.728 -10.931 l 1.728 -3.732 l 1.737 -3.728 1.75 -3.724 1.76 -3.721 c 3.429 -3.03 4.604 -1.385 4.604 0.534 c 4.604 3.077 2.542 5.138 0.001 5.138 c f Q ';
+    _keySecondHalf: string = ' 0 G 0 i 0.59 w 4 M 1 j 0 J []0 d  q 1 0 0 1 6.4995 20 cm 0 0 m -6.205 -12.713 l 6.205 -12.713 l h b Q q 1 0 0 1 1.1909 6.2949 cm 0 0 m 1.278 0 l 1.353 0 1.362 -0.02 1.391 -0.066 c 2.128 -1.363 3.78 -4.275 3.966 -4.713 c 3.985 -4.713 l 3.976 -4.453 3.957 -3.91 3.957 -3.137 c 3.957 -0.076 l 3.957 -0.02 3.976 0 4.041 0 c 4.956 0 l 5.021 0 5.04 -0.029 5.04 -0.084 c 5.04 -6.049 l 5.04 -6.113 5.021 -6.133 4.947 -6.133 c 3.695 -6.133 l 3.621 -6.133 3.611 -6.113 3.574 -6.066 c 3.052 -4.955 1.353 -2.063 0.971 -1.186 c 0.961 -1.186 l 0.999 -1.68 0.999 -2.146 1.008 -3.025 c 1.008 -6.049 l 1.008 -6.104 0.989 -6.133 0.933 -6.133 c 0.009 -6.133 l -0.046 -6.133 -0.075 -6.123 -0.075 -6.049 c -0.075 -0.066 l -0.075 -0.02 -0.056 0 0 0 c f Q q 1 0 0 1 9.1367 3.0273 cm 0 0 m 0.075 0 0.215 -0.008 0.645 -0.008 c 1.4 -0.008 2.119 0.281 2.119 1.213 c 2.119 1.969 1.633 2.381 0.737 2.381 c 0.354 2.381 0.075 2.371 0 2.361 c h -1.146 3.201 m -1.146 3.238 -1.129 3.268 -1.082 3.268 c -0.709 3.275 0.02 3.285 0.729 3.285 c 2.613 3.285 3.248 2.314 3.258 1.232 c 3.258 -0.27 2.007 -0.914 0.607 -0.914 c 0.327 -0.914 0.057 -0.914 0 -0.904 c 0 -2.789 l 0 -2.836 -0.019 -2.865 -0.074 -2.865 c -1.082 -2.865 l -1.119 -2.865 -1.146 -2.846 -1.146 -2.799 c h f Q ';
+    _newParagraph: string = '1 0.819611 0 rg 0 G 0 i 0.58 w 4 M 0 j 0 J []0 d ';
+    _newParagraphSecondHalf: string = ' 0 G 0 i 0.59 w 4 M 1 j 0 J []0 d  q 1 0 0 1 6.4995 20 cm 0 0 m -6.205 -12.713 l 6.205 -12.713 l h b Q q 1 0 0 1 1.1909 6.2949 cm 0 0 m 1.278 0 l 1.353 0 1.362 -0.02 1.391 -0.066 c 2.128 -1.363 3.78 -4.275 3.966 -4.713 c 3.985 -4.713 l 3.976 -4.453 3.957 -3.91 3.957 -3.137 c 3.957 -0.076 l 3.957 -0.02 3.976 0 4.041 0 c 4.956 0 l 5.021 0 5.04 -0.029 5.04 -0.084 c 5.04 -6.049 l 5.04 -6.113 5.021 -6.133 4.947 -6.133 c 3.695 -6.133 l 3.621 -6.133 3.611 -6.113 3.574 -6.066 c 3.052 -4.955 1.353 -2.063 0.971 -1.186 c 0.961 -1.186 l 0.999 -1.68 0.999 -2.146 1.008 -3.025 c 1.008 -6.049 l 1.008 -6.104 0.989 -6.133 0.933 -6.133 c 0.009 -6.133 l -0.046 -6.133 -0.075 -6.123 -0.075 -6.049 c -0.075 -0.066 l -0.075 -0.02 -0.056 0 0 0 c f Q q 1 0 0 1 9.1367 3.0273 cm 0 0 m 0.075 0 0.215 -0.008 0.645 -0.008 c 1.4 -0.008 2.119 0.281 2.119 1.213 c 2.119 1.969 1.633 2.381 0.737 2.381 c 0.354 2.381 0.075 2.371 0 2.361 c h -1.146 3.201 m -1.146 3.238 -1.129 3.268 -1.082 3.268 c -0.709 3.275 0.02 3.285 0.729 3.285 c 2.613 3.285 3.248 2.314 3.258 1.232 c 3.258 -0.27 2.007 -0.914 0.607 -0.914 c 0.327 -0.914 0.057 -0.914 0 -0.904 c 0 -2.789 l 0 -2.836 -0.019 -2.865 -0.074 -2.865 c -1.082 -2.865 l -1.119 -2.865 -1.146 -2.846 -1.146 -2.799 c h f Q ';
+    _paragraph: string = 'q 1 1 1 rg 0 i 1 w 4 M 1 j 0 J []0 d 1 0 0 1 19.6973 10.0005 cm 0 0 m 0 -5.336 -4.326 -9.662 -9.663 -9.662 c -14.998 -9.662 -19.324 -5.336 -19.324 0 c -19.324 5.335 -14.998 9.662 -9.663 9.662 c -4.326 9.662 0 5.335 0 0 c h f Q ';
+    _paragraphSecondHalf: string = '0 G 0 i 0.59 w 4 M 1 j 0 J []0 d  q 1 0 0 1 19.6973 10.0005 cm 0 0 m 0 -5.336 -4.326 -9.662 -9.663 -9.662 c -14.998 -9.662 -19.324 -5.336 -19.324 0 c -19.324 5.335 -14.998 9.662 -9.663 9.662 c -4.326 9.662 0 5.335 0 0 c h S Q q 1 0 0 1 11.6787 2.6582 cm 0 0 m -1.141 0 l -1.227 0 -1.244 0.052 -1.227 0.139 c -0.656 1.157 -0.52 2.505 -0.52 3.317 c -0.52 3.594 l -2.833 3.783 -5.441 4.838 -5.441 8.309 c -5.441 10.778 -3.714 12.626 -0.57 13.024 c -0.535 13.508 -0.381 14.129 -0.242 14.389 c -0.207 14.44 -0.174 14.475 -0.104 14.475 c 1.088 14.475 l 1.156 14.475 1.191 14.458 1.175 14.372 c 1.105 14.095 0.881 13.127 0.881 12.402 c 0.881 9.431 0.932 7.324 0.95 4.06 c 0.95 2.298 0.708 0.813 0.189 0.07 c 0.155 0.034 0.103 0 0 0 c b Q ';
     /**
      * Initializes a new instance of the `PdfPopupAnnotation` class.
      *
@@ -7737,6 +7754,10 @@ export class PdfPopupAnnotation extends PdfComment {
                 this._flattenPopUp();
             }
         }
+        if (isFlatten && this._appearanceTemplate) {
+            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        }
         if (isFlatten) {
             this._removeAnnotation(this._page, this);
         }
@@ -7744,37 +7765,52 @@ export class PdfPopupAnnotation extends PdfComment {
     _createPopupAppearance(): PdfTemplate {
         let template: PdfTemplate;
         if (this._dictionary.has('Name')) {
-            if (this._dictionary.get('Name').name === 'Comment') {
-                if (this._dictionary.has('Rect')) {
-                    const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
-                    template = new PdfTemplate(nativeRectangle, this._crossReference);
-                    _setMatrix(template, this._getRotationAngle());
-                    const graphics: PdfGraphics = template.graphics;
-                    const rectValue: number[] = this._dictionary.getArray('Rect');
-                    if (rectValue !== null) {
-                        const pen: PdfPen = new PdfPen([0, 0, 0], 0.3);
-                        let brush: PdfBrush = new PdfBrush(this.color);
-                        const pen1: PdfPen = new PdfPen([255, 255, 255], 1);
-                        const points: Array<number[]> = new Array<number[]>();
-                        points.push([6, 8]);
-                        points.push([9, 8]);
-                        points.push([4, 12]);
-                        const path: PdfPath = new PdfPath();
-                        if (this.color[0] === 0 && this.color[0] === 0 && this.color[0] === 0) {
-                            brush = new PdfBrush([255, 215, 0]);
-                        }
-                        graphics.save();
-                        const template: PdfTemplate = new PdfTemplate([0, 0, 15, 14], this._crossReference);
-                        template.graphics.drawRectangle(0, 0, 15, 14, pen, brush);
-                        template.graphics.drawPolygon(points, pen, new PdfBrush([255, 255, 255]));
-                        path.addEllipse(2, 2, 11, 8);
-                        template.graphics.drawPath(path, pen, new PdfBrush([255, 255, 255]));
-                        template.graphics.drawArc(2, 2, 11, 8, 108, 12.7, pen1);
-                        template.graphics.drawLine(pen, 4, 12, 6.5, 10);
-                        graphics.drawTemplate(template, { x: 0, y: 0, width: this.bounds.width, height: this.bounds.height });
-                        graphics.restore();
-                    }
-                }
+            const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
+            template = new PdfTemplate(nativeRectangle, this._crossReference);
+            const graphics: PdfGraphics = template.graphics;
+            graphics._sw._clear();
+            if (this.opacity < 1) {
+                graphics.save();
+                graphics.setTransparency(this.opacity);
+            }
+            switch (this.icon) {
+            case PdfPopupIcon.comment:
+                graphics._sw._write(this._comment);
+                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+                graphics._sw._write(this._commentSecondHalf);
+                break;
+            case PdfPopupIcon.paragraph:
+                graphics._sw._write(this._paragraph);
+                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+                graphics._sw._write(this._paragraphSecondHalf);
+                break;
+            case PdfPopupIcon.help:
+                graphics._sw._write(this._help);
+                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+                graphics._sw._write(this._helpSecondHalf);
+                break;
+            case PdfPopupIcon.note:
+                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+                graphics._sw._write(this._note);
+                break;
+            case PdfPopupIcon.insert:
+                graphics._sw._write('0 G ');
+                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+                graphics._sw._write(this._insert);
+                break;
+            case PdfPopupIcon.key:
+                graphics._sw._write(this._key);
+                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+                graphics._sw._write(this._keySecondHalf);
+                break;
+            case PdfPopupIcon.newParagraph:
+                graphics._sw._write(this._newParagraph);
+                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+                graphics._sw._write(this._newParagraphSecondHalf);
+                break;
+            }
+            if (this.opacity < 1) {
+                graphics.restore();
             }
         }
         return template;

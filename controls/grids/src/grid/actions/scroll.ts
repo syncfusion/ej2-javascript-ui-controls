@@ -550,15 +550,19 @@ export class Scroll implements IAction {
         if (this.parent.enableStickyHeader && this.parent.element && this.parent.getContent()) {
             const contentRect: ClientRect = this.parent.getContent().getClientRects()[0];
             if (contentRect) {
+                const windowScale: number = window.devicePixelRatio;
                 const headerEle: HTMLElement = this.parent.getHeaderContent() as HTMLElement;
                 const toolbarEle: HTMLElement = this.parent.element.querySelector('.e-toolbar') as HTMLElement;
                 const groupHeaderEle: HTMLElement = this.parent.element.querySelector('.e-groupdroparea') as HTMLElement;
                 const height: number = headerEle.offsetHeight + (toolbarEle ? toolbarEle.offsetHeight : 0) +
                     (groupHeaderEle ? groupHeaderEle.offsetHeight : 0);
                 const parentTop: number = this.parentElement.getClientRects()[0].top;
-                const top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
+                let top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
                 const left: number = contentRect.left;
                 const colMenuEle: HTMLElement = document.body.querySelector('#' + this.parent.element.id + '_columnmenu');
+                if (windowScale !== 1) {
+                    top = Math.ceil(top);
+                }
                 if (top < height && contentRect.bottom > 0) {
                     headerEle.classList.add('e-sticky');
                     let elemTop: number = 0;

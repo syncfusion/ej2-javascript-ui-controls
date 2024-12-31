@@ -162,7 +162,12 @@ export class PdfViewerUtils {
         return btoa(binaryString);
     }
 
-    private static convertPixelToPoint(value: number): number {
+    /**
+     * @private
+     * @param {number} value - It describes about the value
+     * @returns {number} - number
+     */
+    public static convertPixelToPoint(value: number): number {
         return (value * 72 / 96);
     }
 }

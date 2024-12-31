@@ -1099,7 +1099,8 @@ export class WordExport {
 
     // Serialize the Footnote Properties
     private serializeEndNotesPr(writer: XmlWriter, section: any): void {
-        if (section[endnoteNumberFormatProperty[this.keywordIndex]] || section[restartIndexForEndnotesProperty[this.keywordIndex]]) {
+        if (!isNullOrUndefined(section[endnoteNumberFormatProperty[this.keywordIndex]]) ||
+            !isNullOrUndefined(section[restartIndexForEndnotesProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'endnotePr', this.wNamespace);
 
             writer.writeStartElement(undefined, 'pos', this.wNamespace);
@@ -1792,6 +1793,9 @@ export class WordExport {
             writer.writeStartElement(undefined, 'r', this.wNamespace);
             this.serializeCharacterFormat(writer, item[characterFormatProperty[this.keywordIndex]]);
             writer.writeStartElement(undefined, 'endnoteReference', this.wNamespace);
+            if (this.document[endnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]] && this.efRelationShipId === 0) {
+                this.efRelationShipId = 1;
+            }
             efId = this.getEFNextRelationShipID();
             writer.writeAttributeString(undefined, 'id', this.wNamespace, efId);
             this.addFootnotesEndnotes(ef, 'endnote', efId);

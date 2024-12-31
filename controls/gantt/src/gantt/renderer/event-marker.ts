@@ -55,8 +55,10 @@ export class EventMarker {
         const eventMarkerCollection: IEventMarkerInfo[] = [];
         for (let i: number = 0; i < this.parent.eventMarkers.length; i++) {
             if (!isNullOrUndefined(this.parent.eventMarkers[i as number].day)) {
+                this.parent['isFromEventMarker'] = true;
                 left = this.parent.dataOperation.getTaskLeft(
                     this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true), false, true);
+                this.parent['isFromEventMarker'] = false;
                 eventMarkerCollection.push({ id: i, left: left, label: this.parent.eventMarkers[i as number].label,
                     date: this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true) });
                 let align: string;

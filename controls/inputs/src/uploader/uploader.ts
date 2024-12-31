@@ -1839,7 +1839,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         for (let file: number = 0; file < item.length; file++){
             const pasteFile: DataTransferItem = [].slice.call(item)[file as number];
-            if ((pasteFile.kind === 'file') || pasteFile.type.match('^image/')) {
+            if (!isNullOrUndefined(pasteFile.getAsFile()) && ((pasteFile.kind === 'file') || pasteFile.type.match('^image/'))) {
                 this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
             }
         }

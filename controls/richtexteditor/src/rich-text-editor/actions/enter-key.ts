@@ -208,7 +208,8 @@ export class EnterKeyAction {
                                         && isSplitTextEmpty && !isPreWrapApplied && !isTextWrapApplied;
                                     const isCursorAtStartPreWrapWithContent: boolean = lastCharBeforeCursor === 32
                                         && (isPreWrapApplied || isTextWrapApplied) && isSplitTextEmpty && hasContentAfterCursor;
-                                    if (isCursorAtStartNonPreWrap || isCursorAtStartPreWrapWithContent) {
+                                    if ((isCursorAtStartNonPreWrap || isCursorAtStartPreWrapWithContent) &&
+                                        !this.range.startContainer.previousSibling) {
                                         isFocusedFirst = true;
                                     }
                                 } else if (this.range.startOffset === 0 && this.range.endOffset === 0) {
@@ -216,7 +217,7 @@ export class EnterKeyAction {
                                 }
                                 this.removeBRElement(nearBlockNode);
                                 const fireFoxEnterAtMiddle: boolean = Browser.userAgent.indexOf('Firefox') !== -1 && this.range.startOffset === 0 && this.range.startContainer === this.range.endContainer &&
-                                    this.range.startContainer.nodeName === '#text' && !this.parent.formatter.editorManager.domNode.isBlockNode(this.range.startContainer.previousSibling as Element) &&
+                                    this.range.startContainer.nodeName === '#text' && !isNOU(this.range.startContainer.previousSibling) && !this.parent.formatter.editorManager.domNode.isBlockNode(this.range.startContainer.previousSibling as Element) &&
                                     this.range.startContainer.parentElement === this.range.startContainer.previousSibling.parentElement;
                                 const preventZeroWithSpace: boolean = ((this.range.startContainer.nodeName === '#text' && this.range.startContainer.textContent.includes('\u200B') &&
                                     this.range.startContainer.textContent.trim() === '\u200B') ||

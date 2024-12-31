@@ -2195,6 +2195,8 @@ export class Render {
             if (args.style && this.formatList[pivotValue.actualText]) {
                 args.style.type = 'number';
                 args.style.numberFormat = args.style.numberFormat ? args.style.numberFormat : this.formatList[pivotValue.actualText];
+            } else if (this.formatList[pivotValue.actualText]) {
+                args.style = { numberFormat : this.formatList[pivotValue.actualText] };
             }
             args.column.format = this.formatList[pivotValue.actualText];
         }

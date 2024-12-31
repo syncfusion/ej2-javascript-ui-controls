@@ -27,7 +27,10 @@ export class FormFields {
     public  paddingDifferenceValue : number = 10;
     private indicatorPaddingValue : number = 4;
     private isKeyDownCheck: boolean = false;
-    private signatureFontSizeConstent: number = 1.35;
+    /**
+     * @private
+     */
+    public signatureFontSizeConstent: number = 1.35;
     /**
      * @private
      */

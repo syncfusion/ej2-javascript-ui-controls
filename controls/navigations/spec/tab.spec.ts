@@ -958,6 +958,42 @@ describe('Tab Control', () => {
             expect(tab.overflowMode).toEqual('Scrollable');
         });
     });
+    describe('HeightAdjustMode check for None. There is no browser scroller is present', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            const ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            const div: HTMLElement = createElement('div', { id: 'test' });
+            document.body.appendChild(ele);
+            document.body.appendChild(div);
+        });   
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });    
+        it('Tab scroller should activate on reduced height without browser scroll', () => {
+            tab = new Tab({
+                items: [
+                    { header: { text: "item1" }, content: "Content1" },
+                    { header: { text: "item2" }, content: "Content2" }
+                ],
+                heightAdjustMode: 'None',
+                height: '100%'
+            });
+            tab.appendTo('#ej2Tab'); 
+    
+            const ele: HTMLElement = document.getElementById('ej2Tab');
+            ele.style.height = '150px'; 
+            tab.dataBind();
+            // Verify that tab scroller is activated
+            const content: HTMLElement = ele.querySelector('.e-content');
+            expect(content.scrollHeight).toBeGreaterThan(content.clientHeight);
+            // Verify that no browser scrollbar is present
+            const htmlElement: HTMLElement = document.documentElement;
+            expect(htmlElement.scrollHeight).toEqual(htmlElement.clientHeight);
+        });
+    });
     describe('heightAdjustMode Property testing', () => {
         let tab: Tab;
         beforeEach((): void => {

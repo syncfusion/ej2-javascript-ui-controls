@@ -861,6 +861,12 @@ describe('ListBox', () => {
             listObj.selectionSettings.showCheckbox =  true;
             listObj.keyDownHandler({ keyCode: 36, shiftKey: true, ctrlKey: true,  preventDefault: () => { } });
         });
+
+        it('Ctrl + A Keydown Action Should Not Select All in Single Mode', () => {
+            listObj = new ListBox({ dataSource: data, selectionSettings: { mode: 'Single' } }, elem);
+            listObj.keyDownHandler({ keyCode: 65, ctrlKey: true, preventDefault: () => {} });
+            expect(listObj.getSelectedItems().length).toEqual(0);
+        });
     });
 
     describe('Drag and Drop', () => {

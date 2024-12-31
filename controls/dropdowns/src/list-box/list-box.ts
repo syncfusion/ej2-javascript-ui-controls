@@ -2201,7 +2201,7 @@ export class ListBox extends DropDownBase {
                     target: this.ulElement.getElementsByClassName('e-focused')[0],
                     ctrlKey: e.ctrlKey, shiftKey: e.shiftKey
                 });
-            } else if (e.keyCode === 65 && e.ctrlKey) {
+            } else if (e.keyCode === 65 && e.ctrlKey && this.selectionSettings.mode === 'Multiple') {
                 this.selectAll();
             } else if ((e.keyCode === 38 || e.keyCode === 40) && e.ctrlKey && e.shiftKey) {
                 this.moveUpDown(e.keyCode === 38 ? true : false, true);

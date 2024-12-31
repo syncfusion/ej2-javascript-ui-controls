@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.37 (2024-12-31)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with parsing annotations with appearance while export and import multiple times using the FDF format.
+- Resolved an issue with preserving the popup annotation appearance during flattening.
+- Resolved an issue where the text markup content entry was missing while exporting annotations using JSON and XFDF formats.
+
 ## 28.1.36 (2024-12-24)
 
 ### PDF Parser
@@ -9,6 +19,7 @@
 #### Bug Fixes
 
 - Resolved an issue with preserving radio button fields during flattening.
+- Resolved the PDF document corruption issue while adding a new line annotation with appearance and rotation.
 
 ## 28.1.35 (2024-12-18)
 

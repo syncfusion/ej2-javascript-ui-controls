@@ -2048,7 +2048,9 @@ export class Layout {
         let bodyIndex: number = paragraph.bodyWidget.indexInOwner;
         let lineIndex: number = line.indexInOwner;
         while (element instanceof ElementBox) {
-            element.padding.left = 0;
+            if(!(element instanceof ListTextElementBox)) {
+                element.padding.left = 0;
+            }
             if (!isNotEmptyField) {
                 this.layoutElement(element, paragraph, true);
                 isNotEmptyField = true;
@@ -2405,7 +2407,7 @@ export class Layout {
             }
         }
         if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
-            !(element instanceof ShapeElementBox && element.textWrappingStyle == 'Inline') && !(paragraph.containerWidget instanceof TextFrame && !(element instanceof CommentCharacterElementBox)) &&
+            !(element instanceof ShapeElementBox && element.textWrappingStyle == 'Inline') && !(paragraph.containerWidget instanceof TextFrame) && !(element instanceof CommentCharacterElementBox) &&
             !(paragraph.containerWidget instanceof TableCellWidget && paragraph.containerWidget.ownerTable.containerWidget instanceof TextFrame)) {
             this.adjustPosition(element, element.line.paragraph.bodyWidget);
             if (paragraph.textWrapWidth) {
@@ -3956,7 +3958,7 @@ export class Layout {
             return;
         }
         this.viewer.updateClientWidth(-HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
-        if (this.documentHelper.isIosDevice) {
+        if (this.documentHelper.isIosDevice || this.documentHelper.isLinuxOS) {
             let text: string = element.text;
             text = text === String.fromCharCode(61623) ? String.fromCharCode(9679) : text === String.fromCharCode(61551) + String.fromCharCode(32) ? String.fromCharCode(9675) : text;
             if (text !== element.text) {
@@ -3993,6 +3995,10 @@ export class Layout {
         if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
             !(previousElement instanceof ShapeElementBox) && !(paragraph.containerWidget instanceof TextFrame)) {
             this.adjustPosition(previousElement, previousElement.line.paragraph.bodyWidget);
+            if ((previousElement instanceof ListTextElementBox) && previousElement.padding && previousElement.padding.left > 0 &&
+                paragraph.paragraphFormat.firstLineIndent < 0) {
+                previousElement.padding.left -= HelperMethods.convertPointToPixel(previousElement.line.paragraph.paragraphFormat.firstLineIndent);
+            }
             if (this.isYPositionUpdated) {
                 if (this.viewer.clientActiveArea.width > (previousElement.width + element.width)) {
                     this.viewer.clientActiveArea.width -= (previousElement.width + element.width);
@@ -8299,6 +8305,7 @@ export class Layout {
             for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
                 let rowSpan: number = 1;
                 const cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                const cellspace = !isNullOrUndefined(cellWidget.ownerTable) && !isNullOrUndefined(cellWidget.ownerTable.tableFormat) ? HelperMethods.convertPointToPixel(cellWidget.ownerTable.tableFormat.cellSpacing) : 0;
                 if (Math.round(left) === Math.round(previousLeft)) {
                     rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan :
                         cellWidget.cellFormat.rowSpan;
@@ -8325,6 +8332,9 @@ export class Layout {
                         //}
                         //}
                     }
+                }
+                if (Math.round(previousLeft) !== Math.round(cellWidget.x - cellWidget.margin.left - cellspace)) {
+                    previousLeft = (cellWidget.x - cellWidget.margin.left - cellspace);
                 }
                 previousLeft += cellWidget.margin.left + cellWidget.width + cellWidget.margin.right;
             }

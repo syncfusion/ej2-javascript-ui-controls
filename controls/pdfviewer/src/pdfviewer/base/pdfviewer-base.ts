@@ -766,7 +766,6 @@ export class PdfViewerBase {
      */
     public isMessageBoxOpen: boolean;
     private notifyDialog: Dialog;
-
     /**
      * Initialize the constructor of PDFViewerBase
      *
@@ -937,9 +936,10 @@ export class PdfViewerBase {
      * @private
      * @param  {string} documentData - file name or base64 string.
      * @param {string} password - password of the PDF document.
+     * @param  {boolean} isSkipDocumentId - It indicates whether we need to skip removing the jsonDocumentId
      * @returns {void}
      */
-    public initiatePageRender(documentData: any, password: string): void {
+    public initiatePageRender(documentData: any, password: string, isSkipDocumentId: boolean = true): void {
         this.isPasswordProtected = (password || isNullOrUndefined(password)) ? true : false;
         if (this.clientSideRendering) {
             this.pdfViewer.unload();
@@ -993,7 +993,7 @@ export class PdfViewerBase {
                 else if (!isUrlLoaded && !documentData.includes('pdf;base64,') && this.clientSideRendering) {
                     const dataType: string = this.identifyDataType(documentData);
                     const isDataType: boolean = dataType === 'URL';
-                    isValidData = this.isValidBase64(documentData) || isDataType;
+                    isValidData = this.isValidPDFBase64(documentData) || isDataType;
                     if (isValidData) {
                         documentData = this.convertBase64(pdfbytearray);
                         this.pdfViewer.fileByteArray = documentData;
@@ -1003,7 +1003,7 @@ export class PdfViewerBase {
                     }
                 }
                 else {
-                    documentData = this.checkDocumentData(this.loadedData);
+                    documentData = this.checkDocumentData(this.loadedData, isSkipDocumentId);
                 }
                 if (isValidData) {
                     if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.uploadedDocumentName) {
@@ -1343,14 +1343,13 @@ export class PdfViewerBase {
         }
     }
 
-    private isValidBase64(str: string): boolean {
+    private isValidPDFBase64(str: string): boolean {
+        if (str.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(str.replace(/\s/g, ''))) {
+            return false;
+        }
         try {
-            if (str.length % 4 !== 0) {
-                return false;
-            }
-            const base64Regex: RegExp = /^[A-Za-z0-9+/=]+$/;
-            return base64Regex.test(str);
-        } catch (e) {
+            return atob(str).indexOf('%PDF-') > -1;
+        } catch {
             return false;
         }
     }
@@ -2019,23 +2018,24 @@ export class PdfViewerBase {
     /**
      * @private
      * @param {string} documentData - It describes about the document data
+     * @param  {boolean} isSkipDocumentId - It indicates whether we need to skip removing the jsonDocumentId
      * @returns {string} - string
      */
-    public checkDocumentData(documentData: string): string {
+    public checkDocumentData(documentData: string, isSkipDocumentId: boolean = true): string {
         let base64String: string;
-        if (this.isValidBase64(documentData)) {
+        if (this.isValidPDFBase64(documentData)) {
             base64String = documentData;
         } else {
             base64String = documentData.split('base64,')[1];
         }
-        if (base64String === undefined || !this.isValidBase64(base64String)) {
+        if (base64String === undefined || !this.isValidPDFBase64(base64String)) {
             this.isFileName = true;
             this.jsonDocumentId = documentData;
             if (this.pdfViewer.fileName === null) {
                 this.setDocumentName(documentData);
                 base64String = documentData;
             }
-        } else {
+        } else if (isSkipDocumentId) {
             this.jsonDocumentId = null;
         }
         return base64String;
@@ -6080,6 +6080,7 @@ export class PdfViewerBase {
                     if (!image) {
                         image = new Image();
                         image.id = this.pdfViewer.element.id + '_tileimg_' + pageIndex + '_' + this.getZoomFactor() + '_' + tileX + '_' + tileY;
+                        image.style.userSelect = 'none';
                         if (pageDiv) {
                             pageDiv.append(image);
                         }
@@ -6902,6 +6903,7 @@ export class PdfViewerBase {
                 pageCanvas.width = pageWidth;
                 pageCanvas.height = pageHeight;
                 pageCanvas.style.display = displayMode;
+                pageCanvas.style.userSelect = 'none';
                 if (this.isMixedSizeDocument && this.highestWidth > 0) {
                     pageCanvas.style.marginLeft = 'auto';
                     pageCanvas.style.marginRight = 'auto';

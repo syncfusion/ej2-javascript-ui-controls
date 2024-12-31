@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.37 (2024-12-31)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I664554` - Now, the `documentId` property is no longer missing in the `ajaxRequestInitiate` event after rotating the PDF pages.
+- `#I662006` - Now, the non-rendered page form fields are properly updated using the `updateFormFieldsValue` method.
+- `#I662588` - A proper error message is now displayed when an invalid base 64 string is loaded in the PDF Viewer.
+
 ## 28.1.36 (2024-12-24)
 
 ### PDF Viewer
