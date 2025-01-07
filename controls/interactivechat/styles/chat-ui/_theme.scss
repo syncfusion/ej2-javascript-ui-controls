@@ -91,6 +91,13 @@
     .e-header-icon,
     .e-message-icon,
     .e-user-icon {
+      border-radius: 50%;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+    }
+    .e-message-icon,
+    .e-user-icon {
       color: $sender-icon-color;
       @if ($skin-name == 'Material3' or $theme-name == 'Material3-dark') {
         background: $sender-icon-bg-color;
@@ -98,10 +105,6 @@
       @else {
         background-color: $sender-icon-bg-color;
       }
-      border-radius: 50%;
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: cover;
     }
     .e-indicator {
       background: $chat-left-bg-color;

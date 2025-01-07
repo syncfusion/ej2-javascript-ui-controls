@@ -455,16 +455,6 @@ export class TrackChangesPane {
                         ranges.paragraph.containerWidget instanceof HeaderFooterWidget && isNullOrUndefined(ranges.paragraph.containerWidget.sectionFormat)) {
                         continue;
                     }
-                    if (ranges instanceof TextElementBox &&
-                        ranges.paragraph.containerWidget instanceof HeaderFooterWidget) {
-                        let headerFooterType: HeaderFooterType = ranges.paragraph.containerWidget.headerFooterType;
-                        let sectionFormat: SelectionSectionFormat = this.owner.selectionModule.sectionFormat;
-                        if ((headerFooterType === 'EvenFooter' || headerFooterType === 'EvenHeader' || headerFooterType === 'OddFooter' || headerFooterType === 'OddHeader') && !sectionFormat.differentOddAndEvenPages) {
-                            continue;
-                        } else if ((headerFooterType === 'FirstPageHeader' || headerFooterType === 'FirstPageFooter') && !sectionFormat.differentFirstPage) {
-                            continue;
-                        }
-                    }
                     if (this.changes.containsKey(revision)) {
                         continue;
                     }

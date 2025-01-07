@@ -1743,3 +1743,65 @@ describe('B900782-Taskbar render in incorrect postion after zoom to fit', () => 
         destroyGantt(ganttObj);
     });
 });
+describe('Gantt with set toolbar visible false ', () => {
+    Gantt.Inject(Edit, Toolbar, Selection, Filter);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowSelection: true,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    segments: 'Segments'
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Multiple',
+                    enableToggle: false
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar:[  'Add',
+                    {
+                      text: 'Quick Filter',
+                      tooltipText: '',
+                      id: 'x',
+                      visible: false,
+                    },
+                    {
+                      text: 'Quick Filter3',
+                      tooltipText: '',
+                      id: 'y',
+                      visible: false,
+                    }, 
+                ],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('check  toolbar set visible false  ', () => {
+        const elementVisible : boolean = ganttObj.toolbarModule.toolbar['tbarEle'][2].classList.contains("e-hidden");
+        expect(elementVisible).toBe(true);
+    });
+});

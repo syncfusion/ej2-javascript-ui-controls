@@ -1155,10 +1155,6 @@ export class TaskProcessor extends DateProcessor {
                 resourceUnit = resources[index as number][this.parent.resourceFields.unit]; //in percentage
                 totalResourceOneDayWork += (resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : (ganttData.ganttProperties.taskType !== 'FixedUnit' ? ((ganttProperties.taskType !== 'FixedWork' && ganttProperties.duration !== 0) ? actualOneDayWork : 0) : 0)); //in hours
             }
-            if (ganttProperties.taskType === 'FixedWork' && (resourcesLength === 0 ||
-                    (resourcesLength > 0 && totalResourceOneDayWork === 0)) && totalResourceOneDayWork === 0 && this.parent['updateDuration']) {
-                totalResourceOneDayWork = actualOneDayWork;
-            }
             const totalHours: number = this.getWorkInHour(ganttProperties.work, ganttProperties.workUnit);
             if (resourcesLength > 0 && totalResourceOneDayWork > 0) {
                 updatedDuration += (totalHours / totalResourceOneDayWork);

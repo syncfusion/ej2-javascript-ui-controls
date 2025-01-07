@@ -1463,7 +1463,19 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             const liCollections: NodeListOf<Element> = <NodeListOf<Element>>listElement.querySelectorAll('.' + dropDownBaseClasses.li);
             for (let index: number = 0; index < liCollections.length; index++) {
                 if (JSON.parse(JSON.stringify(this.listData[index as number]))[this.fields.disabled]) {
-                    this.disableListItem(liCollections[index as number] as HTMLLIElement);
+                    if (!isNullOrUndefined(this.fields.groupBy)) {
+                        const item: boolean | string | number | {
+                            [key: string]: Object;
+                        } = this.listData[index as number];
+                        const value: any = getValue((this.fields.value ? this.fields.value : 'value'), item);
+                        const li: HTMLLIElement  = listElement.querySelector('li[data-value="' + value + '"]') as HTMLLIElement;
+                        if (!isNullOrUndefined(li)) {
+                            this.disableListItem(li);
+                        }
+                    }
+                    else {
+                        this.disableListItem(liCollections[index as number] as HTMLLIElement);
+                    }
                 }
             }
         }

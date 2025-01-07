@@ -199,6 +199,7 @@ export class Timeline {
             newTimeline = args.timeline;
             this.changeTimelineSettings(newTimeline);
         }
+        this.isZooming = false;
     }
 
     /**

@@ -3,7 +3,7 @@ import { PdfGraphics } from './../graphics/pdf-graphics';
 import { PointF, RectangleF, SizeF } from './../drawing/pdf-drawing';
 import { PdfTextElement } from './../graphics/figures/text-element';
 import { PdfUriAnnotation } from './uri-annotation';
-import { PdfStringLayouter, PdfStringLayoutResult } from './../graphics/fonts/string-layouter';
+import { LineType, PdfStringLayouter, PdfStringLayoutResult } from './../graphics/fonts/string-layouter';
 import { PdfFontStyle } from './../graphics/fonts/enum';
 import { PdfLayoutResult } from './../graphics/figures/base/element-layouter';
 import { PdfTextAlignment } from './../graphics/enum';
@@ -186,8 +186,11 @@ export class PdfTextWebLink extends PdfTextElement {
      */
     private drawMultipleLineWithPoint(result : PdfStringLayoutResult, page : PdfPage, location : PointF) : PdfLayoutResult {
         let layoutResult : PdfLayoutResult;
-        for (let i : number = 0; i < result.layoutLines.length; i++) {
+        for (let i: number = 0; i < result.layoutLines.length; i++) {
             let size : SizeF = this.font.measureString(result.lines[i].text);
+            if (i === result.layoutLines.length - 1 && this.stringFormat && this.stringFormat.alignment === PdfTextAlignment.Justify) {
+                this._isLastElement = true;
+            }
             let bounds : RectangleF = new RectangleF(location, size);
             if (i !== 0) {
                 bounds.x = 0;

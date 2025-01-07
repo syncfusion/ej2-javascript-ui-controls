@@ -5579,7 +5579,7 @@ describe('Duration calculation for FixedWork', () => {
         let save: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(3)')
         triggerMouseEvent(save, 'click');
         expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(16);
-        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(2);
+        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
         expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['resourceUnit']).toBe(0);
     });
     afterAll(() => {

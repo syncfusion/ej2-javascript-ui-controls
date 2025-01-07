@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### Pivot Table
+
+#### Bug fixes
+
+- When the 'defer layout update' option is enabled, the 'actionComplete' event will now be triggered with the correct action name in the pivot table.
+
 ## 28.1.37 (2024-12-31)
 
 ### Pivot Table

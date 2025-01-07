@@ -17,7 +17,8 @@ import {
     ListTextElementBox, Margin, Page, ParagraphWidget, Rect, TabElementBox, TableCellWidget, TableRowWidget,
     TableWidget, TextElementBox, Widget, CheckBoxFormField, DropDownFormField, FormField, ShapeElementBox, TextFrame, ContentControl,
     FootnoteElementBox, FootNoteWidget, ShapeBase, TablePosition, CommentCharacterElementBox,
-    FootnoteEndnoteMarkerElementBox
+    FootnoteEndnoteMarkerElementBox,
+    WTableHolder
 } from './page';
 import { TextSizeInfo } from './text-helper';
 import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
@@ -1829,56 +1830,49 @@ export class Layout {
         }
         return height;
     }
-
-    // check whether the paragraph has the field separator or field end of the field begin.
-    private checkParaHasField(paragraph: ParagraphWidget): boolean {
-        let hasField: boolean = false;
-        for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
-            let lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
-            for (let j: number = 0; j < lineWidget.children.length; j++) {
-                let element: ElementBox = lineWidget.children[j];
-                if (element instanceof FieldElementBox && (element.fieldType === 2 || element.fieldType === 1)) {
-                    if (this.documentHelper.fieldStacks.length > 0 && element.fieldBegin === this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1]) {
-                        hasField = true;
-                        break;
+    
+    // Check whether the block has the field separator or field end of the field begin.
+    private checkBlockHasField(block: BlockWidget): boolean {
+        if (block instanceof ParagraphWidget) {
+            for (const lineWidget of block.childWidgets as LineWidget[]) {
+                for (const element of lineWidget.children) {
+                    if (element instanceof FieldElementBox && (element.fieldType === 2 || element.fieldType === 1)) {
+                        if (this.documentHelper.fieldStacks.length > 0 && element.fieldBegin === this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1]) {
+                            return true;
+                        }
                     }
                 }
             }
+        } else {
+            return this.checkTableHasField(block as TableWidget);
         }
-        return hasField;
+        return false;
     }
 
-    // check whether the table has the field separator or field end of the field begin.
+    // Check whether the table has the field separator or field end of the field begin.
     private checkTableHasField(table: TableWidget): boolean {
-        let hasField: boolean = false;
-        for (let i: number = 0; i < table.childWidgets.length; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-            for (let j: number = 0; j < row.childWidgets.length; j++) {
-                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                for (let k: number = 0; k < cell.childWidgets.length; k++) {
-                    let block: BlockWidget = cell.childWidgets[k] as BlockWidget;
-                    if (block instanceof ParagraphWidget) {
-                        hasField = this.checkParaHasField(block);
-                    } else {
-                        hasField = this.checkTableHasField(block as TableWidget);
-                    }
-                    if (hasField) {
-                        break;
+        for (const row of table.childWidgets as TableRowWidget[]) {
+            for (const cell of row.childWidgets as TableCellWidget[]) {
+                for (const block of cell.childWidgets as BlockWidget[]) {
+                    if (this.checkBlockHasField(block)) {
+                        return true;
                     }
                 }
             }
         }
-        return hasField;
+        return false;
     }
 
     private layoutParagraph(paragraph: ParagraphWidget, lineIndex: number, isUpdatedList?: boolean): BlockWidget {
-        if (this.isFieldCode && !this.checkParaHasField(paragraph)) {
+        if (this.isFieldCode && !this.checkBlockHasField(paragraph)) {
             if (paragraph.childWidgets.length === 0) {
                 this.addLineWidget(paragraph);
             }
             paragraph.isFieldCodeBlock = true;
             return paragraph;
         }
+        paragraph.x = 0;
+        paragraph.textWrapWidth = false;
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
         let isListLayout: boolean = true;
         const isFirstElmIsparagraph: boolean = this.isFirstElementWithPageBreak(paragraph);
@@ -1886,7 +1880,7 @@ export class Layout {
             this.layoutListItems(paragraph, isUpdatedList);
             isListLayout = false;
         }
-        if (paragraph.isEmpty() && !this.checkIsFieldParagraph(paragraph)) {
+        if (paragraph.isEmptyInternal(true) && !this.checkIsFieldParagraph(paragraph)) {
             this.layoutEmptyLineWidget(paragraph, true);
         } else {
             let line: LineWidget = lineIndex < paragraph.childWidgets.length ?
@@ -2329,6 +2323,10 @@ export class Layout {
                             cCStart.reference = element;
                         }
                     }
+                }
+                if (element instanceof ContentControl && paragraph.bodyWidget.floatingElements.length > 0)
+                {
+                    this.adjustPosition(element, element.line.paragraph.bodyWidget);
                 }
             }
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
@@ -3813,7 +3811,10 @@ export class Layout {
             elementBox.width = this.documentHelper.textHelper.getTextSize(elementBox, elementBox.characterFormat);
             this.adjustPosition(elementBox, paragraph.bodyWidget);
             paragraph.x += elementBox.padding.left;
-            paragraph.textWrapWidth = true;
+            if (elementBox.padding.left !== 0)
+            {
+                paragraph.textWrapWidth = true;
+            }
             if (isEmptyLine) {
                 this.checkInbetweenShapeOverlap(lineWidget);
             }
@@ -5524,7 +5525,7 @@ export class Layout {
         return { 'topMargin': topMargin, 'bottomMargin': bottomMargin, 'addSubWidth': addSubWidth, 'whiteSpaceCount': whiteSpaceCount };
     }
 
-    private updateWidgetToPage(viewer: LayoutViewer, paragraphWidget: ParagraphWidget): void {
+    private updateWidgetToPage(viewer: LayoutViewer, paragraphWidget: ParagraphWidget, skipCellContentHeightCalc?: boolean): void {
         if (paragraphWidget.isInsideTable) {
             let cellWidget: TableCellWidget = paragraphWidget.associatedCell;
             paragraphWidget.height = viewer.clientActiveArea.y - paragraphWidget.y;
@@ -5536,7 +5537,7 @@ export class Layout {
             if (paragraphWidget.associatedCell.ownerRow.rowFormat.heightType === 'Exactly') {
                 cellWidget.height = HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height);
             } else {
-                if ([cellWidget].length <= 1 && paragraphWidget.associatedCell.ownerRow.rowFormat.heightType === 'AtLeast') {
+                if ([cellWidget].length <= 1 && paragraphWidget.associatedCell.ownerRow.rowFormat.heightType === 'AtLeast' && !skipCellContentHeightCalc) {
                     cellWidget.height = Math.max(HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height), this.getCellContentHeight(cellWidget, false, paragraphWidget.indexInOwner));
                 } else {
                         cellWidget.height = cellWidget.height + paragraphWidget.height;
@@ -8364,7 +8365,10 @@ export class Layout {
             for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
                 if (cellWidget.childWidgets[i] instanceof ParagraphWidget) {
                     const paragraphWidget: ParagraphWidget = cellWidget.childWidgets[i] as ParagraphWidget;
-                    const splittedPara: ParagraphWidget = this.getSplittedWidgetForPara(bottom - cellWidget.margin.bottom, paragraphWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, count, isCellSplit);
+                    let splittedPara: ParagraphWidget = paragraphWidget;
+                    if (!isCellSplit) {
+                        splittedPara = this.getSplittedWidgetForPara(bottom - cellWidget.margin.bottom, paragraphWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, count);
+                    }
                     if (isMultiColumnSplit) {
                         count = count + paragraphWidget.childWidgets.length;
                     }
@@ -8593,7 +8597,7 @@ export class Layout {
         newTable.isBidiTable = table.isBidiTable;
         return newTable;
     }
-    private getSplittedWidgetForPara(bottom: number, paragraphWidget: ParagraphWidget, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, isMultiColumnSplit?: boolean, count?: number, isCellSplit?: boolean): ParagraphWidget {
+    private getSplittedWidgetForPara(bottom: number, paragraphWidget: ParagraphWidget, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, isMultiColumnSplit?: boolean, count?: number): ParagraphWidget {
         let lineBottom: number = paragraphWidget.y;
         let splittedWidget: ParagraphWidget = undefined;
         let moveEntireBlock: boolean = false;
@@ -8617,7 +8621,7 @@ export class Layout {
                 lineHeight = lineWidget.height;
             }
             lineWidgetHeight += lineHeight;
-            if ((isMultiColumnSplit && count >= lineIndexInCell) || bottom < lineBottom + height + lineHeight || isCellSplit) {
+            if ((isMultiColumnSplit && count >= lineIndexInCell) || bottom < lineBottom + height + lineHeight) {
                 if (paragraphWidget.paragraphFormat.keepLinesTogether && (paragraphWidget.index !== 0 ||
                     (paragraphWidget.index === 0 && !isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousWidget)))) {
                     moveEntireBlock = true;
@@ -9193,7 +9197,7 @@ export class Layout {
                 break;
             }
             updateNextBlockList = true;
-            if ((viewer.owner.isShiftingEnabled && (this.documentHelper.fieldStacks.length === 0 || this.viewer.owner.editorModule.isInsertingTOC)) || this.isIFfield) {
+            if ((viewer.owner.isShiftingEnabled && (this.documentHelper.fieldStacks.length === 0 || this.viewer.owner.editorModule.isInsertingTOC)) || (this.isIFfield && !this.checkBlockHasField(block))) {
                 this.documentHelper.blockToShift = block;
                 break;
             } else if (isNullOrUndefined(this.viewer.owner.editorModule) || !this.viewer.owner.editorModule.isInsertingTOC) {
@@ -9316,9 +9320,90 @@ export class Layout {
             }
         }
         // let isElementMoved: boolean = elementBoxIndex > 0;
+        let skipWholeTableLayout: boolean = false;
         if (paragraphWidget.isInsideTable) {
             this.isBidiReLayout = true;
-            if(!this.isReplacingAll){
+            if (this.documentHelper.owner.editorHistoryModule && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo
+                && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.isEmptySelection) {
+                skipWholeTableLayout = true;
+            }
+            const parentTable: TableWidget = this.getParentTable(paragraphWidget);
+            const container: BlockContainer = parentTable.containerWidget as BlockContainer;
+            if (!this.isReplacingAll && skipWholeTableLayout && container instanceof BodyWidget && isNullOrUndefined(container.containerWidget)) {
+                const tableHolderBeforeBuildColumn: WTableHolder = parentTable.tableHolder.clone();
+                const tableWidget: TableWidget = (parentTable.clone()).combineWidget(this.viewer) as TableWidget;
+                let isSameColumnWidth: boolean = true;
+                if (tableWidget.tableFormat.allowAutoFit) {
+                    tableWidget.isGridUpdated = false;
+                    tableWidget.buildTableColumns();
+                    tableWidget.isGridUpdated = true;
+                    if (tableHolderBeforeBuildColumn.columns.length === tableWidget.tableHolder.columns.length) {
+                        for (let i: number = 0; i < tableWidget.tableHolder.columns.length; i++) {
+                            const tableAfterColumnWidth: number = tableWidget.tableHolder.columns[i].preferredWidth;
+                            const tableBeforeColumnWidth: number = tableHolderBeforeBuildColumn.columns[i].preferredWidth;
+                            if (tableAfterColumnWidth !== tableBeforeColumnWidth) {
+                                isSameColumnWidth = false;
+                                break;
+                            }
+                        }
+                    } else {
+                        isSameColumnWidth = false;
+                    }
+                }
+                if (isSameColumnWidth) {
+                    if (paragraphWidget.associatedCell.ownerTable.footnoteElement && paragraphWidget.associatedCell.ownerTable.footnoteElement.length > 0) {
+                        this.clearFootnoteReference(paragraphWidget.associatedCell.ownerTable, true);
+                    }
+                    this.viewer.updateClientAreaForCell(paragraphWidget.associatedCell, true);
+                    this.viewer.updateClientAreaForBlock(paragraphWidget, true);
+                    if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
+                        this.viewer.owner.editorModule.updateWholeListItems(paragraphWidget);
+                    }
+                    this.layoutParagraph(paragraphWidget, 0);
+                    this.viewer.updateClientAreaForBlock(paragraphWidget, false);
+                    //Get Top level owner of block
+                    const table: TableWidget = this.getParentTable(paragraphWidget);
+                    let pageIndexBeforeLayouting: number = 0;
+                    if (table.containerWidget instanceof BodyWidget) {
+                        const blocks: BlockWidget[] = table.getSplitWidgets() as BlockWidget[];
+                        const splittedWidget: BlockWidget = blocks[blocks.length - 1];
+                        pageIndexBeforeLayouting = (splittedWidget.containerWidget as BodyWidget).page.index;
+                    }
+                    //Combine splitted table in to single table
+                    const currentTable: TableWidget = table.combineWidget(this.viewer) as TableWidget;
+                    const bodyWidget: BodyWidget = (currentTable.containerWidget as BodyWidget);
+                    if (this.viewer instanceof WebLayoutViewer) {
+                        bodyWidget.height -= currentTable.height;
+                    }
+                    this.viewer.updateClientArea(bodyWidget, bodyWidget.page);
+                    if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
+                        const block: ParagraphWidget = this.documentHelper.getFirstParagraphInFirstCell(currentTable);
+                        this.viewer.owner.editorModule.updateWholeListItems(block);
+                    }
+                    this.viewer.updateClientAreaForBlock(currentTable, true);
+                    //Remove border width
+                    currentTable.x -= currentTable.leftBorderWidth;
+                    currentTable.y -= currentTable.topBorderWidth;
+                    //Update Client area for current position
+                    const yPos: number = this.getYPosition(currentTable);
+                    this.viewer.cutFromTop(yPos);
+                    this.clearTableWidget(currentTable, true, true, false, true, true);
+                    this.shiftTableWidget(currentTable, this.viewer);
+                    this.viewer.updateClientAreaForBlock(currentTable, false);
+                    let pageIndexAfterLayouting: number = 0;
+                    if (currentTable.containerWidget instanceof BodyWidget) {
+                        const blocks: BlockWidget[] = currentTable.getSplitWidgets() as BlockWidget[];
+                        const splittedWidget: BlockWidget = blocks[blocks.length - 1];
+                        pageIndexAfterLayouting = (splittedWidget.containerWidget as BodyWidget).page.index;
+                    }
+                    if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule && currentTable.nextRenderedWidget) {
+                        this.viewer.owner.editorModule.updateWholeListItems(currentTable.nextRenderedWidget as BlockWidget);
+                    }
+                    this.layoutNextItemsBlock(currentTable, this.viewer, undefined, pageIndexBeforeLayouting !== pageIndexAfterLayouting);
+                } else if (!this.isReplacingAll) {
+                    this.reLayoutTable(paragraphWidget);
+                }
+            } else if (!this.isReplacingAll) {
                 this.reLayoutTable(paragraphWidget);
             }
             /* eslint-disable-next-line max-len */
@@ -9521,7 +9606,7 @@ export class Layout {
     /**
      * @private
      */
-    public clearTableWidget(table: TableWidget, clearPosition: boolean, clearHeight: boolean, clearGrid?: boolean, updateClientHeight?: boolean): void {
+    public clearTableWidget(table: TableWidget, clearPosition: boolean, clearHeight: boolean, clearGrid?: boolean, updateClientHeight?: boolean, skipToClearPara?: boolean): void {
         table.height = 0;
         if (clearGrid) {
             table.isGridUpdated = false;
@@ -9539,13 +9624,13 @@ export class Layout {
         table.bottomBorderWidth = 0;
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-            this.clearRowWidget(row, clearPosition, clearHeight, clearGrid);
+            this.clearRowWidget(row, clearPosition, clearHeight, clearGrid, skipToClearPara);
         }
     }
     /**
      * @private
      */
-    public clearRowWidget(row: TableRowWidget, clearPosition: boolean, clearHeight: boolean, clearGrid: boolean): void {
+    public clearRowWidget(row: TableRowWidget, clearPosition: boolean, clearHeight: boolean, clearGrid: boolean, skipToClearPara?: boolean): void {
         row.height = 0;
         if (clearPosition) {
             row.y = 0;
@@ -9555,13 +9640,13 @@ export class Layout {
         row.bottomBorderWidth = 0;
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             const cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
-            this.clearCellWidget(cell, clearPosition, clearHeight, clearGrid);
+            this.clearCellWidget(cell, clearPosition, clearHeight, clearGrid, skipToClearPara);
         }
     }
     /**
      * @private
      */
-    public clearCellWidget(cell: TableCellWidget, clearPosition: boolean, clearHeight: boolean, clearGrid: boolean): void {
+    public clearCellWidget(cell: TableCellWidget, clearPosition: boolean, clearHeight: boolean, clearGrid: boolean, skipToClearPara?: boolean): void {
         cell.height = 0;
         if (clearPosition) {
             cell.y = 0;
@@ -9569,24 +9654,24 @@ export class Layout {
         }
         cell.leftBorderWidth = 0;
         cell.rightBorderWidth = 0;
-        this.clearBlockWidget(cell.childWidgets, clearPosition, clearHeight, clearGrid);
+        this.clearBlockWidget(cell.childWidgets, clearPosition, clearHeight, clearGrid, skipToClearPara);
     }
     /**
      * @private
      */
-    public clearBlockWidget(blocks: IWidget[], clearPosition: boolean, clearHeight: boolean, clearGrid: boolean): void {
+    public clearBlockWidget(blocks: IWidget[], clearPosition: boolean, clearHeight: boolean, clearGrid: boolean, skipToClearPara?: boolean): void {
         for (let i: number = 0; i < blocks.length; i++) {
             const block: BlockWidget = blocks[i] as BlockWidget;
             if (block instanceof ParagraphWidget) {
-                if (clearPosition) {
+                if (clearPosition && !skipToClearPara) {
                     block.y = 0;
                     block.x = 0;
                 }
-                if (clearHeight) {
+                if (clearHeight && !skipToClearPara) {
                     block.height = 0;
                 }
             } else {
-                this.clearTableWidget(block as TableWidget, clearPosition, clearHeight, clearGrid);
+                this.clearTableWidget(block as TableWidget, clearPosition, clearHeight, clearGrid, undefined, skipToClearPara);
             }
         }
     }
@@ -11100,27 +11185,61 @@ export class Layout {
         return { 'footNoteWidgets': footNoteWidgets, 'fromBodyWidget': fromBodyWidget, 'toBodyWidget': toBodyWidget };
     }
     public shiftTableWidget(table: TableWidget, viewer: LayoutViewer, isClearHeight: boolean = false): TableWidget {
+        table.isBidiTable = table.bidi;
+        if (this.documentHelper.compatibilityMode !== 'Word2013'
+            && !table.isInsideTable
+            && !isNullOrUndefined(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin)) {
+            this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x - HelperMethods.convertPointToPixel(
+                ((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
+        }
         const tables: TableWidget[] = [table];
         this.addTableWidget(this.viewer.clientActiveArea, tables);
         this.viewer.updateClientAreaTopOrLeft(table, true);
         let clientActiveAreaForTableWrap: Rect;
         let clientAreaForTableWrap: Rect;
+        let wrapDiff: number = 0;
         if (table.wrapTextAround) {
             clientActiveAreaForTableWrap = this.viewer.clientActiveArea.clone();
             clientAreaForTableWrap = this.viewer.clientArea.clone();
             this.updateClientAreaForWrapTable(tables, table, true, clientActiveAreaForTableWrap, clientAreaForTableWrap);
+        } else if (!(table.containerWidget instanceof TextFrame)) {
+            this.adjustClientAreaBasedOnTextWrapForTable(table, this.viewer.clientActiveArea);
+            if (this.isWrapText) {
+                wrapDiff = this.viewer.clientActiveArea.x - this.viewer.clientArea.x;
+                this.isWrapText = false;
+                table.x = this.viewer.clientActiveArea.x;
+            }
         }
-        this.updateFootnoteHeight(table, true);
+        if (table.childWidgets.length > 0) {
+            const isHeader: boolean = (table.childWidgets[0] as TableRowWidget).rowFormat.isHeader;
+            table.header = isHeader;
+            table.continueHeader = isHeader;
+            table.headerHeight = 0;
+        }
         let row: TableRowWidget = table.childWidgets[0] as TableRowWidget;
         this.updateFootnoteHeight(table, true);
+        if (this.documentHelper.viewer instanceof PageLayoutViewer && table.wrapTextAround && (table.positioning.verticalAlignment === 'Bottom' || table.positioning.verticalAlignment === 'Center' || table.positioning.verticalAlignment === 'Outside')) {
+            this.updateTableFloatPoints(table);
+            this.updateChildLocationForTable(table.y, table);
+        }
         while (row) {
             row = this.shiftRowWidget(tables, row, isClearHeight);
             row = row.nextRow as TableRowWidget;
         }
         this.updateFootnoteHeight(table, false);
         this.updateWidgetsToPage(tables, [], table, true);
-        if (table.wrapTextAround && table.bodyWidget) {
+        if (wrapDiff > 0) {
+            this.viewer.clientArea.x = this.viewer.clientArea.x - wrapDiff;
+        }
+        if (table.wrapTextAround) {
             this.updateClientAreaForWrapTable(tables, table, false, clientActiveAreaForTableWrap, clientAreaForTableWrap);
+        }
+        if (this.documentHelper.compatibilityMode !== 'Word2013'
+            && !table.isInsideTable
+            && !table.wrapTextAround
+            && !isNullOrUndefined(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin)) {
+            this.viewer.clientArea.x = this.viewer.clientArea.x + HelperMethods.convertPointToPixel(
+                ((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
         }
         return tables[tables.length - 1];
     }
@@ -11185,9 +11304,10 @@ export class Layout {
         viewer.updateClientAreaForCell(cell, true);
         for (let i: number = 0; i < cell.childWidgets.length; i++) {
             const block: BlockWidget = cell.childWidgets[i] as BlockWidget;
+            const skipCellContentHeightCalc: boolean = i !== cell.childWidgets.length - 1;
             viewer.updateClientAreaForBlock(block, true);
             if (block instanceof ParagraphWidget) {
-                this.shiftParagraphWidget(block);
+                this.shiftParagraphWidget(block, skipCellContentHeightCalc);
             } else {
                 this.shiftTableWidget(block as TableWidget, viewer, isClearHeight);
             }
@@ -11200,7 +11320,7 @@ export class Layout {
         }
     }
 
-    public shiftParagraphWidget(paragraph: ParagraphWidget): void {
+    public shiftParagraphWidget(paragraph: ParagraphWidget, skipCellContentHeightCalc?: boolean): void {
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
         if (paragraph.floatingElements.length > 0) {
             for (let k: number = 0; k < paragraph.floatingElements.length; k++) {
@@ -11230,7 +11350,7 @@ export class Layout {
             this.layoutedFootnoteElement.push(footnoteCollection[i].footNoteReference);
         }
         this.footnoteHeight += this.getFootNoteHeight(footnoteCollection);
-        this.updateWidgetToPage(this.viewer, paragraph);
+        this.updateWidgetToPage(this.viewer, paragraph, skipCellContentHeightCalc);
     }
 
     private updateContainerForTable(block: BlockWidget, viewer: LayoutViewer): void {
@@ -11256,11 +11376,6 @@ export class Layout {
     private shiftWidgetsForTable(table: TableWidget, viewer: LayoutViewer): void {
         this.updateContainerForTable(table, viewer);
         this.viewer.updateClientAreaForBlock(table, true, undefined, false, true);
-        const tempClientAreaX: number = this.viewer.clientArea.x;
-        if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable) {
-            this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x -
-                HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
-        }
         this.updateVerticalPositionToTop(table, true);
         //const isPageLayout: boolean = viewer instanceof PageLayoutViewer;
         const combinedTable: TableWidget = table.combineWidget(this.viewer) as TableWidget;
@@ -11268,9 +11383,6 @@ export class Layout {
         this.clearTableWidget(combinedTable, true, false, false, true);
         this.shiftTableWidget(combinedTable, this.viewer);
         this.updateVerticalPositionToTop(table, false);
-        if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable) {
-            this.viewer.clientArea.x = tempClientAreaX;
-        }
         this.viewer.updateClientAreaForBlock(table, false);
     }
     private updateVerticalPositionToTop(table: TableWidget, isUpdateTop: boolean): void {

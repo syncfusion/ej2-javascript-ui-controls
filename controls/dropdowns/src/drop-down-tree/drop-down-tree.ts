@@ -1277,6 +1277,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 }
                 this.treeObj.fields = this.getTreeFields(fields);
                 this.treeObj.dataBind();
+                if (this.popupObj) {
+                    this.popupObj.refreshPosition();
+                }
                 if (this.hasTemplate && (this as any).portals && (this.treeObj as any).portals) {
                     for (let i: number = 0; i < (this.treeObj as any).portals.length; i++) {
                         if ((this as any).portals.indexOf((this.treeObj as any).portals[i as number]) === -1) {

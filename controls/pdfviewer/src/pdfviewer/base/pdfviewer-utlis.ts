@@ -142,6 +142,38 @@ export class PdfViewerUtils {
         // Check if alpha is zero (transparent)
         return alphaDecimal === 0;
     }
+
+    /**
+     * @param {string} color - Gets the background color with transparency.
+     * @returns {string} - It's return background color with transparency.
+     * @private
+     */
+    public static setTransparencyToHex(color: string): string {
+        if (color.includes('#')) {
+            if (color.length > 8 && color !== '#00000000') {
+                color = color.slice(0, -2) + '60';
+            }
+            else {
+                color += '60';
+            }
+        }
+        return color;
+    }
+
+    /**
+     * @param {string} color - Gets the background color without transparency.
+     * @returns {string} - It's return background color without transparency.
+     * @private
+     */
+    public static removeAlphaValueFromHex(color: string): string {
+        if (color.includes('#')) {
+            if (color.length > 8) {
+                color = color.slice(0, -2);
+            }
+        }
+        return color;
+    }
+
     private static fetchData(filePath: string): Promise<Uint8Array | null> {
         return fetch(filePath)
             .then((response: Response) => {

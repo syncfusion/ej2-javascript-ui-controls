@@ -298,7 +298,7 @@
       }
       li {
         font-size: $timebreak-font-size;
-        line-height: 16px;
+        line-height: $chat-suggesstion-line-height;
         font-weight: $suggesstions-font-weight;
         padding: $chat-suggesstions-list-padding;
         margin: 8px 4px 0;
@@ -379,6 +379,9 @@
           opacity: .5;
         }
       }
+    }
+    .e-empty-chat-template {
+      margin: auto;
     }
   }
 }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Resolved an issue with preserving justified text alignment when applied to PDF grid column.
+
 ## 28.1.33 (2024-12-12)
 
 ### Pdf Export

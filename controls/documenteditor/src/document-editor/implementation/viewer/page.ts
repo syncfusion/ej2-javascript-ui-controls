@@ -1205,7 +1205,7 @@ export class ParagraphWidget extends BlockWidget {
         }
         return containsShape ? true : false;
     }
-    public isEmpty(): boolean {
+    public isEmptyInternal(layoutCheck: boolean) {
         if (isNullOrUndefined(this.childWidgets) || this.childWidgets.length === 0) {
             return true;
         }
@@ -1219,13 +1219,16 @@ export class ParagraphWidget extends BlockWidget {
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                     || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
                     || inline instanceof ChartElementBox || inline instanceof ShapeElementBox
-                    || inline instanceof ContentControl || inline instanceof CommentCharacterElementBox
+                    || inline instanceof ContentControl || (inline instanceof CommentCharacterElementBox && !layoutCheck)
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                     return false;
                 }
             }
         }
         return true;
+    }
+    public isEmpty(): boolean {
+        return this.isEmptyInternal(false);
     }
     public getInline(offset: number, indexInInline: number): ElementInfo {
         let inline: ElementBox = undefined;

@@ -18,7 +18,7 @@ export function getCloneProperties(): string[] {
         'enableColumnVirtualization', 'filterSettings', 'gridLines',
         'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
         'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings',
-        'queryCellInfo', 'beforeDataBound'];
+        'queryCellInfo', 'beforeDataBound', 'enableHtmlSanitizer'];
 }
 
 /**

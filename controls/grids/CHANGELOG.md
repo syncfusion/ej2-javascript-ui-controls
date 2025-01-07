@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### Grid
+
+#### Bug fixes
+
+- `#I667386` - The issue where resizing a column with the frozen column feature enabled caused other columns to resize has been resolved.
+- `#I675761` - The issue of the spinner not being displayed in the filter dialog of the grid has been resolved.
+
 ## 28.1.37 (2024-12-31)
 
 ### Grid

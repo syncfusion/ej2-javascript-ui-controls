@@ -6,12 +6,13 @@ import { PdfStringFormat } from './../../fonts/pdf-string-format';
 import { PdfTextElement } from './../text-element';
 import { PdfPage } from './../../../pages/pdf-page';
 import { RectangleF, SizeF } from './../../../drawing/pdf-drawing';
-import { LineInfo, PdfStringLayoutResult, PdfStringLayouter } from './../../fonts/string-layouter';
+import { LineInfo, LineType, PdfStringLayoutResult, PdfStringLayouter } from './../../fonts/string-layouter';
 import { PdfLayoutBreakType } from './../../figures/enum';
 import { PdfGraphics } from './../../pdf-graphics';
 import { PdfColor } from './../../pdf-color';
 import { PdfSolidBrush } from './../../brushes/pdf-solid-brush';
 import { PdfTextWebLink } from './../../../annotations/pdf-text-web-link';
+import { PdfTextAlignment } from '../../enum';
 /**
  * Class that `layouts the text`.
  * @private
@@ -91,6 +92,12 @@ export class TextLayouter extends ElementLayouter {
         let brush : PdfSolidBrush = this.element.getBrush() as PdfSolidBrush;
         if (this.element instanceof PdfTextWebLink) {
             brush.color = new PdfColor(0, 0, 255);
+            if (!this.element._isLastElement && this.element.stringFormat && this.element.stringFormat.alignment === PdfTextAlignment.Justify) {
+                stringResult.layoutLines[0].type = LineType.LayoutBreak | LineType.FirstParagraphLine;
+            }
+        }
+        if (this.element && this.element instanceof PdfTextElement && !this.element._isLastElement && this.element.stringFormat && this.element.stringFormat.alignment === PdfTextAlignment.Justify) {
+            stringResult.layoutLines[0].type = LineType.LayoutBreak | LineType.FirstParagraphLine;
         }
         graphics.drawStringLayoutResult(stringResult, this.element.font, this.element.pen, brush,
                                         currentBounds, this.format);

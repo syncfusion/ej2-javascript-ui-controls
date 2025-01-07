@@ -676,9 +676,6 @@ export class FormFields {
             if (currentData.IsTansparentBorderColor === true) {
                 borderRGB = 'rgba(0,0,0,0)';
             }
-            else if (borderRGB === '#000000ff') {
-                borderRGB = '#daeaf7ff';
-            }
             const borderWidth: number = currentData['BorderWidth'];
             this.selectedIndex = [];
             const fieldProperties: any = {

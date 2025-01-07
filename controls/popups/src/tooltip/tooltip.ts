@@ -1289,6 +1289,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             eventPageX = event.pageX;
             eventPageY = event.pageY;
         }
+        if (isNullOrUndefined(this.tooltipEle)) { return; }
         PopupAnimation.stop(this.tooltipEle);
         removeClass([this.tooltipEle], POPUP_CLOSE);
         addClass([this.tooltipEle], POPUP_OPEN);

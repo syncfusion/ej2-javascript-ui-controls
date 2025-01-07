@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I665316` - Fixed layout issue during editing due to start and end fields being in different paragraphs.
+- `#I664308` - Addressed the problem of HTML content not copying correctly to the clipboard when copying table content with block content control.
+- `#I669203` - Corrected the issue where revisions in headers were not reflected in the track changes pane due to existing header/footer conditions.
+- `#I675010` - Resolved script error encountered when removing inline contents that include field elements.
+- `#I658140` - Improved performance when inserting text into split table cells across multiple pages.
+- `#I665482` - Fixed script error that occurred when pasting content from Microsoft Word into the Document Editor after selecting table cell content.
+
 ## 28.1.37 (2024-12-31)
 
 ### DocumentEditor

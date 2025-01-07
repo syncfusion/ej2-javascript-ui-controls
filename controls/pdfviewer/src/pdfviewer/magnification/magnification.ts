@@ -819,7 +819,15 @@ export class Magnification {
                 this.pdfViewerBase.viewerContainer.scrollLeft = (this.pdfViewerBase.pageContainer.offsetWidth -
                     this.pdfViewerBase.viewerContainer.clientWidth) / 2;
             } else {
-                this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
+                const pageContainer: HTMLElement = document.getElementById(this.pdfViewerBase.pageContainer.id);
+                if (pageContainer && pageContainer.children && pageContainer.children[0].clientWidth >
+                    this.pdfViewer.viewerBase.viewerContainer.clientWidth) {
+                    this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
+                }
+                else {
+                    this.pdfViewerBase.viewerContainer.scrollLeft = (this.pdfViewerBase.pageContainer.offsetWidth -
+                        this.pdfViewerBase.viewerContainer.clientWidth) / 2;
+                }
             }
         }
     }

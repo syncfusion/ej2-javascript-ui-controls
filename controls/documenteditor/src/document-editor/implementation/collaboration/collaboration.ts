@@ -536,7 +536,9 @@ export class CollaborativeEditingHandler {
                         let characterFormat: WCharacterFormat = new WCharacterFormat();
                         var data: object = JSON.parse(op2.format);
                         this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
+                        this.documentEditor.selectionModule.isRetrieveFormatting = true;
                         this.documentEditor.selectionModule.characterFormat.copyFormat(characterFormat);
+                        this.documentEditor.selectionModule.isRetrieveFormatting = false;
                     }
                     this.documentEditor.editorModule.insertText(op2.text);
                 }
@@ -586,6 +588,11 @@ export class CollaborativeEditingHandler {
                     const contentcontrol: ContentControl = this.documentEditor.editorModule.getContentControl();
                     if (contentcontrol) {
                         this.documentEditor.editorModule.assignContentControl(contentcontrol.contentControlProperties, JSON.parse(op2.format));
+                    }
+                } else if (op2.text === CONTROL_CHARACTERS.Marker_Start && !isNullOrUndefined(op2.markerData) && op2.markerData.type === 'ContentControlCheckBox') {
+                    const contentcontrol: ContentControl = this.documentEditor.editorModule.getContentControl();
+                    if (contentcontrol && contentcontrol.contentControlProperties.type === 'CheckBox') {
+                        this.documentEditor.editorModule.toggleContentControlCheckBox(contentcontrol, markerData.checkBoxValue);
                     }
                 } else if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.revisionId)) {
                     if (!isNullOrUndefined(op2.markerData.revisionType)) {

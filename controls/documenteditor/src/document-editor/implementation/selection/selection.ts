@@ -7897,6 +7897,16 @@ export class Selection {
             return undefined;
         }
     }
+    private getContentControlPositions(contenControl: ContentControl): PositionInfo {
+        const offset: number = contenControl.line.getOffset(contenControl, 1);
+        const startPosition: TextPosition = new TextPosition(this.owner);
+        startPosition.setPositionParagraph(contenControl.line, offset);
+        let contentControlEnd: ContentControl = contenControl.reference;
+        const endoffset: number = contentControlEnd.line.getOffset(contentControlEnd, 0);
+        const endPosition: TextPosition = new TextPosition(this.owner);
+        endPosition.setPositionParagraph(contentControlEnd.line, endoffset);
+        return { startPosition: startPosition, endPosition: endPosition };
+    }
     /**
     * Retrieves the information about the content control associated with the current selection.
     *
@@ -7906,10 +7916,28 @@ export class Selection {
     public getContentControlInfo(): ContentControlInfo {
         let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
         if (!isNullOrUndefined(contentControl)) {
-            let ccValue: string;
-            for (let i = 0; i < contentControl.line.children.length; i++) {
-                if (contentControl.line.children[i] instanceof TextElementBox) {
-                    ccValue = (contentControl.line.children[i] as TextElementBox).text;
+            let ccValue: string = '';
+            if (contentControl.contentControlProperties.type === 'Text') {
+                const position: PositionInfo = this.getContentControlPositions(contentControl);
+                ccValue = this.documentHelper.selection.getTextInternal(position.startPosition, position.endPosition, false);
+            } else if (contentControl.contentControlProperties.type === 'RichText') {
+                const position: PositionInfo = this.getContentControlPositions(contentControl);
+                let documentContent: any = !isNullOrUndefined(this.owner.sfdtExportModule) ? 
+                this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), position.startPosition.currentWidget, position.startPosition.offset, position.endPosition.currentWidget, position.endPosition.offset, false, true) : {};
+                ccValue = JSON.stringify(documentContent);
+            } else if (contentControl.contentControlProperties.type === 'CheckBox') {
+                ccValue = contentControl.contentControlProperties.isChecked ? 'true' : 'false';
+            } else if (contentControl.contentControlProperties.type === 'ComboBox' || contentControl.contentControlProperties.type === 'DropDownList' || contentControl.contentControlProperties.type === 'Date') {
+                let element: ElementBox = contentControl;
+                while (element !== contentControl.reference) {
+                    if (element instanceof TextElementBox) {
+                        ccValue += element.text;
+                    }
+                    element = element.nextNode;
+                }
+            } else if (contentControl.contentControlProperties.type === 'Picture') {
+                if (contentControl.nextNode instanceof ImageElementBox) {
+                    ccValue = this.documentHelper.getImageString(contentControl.nextNode);
                 }
             }
             let contentControlInfo: ContentControlInfo = {

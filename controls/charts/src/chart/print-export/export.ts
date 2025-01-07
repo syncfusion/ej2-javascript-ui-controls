@@ -10,6 +10,7 @@ import { IExportEventArgs } from '../model/chart-interface';
 import { IPDFArgs } from '../../common/model/interface';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { ErrorBarSettingsModel, Series, SeriesModel, AxisModel } from '../../chart';
+import { getValue } from '@syncfusion/ej2-base';
 
 /**
  * Defines the cell style in an Excel export.
@@ -503,7 +504,11 @@ export class Export {
                             let usedValueCount: number = isXValue ? 0 : 1;
                             const usedValueLength: number = this.series[seriesCount as number].type === 'BoxAndWhisker' ? requiredValues[seriesCount as number].length - 1 : requiredValues[seriesCount as number].length;
                             for (; usedValueCount < usedValueLength; usedValueCount++) {
-                                let value: string | boolean | number | Date = (usedValueCount !== 0 && (this.series[seriesCount as number].type === 'BoxAndWhisker' || (this.series[seriesCount as number] as Series).category === 'Pareto')) ? (this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]] : dataSource[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]];
+                                const cellValue: Object = (this.series[seriesCount as number] as Series).enableComplexProperty ?
+                                    getValue(requiredValues[seriesCount as number][usedValueCount as number],
+                                             dataSource[dataCount as number]) :
+                                    dataSource[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]];
+                                let value: string | boolean | number | Date = (usedValueCount !== 0 && (this.series[seriesCount as number].type === 'BoxAndWhisker' || (this.series[seriesCount as number] as Series).category === 'Pareto')) ? (this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]] : cellValue;
                                 if (value === null && type === 'CSV') {
                                     value = '';
                                 }

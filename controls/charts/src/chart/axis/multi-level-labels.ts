@@ -281,7 +281,8 @@ export class MultiLevelLabel {
         const groupLabel: MultiLevelLabels = <MultiLevelLabels>axis.multiLevelLabels[labelIndex as number];
         const categoryType: BorderType = groupLabel.categories[categoryIndex as number].type;
         const width: number = gap + padding;
-        let height: number = this.xAxisMultiLabelHeight[labelIndex as number] + padding;
+        let height: number = isNullOrUndefined(this.xAxisMultiLabelHeight[labelIndex as number]) ? 0 :
+            (this.xAxisMultiLabelHeight[labelIndex as number] + padding);
         const scrollBarHeight: number = axis.labelPosition === 'Outside' ? axis.scrollBarHeight : 0;
         const x: number = startX + axisRect.x;
         const y: number = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? (startY + axisRect.y +

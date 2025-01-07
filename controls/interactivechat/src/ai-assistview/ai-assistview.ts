@@ -697,6 +697,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.toolbar = new Toolbar({
             items: this.toolbarItems,
             height: '100%',
+            enableRtl: this.enableRtl,
             clicked: (args: ClickEventArgs) => {
                 const eventItemArgs: ToolbarItemModel = {
                     type: args.item.type,
@@ -1039,8 +1040,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 prompt: contextPrompt,
                 response: contextOutput,
                 index: contextIndex,
-                toolbarItems: this.responseToolbarSettings.items,
-                output: contextOutput
+                toolbarItems: this.responseToolbarSettings.items
             };
             break;
         }
@@ -1594,6 +1594,10 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             }
             case 'enableRtl':
                 this.element.classList[this.enableRtl ? 'add' : 'remove']('e-rtl');
+                if (!isNOU(this.toolbar)) {
+                    this.toolbar.enableRtl = this.enableRtl;
+                    this.toolbar.dataBind();
+                }
                 break;
             case 'toolbarSettings':
                 this.updateToolbarSettings(oldProp.toolbarSettings);

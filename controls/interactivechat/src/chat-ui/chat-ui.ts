@@ -621,6 +621,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.toolbar = new Toolbar({
                 items: pushToolbar,
                 height: '100%',
+                enableRtl: this.enableRtl,
                 clicked: (args: ClickEventArgs) => {
                     const eventItemArgs: ToolbarItemModel = {
                         type: args.item.type,
@@ -1376,6 +1377,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 break;
             case 'enableRtl':
                 this.element.classList[this.enableRtl ? 'add' : 'remove']('e-rtl');
+                if (!isNOU(this.toolbar)) {
+                    this.toolbar.enableRtl = this.enableRtl;
+                    this.toolbar.dataBind();
+                }
                 break;
             case 'showHeader':
                 this.updateHeader(this.showHeader, this.chatHeader, this.viewWrapper);

@@ -345,7 +345,6 @@ function leftFlip(
     elementRect: ClientRect,
     deepCheck: boolean): void {
     const collideSide: LeftCorners = leftCollideCheck(edge.TL.left, edge.TR.left);
-    const collide: TopCorners = topCollideCheck(edge.TL.top, edge.BL.top);
     if ((tEdge.TL.left - getBodyScrollLeft()) <= ContainerLeft()) {
         collideSide.leftSide = false;
     }
@@ -364,9 +363,6 @@ function leftFlip(
         setPosition(edge, pos, elementRect);
         if (deepCheck) {
             leftFlip(target, edge, tEdge, pos, elementRect, false);
-        }
-        if ((!collideSide.leftSide && collideSide.rightSide && collide.bottomSide)) {
-            pos.offsetX = 0;
         }
     }
 }

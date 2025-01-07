@@ -191,6 +191,11 @@ export class EditorHistory {
         if (action !== 'ModifyStyle') {
             this.currentBaseHistoryInfo.updateSelection();
         }
+        if (!isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.isEmpty
+            && (action === 'BackSpace' || action === 'Delete' ||
+                (action === 'Insert' && !isNullOrUndefined(this.documentHelper.owner.editor) && this.documentHelper.owner.editor.handledTextInput))) {
+            this.currentBaseHistoryInfo.isEmptySelection = true;
+        }
     }
     /**
      * Initialize complex history

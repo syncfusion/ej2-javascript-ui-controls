@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### Schedule
+
+#### Bug fixes
+
+- `#F195575` - An issue with scroll dragging persists after releasing mouse button outside the schedule component has been fixed.
+- `IF667909` - An issue where the horizontal scrollbar would reset its position during window resizing has been fixed.
+
 ## 28.1.37 (2024-12-31)
 
 ### Schedule

@@ -1135,6 +1135,10 @@
       border-right: 1px solid;
     }
 
+    .e-tableborder:has(.e-emptyrow) {
+      border: none;
+    }
+
     .e-virtualtable {
       will-change: transform;
       z-index: 1;

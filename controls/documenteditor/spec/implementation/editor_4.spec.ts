@@ -697,7 +697,8 @@ describe('XML set content Control API validation', () => {
         expect(editor.documentHelper.contentControlCollection[0].contentControlProperties.xmlMapping.prefixMapping).toBe('http://schemas.microsoft.com/vsto/samples');
     });
     it('validate setContentControlInfo sets all cc properties',()=>{
-        editor.editor.insertContentControl('RichText','OriginalText');
+        editor.openBlank();
+        editor.editor.insertContentControl('Text','OriginalText');
         let oldInfo = editor.selection.getContentControlInfo();
         if (oldInfo)
         {

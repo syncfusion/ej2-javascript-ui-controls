@@ -3200,7 +3200,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.destroyPopup();
                     }
                 });
-                if (this.allowResize) {
+                if (this.allowResize && (this.getModuleName() !== 'dropdownlist' || !(Browser.isDevice && this.isDeviceFullScreen && this.allowFiltering))) {
                     const resizePaddingBottom: number = 16;
                     // Create the resizer div
                     this.resizer = this.createElement('div', {

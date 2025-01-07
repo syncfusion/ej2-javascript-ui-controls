@@ -105,10 +105,11 @@ export class Zoom {
      * @param {Point} position - Specifies the position.
      * @param {number} newZoomFactor - Specifies the zoom factor.
      * @param {string} type - Specifies the type.
+     * @param {boolean} isMouseWheel - Indicates whether the zoom operation was triggered by the mouse wheel.
      * @returns {void}
      * @private
      */
-    public performZooming(position: Point, newZoomFactor: number, type: string): void {
+    public performZooming(position: Point, newZoomFactor: number, type: string, isMouseWheel: boolean = false): void {
         const map: Maps = this.maps;
         map.previousProjection = newZoomFactor <= 1.5 ? undefined : map.projectionType;
         map.defaultState = false;
@@ -164,7 +165,7 @@ export class Zoom {
                     map.translatePoint = map.previousPoint;
                     map.scale = map.mapScaleValue = map.previousScale;
                 } else {
-                    this.applyTransform(map);
+                    this.applyTransform(map, isMouseWheel);
                 }
             } else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
                 this.getTileTranslatePosition(prevLevel, newZoomFactor, position, type);
@@ -206,7 +207,7 @@ export class Zoom {
                         //         element1 = element1;
                         //     }
                         // }
-                        this.applyTransform(this.maps);
+                        this.applyTransform(this.maps, isMouseWheel);
                         if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
                             document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
                         }
@@ -331,7 +332,7 @@ export class Zoom {
             }
             if (!isZoomCancelled) {
                 map.mapScaleValue = zoomCalculationFactor;
-                this.applyTransform(map, true);
+                this.applyTransform(map, false, true);
                 this.maps.zoomNotApplied = false;
                 this.zoomingRect = null;
             }
@@ -549,12 +550,13 @@ export class Zoom {
 
     /**
      * @param {Maps} maps - Specifies the Map control
+     * @param {boolean} isMouseWheel - Indicates whether the zoom operation was triggered by the mouse wheel.
      * @param {boolean} animate - Specifies the animation is available or not
      * @param {boolean} isPanning - Specifies that it is panning or not
      * @returns {void}
      * @private
      */
-    public applyTransform(maps: Maps, animate?: boolean, isPanning?: boolean): void {
+    public applyTransform(maps: Maps, isMouseWheel?: boolean, animate?: boolean, isPanning?: boolean): void {
         let layerIndex: number;
         this.templateCount = 0;
         let markerStyle: string;
@@ -651,8 +653,10 @@ export class Zoom {
                                     }
                                     if (((this.currentLayer.animationDuration > 0 || animationMode === 'Enable') || ((maps.layersCollection[0].animationDuration > 0 || animationMode === 'Enable') && this.currentLayer.type === 'SubLayer')) && !this.isPanModeEnabled) {
                                         if (!maps.isTileMap) {
-                                            markerStyle = 'visibility:hidden';
-                                            (currentEle as HTMLElement).style.cssText = markerStyle;
+                                            markerStyle = isMouseWheel ? markerStyle : 'visibility:hidden';
+                                            if (!isNullOrUndefined(markerStyle)) {
+                                                (currentEle as HTMLElement).style.cssText = markerStyle;
+                                            }
                                         }
                                     }
                                 });
@@ -1212,13 +1216,13 @@ export class Zoom {
             if (!panArgs.cancel) {
                 if (panningXDirection && panningYDirection) {
                     map.translatePoint = new Point(x, y);
-                    this.applyTransform(map, false, true);
+                    this.applyTransform(map, false, false, true);
                 } else if (panningXDirection) {
                     map.translatePoint = new Point(x, map.translatePoint.y);
-                    this.applyTransform(map, false, true);
+                    this.applyTransform(map, false, false, true);
                 } else if (panningYDirection) {
                     map.translatePoint = new Point(map.translatePoint.x, y);
-                    this.applyTransform(map, false, true);
+                    this.applyTransform(map, false, false, true);
                 }
             }
             this.maps.zoomNotApplied = false;
@@ -1246,7 +1250,7 @@ export class Zoom {
             };
             map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
-            this.applyTransform(map, false, true);
+            this.applyTransform(map, false, false, true);
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
         }
@@ -1315,7 +1319,7 @@ export class Zoom {
                 map.translatePoint = map.zoomTranslatePoint = map.previousPoint;
                 map.scale = map.previousScale;
             } else {
-                this.applyTransform(map, true);
+                this.applyTransform(map, false, true);
             }
         } else if ((map.isTileMap) && ((zoomFactor >= minZoom && zoomFactor <= maxZoom) || map.isReset)) {
             let tileZoomFactor: number = prevLevel < minZoom && !map.isReset ? minZoom : zoomFactor;
@@ -1354,7 +1358,7 @@ export class Zoom {
                             // element1.removeChild(element1.children[element1.childElementCount - 1]);
                             // element1.childElementCount ? element1.removeChild(element1.children[element1.childElementCount - 1]) : element1;
                         }
-                        this.applyTransform(this.maps, true);
+                        this.applyTransform(this.maps, false, true);
                         if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
                             document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
                         }
@@ -1990,10 +1994,10 @@ export class Zoom {
                         map.staticMapZoom = map.tileZoomLevel;
                         if (map.staticMapZoom > 0 && map.staticMapZoom < staticMaxZoomLevel) {
                             map.staticMapZoom += 1;
-                            this.performZooming(position, (value + delta), direction);
+                            this.performZooming(position, (value + delta), direction, true);
                         }
                     } else {
-                        this.performZooming(position, (value + delta), direction);
+                        this.performZooming(position, (value + delta), direction, true);
                     }
                 } else {
                     map.mapScaleValue = value - delta;
@@ -2006,7 +2010,7 @@ export class Zoom {
                     if (map.staticMapZoom > 1 && map.staticMapZoom < staticMaxZoomLevel) {
                         map.staticMapZoom -= 1;
                     }
-                    this.performZooming(position, (value - delta), direction);
+                    this.performZooming(position, (value - delta), direction, true);
                 }
             }
             this.removeToolbarOpacity(map.mapScaleValue, (!this.maps.isDevice ? (!isNullOrUndefined(e.target) ?  e.target['id'] :

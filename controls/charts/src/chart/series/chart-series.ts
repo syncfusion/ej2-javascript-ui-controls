@@ -1223,8 +1223,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                     }
                 }
                 this.yMax += !isNaN(maxVerticalError) && isNullOrUndefined(this.yAxis.maximum) ? maxVerticalError : 0;
-                this.yMin = !isNaN(minVerticalError) && minVerticalError < this.yMin && isNullOrUndefined(this.yAxis.minimum) ?
-                    minVerticalError : this.yMin;
+                this.yMin = !isNaN(minVerticalError) && minVerticalError < this.yMin && minVerticalError < 0 &&
+                    isNullOrUndefined(this.yAxis.minimum) ? minVerticalError : this.yMin;
             }
         }
     }

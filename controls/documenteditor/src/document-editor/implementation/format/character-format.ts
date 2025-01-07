@@ -328,6 +328,12 @@ export class WCharacterFormat {
             while (!isNullOrUndefined(baseStyle) && baseStyle.name !== 'Default Paragraph Font') {
                 const hasKey: boolean = baseStyle.characterFormat.hasValue(property);
                 if (hasKey) {
+                    if (property === 'bold' && !isNullOrUndefined(this.ownerBase) && this.ownerBase instanceof TextElementBox && !isNullOrUndefined(this.ownerBase.paragraph) &&
+                        !isNullOrUndefined(this.ownerBase.paragraph.paragraphFormat.baseStyle) && this.ownerBase.paragraph.paragraphFormat.baseStyle instanceof WParagraphStyle &&
+                        this.ownerBase.paragraph.paragraphFormat.baseStyle.characterFormat && baseStyle.name !== this.ownerBase.paragraph.paragraphFormat.baseStyle.name &&
+                        baseStyle.characterFormat.hasValue(property) === this.ownerBase.paragraph.paragraphFormat.baseStyle.characterFormat.hasValue(property)) {
+                        return this.hasValue(property);
+                    }
                     const returnPropertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
                     return baseStyle.characterFormat.uniqueCharacterFormat.propertiesHash.get(returnPropertyType);
                 } else {

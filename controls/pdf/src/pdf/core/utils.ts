@@ -480,14 +480,13 @@ export function _isWhiteSpace(ch: number): boolean {
     return ch === 0x20 || ch === 0x09 || ch === 0x0d || ch === 0x0a;
 }
 /**
- * Decode bytes from base64 string.
+ * Decode a chunk of base64 string into Uint8Array.
  *
  * @private
  * @param {string} input The base64 string to decode.
- * @param {boolean} isDirect Whether to return object or number[]. Default is false.
- * @returns {Uint8Array | number[]} Decoded bytes.
+ * @returns {Uint8Array} Decoded bytes as Uint8Array.
  */
-export function _decode(input: string, isDirect: boolean = false): Uint8Array | number[] {
+function _decodeChunk(input: string): Uint8Array {
     const key: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
     let chr1: number;
     let chr2: number;
@@ -522,7 +521,110 @@ export function _decode(input: string, isDirect: boolean = false): Uint8Array | 
             output[resultIndex++] = chr3;
         }
     }
-    return isDirect ? output : new Uint8Array(output);
+    return new Uint8Array(output);
+}
+/**
+ * Decode bytes from base64 string.
+ *
+ * @private
+ * @param {string} input The base64 string to decode.
+ * @param {boolean} isDirect Whether to return object or number[]. Default is false.
+ * @returns {Uint8Array | number[]} Decoded bytes.
+ */
+export function _decode(input: string, isDirect: boolean = false): Uint8Array | number[] {
+    const chunkSize: number = 3000000;
+    if (input.length >= chunkSize) {
+        input = input.replace(/[^A-Za-z0-9+/=]/g, '');
+        const outputChunks: Uint8Array[] = [];
+        let totalLength: number = 0;
+        for (let i: number = 0; i < input.length; i += chunkSize) {
+            const chunk: string = input.substring(i, i + chunkSize);
+            const decodedChunk: Uint8Array = _decodeChunk(chunk);
+            outputChunks.push(decodedChunk);
+            totalLength += decodedChunk.length;
+        }
+        const output: Uint8Array = new Uint8Array(totalLength);
+        let offset: number = 0;
+        for (const chunk of outputChunks) {
+            output.set(chunk, offset);
+            offset += chunk.length;
+        }
+        return isDirect ? Array.from(output) : output;
+    } else {
+        const key: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+        let chr1: number;
+        let chr2: number;
+        let chr3: number;
+        let enc1: number;
+        let enc2: number;
+        let enc3: number;
+        let enc4: number;
+        let i: number = 0;
+        let resultIndex: number = 0;
+        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, ''); // eslint-disable-line
+        let totalLength: number = input.length * 3 / 4;
+        if (input.charAt(input.length - 1) === key.charAt(64)) {
+            totalLength--;
+        }
+        const output: Array<number> = new Array<number>(totalLength | 0);
+        while (i < input.length) {
+            enc1 = key.indexOf(input.charAt(i++));
+            enc2 = key.indexOf(input.charAt(i++));
+            enc3 = key.indexOf(input.charAt(i++));
+            enc4 = key.indexOf(input.charAt(i++));
+            chr1 = (enc1 << 2) | (enc2 >> 4);
+            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+            chr3 = ((enc3 & 3) << 6) | enc4;
+            if (resultIndex < totalLength) {
+                output[resultIndex++] = chr1;
+            }
+            if (resultIndex < totalLength) {
+                output[resultIndex++] = chr2;
+            }
+            if (resultIndex < totalLength) {
+                output[resultIndex++] = chr3;
+            }
+        }
+        return isDirect ? output : new Uint8Array(output);
+    }
+}
+/**
+ * Encode a chunk of bytes to base64 string.
+ *
+ * @private
+ * @param {Uint8Array} bytes Bytes to encode.
+ * @param {boolean} isLastChunk Defines a last chunk of bytes.
+ * @returns {string} Decoded string.
+ */
+function _encodeChunk(bytes: Uint8Array, isLastChunk: boolean = false): string {
+    const key: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    const output: string[] = [];
+    const length: number = bytes.length;
+    let i: number = 0;
+    while (i < length) {
+        const byte1: number = bytes[i++];
+        const byte2: number = i < length ? bytes[i++] : 0;
+        const byte3: number = i < length ? bytes[i++] : 0;
+        const value1: number = byte1 >> 2;
+        const value2: number = ((byte1 & 3) << 4) | (byte2 >> 4);
+        const value3: number = ((byte2 & 15) << 2) | (byte3 >> 6);
+        const value4: number = byte3 & 63;
+        output.push(
+            key[Number.parseInt(value1.toString(), 10)],
+            key[Number.parseInt(value2.toString(), 10)],
+            i - 1 > length ? '=' : key[Number.parseInt(value3.toString(), 10)],
+            i > length ? '=' : key[Number.parseInt(value4.toString(), 10)]
+        );
+    }
+    if (isLastChunk) {
+        if (length % 3 === 1) {
+            output[output.length - 1] = '=';
+            output[output.length - 2] = '=';
+        } else if (length % 3 === 2) {
+            output[output.length - 1] = '=';
+        }
+    }
+    return output.join('');
 }
 /**
  * Encode bytes to base64 string.
@@ -532,32 +634,51 @@ export function _decode(input: string, isDirect: boolean = false): Uint8Array | 
  * @returns {string} Decoded string.
  */
 export function _encode(bytes: Uint8Array): string {
+    const chunkSize: number = 3000000;
     const key: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-    let output: string = '';
-    let currentChar: number = 0;
-    for (let i: number = 0; i < bytes.length; i++) {
-        if (i % 3 === 0) {
-            currentChar = (bytes[Number.parseInt(i.toString(), 10)] >> 2);
-            output += key[Number.parseInt(currentChar.toString(), 10)];
-            currentChar = (bytes[Number.parseInt(i.toString(), 10)] << 4) & 63;
-        } else if (i % 3 === 1) {
-            currentChar += (bytes[Number.parseInt(i.toString(), 10)] >> 4);
-            output += key[Number.parseInt(currentChar.toString(), 10)];
-            currentChar = (bytes[Number.parseInt(i.toString(), 10)] << 2) & 63;
-        } else if (i % 3 === 2) {
-            currentChar += (bytes[Number.parseInt(i.toString(), 10)] >> 6);
-            output += key[Number.parseInt(currentChar.toString(), 10)];
-            currentChar = bytes[Number.parseInt(i.toString(), 10)] & 63;
-            output += key[Number.parseInt(currentChar.toString(), 10)];
+    const length: number = bytes.length;
+    if (length >= chunkSize) {
+        const output: string[] = [];
+        if (length > chunkSize) {
+            for (let start: number = 0; start < length; start += chunkSize) {
+                const chunk: Uint8Array = bytes.subarray(start, Math.min(start + chunkSize, length));
+                if ((start + chunkSize) >= length) {
+                    output.push(_encodeChunk(chunk, true));
+                } else {
+                    output.push(_encodeChunk(chunk));
+                }
+            }
+        } else {
+            output.push(_encodeChunk(bytes, true));
         }
+        return output.join('');
+    } else {
+        let output: string = '';
+        let currentChar: number = 0;
+        for (let i: number = 0; i < bytes.length; i++) {
+            if (i % 3 === 0) {
+                currentChar = (bytes[Number.parseInt(i.toString(), 10)] >> 2);
+                output += key[Number.parseInt(currentChar.toString(), 10)];
+                currentChar = (bytes[Number.parseInt(i.toString(), 10)] << 4) & 63;
+            } else if (i % 3 === 1) {
+                currentChar += (bytes[Number.parseInt(i.toString(), 10)] >> 4);
+                output += key[Number.parseInt(currentChar.toString(), 10)];
+                currentChar = (bytes[Number.parseInt(i.toString(), 10)] << 2) & 63;
+            } else if (i % 3 === 2) {
+                currentChar += (bytes[Number.parseInt(i.toString(), 10)] >> 6);
+                output += key[Number.parseInt(currentChar.toString(), 10)];
+                currentChar = bytes[Number.parseInt(i.toString(), 10)] & 63;
+                output += key[Number.parseInt(currentChar.toString(), 10)];
+            }
+        }
+        if (bytes.length % 3 === 1) {
+            output += `${key[Number.parseInt(currentChar.toString(), 10)]}==`;
+        }
+        if (bytes.length % 3 === 2) {
+            output += `${key[Number.parseInt(currentChar.toString(), 10)]}=`;
+        }
+        return output;
     }
-    if (bytes.length % 3 === 1) {
-        output += `${key[Number.parseInt(currentChar.toString(), 10)]}==`;
-    }
-    if (bytes.length % 3 === 2) {
-        output += `${key[Number.parseInt(currentChar.toString(), 10)]}=`;
-    }
-    return output;
 }
 /**
  * Get property value in inheritable mode.

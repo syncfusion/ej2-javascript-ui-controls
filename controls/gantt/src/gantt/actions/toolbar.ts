@@ -561,7 +561,7 @@ export class Toolbar {
                     break;
                 }
             }
-            if (toolbarItems.length > 0) {
+            if (toolbarItems.length > 0 && (!isNullOrUndefined(toolbarItems[index as number]) && toolbarItems[index as number]['properties'].visible)) {
                 this.toolbar.hideItem(index, false);
             }
         }

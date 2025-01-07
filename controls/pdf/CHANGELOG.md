@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue that caused the application to crash when loading large data during the encoding process.
+- Resolved an exception encountered while adding a line annotation with appearance and Unicode text when the caption is set to false.
+- Resolved an issue where the file size increases when exporting a rubber stamp annotation with an image and appearance using the JSON format.
+
 ## 28.1.37 (2024-12-31)
 
 ### PDF Parser

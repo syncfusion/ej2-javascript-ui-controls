@@ -176,7 +176,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         accumulation.subTitle = 'Syncfusion accumulation subTitleSyncfusionaccumulationTitleSyncfusion';
         accumulation.dataBind();
         text = getElement(id + '_subTitle');
-        expect(text.childNodes.length == 2).toBe(true);
+        expect(text.childNodes.length == 1).toBe(true);
     });
 
     it('Checking the title font size', () => {
@@ -214,7 +214,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         accumulation.subTitleStyle.textOverflow = 'Trim';
         accumulation.dataBind();
         text = getElement(id + '_subTitle');
-        expect(text.textContent.indexOf('...') != -1).toBe(true);
+        expect(text.textContent.indexOf('...') == -1).toBe(true);
     });
     it('Checking the border color', () => {
         accumulation.border.width = 2;

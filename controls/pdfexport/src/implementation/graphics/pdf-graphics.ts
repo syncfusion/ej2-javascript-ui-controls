@@ -3,7 +3,7 @@
  */
 import { PdfColorSpace, TextRenderingMode, PdfFillMode, PdfTextAlignment } from './enum';
 import { PdfVerticalAlignment, PdfBlendMode } from './enum';
-import { PdfSubSuperScript } from './fonts/enum';
+import { PdfSubSuperScript, PdfWordWrapType } from './fonts/enum';
 import { PdfStreamWriter } from './../input-output/pdf-stream-writer';
 import { PdfPen } from './pdf-pen';
 import { PdfBrush } from './brushes/pdf-brush';
@@ -1529,8 +1529,8 @@ export class PdfGraphics {
         let symbols : string[] = StringTokenizer.spaces;
         let whitespacesCount : number = StringTokenizer.getCharsCount(line, symbols);
         let hasSpaces : boolean = (whitespacesCount > 0 && line[0] !== StringTokenizer.whiteSpace);
-        let goodLineBreakStyle : boolean = ((lineInfo.lineType & LineType.LayoutBreak) > 0);
-        let shouldJustify : boolean = (justifyStyle && goodWidth && hasSpaces && (goodLineBreakStyle || format.alignment === PdfTextAlignment.Justify));
+        let goodLineBreakStyle : boolean = ((lineInfo.lineType & LineType.LayoutBreak) > 0) || (format && format.wordWrap === PdfWordWrapType.None);
+        let shouldJustify : boolean = (justifyStyle && goodWidth && hasSpaces && goodLineBreakStyle);
         return shouldJustify;
     }
     /**

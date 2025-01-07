@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I659553` - Now, the text field background color appears as expected.
+- `#I662006` - Now, the non-rendered page form fields are properly updated using the `updateFormFieldsValue` method.
+- `#I666148` - Now, the page navigation now works correctly for hyperlinks pointing to pages above 100.
+
 ## 28.1.37 (2024-12-31)
 
 ### PDF Viewer
@@ -9,7 +19,6 @@
 #### Bug Fixes
 
 - `#I664554` - Now, the `documentId` property is no longer missing in the `ajaxRequestInitiate` event after rotating the PDF pages.
-- `#I662006` - Now, the non-rendered page form fields are properly updated using the `updateFormFieldsValue` method.
 - `#I662588` - A proper error message is now displayed when an invalid base 64 string is loaded in the PDF Viewer.
 
 ## 28.1.36 (2024-12-24)

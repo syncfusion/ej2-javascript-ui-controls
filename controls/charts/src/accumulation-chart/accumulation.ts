@@ -1796,7 +1796,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
                 maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
             }
-            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.enableRtl,
+            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, this.initialClipRect.width, this.enableRtl,
                                                this.themeStyle.chartSubTitleFont);
             subTitleHeight = (measureText(this.subTitle, this.subTitleStyle,
                                           this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length);

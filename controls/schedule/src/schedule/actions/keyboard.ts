@@ -228,13 +228,13 @@ export class KeyboardInteraction {
         if ((e.event.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
             EventHandler.add(this.parent.getContentTable(), 'mousemove', this.onMouseSelection, this);
-            EventHandler.add(this.parent.getContentTable(), 'mouseup', this.onMoveUp, this);
+            EventHandler.add(this.parent.getContentTable(), 'mouseup mouseleave', this.onMoveUp, this);
         }
         if ((e.event.target as HTMLElement).classList.contains(cls.ALLDAY_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
             const allDayRow: HTMLTableRowElement = <HTMLTableRowElement>this.parent.getAllDayRow();
             EventHandler.add(allDayRow, 'mousemove', this.onMouseSelection, this);
-            EventHandler.add(allDayRow, 'mouseup', this.onMoveUp, this);
+            EventHandler.add(allDayRow, 'mouseup mouseleave', this.onMoveUp, this);
         }
     }
 
@@ -267,14 +267,12 @@ export class KeyboardInteraction {
     private onMoveUp(e: Event): void {
         const appointments: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS)) as Element[];
         removeClass(appointments, 'e-allow-select');
-        if ((e.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS)) {
-            EventHandler.remove(this.parent.getContentTable(), 'mousemove', this.onMouseSelection);
-            EventHandler.remove(this.parent.getContentTable(), 'mouseup', this.onMoveUp);
-        }
+        EventHandler.remove(this.parent.getContentTable(), 'mousemove', this.onMouseSelection);
+        EventHandler.remove(this.parent.getContentTable(), 'mouseup mouseleave', this.onMoveUp);
         if ((e.target as HTMLElement).classList.contains(cls.ALLDAY_CELLS_CLASS)) {
             const allDayRow: HTMLTableRowElement = <HTMLTableRowElement>this.parent.getAllDayRow();
             EventHandler.remove(allDayRow, 'mousemove', this.onMouseSelection);
-            EventHandler.remove(allDayRow, 'mouseup', this.onMoveUp);
+            EventHandler.remove(allDayRow, 'mouseup mouseleave', this.onMoveUp);
         }
         if (this.isPreventAction(e)) {
             return;

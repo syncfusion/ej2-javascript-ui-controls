@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I668052` - Now, the Rich Text Editor works properly when using `Shift+Enter` while applying and removing formats such as bold, italic, and underline.
+
+- `#I642043` - Now, after pasting an image, the `afterPasteCleanup` event will be triggered properly.
+
 ## 28.1.37 (2024-12-31)
 
 ### RichTextEditor
@@ -11,6 +21,8 @@
 - `#I665346` - Now, the table edit properties are applied properly without any errors when editing a table using the `TableEditProperties` quick toolbar option in the Rich Text Editor.
 
 - `#I659461` - Now, the link functionality works properly when pressing the `Enter` key in the Firefox browser in the Rich Text Editor.
+
+- `#I665113` - Now, performing the enter action at the beginning of the text in Firefox works correctly without generating any console errors.
 
 - `#I666517` - Now, the image `src` is updated properly when the `actionBegin` event argument is changed in the Rich Text Editor.
 
@@ -23,8 +35,6 @@
 #### Bug Fixes
 
 - `#I647911` - Now, the display text with text wrapping functions correctly when the enter action is executed in the Rich Text Editor.
-
-- `#I665113` - Now, performing the enter action at the beginning of the text in Firefox works correctly without generating any console errors.
 
 - `#I664650` - Now, the font color and background color picker popup works properly in the Rich Text Editor.
 

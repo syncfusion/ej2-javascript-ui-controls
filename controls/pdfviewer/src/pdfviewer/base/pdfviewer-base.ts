@@ -767,6 +767,11 @@ export class PdfViewerBase {
     public isMessageBoxOpen: boolean;
     private notifyDialog: Dialog;
     /**
+     * @private
+     */
+    public previousScrollbarWidth: number = 0;
+
+    /**
      * Initialize the constructor of PDFViewerBase
      *
      * @param { PdfViewer } viewer - Specified PdfViewer class.
@@ -3790,30 +3795,43 @@ export class PdfViewerBase {
      */
     public OnItemSelected(selectedMenu: string): void {
         const target: any = this.contextMenuModule.currentTarget;
+        const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+        const isCommentPanelPanel: boolean = commentPanel && commentPanel.style.display === 'block' ? true : false;
         switch (selectedMenu) {
         case this.pdfViewer.localeObj.getConstant('Copy'):
             this.CopyItemSelected();
             break;
         case this.pdfViewer.localeObj.getConstant('Highlight context'):
             this.TextMarkUpSelected('Highlight');
+            if (!isCommentPanelPanel) {
+                this.focusViewerContainer();
+            }
             break;
         case this.pdfViewer.localeObj.getConstant('Underline context'):
             this.TextMarkUpSelected('Underline');
+            if (!isCommentPanelPanel) {
+                this.focusViewerContainer();
+            }
             break;
         case this.pdfViewer.localeObj.getConstant('Strikethrough context'):
             this.TextMarkUpSelected('Strikethrough');
+            if (!isCommentPanelPanel) {
+                this.focusViewerContainer();
+            }
             break;
         case this.pdfViewer.localeObj.getConstant('Properties'):
             this.PropertiesItemSelected();
             break;
         case this.pdfViewer.localeObj.getConstant('Cut'):
             this.CutItemSelected(target);
+            this.focusViewerContainer();
             break;
         case this.pdfViewer.localeObj.getConstant('Paste'):
             this.pasteItemSelected(target);
             break;
         case this.pdfViewer.localeObj.getConstant('Delete Context'):
             this.DeleteItemSelected();
+            this.focusViewerContainer();
             break;
         case this.pdfViewer.localeObj.getConstant('Scale Ratio'):
             this.ScaleRatioSelected();
@@ -3824,7 +3842,6 @@ export class PdfViewerBase {
         default:
             break;
         }
-        this.focusViewerContainer();
     }
 
     private CommentItemSelected(): void {
@@ -6997,6 +7014,10 @@ export class PdfViewerBase {
                     leftPosition = leftValue;
                 }
             }
+        }
+        if (this.viewerContainer.clientHeight >= this.viewerContainer.scrollHeight && this.previousScrollbarWidth > 0) {
+            const scrollBarWidth: number = this.navigationPane.getViewerContainerScrollbarWidth();
+            leftPosition = leftPosition - ((this.previousScrollbarWidth - scrollBarWidth) / 2);
         }
         return leftPosition;
     }

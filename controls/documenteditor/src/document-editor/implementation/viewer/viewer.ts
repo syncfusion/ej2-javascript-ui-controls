@@ -2624,8 +2624,8 @@ export class DocumentHelper {
                 let iscontentControl: boolean = this.owner.selectionModule.checkContentControlLocked();
                 if ((!isNullOrUndefined(contentControl) && !contentControl.contentControlProperties.lockContents && !this.isDocumentProtected && iscontentControl && event.button === 0) || (!isNullOrUndefined(contentControl) &&  !contentControl.contentControlProperties.lockContents && this.protectionType =='FormFieldsOnly' && event.button === 0)){
                     if(contentControl.contentControlProperties.type === 'CheckBox'){
-                        this.owner.editor.toggleContentControlCheckBox(contentControl);
-                        if(contentControl.contentControlProperties.isTemporary){
+                        this.owner.editor.toggleContentControlCheckBox(contentControl, !contentControl.contentControlProperties.isChecked);
+                        if (contentControl.contentControlProperties.isTemporary) {
                             this.owner.editor.removeContentControl();
                         }
                     }
@@ -3893,7 +3893,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     public onKeyDownInternal = (event: KeyboardEvent): void => {
-        if (!isNullOrUndefined(event.target) && (event.target as HTMLElement) !== this.editableDiv) {
+        if (!isNullOrUndefined(event.target) && (event.target as HTMLElement) !== this.editableDiv && (event.target as HTMLElement).id !== "container_editor_iconsplitbtn") {
             return;
         }
         this.owner.focusIn();

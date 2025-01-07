@@ -102,8 +102,6 @@ export class Month extends ViewBase implements IRenderer {
                 content.scrollLeft = this.parent.currentView === 'TimelineMonth' ? this.parent.uiStateValues.left :
                     args.scrollPosition.left;
             }
-        } else {
-            this.scrollToSelectedDate();
         }
         this.retainScrollPosition();
     }

@@ -3997,8 +3997,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else if (this.grid) {
             remove(this.grid.element);
         }
-        if (this.showFieldList || this.allowNumberFormatting || this.allowCalculatedField ||
-            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
+        const isNumberFormattingApplied: boolean = this.actionObj.actionName === events.openNumberFormatting ||
+                                                  this.actionObj.actionName === events.numberFormattingMenu;
+        const isConditionalFormattingApplied: boolean = this.actionObj.actionName === events.conditionalFormattingMenu ||
+                                                       this.actionObj.actionName === events.openConditionalFormatting;
+        if ((this.showFieldList || this.allowNumberFormatting || this.allowCalculatedField ||
+            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) &&
+            !(isNumberFormattingApplied || isConditionalFormattingApplied)) {
             this.notify(events.uiUpdate, this);
             if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
                 this.pivotFieldListModule.clonedDataSource = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
@@ -6713,7 +6718,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         case events.openConditionalFormatting:
             actionName = events.conditionallyFormatted;
             break;
+        case events.conditionalFormattingMenu:
+            actionName = events.conditionallyFormatted;
+            break;
         case events.openNumberFormatting:
+            actionName = events.numberFormatted;
+            break;
+        case events.numberFormattingMenu:
             actionName = events.numberFormatted;
             break;
         case events.tableView:

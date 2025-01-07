@@ -25,7 +25,7 @@
         background: $rte-tb-item-active-bg;
         border: $rte-tb-item-active-border;
   
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
           border: 0;
         }
       }

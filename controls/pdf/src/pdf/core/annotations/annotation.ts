@@ -3769,7 +3769,10 @@ export class PdfLineAnnotation extends PdfComment {
             this.text = this.subject;
         }
         const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
-        const lineWidth: number = font.measureString(this.text ? this.text : '', [0, 0], format, 0, 0)[0]; //66.71001;
+        let lineWidth: number = 0;
+        if (this.caption.cap) {
+            lineWidth = font.measureString(this.text ? this.text : '', [0, 0], format, 0, 0)[0]; //66.71001;
+        }
         if (typeof this.linePoints !== 'undefined' && this._linePoints.length === 4) {
             const angle: number = this._getAngle(this._linePoints);
             let leaderLine: number = 0;
@@ -7763,55 +7766,52 @@ export class PdfPopupAnnotation extends PdfComment {
         }
     }
     _createPopupAppearance(): PdfTemplate {
-        let template: PdfTemplate;
-        if (this._dictionary.has('Name')) {
-            const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
-            template = new PdfTemplate(nativeRectangle, this._crossReference);
-            const graphics: PdfGraphics = template.graphics;
-            graphics._sw._clear();
-            if (this.opacity < 1) {
-                graphics.save();
-                graphics.setTransparency(this.opacity);
-            }
-            switch (this.icon) {
-            case PdfPopupIcon.comment:
-                graphics._sw._write(this._comment);
-                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
-                graphics._sw._write(this._commentSecondHalf);
-                break;
-            case PdfPopupIcon.paragraph:
-                graphics._sw._write(this._paragraph);
-                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
-                graphics._sw._write(this._paragraphSecondHalf);
-                break;
-            case PdfPopupIcon.help:
-                graphics._sw._write(this._help);
-                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
-                graphics._sw._write(this._helpSecondHalf);
-                break;
-            case PdfPopupIcon.note:
-                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
-                graphics._sw._write(this._note);
-                break;
-            case PdfPopupIcon.insert:
-                graphics._sw._write('0 G ');
-                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
-                graphics._sw._write(this._insert);
-                break;
-            case PdfPopupIcon.key:
-                graphics._sw._write(this._key);
-                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
-                graphics._sw._write(this._keySecondHalf);
-                break;
-            case PdfPopupIcon.newParagraph:
-                graphics._sw._write(this._newParagraph);
-                graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
-                graphics._sw._write(this._newParagraphSecondHalf);
-                break;
-            }
-            if (this.opacity < 1) {
-                graphics.restore();
-            }
+        const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
+        const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
+        const graphics: PdfGraphics = template.graphics;
+        graphics._sw._clear();
+        if (this.opacity < 1) {
+            graphics.save();
+            graphics.setTransparency(this.opacity);
+        }
+        switch (this.icon) {
+        case PdfPopupIcon.comment:
+            graphics._sw._write(this._comment);
+            graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+            graphics._sw._write(this._commentSecondHalf);
+            break;
+        case PdfPopupIcon.paragraph:
+            graphics._sw._write(this._paragraph);
+            graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+            graphics._sw._write(this._paragraphSecondHalf);
+            break;
+        case PdfPopupIcon.help:
+            graphics._sw._write(this._help);
+            graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+            graphics._sw._write(this._helpSecondHalf);
+            break;
+        case PdfPopupIcon.note:
+            graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+            graphics._sw._write(this._note);
+            break;
+        case PdfPopupIcon.insert:
+            graphics._sw._write('0 G ');
+            graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+            graphics._sw._write(this._insert);
+            break;
+        case PdfPopupIcon.key:
+            graphics._sw._write(this._key);
+            graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+            graphics._sw._write(this._keySecondHalf);
+            break;
+        case PdfPopupIcon.newParagraph:
+            graphics._sw._write(this._newParagraph);
+            graphics._sw._setColorSpace(this.color, _PdfColorSpace.rgb, false);
+            graphics._sw._write(this._newParagraphSecondHalf);
+            break;
+        }
+        if (this.opacity < 1) {
+            graphics.restore();
         }
         return template;
     }

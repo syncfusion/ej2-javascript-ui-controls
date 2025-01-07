@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 28.1.37 (2024-12-31)
+## 28.1.38 (2025-01-07)
+
+### Maps
+
+#### Bug fixes
+
+- `#I668862` - Markers will now render correctly at certain zoom levels when the `animationDuration` is enabled for layers in Maps.
+
+## 28.1.33 (2024-12-12)
 
 ### Maps
 

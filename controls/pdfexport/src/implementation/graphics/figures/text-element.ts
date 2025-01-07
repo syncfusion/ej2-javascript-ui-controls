@@ -60,6 +60,7 @@ export class PdfTextElement extends PdfLayoutElement {
      * @private
      */
     private hasPointOverload : boolean = false;
+    _isLastElement : boolean = false;
     /**
      * indicate whether the PdfGridCell value is `PdfTextElement`
      * @default false
@@ -354,6 +355,9 @@ export class PdfTextElement extends PdfLayoutElement {
                                     bounds = new RectangleF(0, 0, layoutResult.page.graphics.clientSize.width, stringLayoutResult.lineHeight);
                                 }
                                 param.bounds = bounds;
+                            }
+                            if (i === stringLayoutResult.lines.length - 1) {
+                                this._isLastElement = true;
                             }
                             layoutResult = this.layout(param);
                             if (i !== (stringLayoutResult.lines.length - 1)) {

@@ -119,7 +119,7 @@ export class ColumnWidthService {
             }
             if (this.parent.allowResizing && (module === 'resize' || this.parent.getFrozenColumns())) {
                 const contentTable: HTMLElement = this.parent.getContentTable() as HTMLElement;
-                this.setWidthToTable(this.parent.getFrozenColumns() && contentTable.style.width.indexOf('px') === -1);
+                this.setWidthToTable(this.parent.getFrozenColumns() && contentTable.style.width.indexOf('px') === -1 && (tgridWidth as number) < contentTable.clientWidth);
             }
             this.parent.notify(columnWidthChanged, { index: columnIndex, width: cWidth, column: column, module: module });
         }

@@ -9,6 +9,7 @@ import { _PdfBaseStream, _PdfContentStream, _PdfStream } from './../base-stream'
 import { PdfForm } from './../form/form';
 import { PdfField } from './../form/field';
 import { PdfAnnotationFlag } from './../enumerator';
+import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
 export class _JsonDocument extends _ExportHelper {
     _isImport: boolean = false;
     _isColorSpace: boolean = false;
@@ -618,7 +619,7 @@ export class _JsonDocument extends _ExportHelper {
         }
     }
     _writeObject(table?: Map<string, string>,
-                 value?: any, dictionary?: _PdfDictionary, key?: string, array?: Map<string, string>[], isColorSpace: boolean = false): void { // eslint-disable-line
+                 value?: any, dictionary?: _PdfDictionary, key?: string, array?: Map<string, string>[], isColorSpace: boolean = false, isNewReference: boolean = false): void { // eslint-disable-line
         if (value instanceof _PdfName) {
             value.name = this._getValidString(value.name);
             this._writeTable('name', value.name, table, key, array);
@@ -664,34 +665,63 @@ export class _JsonDocument extends _ExportHelper {
             if (streamDictionary.has('Subtype') && streamDictionary.get('Subtype').name === 'Image') {
                 isImageStream = true;
             }
-            if (isImageStream && baseStream.stream) {
-                if (baseStream.stream instanceof _PdfStream) {
-                    if (typeof baseStream._initialized === 'boolean' && baseStream._cipher) {
-                        const streamLength: number = baseStream.stream.end - baseStream.stream.start;
-                        baseStream.getBytes(streamLength);
-                        const bytes: Uint8Array = baseStream.buffer.subarray(0, baseStream.bufferLength);
-                        data = baseStream.getString(true, bytes);
-                    } else {
-                        const stream: _PdfStream = baseStream.stream;
-                        data = baseStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
+            if (isNewReference) {
+                if (value.dictionary.has('Filter') && value.dictionary.get('Filter').name === 'DCTDecode') {
+                    data = value.getString(true);
+                } else {
+                    data = value.getString();
+                    const byteArray: number[] = [];
+                    for (let i: number = 0; i < data.length; i++) {
+                        byteArray.push(data.charCodeAt(i));
                     }
-                } else if (baseStream.stream.stream) {
-                    const flateStream: any = baseStream.stream; // eslint-disable-line
-                    if (flateStream.stream instanceof _PdfStream && typeof flateStream._initialized === 'boolean' && flateStream._cipher) {
-                        const streamLength: number = flateStream.stream.end - flateStream.stream.start;
-                        flateStream.getBytes(streamLength);
-                        const bytes: Uint8Array = flateStream.buffer.subarray(0, flateStream.bufferLength);
-                        data = flateStream.getString(true, bytes);
-                    } else if (flateStream.stream instanceof _PdfStream) {
-                        const stream: _PdfStream = flateStream.stream;
-                        data = flateStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
+                    const dataArray: Uint8Array = new Uint8Array(byteArray);
+                    const sw: CompressedStreamWriter = new CompressedStreamWriter();
+                    sw.write(dataArray, 0, dataArray.length);
+                    sw.close();
+                    value = sw.getCompressedString;
+                    const buffer: number[] = [];
+                    for (let i: number = 0; i < value.length; i++) {
+                        buffer.push(value.charCodeAt(i) & 0xff);
                     }
+                    data = _byteArrayToHexString(new Uint8Array(buffer));
                 }
-            } else {
-                data = value.getString(true);
+                if (!streamDictionary.has('Filter')) {
+                    streamDictionary.update('Filter', _PdfName.get('FlateDecode'));
+                }
+                if (!streamDictionary.has('Length') && data && data !== '') {
+                    streamDictionary.update('Length', baseStream.length);
+                }
             }
-            if (!streamDictionary.has('Length') && data && data !== '') {
-                streamDictionary.update('Length', value.length);
+            if (!isNewReference) {
+                if (isImageStream && baseStream.stream) {
+                    if (baseStream.stream instanceof _PdfStream) {
+                        if (typeof baseStream._initialized === 'boolean' && baseStream._cipher) {
+                            const streamLength: number = baseStream.stream.end - baseStream.stream.start;
+                            baseStream.getBytes(streamLength);
+                            const bytes: Uint8Array = baseStream.buffer.subarray(0, baseStream.bufferLength);
+                            data = baseStream.getString(true, bytes);
+                        } else {
+                            const stream: _PdfStream = baseStream.stream;
+                            data = baseStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
+                        }
+                    } else if (baseStream.stream.stream) {
+                        const flateStream: any = baseStream.stream; // eslint-disable-line
+                        if (flateStream.stream instanceof _PdfStream && typeof flateStream._initialized === 'boolean' && flateStream._cipher) {
+                            const streamLength: number = flateStream.stream.end - flateStream.stream.start;
+                            flateStream.getBytes(streamLength);
+                            const bytes: Uint8Array = flateStream.buffer.subarray(0, flateStream.bufferLength);
+                            data = flateStream.getString(true, bytes);
+                        } else if (flateStream.stream instanceof _PdfStream) {
+                            const stream: _PdfStream = flateStream.stream;
+                            data = flateStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
+                        }
+                    }
+                } else {
+                    data = value.getString(true);
+                }
+                if (!streamDictionary.has('Length') && data && data !== '') {
+                    streamDictionary.update('Length', value.length);
+                }
             }
             this._writeAppearanceDictionary(streamTable, streamDictionary);
             let type: string;
@@ -713,7 +743,7 @@ export class _JsonDocument extends _ExportHelper {
             streamTable.set('data', this._convertToJson(dataTable));
             this._writeTable('stream', this._convertToJson(streamTable), table, key, array);
         } else if (value instanceof _PdfReference && this._crossReference) {
-            this._writeObject(table, this._crossReference._fetch(value), dictionary, key, array);
+            this._writeObject(table, this._crossReference._fetch(value), dictionary, key, array, isColorSpace, value._isNew);
         } else if (value === null || typeof value === 'undefined') {
             this._writeTable('null', 'null', table, key, array);
         }
@@ -813,6 +843,7 @@ export class _JsonDocument extends _ExportHelper {
         }
     }
     _importAnnotations(document: PdfDocument, data: Uint8Array): void {
+        this._isImport = true;
         const json: any = this._parseJson(document, data); // eslint-disable-line
         if (json) {
             const keys: string[] = Object.keys(json);
@@ -1592,7 +1623,7 @@ export class _JsonDocument extends _ExportHelper {
                 const type: _PdfName = dictionary.get('Subtype');
                 isImage = type && type.name === 'Image';
             }
-            if (isImage) {
+            if (isImage || (this._isImport && stream._isCompress)) {
                 stream._isCompress = false;
             } else {
                 if (dictionary.has('Length')) {

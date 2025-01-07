@@ -156,6 +156,10 @@ export class Editor {
     /**
      * @private
      */
+    public handledTextInput: boolean = false;
+    /**
+     * @private
+     */
     public removeEditRange: boolean = false;
     /**
      * @private
@@ -2428,7 +2432,9 @@ export class Editor {
                 clearTimeout(this.animationTimer);
             }
             classList(this.selection.caret, [], ['e-de-cursor-animation']);
+            this.handledTextInput = true;
             this.owner.editorModule.insertText(text);
+            this.handledTextInput = false;
             /* eslint-disable @typescript-eslint/indent */
             this.animationTimer = Number(setTimeout(() => {
                 if (this.animationTimer) {
@@ -7644,7 +7650,7 @@ export class Editor {
                         }
                         newCells = rowWidget.childWidgets[cellIndexSE] as TableCellWidget || rowWidget.childWidgets[cellIndexSE = 0] as TableCellWidget;
                         cloneCells = newCells.clone();
-                        let pasteCell: TableCellWidget = row2.childWidgets[cellIndex] as TableCellWidget;
+                        let pasteCell: TableCellWidget = row2.getCell(row2.index, cellIndex) as TableCellWidget;
                         for (let x: number = 0; x < cloneCells.childWidgets.length; x++) {
                             let newPara: ParagraphWidget = cloneCells.childWidgets[x] as ParagraphWidget;
                             newPara.containerWidget = pasteCell;
@@ -7658,7 +7664,6 @@ export class Editor {
                         if (newCells.cellFormat.columnSpan > 1) {
                             columnSpan = newCells.cellFormat.columnSpan;
                         }
-                        row2.childWidgets[cellIndex] = pasteCell;
                         if (isNullOrUndefined(startParagraph)) {
                             startParagraph = this.selection.getFirstParagraph(cloneCells);
                         }
@@ -17112,7 +17117,7 @@ export class Editor {
         if ((startElementInfo.element instanceof FieldElementBox && startElementInfo.element.fieldType !== 2 && !(endElementInfo.element instanceof FieldElementBox)) ||
             (endElementInfo.element instanceof FieldElementBox && endElementInfo.element.fieldType !== 2 && !(startElementInfo.element instanceof FieldElementBox))) {
             if (this.selection.isForward) {
-                if (startElementInfo.element instanceof FieldElementBox && startElementInfo.element.fieldType === 0) {
+                if (startElementInfo.element instanceof FieldElementBox && startElementInfo.element.fieldType === 0 && !isNullOrUndefined(startElementInfo.element.fieldEnd)) {
                     let fieldEndOffset: number = startElementInfo.element.fieldEnd.line.getOffset(startElementInfo.element.fieldEnd, 1);
                     let fieldEndPosition: TextPosition = new TextPosition(this.owner);
                     fieldEndPosition.setPositionParagraph(startElementInfo.element.fieldEnd.line, fieldEndOffset);
@@ -17125,7 +17130,7 @@ export class Editor {
                             this.selection.editPosition = this.owner.selection.startOffset;
                         }
                     }
-                } else if (endElementInfo.element instanceof FieldElementBox && endElementInfo.element.fieldType === 1) {
+                } else if (endElementInfo.element instanceof FieldElementBox && endElementInfo.element.fieldType === 1 && !isNullOrUndefined(endElementInfo.element.fieldBegin)) {
                     let fieldStartOffset: number = endElementInfo.element.fieldBegin.line.getOffset(endElementInfo.element.fieldBegin, 0);
                     let fieldStartPosition: TextPosition = new TextPosition(this.owner);
                     fieldStartPosition.setPositionParagraph(endElementInfo.element.fieldBegin.line, fieldStartOffset);
@@ -17138,7 +17143,7 @@ export class Editor {
                     }
                 }
             } else {
-                if (startElementInfo.element instanceof FieldElementBox && startElementInfo.element.fieldType === 1) {
+                if (startElementInfo.element instanceof FieldElementBox && startElementInfo.element.fieldType === 1 && !isNullOrUndefined(startElementInfo.element.fieldBegin)) {
                     let fieldStartOffset: number = startElementInfo.element.fieldBegin.line.getOffset(startElementInfo.element.fieldBegin, 0);
                     let fieldStartPosition: TextPosition = new TextPosition(this.owner);
                     fieldStartPosition.setPositionParagraph(startElementInfo.element.fieldBegin.line, fieldStartOffset);
@@ -17151,7 +17156,7 @@ export class Editor {
                             this.selection.editPosition = this.owner.selection.endOffset;
                         }
                     }
-                } else if (endElementInfo.element instanceof FieldElementBox && endElementInfo.element.fieldType === 0 && endElementInfo.element.fieldSeparator) {
+                } else if (endElementInfo.element instanceof FieldElementBox && endElementInfo.element.fieldType === 0 && endElementInfo.element.fieldSeparator && !isNullOrUndefined(endElementInfo.element.fieldEnd)) {
                     let fieldEndOffset: number = endElementInfo.element.fieldEnd.line.getOffset(endElementInfo.element.fieldEnd, 1);
                     let fieldEndPosition: TextPosition = new TextPosition(this.owner);
                     fieldEndPosition.setPositionParagraph(endElementInfo.element.fieldEnd.line, fieldEndOffset);
@@ -18986,7 +18991,7 @@ export class Editor {
         // }
         if (inline instanceof FieldElementBox && inline.fieldType === 1 && !this.selection.isInlineFormFillMode()) {
             let prevInline: ElementBox = selection.getPreviousValidElement(inline);
-            if (prevInline instanceof FieldElementBox) {
+            if (prevInline instanceof FieldElementBox && prevInline.fieldType !== 0) {
                 inline = (prevInline as FieldElementBox).fieldBegin;
                 paragraph = inline.line.paragraph;
                 offset = inline.line.getOffset(inline, 0);
@@ -20974,32 +20979,39 @@ export class Editor {
         return false;
     }
     private updateListItemsForRow(row: TableRowWidget, block: BlockWidget, listSearchResultInfo?: ListSearchResultInfo): boolean {
-        if (isNullOrUndefined(listSearchResultInfo) && block.isInsideTable && row.childWidgets.indexOf(this.documentHelper.selection.getContainerCell(block.associatedCell)) !== -1) {
-            //Returns as list updated, inorder to start list numbering from first list paragraph of this row.
-            return true;
-        }
+        // if (isNullOrUndefined(listSearchResultInfo) && block.isInsideTable && row.childWidgets.indexOf(this.documentHelper.selection.getContainerCell(block.associatedCell)) !== -1) {
+        //     //Returns as list updated, inorder to start list numbering from first list paragraph of this row.
+        //     return true;
+        // }
         let cell: TableCellWidget = row.firstChild as TableCellWidget;
         do {
-            this.updateListItemsForCell(cell, block, listSearchResultInfo);
+            const isListUpdated: boolean = this.updateListItemsForCell(cell, block, listSearchResultInfo);
             if (!isNullOrUndefined(listSearchResultInfo) && !isNullOrUndefined(listSearchResultInfo.paragraph)) {
+                return true;
+            }
+            if (isListUpdated) {
                 return true;
             }
             cell = cell.nextRenderedWidget as TableCellWidget;
         } while (cell);
         return false;
     }
-    private updateListItemsForCell(cell: TableCellWidget, block: BlockWidget, listSearchResultInfo?: ListSearchResultInfo): void {
+    private updateListItemsForCell(cell: TableCellWidget, block: BlockWidget, listSearchResultInfo?: ListSearchResultInfo): boolean {
         if (cell.childWidgets.length === 0) {
-            return;
+            return false;
         }
         let currentBlock: BlockWidget = cell.firstChild as BlockWidget;
         do {
-            this.updateListItems(currentBlock, block, listSearchResultInfo);
+            const isListUpdated: boolean = this.updateListItems(currentBlock, block, listSearchResultInfo);
             if (!isNullOrUndefined(listSearchResultInfo) && !isNullOrUndefined(listSearchResultInfo.paragraph)) {
-                break;
+                return true;
+            }
+            if (isListUpdated) {
+                return true;
             }
             currentBlock = currentBlock.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
         } while (currentBlock);
+        return false;
     }
 
     // public abstract updateListParagraphs(): void;
@@ -24114,21 +24126,24 @@ export class Editor {
             this.reLayout(this.selection, false);
         }
     }
-     /**
+    /**
+     * @private
      * @param contentControl
      * @returns {void}
      */
-     public toggleContentControlCheckBox(contentControl: ContentControl): void {
+    public toggleContentControlCheckBox(contentControl: ContentControl, value: boolean): void {
+        if (!isNullOrUndefined(this.editorHistory) && !this.editorHistory.isUndoing && !this.editorHistory.isRedoing) {
+            this.selection.selectContentInternal(contentControl);
+            this.initHistory('UpdateContentControl');
+        }
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            this.editorHistory.currentBaseHistoryInfo.setContentControlCheckBox(contentControl, value);
+        }
         const checkBoxText: TextElementBox = contentControl.nextNode as TextElementBox;
         checkBoxText.isWidthUpdated = false;
-        checkBoxText.text = (checkBoxText.text === String.fromCharCode(9744)) ? String.fromCharCode(9746) : String.fromCharCode(9744);
-        if(checkBoxText.text === String.fromCharCode(9744)){
-            contentControl.contentControlProperties.isChecked = false;
-        }
-        else{
-            contentControl.contentControlProperties.isChecked = true;
-        }
-        this.reLayout(this.selection,true);
+        checkBoxText.text = value ? String.fromCharCode(9746) : String.fromCharCode(9744);
+        contentControl.contentControlProperties.isChecked = value;
+        this.reLayout(this.selection, true);
     }
     /**
      * @param field
@@ -24152,19 +24167,7 @@ export class Editor {
         if (contentControl.contentControlProperties.type === 'RichText' || contentControl.contentControlProperties.type === 'Text' || contentControl.contentControlProperties.type === 'Date' || contentControl.contentControlProperties.type === 'Picture') {
             this.updateContentControlResult(contentControl, value as string, reset);
         } else if (contentControl.contentControlProperties.type === 'CheckBox') {
-            if (value == 'true' && !reset) {
-                contentControl.contentControlProperties.isChecked = true;
-            } else {
-                contentControl.contentControlProperties.isChecked = false;
-            }
-            let element: TextElementBox = contentControl.nextElement as TextElementBox;
-            if (element) {
-                if (contentControl.contentControlProperties.isChecked && !reset) {
-                    element.text = String.fromCharCode(9746);
-                } else {
-                    element.text = String.fromCharCode(9744);
-                }
-            }
+            this.toggleContentControlCheckBox(contentControl, (value === 'true' && !reset));
         } else if (contentControl.contentControlProperties.type === 'ComboBox' || contentControl.contentControlProperties.type === 'DropDownList') {
             let span: ContentControlListItems = new ContentControlListItems();
             if (reset) {

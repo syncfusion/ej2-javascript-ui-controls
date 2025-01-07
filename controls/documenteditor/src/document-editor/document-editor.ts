@@ -3809,17 +3809,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @param {ContentControlInfo[]} contentControlInfo - The array of content control information to be imported.
      * @returns {ContentControlInfo[]} The processed content control information.
      */
-    public importContentControlData(contentControlInfo: ContentControlInfo[]): ContentControlInfo[]{
+    public importContentControlData(contentControlInfo: ContentControlInfo[]): ContentControlInfo[] {
         for (let i: number = 0; i < contentControlInfo.length; i++) {
             const contentInfo: ContentControlInfo = contentControlInfo[parseInt(i.toString(), 10)];
             for (let j: number = 0; j < this.documentHelper.contentControlCollection.length; j++) {
                 const contentControl: ContentControl = this.documentHelper.contentControlCollection[parseInt(j.toString(), 10)];
-                if (contentInfo.title === contentControl.contentControlProperties.title) {
+                if (contentInfo.type === contentControl.contentControlProperties.type
+                    && contentInfo.title === contentControl.contentControlProperties.title) {
                     this.editorModule.updateContentControl(contentControl, contentInfo.value);
                 }
             }
         }
-        return[];
+        return [];
     }
     /**
      * Exports the content control values.

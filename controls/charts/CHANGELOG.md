@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F195601` - The console error no longer occurs when rendering a single data point with a multilevel label.
+- `#I676165` - Exporting a chart with complex properties to CSV or XLSX now functions correctly.
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I674361` - The subtitle now renders correctly even when its length exceeds that of the title.
+
 ## 28.1.37 (2024-12-31)
 
 ### Chart
@@ -11,7 +26,7 @@
 - `#I667080` - The column series now renders properly when the width is set in pixels and `enableSideBySidePlacement` is set to false.
 - `#I654525` - The y-axis now dynamically adjusts to accommodate negative ranges when the negative error bar exceeds the minimum value.
 
-## 28.1.36
+## 28.1.36 (2024-12-24)
 
 ### Chart
 

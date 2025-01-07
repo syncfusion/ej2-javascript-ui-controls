@@ -305,7 +305,7 @@ export class LayerPanel {
         proxy.renderTileLayer(proxy, layer, layerIndex, bing);
         this.mapObject.arrangeTemplate();
         if (this.mapObject.zoomModule && (this.mapObject.previousScale !== this.mapObject.scale)) {
-            this.mapObject.zoomModule.applyTransform(this.mapObject, true);
+            this.mapObject.zoomModule.applyTransform(this.mapObject, false, true);
         }
     }
 

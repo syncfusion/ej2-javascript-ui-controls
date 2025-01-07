@@ -385,13 +385,15 @@ export class CheckBoxFilterBase {
                 this.showMask();
             }
         } else {
-            if ((this.parent as IGrid).enableAdaptiveUI && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+            if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
                 this.getAllData();
                 return;
             }
             if (this.infiniteRenderMod) {
                 this.cBox.style.marginTop = getListHeight(this.cBox) + 'px';
             }
+        }
+        if (!(this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer')) {
             createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null },
                           this.parent.createElement);
             showSpinner(this.spinner);

@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor} from '../../src/index';
+import { ContentControlInfo, Editor} from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
@@ -108,7 +108,7 @@ describe('check apply content control', () => {
                 editor.editorModule.insertContentControl('CheckBox');
                 editor.selection.handleLeftKey();
                 expect(editor.documentHelper.contentControlCollection[0].contentControlProperties.isChecked).toBe(false);
-                editor.editorModule.toggleContentControlCheckBox(editor.documentHelper.contentControlCollection[0]);
+                editor.editorModule.toggleContentControlCheckBox(editor.documentHelper.contentControlCollection[0], !editor.documentHelper.contentControlCollection[0].contentControlProperties.isChecked);
                 expect(editor.documentHelper.contentControlCollection[0].contentControlProperties.isChecked).toBe(true);
             });
     it('validate text insertion after content control',()=>{
@@ -121,3 +121,88 @@ describe('check apply content control', () => {
         expect(editor.selection.start.currentWidget.children.length > count).toBe(true);
     })
     });
+
+describe('Validate getContentControinfo', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('apply plain text content control', () => {
+        console.log('apply plain text content control');
+        editor.openBlank();
+        editor.editorModule.insertText('Insering the plain text content control and using using getContentControlInfo method');
+        editor.selection.selectAll();
+        editor.editorModule.insertContentControl('Text');
+        editor.selection.select('0;0;10', '0;0;10');
+        let contentControlInfo: ContentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBe('Insering the plain text content control and using using getContentControlInfo method');
+        expect(contentControlInfo.type).toBe('Text');
+        contentControlInfo.value = contentControlInfo.value + ' added new text';
+        editor.importContentControlData([contentControlInfo]);
+        editor.selection.select('0;0;10', '0;0;10');
+        contentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBe('Insering the plain text content control and using using getContentControlInfo method added new text');
+    });
+    it('apply combo box  content control', () => {
+        console.log('apply combo box content control');
+        editor.openBlank();
+        editor.editorModule.insertText('sample');
+        editor.selection.selectAll();
+        editor.editorModule.insertContentControl('ComboBox');
+        editor.selection.select('0;0;5', '0;0;5');
+        let contentControlInfo: ContentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBe('sample');
+        expect(contentControlInfo.type).toBe('ComboBox');
+        contentControlInfo.value = 'new value';
+        editor.importContentControlData([contentControlInfo]);
+        editor.selection.select('0;0;5', '0;0;5');
+        contentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBe('new value');
+    });
+    it('apply check box content control', () => {
+        console.log('apply check box content control');
+        editor.openBlank();
+        editor.editorModule.insertContentControl('CheckBox');
+        editor.selection.select('0;0;1', '0;0;1');
+        let contentControlInfo: ContentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBe('false');
+        expect(contentControlInfo.type).toBe('CheckBox');
+        contentControlInfo.value = 'true';
+        editor.importContentControlData([contentControlInfo]);
+        editor.selection.select('0;0;1', '0;0;1');
+        contentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBe('true');
+    });
+    it('apply date picker content control', () => {
+        console.log('apply date picker content control');
+        editor.openBlank();
+        editor.editorModule.insertContentControl('Date','5/12/24');
+        editor.selection.select('0;0;3', '0;0;3');
+        let contentControlInfo: ContentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBe('5/12/24');
+        expect(contentControlInfo.type).toBe('Date');
+        contentControlInfo.value = '6/12/24';
+        editor.importContentControlData([contentControlInfo]);
+        editor.selection.select('0;0;3', '0;0;3');
+        contentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBe('6/12/24');
+    });
+    
+});

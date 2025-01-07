@@ -2013,6 +2013,56 @@ describe(' - feature for code format', () => {
         done();
     });
 });
+
+describe('929888 - Bold and Shift+Enter Handling in Empty RTE', () => {
+    let rteObj: any;
+    let rteEle: HTMLElement;
+    let boldItem: HTMLElement;
+    let keyboardEventArgs = {
+        preventDefault: function () { },
+        altKey: false,
+        ctrlKey: false,
+        shiftKey: true,
+        char: '',
+        key: '',
+        charCode: 13,
+        keyCode: 13,
+        which: 13,
+        code: 'Enter',
+        action: 'enter',
+        type: 'keydown'
+    };
+
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            value: '',
+            toolbarSettings: {
+                items: ['Bold']
+            }
+        });
+        rteEle = rteObj.element;
+        done();
+    });
+
+    afterEach((done: Function) => {
+        destroy(rteObj);
+        done();
+    });
+
+    it('Testing bold and Shift+Enter behavior in an empty RTE', (done) => {
+        rteObj.focusIn();
+        boldItem = rteEle.querySelector('#' + rteObj.element.id + '_toolbar_Bold');
+        boldItem.click();
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        boldItem.click();
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        setTimeout(() => {
+            expect(rteObj.getHtml()).toBe('<p><br><br><br><br></p>');
+            done();
+        }, 0);
+    });
+});
+
 describe(' - feature for code format using execCommand', () => {
     let innervalue: string = `<p>Hello world this is the sample for code feature .</p>`;
     let rteObj: any;

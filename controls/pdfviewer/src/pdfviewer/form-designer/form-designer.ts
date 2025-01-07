@@ -1699,6 +1699,7 @@ export class FormDesigner {
         element.style.position = 'absolute';
         element.style.width = '100%';
         element.style.height = '100%';
+        element.style.backgroundColor = drawingObject.backgroundColor;
         const select: HTMLSelectElement = document.createElement('select');
         select.addEventListener('change', this.dropdownChange.bind(this));
         select.addEventListener('focus', this.focusFormFields.bind(this));
@@ -1747,6 +1748,7 @@ export class FormDesigner {
         element.style.position = 'absolute';
         element.style.width = '100%';
         element.style.height = '100%';
+        element.style.backgroundColor = drawingObject.backgroundColor;
         const select: HTMLSelectElement = document.createElement('select');
         select.addEventListener('click', this.listBoxChange.bind(this));
         select.addEventListener('focus', this.focusFormFields.bind(this));
@@ -2798,7 +2800,6 @@ export class FormDesigner {
         else {
             this.updateFormFieldsInCollections(formFieldId, options);
         }
-        this.isFormFieldUpdated = false;
     }
 
     /**
@@ -2849,7 +2850,9 @@ export class FormDesigner {
             if (currentData.backgroundColor !== backColor) {
                 currentData.backgroundColor = backColor;
                 const id : string = currentData.id;
-                (this.pdfViewer.nameTable as { [key: string]: { backgroundColor: string } })[`${id}`].backgroundColor = backColor;
+                if (!isNullOrUndefined((this.pdfViewer.nameTable as { [key: string]: { backgroundColor: string } })[`${id}`])) {
+                    (this.pdfViewer.nameTable as { [key: string]: { backgroundColor: string } })[`${id}`].backgroundColor = backColor;
+                }
             }
         }
         if (!isNullOrUndefined(options.isReadOnly) && currentData.isReadonly !== options.isReadOnly) {
@@ -2908,26 +2911,6 @@ export class FormDesigner {
                 }
             }
         }
-    }
-
-    /**
-     * @param {string} color - It describes about the color
-     * @private
-     * @returns {void}
-     */
-    public getSignatureBackground(color: string): string {
-        if (PdfViewerUtils.isHexRGBAAndTransparent(color)) {
-            return color;
-        }
-        else if (color.includes('#')) {
-            if (color.length > 8) {
-                color = color.slice(0, -2) + '60';
-            }
-            else {
-                color += '60';
-            }
-        }
-        return color;
     }
 
     private formFieldPropertyChange(formFieldObject: PdfFormFieldBaseModel,
@@ -2998,7 +2981,8 @@ export class FormDesigner {
         }
         if ((options as any).backgroundColor) {
             let backColor: string = this.colorNametoHashValue((options as any).backgroundColor);
-            backColor = this.getSignatureBackground(backColor);
+            backColor = formFieldObject.formFieldAnnotationType === 'SignatureField' || formFieldObject.formFieldAnnotationType ===
+                'InitialField' ? PdfViewerUtils.setTransparencyToHex(backColor) : PdfViewerUtils.removeAlphaValueFromHex(backColor);
             if (formFieldObject.backgroundColor !== backColor) {
                 isBackgroundColorChanged = true;
                 oldValue = formFieldObject.backgroundColor;
@@ -4314,7 +4298,7 @@ export class FormDesigner {
         inputElement.style.color = obj.color ? obj.color : 'black';
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
         let background: string = obj.backgroundColor ? obj.backgroundColor : '#FFE48559';
-        background = this.getSignatureBackground(background);
+        background = PdfViewerUtils.setTransparencyToHex(background);
         if (obj.isTransparent && obj.borderColor === '#ffffffff') {
             inputElement.style.backgroundColor = 'transparent';
             inputElement.style.borderColor = 'transparent';
@@ -7413,7 +7397,9 @@ export class FormDesigner {
     private setReadOnlyToElement(selectedItem: PdfFormFieldBaseModel, inputElement: any, isReadOnly: boolean): void {
         const fillColor: string = '#daeaf7ff';
         const color: any = {r: 218, g: 234, b: 247, a: 100};
-        (inputElement as HTMLInputElement).disabled = isReadOnly;
+        if (selectedItem.formFieldAnnotationType === 'DropdownList' || selectedItem.formFieldAnnotationType === 'ListBox') {
+            (inputElement as any).parentElement.style.backgroundColor = (inputElement as any).style.backgroundColor;
+        }
         if (isReadOnly) {
             if (selectedItem.formFieldAnnotationType === 'RadioButton') {
                 (inputElement as any).parentElement.style.cursor = 'default';
@@ -7430,13 +7416,15 @@ export class FormDesigner {
             this.previousBackgroundColor = selectedItem.backgroundColor;
         }
         if (selectedItem.formFieldAnnotationType === 'RadioButton') {
-            (inputElement as any).parentElement.style.backgroundColor = selectedItem.isReadonly ? ((selectedItem.backgroundColor !== fillColor && JSON.stringify(selectedItem.backgroundColor) !== JSON.stringify(color)) ? selectedItem.backgroundColor : 'transparent') : (this.isTransparentBackground(selectedItem.backgroundColor) ? fillColor : this.previousBackgroundColor);
+            (inputElement as any).style.backgroundColor = selectedItem.isReadonly ? ((selectedItem.backgroundColor !== fillColor &&
+                JSON.stringify(selectedItem.backgroundColor) !== JSON.stringify(color)) ? selectedItem.backgroundColor : 'transparent') :
+                (this.isTransparentBackground(selectedItem.backgroundColor) ? fillColor : selectedItem.backgroundColor);
         }
         else if (selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField') {
             if (!isNullOrUndefined(selectedItem) && selectedItem.value === '') {
                 const background: string = selectedItem.backgroundColor ? selectedItem.backgroundColor : '#FFE48559';
                 (inputElement as any).parentElement.style.backgroundColor = isReadOnly ?
-                    background : this.getSignatureBackground(background);
+                    background : PdfViewerUtils.setTransparencyToHex(background);
             }
         }
         else {

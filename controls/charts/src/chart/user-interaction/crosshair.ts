@@ -396,13 +396,12 @@ export class Crosshair {
                         pathElement.setAttribute('stroke-width', ' ' + borderwidth);
                     }
                     else if (this.chart.theme.indexOf('Fluent2') > -1) {
-                        pathElement.setAttribute('box-shadow', '0px 1.6px 3.6px 0px #00000021, 0px 0.3px 0.9px 0px #0000001A');
-                        pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
                         let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
                         shadow += '<feOffset dx="-1" dy="3.6" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.2"/>';
                         shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
                         const defElement: Element = this.chart.renderer.createDefs();
                         defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
+                        pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
                         pathElement.appendChild(defElement);
                         defElement.innerHTML = shadow;
                     }

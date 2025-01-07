@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I668573` - The issue pop-up does not stick to the target after filtering is performed in the Dropdown Tree component has been resolved.
+
 ## 28.1.37 (2024-12-31)
 
 ### Mention

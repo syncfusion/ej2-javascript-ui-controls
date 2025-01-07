@@ -1019,10 +1019,10 @@ export function PdfiumRunner(): void {
                       printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean,
                       cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
             let [w, h] = this.getPageSize(n);
-            if (w !== null && w !== undefined && h !== undefined && h !== null) {
+            if (isNaN(w) && isNaN(h)) {
                 const page: any = FPDF.LoadPage(this.wasmData.wasm, n);
-                h = FPDF.GetPageHeight(page);
-                w = FPDF.GetPageWidth(page);
+                h = this.pointerToPixelConverter(FPDF.GetPageHeight(page));
+                w = this.pointerToPixelConverter(FPDF.GetPageWidth(page));
             }
             const scaleFactor: number = 1.5;
             const thumbnailWidth: number = 99.7;

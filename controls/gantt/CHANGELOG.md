@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I668777` - Toolbar visible property not working issue has been fixed.
+
 ## 28.1.37 (2024-12-31)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I656160` - White space and scrolling issues while using load child on demand has been fixed.
+- `#I668559` - Event marker position is not rendering correctly on the timeline issue has been fixed.
+- `#I665780` - Baseline width is not set properly for decimal duration issue has been fixed.
+
+## 28.1.36 (2024-12-25)
 
 ### GanttChart
 

@@ -121,6 +121,10 @@ export class BaseHistoryInfo {
     /**
      * @private
      */
+    public isEmptySelection: boolean;
+    /**
+     * @private
+     */
     public isHyperlinkField: boolean;
     /**
      * @private
@@ -388,6 +392,9 @@ export class BaseHistoryInfo {
     public setEditRangeInfo(editStart: EditRangeStartElementBox): void {
         this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
     }
+    public setContentControlCheckBox(contentControl: ContentControl, value: boolean): void {
+        this.removedNodes.push({ 'contentControlCheckBox': contentControl, 'value': value });
+    }
     private revertFormTextFormat(): void {
         /* eslint-disable @typescript-eslint/no-explicit-any */
         const fieldInfo: any = this.removedNodes[0];
@@ -528,6 +535,36 @@ export class BaseHistoryInfo {
         }
         this.owner.editorModule.fireContentChange();
     }
+    private revertContentControlProperties(): void {
+        const start: string = this.selectionStart;
+        const end: string = this.selectionEnd;
+        if (!isNullOrUndefined(this.selectionStart) && !isNullOrUndefined(this.selectionEnd)) {
+            const selectionStartTextPosition: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(start);
+            const selectionEndTextPosition: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(end);
+            this.owner.selectionModule.selectRange(selectionStartTextPosition, selectionEndTextPosition);
+            const contentcontrol: ContentControl = this.owner.editorModule.getContentControl();
+            if (contentcontrol) {
+                if (contentcontrol.contentControlProperties.type === 'CheckBox' && this.modifiedProperties.length === 0) {
+                    const contentControlInfo: any = this.removedNodes[0];
+                    this.owner.editorModule.toggleContentControlCheckBox(contentcontrol, !contentControlInfo.value);
+                    contentControlInfo.value = !contentControlInfo.value;
+                } else {
+                    const contenControlObject: any = this.modifiedProperties.pop();
+                    this.editorHistory.currentBaseHistoryInfo = this;
+                    const content: any = this.owner.editorModule.getContentControlPropObject(contentcontrol.contentControlProperties);
+                    this.owner.editorModule.assignContentControl(contentcontrol.contentControlProperties, contenControlObject);
+                    this.modifiedProperties.push(content);
+                    this.format = JSON.stringify(contenControlObject);
+                }
+            }
+        }
+        if (this.editorHistory.isUndoing) {
+            this.editorHistory.recordChanges(this);
+        } else {
+            this.editorHistory.undoStack.push(this);
+        }
+        this.owner.editorModule.fireContentChange();
+    }
     /* eslint-disable  */
     public revert(): void {
         if (this.action === 'FormTextFormat') {
@@ -554,6 +591,10 @@ export class BaseHistoryInfo {
             this.revertComment();
             return;
         }
+        if (this.action === 'UpdateContentControl') {
+            this.revertContentControlProperties();
+            return;
+        }
         if (this.action === 'ListFormat' && this.owner.editorModule.listNumberFormat !== '') {
             let abstractList: WListLevel = this.documentHelper.lists[0].abstractList.levels[this.owner.editorModule.listLevelNumber];
             let currentListLevelPattern: ListLevelPattern = abstractList.listLevelPattern;
@@ -578,11 +619,7 @@ export class BaseHistoryInfo {
             if (this.owner.enableCollaborativeEditing) {
                 this.updateCollaborativeSelection(selectionStartTextPosition, selectionEndTextPosition);
             }
-            if (this.action === 'UpdateContentControl') {
-                this.revertContentControlProperties(selectionStartTextPosition, selectionEndTextPosition);
-            } else {
-                this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);
-            }
+            this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);
         } else {
             if (this.owner.enableCollaborativeEditing) {
                 if (!isNullOrUndefined(this.insertPosition)) {
@@ -937,21 +974,6 @@ export class BaseHistoryInfo {
             nextItem = nextItem.nextNode;
         }
         return !isNullOrUndefined(markedNode) ? markedNode : elementBox;
-    }
-
-    private revertContentControlProperties(start: TextPosition, end: TextPosition): void {
-        if (!isNullOrUndefined(start) && !isNullOrUndefined(end)) {
-            this.owner.selectionModule.selectRange(start, end);
-        }
-        const contentcontrol: ContentControl = this.owner.editorModule.getContentControl();
-        const contenControlObject: any = this.modifiedProperties.pop();
-        if (contentcontrol) {
-            this.editorHistory.currentBaseHistoryInfo = this;
-            const content: any = this.owner.editorModule.getContentControlPropObject(contentcontrol.contentControlProperties);
-            this.owner.editorModule.assignContentControl(contentcontrol.contentControlProperties, contenControlObject);
-            this.modifiedProperties.push(content);
-            this.format = JSON.stringify(contenControlObject);
-        }
     }
 
     private revertModifiedProperties(start: TextPosition, end: TextPosition): void {
@@ -2859,6 +2881,12 @@ export class BaseHistoryInfo {
                 if (this.modifiedProperties.length > 0) {
                     const operation: Operation = this.getFormatOperation();
                     operation.text = CONTROL_CHARACTERS.Marker_Start;
+                    operations.push(operation);
+                } else if(this.removedNodes.length > 0) {
+                    let operation: Operation = this.getFormatOperation();
+                    operation.text = CONTROL_CHARACTERS.Marker_Start;
+                    const contentControlInfo: any = this.removedNodes[0];
+                    operation.markerData = { 'type': 'ContentControlCheckBox', checkBoxValue: contentControlInfo.value };
                     operations.push(operation);
                 }
                 break;

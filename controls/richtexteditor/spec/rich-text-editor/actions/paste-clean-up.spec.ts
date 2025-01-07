@@ -4819,4 +4819,40 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
     });
 
+    describe('931044 - After Pasting an Image, the afterPasteCleanup Event Does Not Get Triggered.', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({});
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it ('Should not remove the image from the DOM. CASE 1: Absolute URL.', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = '\n\n\x3C!--StartFragment--><img src="https://private-user-images.githubusercontent.com/104135617/398351576-ae55dbbe-d0b0-4c26-b3e2-790ccbc17900.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MzU3OTQ2OTksIm5iZiI6MTczNTc5NDM5OSwicGF0aCI6Ii8xMDQxMzU2MTcvMzk4MzUxNTc2LWFlNTVkYmJlLWQwYjAtNGMyNi1iM2UyLTc5MGNjYmMxNzkwMC5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwMTAyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDEwMlQwNTA2MzlaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01MWJjNWUxMWU4NjQxYzE4ZWI4N2RkMjUxZGM3ZmViYTVkYjRhMDVmNGFkYjYwMDY1NjFjNDMwYzllMzNlYmM2JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.HIJAH_-vZXp2y9cADRJ_Ee63JXtw9-MVRRTk5Jy3e-c" alt="image">\x3C!--EndFragment-->\n\n';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelectorAll('img').length).toBe(1);
+                done();
+            }, 100);
+        });
+        it ('Should not remove the image from the DOM. CASE 2: Relative URL.', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = '\x3C!--StartFragment--><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Image with Width and Height</p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><img alt="image 1" src="./images/RTEImage-Feather.png" class="e-rte-image e-imginline" style="border: 0px; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 100%; position: relative; box-sizing: border-box; padding: 1px; vertical-align: bottom; z-index: 1000; width: 450px; height: 300px;"></p><br class="Apple-interchange-newline">\x3C!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelectorAll('img').length).toBe(1);
+                done();
+            }, 100);
+        });
+    });
+
 });// Add the spec above this.

@@ -262,7 +262,7 @@
         }
       }
 
-      @if $skin-name == 'bootstrap5' {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
         .e-toolbar-extended .e-toolbar-item.e-active .e-tbar-btn.e-btn {
           padding: 0 4px;
         }

@@ -1384,7 +1384,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             }
             if (this.zoomModule && ((this.previousScale !== this.scale) || this.zoomNotApplied || this.isZoomByPosition)) {
-                this.zoomModule.applyTransform(this, true);
+                this.zoomModule.applyTransform(this, false, true);
             }
         }
     }

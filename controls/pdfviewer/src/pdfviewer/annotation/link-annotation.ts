@@ -1,4 +1,4 @@
-import { PdfViewer, PdfViewerBase } from '../index';
+import { ISize, PdfViewer, PdfViewerBase } from '../index';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LineTool, PolygonDrawingTool } from '../drawing/tools';
 import { findObjectsUnderMouse } from '../drawing/action';
@@ -190,11 +190,12 @@ export class LinkAnnotation {
             const rect: any = linkAnnotation[parseInt(i.toString(), 10)];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.setAttribute('href', 'javascript:void(0)');
-            if (linkPage[parseInt(i.toString(), 10)] !== undefined && linkPage[parseInt(i.toString(), 10)] >= 0) {
+            const linkPageNum : number = linkPage[parseInt(i.toString(), 10)];
+            if (linkPageNum !== undefined &&  linkPageNum >= 0) {
                 const destPageHeight: number = (this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height);
                 let destLocation: number;
                 let scrollValue: number;
-                const pageSize: any = this.pdfViewerBase.pageSize[linkPage[parseInt(i.toString(), 10)]];
+                const pageSize: any = this.pdfViewerBase.pageSize[parseInt(linkPageNum.toString(), 10)];
                 if (pageSize) {
                     if (annotationY.length !== 0) {
                         destLocation = (annotationY[parseInt(i.toString(), 10)]);
@@ -207,15 +208,38 @@ export class LinkAnnotation {
                 if (scrollValue !== undefined) {
                     aTag.name = scrollValue.toString();
                     aTag.setAttribute('aria-label', scrollValue.toString());
-                    aTag.onclick = () => {
-                        if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
-                            return false;
-                        } else {
-                            proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name, 10);
-                            return false;
-                        }
-                    };
                 }
+                else if ((isNullOrUndefined(pageSize) && linkPageNum > this.pdfViewerBase.pageSize.length)){
+                    aTag.dataset.annotationY = JSON.stringify(annotationY);
+                    aTag.dataset.pageIndex = JSON.stringify(linkPageNum);
+                    aTag.dataset.index = JSON.stringify(i);
+                }
+                aTag.onclick = () => {
+                    if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+                        return false;
+                    } else {
+                        if (!aTag.name) {
+                            if (aTag.dataset.pageIndex) {
+                                const pageSize: ISize = proxy.pdfViewerBase.pageSize[JSON.parse(aTag.dataset.pageIndex)];
+                                const annotationVal: number[] = JSON.parse(aTag.dataset.annotationY);
+                                const index: number = JSON.parse(aTag.dataset.index);
+                                const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+                                if (annotationVal && annotationVal.length > 0) {
+                                    destLocation = (annotationY[parseInt(index.toString(), 10)]);
+                                    scrollValue = pageSize.top * zoomFactor +
+                                        ((destPageHeight - destLocation) * zoomFactor);
+                                }
+                                else {
+                                    scrollValue = pageSize.top * zoomFactor;
+                                }
+                            }
+                            aTag.name = scrollValue.toString();
+                            aTag.setAttribute('aria-label', scrollValue.toString());
+                        }
+                        proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name, 10);
+                        return false;
+                    }
+                };
                 const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
                 if (!isNullOrUndefined(pageDiv)) {
                     pageDiv.appendChild(aTag);

@@ -261,6 +261,7 @@ export class SelectionCommands {
                 cursorNode = cursorFormat;
             } else {
                 InsertMethods.unwrap(cursorFormat);
+                domSelection.setCursorPoint(docElement, cursorNode as HTMLElement, 0);
             }
         } else {
             if (cursorNodes.length > 1 && range.startOffset > 0 && ((cursorNodes[0] as HTMLElement).firstElementChild &&

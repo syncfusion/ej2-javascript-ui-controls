@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.1.38 (2025-01-07)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I661900` - Resolved console error when dynamically using `OpenDelay` with delay for the Tooltip component.
+
+### Popup
+
+#### Bug Fixes
+
+- `#I664758` - Fixed an issue with the positioning of the dropdownlist popup.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

@@ -1746,7 +1746,7 @@ export class Render {
         }
         const colWidth: number =
             (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
-        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
+        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : colWidth;
     }
 
     /** @hidden */
@@ -1764,7 +1764,7 @@ export class Render {
         this.isOverflows = !((colCount * this.gridSettings.columnWidth) < parWidth);
         const colWidth: number =
             (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
-        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
+        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : colWidth;
     }
 
     /** @hidden */

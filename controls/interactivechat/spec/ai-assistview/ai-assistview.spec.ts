@@ -414,10 +414,21 @@ describe('AIAssistView -', () => {
 
         it('Rtl checking', () => {
             aiAssistView = new AIAssistView({
-                enableRtl: true
+                enableRtl: false,
+                toolbarSettings: {
+                    items: [
+                        { type: 'Input', template: 'Welcome User !', align: 'Right' }
+                    ]
+                }
             });
             aiAssistView.appendTo(aiAssistViewElem);
-            expect(aiAssistViewElem.classList.contains('e-rtl')).toEqual(true);
+            const toolbarItem: HTMLElement = aiAssistViewElem.querySelector('.e-control .e-toolbar');
+            expect(aiAssistViewElem.classList.contains('e-rtl')).toEqual(false);
+            expect(toolbarItem.classList.contains('e-rtl')).toEqual(false);
+            aiAssistView.enableRtl = true;
+            aiAssistView.dataBind();
+            expect(aiAssistViewElem.classList.contains('e-rtl')).toBe(true);
+            expect(toolbarItem.classList.contains('e-rtl')).toBe(true);
         });
 
     });

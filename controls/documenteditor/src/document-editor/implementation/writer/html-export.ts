@@ -449,6 +449,8 @@ export class HtmlExport {
             const block: any = cell[blocksProperty[this.keywordIndex]][k];
              if (block.hasOwnProperty(rowsProperty[this.keywordIndex])) {
                 blockStyle += this.serializeTable(block);
+            } else if (block.hasOwnProperty(blocksProperty[this.keywordIndex])) {
+                blockStyle += this.serializeSection(block); 
             } else {
                 blockStyle += this.serializeParagraph(block);
             }

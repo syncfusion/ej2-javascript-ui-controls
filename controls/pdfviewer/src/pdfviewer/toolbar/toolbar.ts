@@ -1967,6 +1967,7 @@ export class Toolbar {
     private zoomDropDownChange(zoomText: string): void {
         if (zoomText !== this.pdfViewer.localeObj.getConstant('Fit Width') && zoomText !== this.pdfViewer.localeObj.getConstant('Fit Page') && zoomText !== this.pdfViewer.localeObj.getConstant('Automatic')) {
             this.pdfViewer.magnificationModule.isAutoZoom = false;
+            this.pdfViewerBase.previousScrollbarWidth = this.pdfViewerBase.navigationPane.getViewerContainerScrollbarWidth();
             this.pdfViewer.magnificationModule.zoomTo(parseFloat(zoomText));
             this.updateZoomPercentage(this.pdfViewer.magnificationModule.zoomFactor);
             this.zoomDropDown.focusOut();

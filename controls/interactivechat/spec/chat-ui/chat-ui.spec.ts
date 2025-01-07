@@ -266,13 +266,22 @@ describe('ChatUI Component', () => {
         
         it('Rtl checking', () => {
             chatUI = new ChatUI({
-                enableRtl: false
+                enableRtl: false,
+                headerToolbar: {
+                    items: [
+                        { iconCss: 'e-icons e-menu', align: 'Left' },
+                        { iconCss: 'e-icons e-search', align: 'Right' }
+                    ]
+                }
             });
             chatUI.appendTo('#chatUI');
+            const toolbarElement: HTMLDivElement = chatUIElem.querySelector('.e-chat-toolbar.e-toolbar');
             expect(chatUIElem.classList.contains('e-rtl')).toEqual(false);
+            expect(toolbarElement.classList.contains('e-rtl')).toEqual(false);
             chatUI.enableRtl = true;
             chatUI.dataBind();
-            expect(chatUIElem.classList.contains('e-rtl')).toEqual(true);
+            expect(chatUIElem.classList.contains('e-rtl')).toBe(true);
+            expect(toolbarElement.classList.contains('e-rtl')).toBe(true);
         });
 
         it('Messages property - empty messages', () => {
