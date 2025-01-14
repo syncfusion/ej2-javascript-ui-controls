@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.38 (2025-01-07)
+## 28.1.39 (2024-01-14)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I676141` - The issue with current directory drag-and-drop functionality in the navigation pane of the File Manager component has been resolved.
+
+## 28.1.36 (2024-12-24)
 
 ### FileManager
 

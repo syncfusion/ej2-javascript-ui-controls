@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.38 (2025-01-07)
+## 28.1.39 (2024-01-14)
+
+### Switch
+
+#### Bug Fixes
+
+- `#I933399`- The issue with "Checked state not update properly while changing the switch component programmatically using click event of input element" has been resolved.
+
+## 28.1.37 (2024-12-31)
 
 ### Switch
 

@@ -416,9 +416,9 @@ export class Link {
         }
         if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
             if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown') {
-                linkText = (linkText !== '') ? linkText : '';
+                linkText = (linkText.trim() !== '') ? linkText : '';
             } else {
-                linkText = (linkText === '') ? linkUrl : linkText;
+                linkText = (linkText.trim() === '') ? linkUrl : linkText;
             }
             if (!(this as NotifyArgs).selfLink.parent.enableAutoUrl) {
                 linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;

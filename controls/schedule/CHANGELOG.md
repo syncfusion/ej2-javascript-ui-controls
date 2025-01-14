@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I665787` - The issue where the scheduler tooltip rendered empty when using a template with large content has been resolved.
+
 ## 28.1.38 (2025-01-07)
 
 ### Schedule

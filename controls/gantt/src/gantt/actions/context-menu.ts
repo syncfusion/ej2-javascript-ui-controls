@@ -189,7 +189,9 @@ export class ContextMenu {
                 data = extend({}, {}, this.rowData.taskData, true);
                 taskfields = this.parent.taskFields;
                 if (!isNullOrUndefined(taskfields.duration)) {
-                    data[taskfields.duration] = parseInt(data[taskfields.duration], 10) <= 0 ? 1 : data[taskfields.duration];
+                    const duration: number = parseInt(data[taskfields.duration], 10) <= 0 ? 1 : data[taskfields.duration];
+                    data[taskfields.duration] = duration;
+                    this.parent.setRecordValue('duration', duration, this.rowData.ganttProperties, true);
                 } else {
                     data[taskfields.startDate] = new Date(this.rowData.taskData[taskfields.startDate]);
                     const endDate: Date = new Date(this.rowData.taskData[taskfields.startDate]);
@@ -204,19 +206,9 @@ export class ContextMenu {
                 const taskType: TaskType = !isNullOrUndefined(this.rowData.ganttProperties.taskType) ? this.rowData.ganttProperties.taskType
                     : this.parent.taskType;
                 if (taskType === 'FixedWork' || taskType === 'FixedUnit') {
-                    let totSeconds: number;
-                    if (this.parent.weekWorkingTime.length > 0) {
-                        totSeconds = this.parent['getSecondsPerDay'](this.rowData.ganttProperties.startDate ?
-                            this.rowData.ganttProperties.startDate : this.rowData.ganttProperties.endDate);
-                    } else {
-                        totSeconds = this.parent.secondsPerDay;
-                    }
-                    const actualOneDayWork: number = (totSeconds) / 3600;
+                    this.parent.dataOperation.updateWorkWithDuration(this.rowData);
                     if (!isNullOrUndefined(data[taskfields.work])) {
-                        data[taskfields.work] = actualOneDayWork;
-                    }
-                    else {
-                        this.rowData.ganttProperties.work = actualOneDayWork;
+                        data[taskfields.work] = this.rowData.ganttProperties.work;
                     }
                 }
                 if (data[taskfields.startDate]) {

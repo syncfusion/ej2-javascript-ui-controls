@@ -1244,6 +1244,79 @@ describe('Waterfall Series', () => {
             chart.series[0].intermediateSumIndexes = [2, 4, 7];
             chart.refresh();
         });
+        it('Checking with intermediateSumIndexes in order', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let point: string = document.getElementById('container_Series_0_Point_8_Text_0').textContent;
+                let point1: string = document.getElementById('container_Series_0_Point_4_Text_0').textContent;
+                expect(point).toBe('-15K');
+                expect(point1).toBe('-2K');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource = [
+            { x: 'Income', y: 40 },
+            { x: 'Sales', y: 0 },
+            { x: 'Development' },
+            { x: 'Revenue', y: -2 },
+            { x: 'Balance' },
+            { x: 'Administrative', y: -53 },
+            { x: 'Expense' },
+            { x: 'Tax', y: 65 },
+            { x: 'Net Profit' },
+            { x: 'Net Profit1', y: -9 },
+            { x: 'Net Profit2', y: -9 },
+            { x: 'Net Profit3' },];
+            chart.series[0].intermediateSumIndexes = [2, 4, 6, 8, 11];
+            chart.refresh();
+        });
+        it('Checking with intermediateSumIndexes with un order', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let point: string = document.getElementById('container_Series_0_Point_6_Text_0').textContent;
+                let point1: string = document.getElementById('container_Series_0_Point_2_Text_0').textContent;
+                expect(point).toBe('-53K');
+                expect(point1).toBe('40K');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource = [
+            { x: 'Income', y: 40 },
+            { x: 'Sales', y: 0 },
+            { x: 'Development' },
+            { x: 'Revenue', y: -2 },
+            { x: 'Balance' },
+            { x: 'Administrative', y: -53 },
+            { x: 'Expense' },
+            { x: 'Tax', y: 65 },
+            { x: 'Net Profit' },
+            { x: 'Net Profit1', y: -9 },
+            { x: 'Net Profit2', y: -9 },
+            { x: 'Net Profit3' },];
+            chart.series[0].intermediateSumIndexes = [ 8, 2, 11, 4, 6];
+            chart.refresh();
+        });
+        it('Checking with column width in pixel', (done: Function) => {
+            loaded = (args: ILoadedEventArgs): void => {
+                let point: number = chart.visibleSeries[0].columnWidthInPixel;
+                expect(point).toBe(25);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource = [
+            { x: 'Income', y: 40 },
+            { x: 'Sales', y: 0 },
+            { x: 'Development' },
+            { x: 'Revenue', y: -2 },
+            { x: 'Balance' },
+            { x: 'Administrative', y: -53 },
+            { x: 'Expense' },
+            { x: 'Tax', y: 65 },
+            { x: 'Net Profit' },
+            { x: 'Net Profit1', y: -9 },
+            { x: 'Net Profit2', y: -9 },
+            { x: 'Net Profit3' },];
+            chart.series[0].columnWidthInPixel = 25;
+            chart.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

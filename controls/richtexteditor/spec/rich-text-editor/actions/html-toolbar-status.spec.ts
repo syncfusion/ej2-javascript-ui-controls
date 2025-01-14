@@ -410,7 +410,7 @@ describe(' HTML editor update toolbar ', () => {
         });
     });
 
-    describe(' EJ2-13502 - Toolbar active state on focusOut', () => {
+    describe('931255 - Toolbar active state on focusOut', () => {
         let controlId: string;
         let status: IToolbarStatus;
         beforeAll(() => {
@@ -428,7 +428,7 @@ describe(' HTML editor update toolbar ', () => {
             editNode.style.height = "200px";
             controlId = rteObj.element.id;
         });
-        it(' Remove the active state of Bold toolbar item while click on document ', () => {
+        it('Maintain the active state of Bold toolbar item while click on document ', () => {
             let node: Node = document.getElementById('paragraph2');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 2, 6);
             document.getElementById(controlId + "_toolbar_Bold").click();
@@ -438,8 +438,8 @@ describe(' HTML editor update toolbar ', () => {
             (rteObj as any).inputElement.blur();
             document.body.click();
             dispatchEvent(rteObj.contentModule.getEditPanel(), 'focusout');
-            expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(false);
-            expect(status.bold).toEqual(false);
+            expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(true);
+            expect(status.bold).toEqual(true);
         });
         afterAll(() => {
             destroy(rteObj);

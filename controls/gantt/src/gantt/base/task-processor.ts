@@ -444,6 +444,20 @@ export class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
         this.parent.setRecordValue('indicators', data[taskSettings.indicators], ganttProperties, true);
         this.updateResourceName(ganttData);
+        if ((!isNullOrUndefined(data[taskSettings.child]) && data[taskSettings.child].length > 0) ||
+        (data['taskData'] && data['taskData'][taskSettings.child] && data['taskData'][taskSettings.child].length > 0)) {
+            this.parent.setRecordValue('hasChildRecords', true, ganttData);
+            this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
+            if (!this.parent.allowParentDependency) {
+                this.resetDependency(ganttData);
+            }
+        } else {
+            if (this.parent.loadChildOnDemand && taskSettings.hasChildMapping && ganttData.taskData[taskSettings.hasChildMapping]) {
+                this.parent.setRecordValue('hasChildRecords', true, ganttData);
+            } else {
+                this.parent.setRecordValue('hasChildRecords', false, ganttData);
+            }
+        }
         this.calculateScheduledValues(ganttData, data, isLoad);
         this.parent.setRecordValue('baselineStartDate', this.checkBaselineStartDate(baselineStartDate, ganttProperties), ganttProperties, true);
         // set default end time, if hour is 0
@@ -504,20 +518,6 @@ export class TaskProcessor extends DateProcessor {
         if (this.parent.dataSource instanceof Object && isCountRequired(this.parent) &&
          !isNullOrUndefined(taskSettings.child)) {
             this.parent.setRecordValue(taskSettings.child, [], ganttData);
-        }
-        if ((!isNullOrUndefined(data[taskSettings.child]) && data[taskSettings.child].length > 0) ||
-        (data['taskData'] && data['taskData'][taskSettings.child] && data['taskData'][taskSettings.child].length > 0)) {
-            this.parent.setRecordValue('hasChildRecords', true, ganttData);
-            this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
-            if (!this.parent.allowParentDependency) {
-                this.resetDependency(ganttData);
-            }
-        } else {
-            if (this.parent.loadChildOnDemand && taskSettings.hasChildMapping && ganttData.taskData[taskSettings.hasChildMapping]) {
-                this.parent.setRecordValue('hasChildRecords', true, ganttData);
-            } else {
-                this.parent.setRecordValue('hasChildRecords', false, ganttData);
-            }
         }
         if (ganttData.hasChildRecords) {
             this.parent.setRecordValue('autoStartDate', ganttData.ganttProperties.startDate, ganttProperties);
@@ -872,7 +872,7 @@ export class TaskProcessor extends DateProcessor {
             }
         }
         this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
-        if (!isNullOrUndefined(this.parent.taskFields.work)) {
+        if (!isNullOrUndefined(this.parent.taskFields.work) && !this.parent.isLoad) {
             this.parent.dataOperation.updateMappingData(ganttData, 'work');
         }
     }
@@ -1101,7 +1101,9 @@ export class TaskProcessor extends DateProcessor {
                     }
                     break;
                 case 'FixedUnit':
-                    this.updateDurationWithWork(ganttData);
+                    if (!ganttData.hasChildRecords) {
+                        this.updateDurationWithWork(ganttData);
+                    }
                     break;
                 }
                 if (!isNullOrUndefined(taskSettings.type)) {
@@ -1809,7 +1811,7 @@ export class TaskProcessor extends DateProcessor {
                 countValue = topTier['count'];
             }
             const unitHour: boolean = ((tierMode === 'Hour' && countValue === 1) || (tierMode === 'Minutes' && countValue === 60));
-            if (hasDST && unitHour && startDate >= transitions['dstStart'] && isBeforeOrAtDSTStart) {
+            if (hasDST && unitHour && startDate >= transitions['dstStart'] && isBeforeOrAtDSTStart && !this.parent.enableTimelineVirtualization) {
                 leftValue = leftValue - (this.parent.perDayWidth / 24);
             }
             return leftValue;
@@ -3133,7 +3135,7 @@ export class TaskProcessor extends DateProcessor {
                         this.parent.setRecordValue(
                             ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate',
                             minStartDate, parentData.ganttProperties, true);
-                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData['isManual'] && milestone && (parentData.hasChildRecords && parentData.ganttProperties.isAutoSchedule && this.parent.editModule.taskbarEditModule.taskbarEditedArgs.action !== 'TaskbarEditing')) {
+                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData[this.parent.taskFields.manual] && milestone && (parentData.hasChildRecords && parentData.ganttProperties.isAutoSchedule && this.parent.editModule.taskbarEditModule.taskbarEditedArgs.action !== 'TaskbarEditing')) {
                             this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
                         }
                     }
@@ -3141,7 +3143,7 @@ export class TaskProcessor extends DateProcessor {
                         this.parent.setRecordValue(
                             ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate',
                             maxEndDate, parentData.ganttProperties, true);
-                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData['isManual'] && milestone && (parentData.hasChildRecords && parentData.ganttProperties.isAutoSchedule && this.parent.editModule.taskbarEditModule.taskbarEditedArgs.action !== 'TaskbarEditing')) {
+                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData[this.parent.taskFields.manual] && milestone && (parentData.hasChildRecords && parentData.ganttProperties.isAutoSchedule && this.parent.editModule.taskbarEditModule.taskbarEditedArgs.action !== 'TaskbarEditing')) {
                             this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
                         }
                     }

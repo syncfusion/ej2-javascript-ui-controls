@@ -352,6 +352,7 @@ export class DataManipulation {
                     this.parent.grid.detailRowModule.expand(expandingTd);
                 }
             }
+            this.parent.grid.pageSettings.totalRecordsCount += rowDetails.rows.length;
         } else {
             this.fetchRemoteChildData({action: rowDetails[`${name}`], record: rowDetails.record, rows: rowDetails.rows, parentRow: rowDetails.parentRow});
         }

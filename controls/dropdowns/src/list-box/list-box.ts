@@ -2277,7 +2277,7 @@ export class ListBox extends DropDownBase {
     }
 
     private KeyUp(e: KeyboardEvent): void {
-        if (this.allowFiltering && e.ctrlKey && e.keyCode === 65) {
+        if (this.allowFiltering && ((e.ctrlKey && e.keyCode === 65) || (e.keyCode === 8 && !this.filterInput.value))) {
             e.preventDefault(); return;
         }
         const char: string = String.fromCharCode(e.keyCode);

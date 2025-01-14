@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue where the file size increases when exporting a rubber stamp annotation with an image and appearance using the XFDF format.
+
 ## 28.1.38 (2025-01-07)
 
 ### PDF Parser

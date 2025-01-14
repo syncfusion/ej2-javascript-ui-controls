@@ -1298,7 +1298,7 @@ export class FormFieldsBase {
     //Need to check the form field textAlignment property
     private getTextAlignment(alignment: string): PdfTextAlignment {
         let textAlignment: PdfTextAlignment;
-        switch (alignment) {
+        switch (alignment.toLowerCase()) {
         case 'left':
             textAlignment = PdfTextAlignment.left;
             break;

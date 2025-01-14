@@ -1529,67 +1529,88 @@ export class AnnotationToolbar {
         const contextMenuElement: HTMLElement = createElement('ul', { id: this.pdfViewer.element.id + 'contextMenuElement' });
         this.pdfViewerBase.getElement('_annotation_stamp').appendChild(contextMenuElement);
         const items: Object[] = [];
-        if (this.pdfViewer.stampSettings.dynamicStamps && this.pdfViewer.stampSettings.dynamicStamps.length > 0) {
-            const dynamicStamps: Object[] = [];
-            items.push({ text: this.pdfViewer.localeObj.getConstant('Dynamic'), label: 'Dynamic', items: dynamicStamps });
-            this.pdfViewer.stampSettings.dynamicStamps.forEach((stampItem: DynamicStampItem, index: number) => {
-                // eslint-disable-next-line
-                let name: string = DynamicStampItem[stampItem];
-                switch (name) {
-                case 'NotApproved':
-                    name = 'Not Approved';
-                    break;
-                }
-                dynamicStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
-            });
+        if (this.pdfViewer.stampSettings) {
+            if (isNullOrUndefined(this.pdfViewer.stampSettings.dynamicStamps) || this.pdfViewer.stampSettings.dynamicStamps.length === 0) {
+                this.pdfViewer.stampSettings.dynamicStamps = [DynamicStampItem.Revised, DynamicStampItem.Reviewed,
+                    DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved];
+            }
+            if (this.pdfViewer.stampSettings.dynamicStamps && this.pdfViewer.stampSettings.dynamicStamps.length > 0) {
+                const dynamicStamps: Object[] = [];
+                items.push({ text: this.pdfViewer.localeObj.getConstant('Dynamic'), label: 'Dynamic', items: dynamicStamps });
+                this.pdfViewer.stampSettings.dynamicStamps.forEach((stampItem: DynamicStampItem, index: number) => {
+                    // eslint-disable-next-line
+                    let name: string = DynamicStampItem[stampItem];
+                    switch (name) {
+                    case 'NotApproved':
+                        name = 'Not Approved';
+                        break;
+                    }
+                    dynamicStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
+                });
+            }
+
+            if (isNullOrUndefined(this.pdfViewer.stampSettings.signStamps) || this.pdfViewer.stampSettings.signStamps.length === 0) {
+                this.pdfViewer.stampSettings.signStamps = [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere,
+                    SignStampItem.Accepted, SignStampItem.Rejected];
+            }
+            if (this.pdfViewer.stampSettings.signStamps && this.pdfViewer.stampSettings.signStamps.length > 0) {
+                const signStamps: Object[] = [];
+                items.push({ text: this.pdfViewer.localeObj.getConstant('Sign Here'), label: 'Sign Here', items: signStamps });
+                this.pdfViewer.stampSettings.signStamps.forEach((stampItem: SignStampItem, index: number) => {
+                    // eslint-disable-next-line
+                    let name: string = SignStampItem[stampItem];
+                    switch (name) {
+                    case 'InitialHere':
+                        name = 'Initial Here';
+                        break;
+                    case 'SignHere':
+                        name = 'Sign Here';
+                        break;
+                    }
+                    signStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
+                });
+            }
+            if (isNullOrUndefined(this.pdfViewer.stampSettings.standardBusinessStamps) ||
+                this.pdfViewer.stampSettings.standardBusinessStamps.length === 0) {
+                this.pdfViewer.stampSettings.standardBusinessStamps = [StandardBusinessStampItem.Approved,
+                    StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final,
+                    StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential,
+                    StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease,
+                    StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults,
+                    StandardBusinessStampItem.InformationOnly];
+            }
+            if (this.pdfViewer.stampSettings.standardBusinessStamps && this.pdfViewer.stampSettings.standardBusinessStamps.length > 0) {
+                const standardsBusinessStamps: Object[] = [];
+                items.push({ text: this.pdfViewer.localeObj.getConstant('Standard Business'), label: 'Standard Business', items: standardsBusinessStamps });
+                this.pdfViewer.stampSettings.standardBusinessStamps.forEach((stampItem: StandardBusinessStampItem, index: number) => {
+                    // eslint-disable-next-line
+                    let name: string = StandardBusinessStampItem[stampItem];
+                    switch (name) {
+                    case 'NotApproved':
+                        name = 'Not Approved';
+                        break;
+                    case 'ForPublicRelease':
+                        name = 'For Public Release';
+                        break;
+                    case 'NotForPublicRelease':
+                        name = 'Not For Public Release';
+                        break;
+                    case 'ForComment':
+                        name = 'For Comment';
+                        break;
+                    case 'PreliminaryResults':
+                        name = 'Preliminary Results';
+                        break;
+                    case 'InformationOnly':
+                        name = 'Information Only';
+                        break;
+                    }
+                    standardsBusinessStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
+                });
+            }
         }
-        if (this.pdfViewer.stampSettings.signStamps && this.pdfViewer.stampSettings.signStamps.length > 0) {
-            const signStamps: Object[] = [];
-            items.push({ text: this.pdfViewer.localeObj.getConstant('Sign Here'), label: 'Sign Here', items: signStamps });
-            this.pdfViewer.stampSettings.signStamps.forEach((stampItem: SignStampItem, index: number) => {
-                // eslint-disable-next-line
-                let name: string = SignStampItem[stampItem];
-                switch (name) {
-                case 'InitialHere':
-                    name = 'Initial Here';
-                    break;
-                case 'SignHere':
-                    name = 'Sign Here';
-                    break;
-                }
-                signStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
-            });
-        }
-        if (this.pdfViewer.stampSettings.standardBusinessStamps && this.pdfViewer.stampSettings.standardBusinessStamps.length > 0) {
-            const standardsBusinessStamps: Object[] = [];
-            items.push({ text: this.pdfViewer.localeObj.getConstant('Standard Business'), label: 'Standard Business', items: standardsBusinessStamps });
-            this.pdfViewer.stampSettings.standardBusinessStamps.forEach((stampItem: StandardBusinessStampItem, index: number) => {
-                // eslint-disable-next-line
-                let name: string = StandardBusinessStampItem[stampItem];
-                switch (name) {
-                case 'NotApproved':
-                    name = 'Not Approved';
-                    break;
-                case 'ForPublicRelease':
-                    name = 'For Public Release';
-                    break;
-                case 'NotForPublicRelease':
-                    name = 'Not For Public Release';
-                    break;
-                case 'ForComment':
-                    name = 'For Comment';
-                    break;
-                case 'PreliminaryResults':
-                    name = 'Preliminary Results';
-                    break;
-                case 'InformationOnly':
-                    name = 'Information Only';
-                    break;
-                }
-                standardsBusinessStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
-            });
-        }
-        if (this.pdfViewer.customStampSettings.enableCustomStamp) {
+        if ((!isNullOrUndefined(this.pdfViewer.customStampSettings)) && (this.pdfViewer.customStampSettings.enableCustomStamp ||
+            isNullOrUndefined(this.pdfViewer.customStampSettings.enableCustomStamp))) {
             if (items.length > 0) {
                 items.push({ separator: true });
             }

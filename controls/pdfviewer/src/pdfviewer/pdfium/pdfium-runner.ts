@@ -10,7 +10,7 @@ export function PdfiumRunner(): void {
     let moduleLoaded: boolean = false;
     const FPDF: any = {};
     // eslint-disable-next-line
-    var pdfiumWindow: any = pdfiumWindow || {};
+    var pdfiumWindow: any = pdfiumWindow ? pdfiumWindow : {};
     let documentDetails: DocumentInfo;
     const PDFiumModule: any = typeof ((pdfiumWindow as any)[`${moduleString}`]) !== 'undefined' ? ((pdfiumWindow as any)[`${moduleString}`]) : {};
     const F64: Float64ArrayConstructor = Float64Array;

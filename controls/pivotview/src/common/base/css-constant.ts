@@ -831,6 +831,8 @@ export const PIVOT_PAGER_INFO_CONTAINER: string = 'e-pivot-pager-info-container'
 /** @hidden */
 export const PIVOT_CELL_CONTAINER: string = 'e-pivotcell-container';
 /** @hidden */
+export const PIVOT_ROW_CONTAINER: string = 'e-pivotrow-container';
+/** @hidden */
 export const PIVOT_FILTER_TAB_CONTAINER: string = 'e-filter-tab-container';
 /** @hidden */
 export const PIVOT_FILTER_MEMBER_LIMIT: string = 'e-node-limit';

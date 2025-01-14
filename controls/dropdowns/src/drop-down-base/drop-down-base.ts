@@ -1628,8 +1628,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected scrollStop(e?: Event, isDownkey?: boolean): void {
         const target: Element = !isNullOrUndefined(e) ? <Element>e.target : this.list;
         const computedHeight: string = getComputedStyle(this.getValidLi(), null).getPropertyValue('height');
+        const computedMarginValue: string = getComputedStyle(this.getValidLi(), null).getPropertyValue('margin-bottom');
+        const marginValue: number = parseInt(computedMarginValue, 10);
         const liHeight: number = this.getModuleName() === 'multiselect' ? parseFloat(computedHeight) : parseInt(computedHeight, 10);
-        const topIndex: number = Math.round(target.scrollTop / liHeight);
+        const topIndex: number = Math.round(target.scrollTop / (liHeight + marginValue));
         const liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li' + ':not(.e-hide-listitem)');
         const virtualListCount: number = this.list.querySelectorAll('.e-virtual-list').length;
         let count: number = 0;

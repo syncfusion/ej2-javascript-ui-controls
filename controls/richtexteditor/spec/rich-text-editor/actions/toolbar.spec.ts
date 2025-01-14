@@ -2533,7 +2533,7 @@ describe('821312: Bullet list does not reverted after click on the bullet list i
 });
 describe("Bold and Italic actions for Nested List types", () => {
     let rteObj: RichTextEditor;
-    beforeEach(() => {
+    beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
                 items: ["Bold", "Italic"]
@@ -2541,7 +2541,7 @@ describe("Bold and Italic actions for Nested List types", () => {
             value: "<ol><li id=\"list1\">Syncfusion<ol><li>RTE<ol><li id=\"list2\">Bold Action</li></ol></li></ol></li></ol>"
         });
     });
-    afterEach(() => {
+    afterAll(() => {
         destroy(rteObj);
     });
     it("Bold and Italic", () => {

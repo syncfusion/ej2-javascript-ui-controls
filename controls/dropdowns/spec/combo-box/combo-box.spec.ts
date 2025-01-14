@@ -1134,8 +1134,8 @@ describe('ComboBox', () => {
                 comboBoxObj.hidePopup();
                 comboBoxObj.onBlurHandler(e);
                 setTimeout(() => {
-                    expect(comboBoxObj.value === null).toBe(true);
-                    expect(comboBoxObj.text === null).toBe(true);
+                    expect(comboBoxObj.value === ' ').toBe(true);
+                    expect(comboBoxObj.text === ' ').toBe(true);
                     done();
                 }, 450)
             }, 450)

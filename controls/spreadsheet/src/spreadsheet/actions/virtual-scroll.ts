@@ -631,8 +631,10 @@ export class VirtualScroll {
         }
         if (args.rowIdx >= frozenRow && args.rowIdx < this.parent.scrollModule.offset.top.idx) {
             const mainPanel: Element = this.parent.element.getElementsByClassName('e-main-panel')[0];
-            this.parent.scrollModule.prevScroll.scrollTop = mainPanel.scrollTop + args.threshold;
-            mainPanel.scrollTop += args.threshold;
+            if (mainPanel) {
+                this.parent.scrollModule.prevScroll.scrollTop = mainPanel.scrollTop + args.threshold;
+                mainPanel.scrollTop += args.threshold;
+            }
             this.parent.scrollModule.offset.top.size += args.threshold;
             if (args.rowIdx < this.parent.viewport.topIndex + frozenRow) {
                 this.translateY += args.threshold;

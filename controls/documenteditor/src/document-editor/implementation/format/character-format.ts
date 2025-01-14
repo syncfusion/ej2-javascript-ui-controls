@@ -1,4 +1,4 @@
-import { TextElementBox, ParagraphWidget, LineWidget } from '../viewer/page';
+import { TextElementBox, ParagraphWidget, LineWidget, BlockContainer, ElementBox } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride, FontScriptType, FontHintType } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
@@ -279,18 +279,22 @@ export class WCharacterFormat {
         }
     }
     private documentCharacterFormat(): WCharacterFormat {
-        let docCharacterFormat: WCharacterFormat;
-        if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph) && !isNullOrUndefined((this.ownerBase as TextElementBox).paragraph.bodyWidget) && !isNullOrUndefined((this.ownerBase as TextElementBox).paragraph.bodyWidget.page)) {
-                docCharacterFormat = (this.ownerBase as TextElementBox).paragraph.bodyWidget.page.documentHelper.characterFormat;
-            } else {
-                if (!isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page)
-                    && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper)) {
-                    docCharacterFormat = (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.characterFormat;
-                }
+        if (isNullOrUndefined(this.ownerBase)) {
+            return undefined;
+        }
+        let paragraph: ParagraphWidget;
+        if (this.ownerBase instanceof ElementBox) {
+            paragraph = this.ownerBase.paragraph;
+        } else if (this.ownerBase instanceof ParagraphWidget) {
+            paragraph = this.ownerBase;
+        }
+        if (paragraph) {
+            let bodyWidget: BlockContainer = paragraph.bodyWidget;
+            if (bodyWidget && bodyWidget.page && bodyWidget.page.documentHelper) {
+                return bodyWidget.page.documentHelper.characterFormat;
             }
         }
-        return docCharacterFormat;
+        return undefined;
     }
     private checkBaseStyle(property: string): Object {
         let baseStyle: any;

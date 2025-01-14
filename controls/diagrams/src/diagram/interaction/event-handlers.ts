@@ -2074,6 +2074,11 @@ export class DiagramEventHandler {
     }
     private isMobileOrIPadDevice(): string {
         const userAgent: string = navigator.userAgent || navigator.vendor || (window as any).opera;
+        //Bug 931502: Unable to complete polyline drawing on ipad safari browser.
+        // Check for iPads on iOS 13+ (Safari reports as Mac desktop)
+        if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) {
+            return 'iOS (iPad)';
+        }
         // Check for iOS devices (iPhone, iPad, iPod)
         if (/iPhone|iPad|iPod/.test(userAgent) && !(window as any).MSStream) {
             return 'iOS';

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I674223` - Now, the form field alignment is correctly preserved after downloading the document in a `standalone` PDF Viewer.
+- `#I665085` - Now, the PDF viewer no longer crashes when loading large size digital signature document.
+- `#I676738` - Now, the radio button is visible on the non-rendered page when saving the document.
+- `#I675055`, `#678431` - Now, the script error no longer occurs when using the PDF Viewer in React with `Vite` in production.
+
 ## 28.1.38 (2025-01-07)
 
 ### PDF Viewer

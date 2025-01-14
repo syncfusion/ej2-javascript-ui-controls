@@ -9627,6 +9627,17 @@ describe('ImageEditor', () => {
             imageEditor.destroy();
             remove(imageEditor.element);
         });
+        it('allowedExtensions Property', (done) => {
+            imageEditor = new ImageEditor({
+                height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U');
+            setTimeout(() => {
+                expect(imageEditor.uploadSettings.allowedExtensions).toEqual('.jpg, .jpeg, .png, .svg, .webp');
+                imageEditor.reset();
+                done();
+            }, 100);
+        });
         it('allowedExtensions Property - svg', (done) => {
             imageEditor = new ImageEditor({
                 height : '450px',

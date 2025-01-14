@@ -2786,33 +2786,35 @@ export class Selection {
                 formField = this.getCurrentFormField();
             }
             const index: number = this.documentHelper.formFields.indexOf(formField);
-            if (forward) {
-                for (let i: number = index; ; i++) {
-                    if (i === (this.documentHelper.formFields.length - 1)) {
-                        i = 0;
-                    } else {
-                        i = i + 1;
+            if (index !== -1) {
+                if (forward) {
+                    for (let i: number = index; ; i++) {
+                        if (i === (this.documentHelper.formFields.length - 1)) {
+                            i = 0;
+                        } else {
+                            i = i + 1;
+                        }
+                        if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                            i = i - 1;
+                            continue;
+                        }
+                        this.selectFieldInternal(this.documentHelper.formFields[i], true);
+                        break;
                     }
-                    if (!this.documentHelper.formFields[i].formFieldData.enabled) {
-                        i = i - 1;
-                        continue;
+                } else {
+                    for (let i: number = index; ; i--) {
+                        if (i === 0) {
+                            i = (this.documentHelper.formFields.length - 1);
+                        } else {
+                            i = i - 1;
+                        }
+                        if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                            i = i + 1;
+                            continue;
+                        }
+                        this.selectFieldInternal(this.documentHelper.formFields[i], true);
+                        break;
                     }
-                    this.selectFieldInternal(this.documentHelper.formFields[i], true);
-                    break;
-                }
-            } else {
-                for (let i: number = index; ; i--) {
-                    if (i === 0) {
-                        i = (this.documentHelper.formFields.length - 1);
-                    } else {
-                        i = i - 1;
-                    }
-                    if (!this.documentHelper.formFields[i].formFieldData.enabled) {
-                        i = i + 1;
-                        continue;
-                    }
-                    this.selectFieldInternal(this.documentHelper.formFields[i], true);
-                    break;
                 }
             }
         }
@@ -7921,10 +7923,13 @@ export class Selection {
                 const position: PositionInfo = this.getContentControlPositions(contentControl);
                 ccValue = this.documentHelper.selection.getTextInternal(position.startPosition, position.endPosition, false);
             } else if (contentControl.contentControlProperties.type === 'RichText') {
+                // When writing SFDT if the block is Richtext this will write has rich block not as paragraph block. To skip this changing the type as BuldingBlockGallery 
+                contentControl.contentControlProperties.type = 'BuildingBlockGallery';
                 const position: PositionInfo = this.getContentControlPositions(contentControl);
-                let documentContent: any = !isNullOrUndefined(this.owner.sfdtExportModule) ? 
+                let documentContent: any = !isNullOrUndefined(this.owner.sfdtExportModule) ?
                 this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), position.startPosition.currentWidget, position.startPosition.offset, position.endPosition.currentWidget, position.endPosition.offset, false, true) : {};
                 ccValue = JSON.stringify(documentContent);
+                contentControl.contentControlProperties.type = 'RichText';
             } else if (contentControl.contentControlProperties.type === 'CheckBox') {
                 ccValue = contentControl.contentControlProperties.isChecked ? 'true' : 'false';
             } else if (contentControl.contentControlProperties.type === 'ComboBox' || contentControl.contentControlProperties.type === 'DropDownList' || contentControl.contentControlProperties.type === 'Date') {
@@ -11899,7 +11904,7 @@ export class Selection {
 
                 let cCEndInsideSelction: boolean = ((cCend.isExistAfter(start) || cCend.isAtSamePosition(start)) && (cCend.isExistBefore(end) || cCend.isAtSamePosition(end)));
                 if (cCStartInsideSelction && cCEndInsideSelction) {
-                    if (contentControlStart.contentControlProperties.lockContentControl) {
+                    if (contentControlStart.contentControlProperties.lockContentControl || this.documentHelper.isFormFillProtectedMode) {
                         this.owner.trigger(contentControlEvent);
                         return true;
                     }

@@ -622,6 +622,73 @@ describe('Schedule event tooltip module', () => {
         });
     });
 
+    describe('The scheduler tooltip renders empty when using a template with large content', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2018, 3, 1),
+                height: '550px', width: '100%', currentView: 'TimelineDay',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                group: {
+                    byGroupID: false,
+                    headerTooltipTemplate: '<div class="resname">Name: ${getResourceName(data)}</div>',
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85', Expand: false }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }],
+                eventSettings: {
+                    enableTooltip: true,
+                    tooltipTemplate: '<div class="tooltip-wrap">' +
+                        '<div>--------------------------------------------------</div>' +
+                        '<div class="content-area"><div class="name">${Subject}</></div>' +
+                        '${if(City !== null && City !== undefined)}<div class="city">${City}</div>${/if}' +
+                        '<div>--------------------------------------------------</div>' +
+                        '<div class="time">From : ${StartTime.toLocaleString()} </div>' +
+                        '<div class="time">To   : ${EndTime.toLocaleString()} </div></div></div>'
+                }
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+            (schObj as any).isReact = true;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('tooltip on appointment', () => {
+            const hiddenTooltip = document.createElement('div');
+            hiddenTooltip.className = cls.TOOLTIP_HIDDEN_CLASS;
+            document.body.appendChild(hiddenTooltip);
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+            const targets: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(targets[1], 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            if (tooltipEle.classList.contains(cls.TOOLTIP_HIDDEN_CLASS)) {
+                tooltipEle.classList.remove(cls.TOOLTIP_HIDDEN_CLASS);
+            }
+            expect(hiddenTooltip.classList.contains(cls.TOOLTIP_HIDDEN_CLASS)).toBe(false);
+            expect(tooltipEle.classList.contains(cls.TOOLTIP_HIDDEN_CLASS)).toBe(false);
+            util.triggerMouseEvent(targets[1], 'mouseleave');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            document.body.removeChild(hiddenTooltip);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

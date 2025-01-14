@@ -7,7 +7,7 @@ import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
 import { getLastTextNode } from "../../../src/common/util";
-import { ARROW_DOWN_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROW_UP_EVENT_INIT, ARROWRIGHT_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, INSRT_TABLE_EVENT_INIT, SHIFT_ARROW_DOWN_EVENT_INIT, SHIFT_ARROW_LEFT_EVENT_INIT, SHIFT_ARROW_RIGHT_EVENT_INIT, SHIFT_ARROW_UP_EVENT_INIT } from "../../constant.spec";
+import { ARROW_DOWN_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROW_UP_EVENT_INIT, ARROWRIGHT_EVENT_INIT, BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ESCAPE_KEY_EVENT_INIT, INSRT_TABLE_EVENT_INIT, SHIFT_ARROW_DOWN_EVENT_INIT, SHIFT_ARROW_LEFT_EVENT_INIT, SHIFT_ARROW_RIGHT_EVENT_INIT, SHIFT_ARROW_UP_EVENT_INIT } from "../../constant.spec";
 
 
 describe('Table Module', () => {
@@ -6834,24 +6834,57 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
             rteEle = rteObj.element;
         });
-        afterAll((done: DoneFn) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
         it('press back space ', (done: DoneFn) => {
             rteObj.focusIn();
-            rteObj.dataBind();
-            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
-            keyBoardEvent.keyCode = 8;
-            keyBoardEvent.code = 'Backspace';
-            rteObj.dataBind();
-            (<any>rteObj).tableModule.keyDown({ args: keyBoardEvent });
-            rteObj.dataBind();
-            (<any>rteObj).tableModule.keyUp({ args: keyBoardEvent });
+            const backSpaceKeyDownEventInit: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUpEventInit: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDownEventInit);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUpEventInit);
             setTimeout(() => {
                 expect(rteObj.value).toBe('<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2>');
                 done();
             }, 100);
+        });
+    });
+
+    describe('872399 - Close the table popup using esc key, the focus does not move table icon ', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'OrderedList', 'UnorderedList']
+                }
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('For coverage', (done: DoneFn) => {
+            editor.focusIn();
+            const tableButton: HTMLElement = editor.element.querySelector('.e-rte-toolbar .e-toolbar-item button');
+            tableButton.click();
+            const backSpaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            document.activeElement.dispatchEvent(backSpaceKeyDownEvent);
+            setTimeout(() => {
+                done();
+            }, 50);
+        });
+        it('For coverage', (done: DoneFn) => {
+            editor.focusIn();
+            const tableButton: HTMLElement = editor.element.querySelector('.e-rte-toolbar .e-toolbar-item button');
+            tableButton.click();
+            const escapekeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ESCAPE_KEY_EVENT_INIT);
+            (editor.tableModule as any).createTableButton.destroy();
+            editor.inputElement.dispatchEvent(escapekeyUpEvent);
+            setTimeout(() => {
+                expect( (editor.tableModule as any).getSelectedTableEle([])).toBeNull();
+                done();
+            }, 50);
         });
     });
 

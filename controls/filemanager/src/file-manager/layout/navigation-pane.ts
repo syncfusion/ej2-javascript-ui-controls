@@ -211,7 +211,7 @@ export class NavigationPane {
         if (!this.renameParent) {
             this.parent.activeModule = 'navigationpane';
             const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
-            if (args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length - 1] && !this.isRightClick && !this.isNodeClickCalled || this.isSameNodeClicked) {
+            if (args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length - 1] && !this.isRightClick && !this.isNodeClickCalled || this.isSameNodeClicked || this.isPathDragged) {
                 this.isNodeClickCalled = false;
                 if (!this.isSameNodeClicked)
                 {
@@ -230,6 +230,7 @@ export class NavigationPane {
                     this.restrictSelecting = this.isNodeClickCalled ? this.previousSelected[0] !== args.node.getAttribute('data-uid') : false;
                     this.isNodeClickCalled = true;
                     this.isSameNodeClicked = false;
+                    this.isPathDragged = false;
                     this.previousSelected = this.treeObj.selectedNodes;
                     this.treeObj.setProperties({selectedNodes: [args.node.getAttribute('data-uid')]});
                 }

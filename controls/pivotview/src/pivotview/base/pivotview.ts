@@ -3036,6 +3036,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         for (const value of this.dataSourceSettings.values) {
                             this.engineModule.valueAxisFields[value.name] = value;
                         }
+                        this.engineModule.globalize = !isNullOrUndefined(this.globalize) ? this.globalize : new Internationalization();
+                        this.engineModule.formatFields = this.engineModule.setFormattedFields(this.dataSourceSettings.formatSettings);
                     }
                 } catch (error) {
                     this.engineModule.pivotValues = [];
@@ -4526,7 +4528,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             axis = chartDrillInfo.cell.axis;
             action = chartDrillInfo.isDrilled ? 'up' : 'down';
         } else {
-            axis = target.parentElement.classList.contains(cls.ROWSHEADER) ? 'row' : 'column';
+            const rowHeaderCell: Element = target.closest('td.e-rowsheader');
+            axis = rowHeaderCell ? 'row' : 'column';
             fieldName = axis === 'row' ? closest(target, 'td').getAttribute('fieldname') : closest(target, 'th').getAttribute('fieldname');
             action = target.classList.contains(cls.COLLAPSE) ? 'up' : 'down';
         }
@@ -5425,7 +5428,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             return;
         }
         let ele: Element = null;
-        const axis: string = ((target.parentElement && target.parentElement.classList.contains(cls.ROWSHEADER)) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
+        const rowHeaderCell: Element = target.closest('td.e-rowsheader');
+        const axis: string = rowHeaderCell ? 'row' : 'column';
         ele = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
         if (axis === 'column' && !ele && this.gridSettings.selectionSettings.mode !== 'Row') {
             ele = closest(target, 'td');

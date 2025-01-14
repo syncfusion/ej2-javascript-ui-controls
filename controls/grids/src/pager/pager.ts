@@ -300,6 +300,9 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.element.setAttribute('data-role', 'pager');
         this.element.setAttribute('tabindex', '-1');
         this.initLocalization();
+        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+            this.element.classList.add('e-mac-safari');
+        }
         if (this.cssClass) {
             if (this.cssClass.indexOf(' ') !== -1) {
                 addClass([this.element], this.cssClass.split(' '));

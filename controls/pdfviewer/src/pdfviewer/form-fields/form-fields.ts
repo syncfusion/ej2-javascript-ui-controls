@@ -686,6 +686,9 @@ export class FormFields {
             if (currentData.Name === 'DropDown' || currentData.Name === 'ListBox') {
                 fieldProperties.value = currentData['SelectedValue'];
             }
+            if (currentData.Name === 'RadioButton') {
+                fieldProperties.value = currentData['Value'];
+            }
             const fieldType: any = this.getFormFieldType(currentData);
             if (fieldType === 'SignatureField' || fieldType === 'InitialField') {
                 this.addSignaturePath(currentData);

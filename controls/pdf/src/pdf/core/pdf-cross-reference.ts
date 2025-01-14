@@ -1,12 +1,11 @@
 import { _PdfStream } from './base-stream';
 import { _PdfDictionary, _PdfReferenceSet, _isCommand, _PdfReference, _PdfCommand, _PdfName } from './pdf-primitives';
-import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString, _stringToBigEndianBytes, _getSize } from './utils';
+import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString, _stringToBigEndianBytes, _getSize, _compressStream } from './utils';
 import { _PdfParser, _PdfLexicalOperator } from './pdf-parser';
 import { _PdfBaseStream } from './base-stream';
 import { PdfCrossReferenceType } from './enumerator';
 import { PdfDocument } from './pdf-document';
 import { _CipherTransform, _MD5, _PdfEncryptor } from './security/encryptor';
-import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
 export class _PdfCrossReference {
     _stream: _PdfStream;
     _pendingRefs: _PdfReferenceSet;
@@ -1011,24 +1010,19 @@ export class _PdfCrossReference {
         }
     }
     _writeStream(stream: _PdfBaseStream, buffer: Array<number>, transform?: _CipherTransform, isCrossReference?: boolean): void {
+        let value: string;
         const streamBuffer: number[] = [];
-        let value: string = stream.getString();
         if (!isCrossReference) {
-            const byteArray: number[] = [];
-            for (let i: number = 0; i < value.length; i++) {
-                byteArray.push(value.charCodeAt(i));
-            }
             if (stream._isCompress && !stream._isImage) {
-                const dataArray: Uint8Array = new Uint8Array(byteArray);
-                const sw: CompressedStreamWriter = new CompressedStreamWriter();
-                sw.write(dataArray, 0, dataArray.length);
-                sw.close();
-                value = sw.getCompressedString;
-                stream.dictionary.update('Filter', _PdfName.get('FlateDecode'));
+                value = _compressStream(stream);
+            } else {
+                value = stream.getString();
             }
             if (transform) {
                 value = transform.encryptString(value);
             }
+        } else {
+            value = stream.getString();
         }
         this._writeString(value, streamBuffer);
         stream.dictionary.update('Length', streamBuffer.length);

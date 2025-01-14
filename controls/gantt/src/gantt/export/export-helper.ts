@@ -796,6 +796,9 @@ export class ExportHelper {
     }
     private renderEmptyGantt(): void {
         const row: PdfTreeGridRow = this.gantt.rows.addRow();
+        if (row.cells.count === 0) {
+            row.cells.add();
+        }
         row.cells.getCell(0).isHeaderCell = false;
         row.height = pixelToPoint(this.parent.rowHeight);
         this.copyStyles(this.ganttStyle.columnHeader, row.cells.getCell(0), row.isParentRow);

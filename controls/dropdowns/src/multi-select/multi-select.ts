@@ -119,6 +119,8 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isClearAllAction: boolean;
     private isUpdateHeaderHeight: boolean = false;
     private isUpdateFooterHeight: boolean = false;
+    private isBlurDispatching: boolean = false;
+    private isFilterPrevented: boolean = false;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -1238,6 +1240,19 @@ export class MultiSelect extends DropDownBase implements IInput {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.totalItemCount = (e as any).count;
         }
+        if (this.value && list && list.length > 0 && this.allowFiltering && this.mode !== 'CheckBox' && !this.enableVirtualization && !this.isFilterPrevented && !this.allowCustomValue) {
+            const allItemsInValue: boolean = list.every((item: { [key: string]: Object } | string | number | boolean) => {
+                const itemValue: any = getValue((this.fields.value) ? this.fields.value : '', item);
+                return this.value.some((val: string | number | boolean | object) => {
+                    const value: any = this.allowObjectBinding ? getValue((this.fields.value) ? this.fields.value : '', val) : val;
+                    return itemValue === value;
+                });
+            });
+            if (allItemsInValue) {
+                ulElement.innerHTML = '';
+                list = [];
+            }
+        }
         /* eslint-enable @typescript-eslint/no-unused-vars */
         super.onActionComplete(ulElement, list, e);
         this.skeletonCount = this.totalItemCount !== 0 && this.totalItemCount < (this.itemCount * 2) &&
@@ -1901,6 +1916,10 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyDownStatus: boolean = false;
     private onBlurHandler(eve?: MouseEvent, isDocClickFromCheck?: boolean): void {
         let target: HTMLElement;
+        if (this.isBlurDispatching && this.isAngular) {
+            this.isBlurDispatching = false;
+            return;
+        }
         if (!isNullOrUndefined(eve)) {
             target = <HTMLElement>eve.relatedTarget;
         }
@@ -1988,6 +2007,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] &&
           this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
             this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
+        }
+        this.isBlurDispatching = true;
+        if (this.isAngular) {
+            this.dispatchEvent(this.inputElement as HTMLElement, 'blur');
         }
     }
     private calculateWidth(): void {
@@ -3659,6 +3682,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.list) {
             super.render();
         }
+        if (this.popupObj && document.body.contains(this.popupObj.element) && this.allowFiltering) {
+            this.refreshPopup();
+            return;
+        }
         if (!this.popupObj) {
             if (!isNullOrUndefined(this.popupWrapper)) {
                 document.body.appendChild(this.popupWrapper);
@@ -4145,6 +4172,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     cancel: false
                 };
                 this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+                    this.isFilterPrevented = eventArgs.cancel;
                     if (!eventArgs.cancel) {
                         if (!this.isFiltered && !eventArgs.preventDefaultAction) {
                             this.filterAction = true;

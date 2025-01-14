@@ -1,14 +1,8 @@
 /**
  * Defines common util methods used by Rich Text Editor.
  */
-import { isNullOrUndefined, Browser, createElement, detach, removeClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, removeClass } from '@syncfusion/ej2-base';
 import { IToolbarStatus } from './interface';
-
-const inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
-    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
-    'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
-    'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'svg',
-    'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
 
 /**
  * @returns {void}
@@ -39,100 +33,63 @@ export function setEditFrameFocus(editableElement: Element, selector: string): v
 
 /**
  * @param {string} value - specifies the string value
- * @param {string} enterAction - specifies the enter key action API
  * @returns {void}
  * @hidden
  */
-export function updateTextNode(value: string, enterAction?: string): string {
-    const tempNode: HTMLElement = document.createElement('div');
-    tempNode.innerHTML = value;
-    tempNode.setAttribute('class', 'tempDiv');
+export function updateTextNode(value: string): string {
     const resultElm: HTMLElement = document.createElement('div');
-    const childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
-    if (childNodes.length > 0) {
-        let isPreviousInlineElem: boolean;
-        let previousParent: HTMLElement;
-        let paraElm: HTMLElement;
-        while (tempNode.firstChild) {
-            if ((tempNode.firstChild.nodeName === '#text' &&
-            (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
-            inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0 ) {
-                if (!isPreviousInlineElem) {
-                    if (enterAction === 'BR') {
-                        resultElm.appendChild(tempNode.firstChild);
-                        previousParent = resultElm;
-                    } else {
-                        paraElm = createElement('p');
-                        resultElm.appendChild(paraElm);
-                        paraElm.appendChild(tempNode.firstChild);
-                        previousParent = paraElm;
-                        isPreviousInlineElem = true;
-                    }
-                } else {
-                    previousParent.appendChild(tempNode.firstChild);
-                    previousParent = paraElm;
-                    isPreviousInlineElem = true;
+    resultElm.innerHTML = value;
+    const tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
+    for (let i: number = 0; i < tableElm.length; i++) {
+        if (tableElm[i as number].classList.length > 0 &&
+        !tableElm[i as number].classList.contains('e-rte-table') && !tableElm[i as number].classList.contains('e-rte-custom-table')) {
+            tableElm[i as number].classList.add('e-rte-paste-table');
+            if (tableElm[i as number].classList.contains('e-rte-paste-word-table')) {
+                tableElm[i as number].classList.remove('e-rte-paste-word-table');
+                continue; // Skiping the removal of the border if the source is from word.
+            } else if (tableElm[i as number].classList.contains('e-rte-paste-excel-table')) {
+                tableElm[i as number].classList.remove('e-rte-paste-excel-table');
+                if (tableElm[i as number].getAttribute('border') === '0') {
+                    tableElm[i as number].removeAttribute('border');
                 }
-            } else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
-            (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
-                detach(tempNode.firstChild);
-            } else {
-                resultElm.appendChild(tempNode.firstChild);
-                isPreviousInlineElem = false;
+                const tdElm: NodeListOf<HTMLElement> = tableElm[i as number].querySelectorAll('td');
+                for (let j: number = 0; j < tdElm.length; j++) {
+                    if (tdElm[j as number].style.borderLeft === 'none') {
+                        tdElm[j as number].style.removeProperty('border-left');
+                    }
+                    if (tdElm[j as number].style.borderRight === 'none') {
+                        tdElm[j as number].style.removeProperty('border-right');
+                    }
+                    if (tdElm[j as number].style.borderBottom === 'none') {
+                        tdElm[j as number].style.removeProperty('border-bottom');
+                    }
+                    if (tdElm[j as number].style.borderTop === 'none') {
+                        tdElm[j as number].style.removeProperty('border-top');
+                    }
+                    if (tdElm[j as number].style.border === 'none') {
+                        tdElm[j as number].style.removeProperty('border');
+                    }
+                }
+            } else if (tableElm[i as number].classList.contains('e-rte-paste-onenote-table')) {
+                tableElm[i as number].classList.remove('e-rte-paste-onenote-table');
+                continue;
+            } else if (tableElm[i as number].classList.contains('e-rte-paste-html-table')) {
+                tableElm[i as number].classList.remove('e-rte-paste-html-table');
+                continue;
             }
         }
-        const tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
-        for (let i: number = 0; i < tableElm.length; i++) {
-            if (tableElm[i as number].classList.length > 0 &&
-            !tableElm[i as number].classList.contains('e-rte-table') && !tableElm[i as number].classList.contains('e-rte-custom-table')) {
-                tableElm[i as number].classList.add('e-rte-paste-table');
-                if (tableElm[i as number].classList.contains('e-rte-paste-word-table')) {
-                    tableElm[i as number].classList.remove('e-rte-paste-word-table');
-                    continue; // Skiping the removal of the border if the source is from word.
-                } else if (tableElm[i as number].classList.contains('e-rte-paste-excel-table')) {
-                    tableElm[i as number].classList.remove('e-rte-paste-excel-table');
-                    if (tableElm[i as number].getAttribute('border') === '0') {
-                        tableElm[i as number].removeAttribute('border');
-                    }
-                    const tdElm: NodeListOf<HTMLElement> = tableElm[i as number].querySelectorAll('td');
-                    for (let j: number = 0; j < tdElm.length; j++) {
-                        if (tdElm[j as number].style.borderLeft === 'none') {
-                            tdElm[j as number].style.removeProperty('border-left');
-                        }
-                        if (tdElm[j as number].style.borderRight === 'none') {
-                            tdElm[j as number].style.removeProperty('border-right');
-                        }
-                        if (tdElm[j as number].style.borderBottom === 'none') {
-                            tdElm[j as number].style.removeProperty('border-bottom');
-                        }
-                        if (tdElm[j as number].style.borderTop === 'none') {
-                            tdElm[j as number].style.removeProperty('border-top');
-                        }
-                        if (tdElm[j as number].style.border === 'none') {
-                            tdElm[j as number].style.removeProperty('border');
-                        }
-                    }
-                } else if (tableElm[i as number].classList.contains('e-rte-paste-onenote-table')) {
-                    tableElm[i as number].classList.remove('e-rte-paste-onenote-table');
-                    continue;
-                } else if (tableElm[i as number].classList.contains('e-rte-paste-html-table')) {
-                    tableElm[i as number].classList.remove('e-rte-paste-html-table');
-                    continue;
-                }
-            }
+    }
+    const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
+    for (let i: number = 0; i < imageElm.length; i++) {
+        if ((imageElm[i as number] as HTMLImageElement).classList.contains('e-rte-image-unsupported')) {
+            continue; // Should not add the class if the image is Broken.
         }
-        const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
-        for (let i: number = 0; i < imageElm.length; i++) {
-            if ((imageElm[i as number] as HTMLImageElement).classList.contains('e-rte-image-unsupported')) {
-                continue; // Should not add the class if the image is Broken.
-            }
-            if (!imageElm[i as number].classList.contains('e-rte-image')) {
-                imageElm[i as number].classList.add('e-rte-image');
-            }
-            if (!(imageElm[i as number].classList.contains('e-imginline') ||
-            imageElm[i as number].classList.contains('e-imgbreak'))) {
-                imageElm[i as number].classList.add('e-imginline');
-            }
+        if (!imageElm[i as number].classList.contains('e-rte-image')) {
+            imageElm[i as number].classList.add('e-rte-image');
+        }
+        if (!(imageElm[i as number].classList.contains('e-imginline') ||
+        imageElm[i as number].classList.contains('e-imgbreak'))) {
+            imageElm[i as number].classList.add('e-imginline');
         }
     }
     return resultElm.innerHTML;

@@ -2,7 +2,7 @@
  * RTE - CSS related spec in this file we have added the css in the document head.
  */
 import { RichTextEditor, ToolbarConfigItems } from '../../src/rich-text-editor/index';
-import { ENTERKEY_EVENT_INIT } from '../constant.spec';
+import { BACKSPACE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../constant.spec';
 import { renderRTE, destroy, clickImage, clickGripper, moveGripper, leaveGripper, ImageResizeGripper, clickVideo, clickAudio } from '../rich-text-editor/render.spec';
 import { getImageFIle } from '../rich-text-editor/online-service.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -914,4 +914,69 @@ describe('UI Spec ', () => {
         });
     });
 
+    describe('932198 - To resolve the CI failed on the Test stage with incomplete test runs - Phase 2. ', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'OrderedList', 'UnorderedList']
+                },
+                value: `<table class="e-rte-table" style="width: 22.4037%; min-width: 0px; height: 50px;"><thead style="height: 49.0566%;"><tr style="height: 49.0566%;"><th class="" style="width: 2.85881%;">SNo</th><th class="" style="width: 97.0828%;">Issue</th></tr></thead><tbody><tr style="height: 49.0566%;"><td class="" style="width: 2.85881%;">1.</td><td style="width: 97.0828%;" class="">Coverage issue with the Rich Text Editor source.</td></tr></tbody></table><p><br/></p>`
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should delete the table. Enter key P', (done: DoneFn) => {
+            editor.focusIn();
+            const range = new Range();
+            range.setStart(editor.inputElement, 2);
+            range.collapse(true);
+            document.getSelection().removeAllRanges(); 
+            document.getSelection().addRange(range);
+            const backSpaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(backSpaceKeyDownEvent);
+            setTimeout(() => {
+                const backSpaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+                editor.inputElement.dispatchEvent(backSpaceKeyDownEvent);
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelectorAll('table').length).toBe(0);
+                    done();
+                }, 100);
+            }, 50);
+        });
+    });
+
+    describe('932198 - To resolve the CI failed on the Test stage with incomplete test runs - Phase 2. ', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'OrderedList', 'UnorderedList']
+                },
+                value: `<table class="e-rte-table" style="width: 22.4037%; min-width: 0px; height: 50px;"><thead style="height: 49.0566%;"><tr style="height: 49.0566%;"><th class="" style="width: 2.85881%;">SNo</th><th class="" style="width: 97.0828%;">Issue</th></tr></thead><tbody><tr style="height: 49.0566%;"><td class="" style="width: 2.85881%;">1.</td><td style="width: 97.0828%;" class="">Coverage issue with the Rich Text Editor source.</td></tr></tbody></table><div><br/></div>`
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should delete the table. Enter key div', (done: DoneFn) => {
+            editor.focusIn();
+            const range = new Range();
+            range.setStart(editor.inputElement, 2);
+            range.collapse(true);
+            document.getSelection().removeAllRanges(); 
+            document.getSelection().addRange(range);
+            const backSpaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(backSpaceKeyDownEvent);
+            setTimeout(() => {
+                const backSpaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+                editor.inputElement.dispatchEvent(backSpaceKeyDownEvent);
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelectorAll('table').length).toBe(0);
+                    done();
+                }, 100);
+            }, 50);
+        });
+    });
 });

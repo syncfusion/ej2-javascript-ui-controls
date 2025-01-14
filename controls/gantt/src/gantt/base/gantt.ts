@@ -3614,6 +3614,9 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'dataSource':
+                if (this.isReact) {
+                    this['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
+                }
                 this.closeGanttActions();
                 if (this.dataSource instanceof Object && isCountRequired(this)) {
                     // In order to bind the observable data at load time, hasChildMapping is necessary to be mapped.
@@ -4480,6 +4483,9 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public previousTimeSpan(mode?: string): void {
+        if (this.isReact) {
+            this['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
+        }
         if (this.undoRedoModule && this['isUndoRedoItemPresent']('PreviousTimeSpan')) {
             if (this.undoRedoModule['redoEnabled']) {
                 this.undoRedoModule['disableRedo']();
@@ -4503,6 +4509,9 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public nextTimeSpan(mode?: string): void {
+        if (this.isReact) {
+            this['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
+        }
         if (this.undoRedoModule && this['isUndoRedoItemPresent']('NextTimeSpan')) {
             if (this.undoRedoModule['redoEnabled']) {
                 this.undoRedoModule['disableRedo']();

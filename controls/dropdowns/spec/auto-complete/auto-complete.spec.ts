@@ -408,9 +408,10 @@ describe('AutoComplete', () => {
                 setTimeout(() => {
                     e.type = 'keydown';
                     e.action = 'enter';
+                    atcObj.isTyped = true;
                     atcObj.keyActionHandler(e);
-                    expect(atcObj.inputElement.value === '').toBe(true);
-                    expect(atcObj.value === null).toBe(true);
+                    expect(atcObj.inputElement.value === ' ').toBe(true);
+                    expect(atcObj.value === ' ').toBe(true);
                     done();
                 }, 450);
             });

@@ -26,6 +26,7 @@ export class EventTooltip {
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
             beforeClose: this.onTooltipClose.bind(this),
+            beforeOpen: this.onTooltipOpen.bind(this),
             enableRtl: this.parent.enableRtl,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
@@ -138,9 +139,20 @@ export class EventTooltip {
             };
             this.setContent(initializeCSPTemplate(contentTemp));
         }
-        this.parent.renderTemplates();
+        this.parent.renderTemplates(() => {
+            if (this.parent && (this.parent as any).isReact && !isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
+                const wraps: Element = (document.querySelector('.' + cls.TOOLTIP_HIDDEN_CLASS));
+                if (wraps) {
+                    removeClass([wraps], cls.TOOLTIP_HIDDEN_CLASS);
+                }
+            }
+        });
     }
-
+    private onTooltipOpen(args: TooltipEventArgs): void {
+        if (args.element && this.parent.isReact && !isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
+            addClass([args.element], cls.TOOLTIP_HIDDEN_CLASS);
+        }
+    }
     private onTooltipClose(args: TooltipEventArgs): void {
         if (args.element) {
             removeClass([args.element], cls.POPUP_OPEN);

@@ -405,8 +405,8 @@ export class NumericContainer implements IRender {
             const currentPageIndex: number = this.links.findIndex((link: HTMLElement) => link.getAttribute('index') === this.pagerModule.currentPage.toString());
             const currentPage: number = (this.pagerModule.isPagerResized && currentPageIndex !== -1) ? currentPageIndex
                 : ((this.pagerModule.currentPage - 1) % this.pagerModule.pageCount);
-            classList(this.links[parseInt(currentPage.toString(), 10)], ['e-currentitem', 'e-active'], []);
             if (this.links[parseInt(currentPage.toString(), 10)]) {
+                classList(this.links[parseInt(currentPage.toString(), 10)], ['e-currentitem', 'e-active'], []);
                 this.links[parseInt(currentPage.toString(), 10)].setAttribute('aria-current', 'page');
             }
         }

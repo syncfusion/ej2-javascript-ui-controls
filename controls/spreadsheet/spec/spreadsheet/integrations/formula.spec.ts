@@ -23406,8 +23406,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('PROPER - Direct Value - X', (done: Function) => {
             helper.edit('L9', '=PROPER("07-JUN")');
-            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('6/7/2024');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"value":"45450","formula":"=PROPER(\\"07-JUN\\")","format":"m/d/yyyy","formattedText":"6/7/2024"}');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('6/7/2025');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"value":"45815","formula":"=PROPER(\\"07-JUN\\")","format":"m/d/yyyy","formattedText":"6/7/2025"}');
             done();
         });
         it('PROPER - Cell reference - I', (done: Function) => {
@@ -23734,7 +23734,7 @@ describe('Spreadsheet formula module ->', () => {
         it('T - Direct Value - XIII', (done: Function) => {
             helper.edit('L13', '=T("07-JUN")');
             expect(helper.invoke('getCell', [12, 11]).textContent).toBe('7-Jun');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[11])).toBe('{"value":"45450","formula":"=T(\\"07-JUN\\")","format":"d-mmm","formattedText":"7-Jun"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[11])).toBe('{"value":"45815","formula":"=T(\\"07-JUN\\")","format":"d-mmm","formattedText":"7-Jun"}');
             done();
         });
         it('T - Direct Value - XIV', (done: Function) => {

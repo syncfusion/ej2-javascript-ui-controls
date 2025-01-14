@@ -444,7 +444,7 @@
     @if $skin-name == 'Material3' {
       top: calc(50% - 11px) !important; /* stylelint-disable-line declaration-no-important */
     }
-    @else if $skin-name == 'tailwind' {
+    @else if $skin-name == 'tailwind' or $skin-name == 'tailwind3' {
       top: calc(50% - 12px) !important; /* stylelint-disable-line declaration-no-important */
     }
     @else {
@@ -808,5 +808,9 @@
 
   .e-device.e-image-editor .e-contextual-toolbar-wrapper .e-ie-finetune-value-span {
     margin-left: 10px !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-device.e-image-editor .e-ie-drop-area .e-ie-drop-info {
+    top: calc(50% + 60px);
   }
 }

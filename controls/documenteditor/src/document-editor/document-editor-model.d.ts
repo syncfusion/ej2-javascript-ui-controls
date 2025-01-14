@@ -149,6 +149,14 @@ export interface DocumentEditorSettingsModel {
      */
     mentionSettings?: MentionModel;
 
+    /**
+     * Gets or sets a value indicating whether the final paragraph of pasted content should be appended as a new paragraph in the Document Editor.
+     *
+     * @default false
+     * @aspType bool
+     */
+    pasteAsNewParagraph?: boolean;
+
 }
 
 /**

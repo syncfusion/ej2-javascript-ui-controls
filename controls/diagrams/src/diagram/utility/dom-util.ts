@@ -19,6 +19,7 @@ import { templateCompiler } from '../utility/base-util';
 import { SelectorModel } from '../objects/node-model';
 import { UserHandleModel } from '../interaction/selector-model';
 import { ConnectorFixedUserHandle, NodeFixedUserHandle } from '../objects/fixed-user-handle';
+import { Diagram } from './../diagram';
 
 /**
  * Defines the functionalities that need to access DOM
@@ -52,7 +53,7 @@ export function removeElementsByClass(className: string, id?: string): void {
  * @private
  */
 export function findSegmentPoints(element: PathElement): PointModel[] {
-    const pts: PointModel[] = [];
+    let pts: PointModel[] = [];
     let sample: SVGPoint; let sampleLength: number;
     const measureWindowElement: string = 'measureElement';
     window[`${measureWindowElement}`].style.visibility = 'visible';
@@ -63,9 +64,17 @@ export function findSegmentPoints(element: PathElement): PointModel[] {
     const pathData: string = updatePath(element, pathBounds, element);
     pathNode.setAttributeNS(null, 'd', pathData);
     const pathLength: number = pathNode.getTotalLength();
-    for (sampleLength = 0; sampleLength <= pathLength; sampleLength += 10) {
-        sample = pathNode.getPointAtLength(sampleLength);
-        pts.push({ x: sample.x, y: sample.y });
+    // 930450: Diagram Taking Too Long to Load Due to Complex Hierarchical Tree Layout with Path Nodes
+    const storedPoints: PointModel[] = Diagram.prototype.getPathData(pathData);
+    if (storedPoints.length === 0) {
+        for (sampleLength = 0; sampleLength <= pathLength; sampleLength += 10) {
+            sample = pathNode.getPointAtLength(sampleLength);
+            pts.push({ x: sample.x, y: sample.y });
+        }
+        // Push the calculated points into the shared storage
+        Diagram.prototype.setPathData(pathData, pts);
+    } else {
+        pts = storedPoints;
     }
     window[`${measureWindowElement}`].style.visibility = 'hidden';
     return pts;

@@ -563,7 +563,7 @@ describe('924996 - Issue when entering multiple line breaks and inserting new te
         let focusElement: any = document.querySelector('.focusElement');
         domSelection.setSelectionNode(document, focusElement);
         (InsertHtml as any).Insert(document, '<p>Inserted Content</p>', divElement, true);
-        expect((divElement as any).innerHTML === '<p><br><br><br><br><br><br><br><br></p><p>Inserted Content</p>').toBe(true);
+        expect((divElement as any).innerHTML === '<br><br><br><br><br><br><br><br><p>Inserted Content</p>').toBe(true);
     });
 });
 

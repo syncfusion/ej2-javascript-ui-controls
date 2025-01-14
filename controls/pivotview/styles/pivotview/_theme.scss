@@ -354,6 +354,12 @@
       .e-rowcell span{
         flex-shrink: 0;
       }
+
+      .e-pivotrow-container {
+        display: flex;
+        width: 100%;
+        align-items: center;
+      }
       
       &.e-active {
         .e-icons {

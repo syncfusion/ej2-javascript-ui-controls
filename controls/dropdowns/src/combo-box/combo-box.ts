@@ -906,7 +906,7 @@ export class ComboBox extends DropDownList {
                 this.onChangeEvent(e);
             }
         }
-        if (e.action === 'enter' && this.inputElement.value.trim() === '') {
+        if (e.action === 'enter' && this.inputElement.value === '') {
             this.clearAll(e);
         } else if (this.isTyped && !this.isSelected && isNullOrUndefined(li)) {
             this.customValue(e);
@@ -954,7 +954,7 @@ export class ComboBox extends DropDownList {
             )) {
                 this.onChangeEvent(null);
             }
-        } else if (this.inputElement.value.trim() !== '') {
+        } else if (this.inputElement.value !== '') {
             const previousValue: string | number | boolean | object = this.value;
             if (isNullOrUndefined(value)) {
                 const value: string | Object = this.inputElement.value === '' ? null : this.inputElement.value;

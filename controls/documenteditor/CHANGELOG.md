@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I660432` - Improved performance when applying formatting to an entire document.
+- `#I668208` - Fixed text duplication caused by the move-down action outside the editable element after inserting text using Japanese IME on Windows.
+- `#I665638` - Addressed issues with arrow keys, deletion, and keyboard input in form field protection mode for Content Controls.
+
 ## 28.1.38 (2025-01-07)
 
 ### DocumentEditor

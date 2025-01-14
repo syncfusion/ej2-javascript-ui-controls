@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { ContentControlInfo, Editor} from '../../src/index';
+import { ContentControlInfo, Editor, LineWidget, ParagraphWidget, SfdtExport, SfdtReader, TextElementBox} from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
@@ -128,7 +128,9 @@ describe('Validate getContentControinfo', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
-        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport); 
+        editor.enableEditorHistory = true;
+        editor.enableSfdtExport = true;
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -204,5 +206,23 @@ describe('Validate getContentControinfo', () => {
         contentControlInfo = editor.selectionModule.getContentControlInfo();
         expect(contentControlInfo.value).toBe('6/12/24');
     });
-    
+    it('apply rich text content control', () => {
+        console.log('apply rich text content control');
+        editor.openBlank();
+        editor.editorModule.insertText('Insering the plain text content control and using getContentControlInfo method');
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('Insering the rich text content control and using getContentControlInfo method');
+        editor.selection.selectAll();
+        editor.editorModule.insertContentControl('RichText');
+        editor.selection.select('0;0;10', '0;0;10');
+        let contentControlInfo: ContentControlInfo = editor.selectionModule.getContentControlInfo();
+        expect(contentControlInfo.value).toBeDefined;
+        expect(contentControlInfo.type).toBe('RichText');
+        editor.importContentControlData([contentControlInfo]);
+        expect(typeof JSON.parse(contentControlInfo.value)).toBe("object");
+        let widgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets;
+        expect(widgets.length).toBe(2);
+        expect((((widgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as TextElementBox).text).toBe('Insering the plain text content control and using getContentControlInfo method');
+        expect((((widgets[1] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('Insering the rich text content control and using getContentControlInfo method');
+    });
 });

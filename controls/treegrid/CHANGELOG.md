@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.38 (2025-01-07)
+## 28.1.39 (2024-01-14)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I661832` - Collapsed records are now displayed properly in the viewport for last set of records when virtualization is enabled.
+
+## 28.1.37 (2024-12-31)
 
 ### Tree Grid
 
@@ -11,7 +19,6 @@
 - `#I662513` - Resolved a script error that occurred when scrolling in the virtualization sample with `allowSelection` set to `false`.
 - `#I664039` - Resolved a console warning that occurred on using freeze feature in treegrid.
 - `#I662225` - The `ClipMode` property with `EllipsisWithTooltip` is now shown properly for child records.
-- `#I661832` - Collapsed records are now displayed properly in the viewport for last set of records when virtualization is enabled.
 - `#I656160` - Fixed the scrolling issue experienced when using the [LoadChildOnDemand](https://helpej2.syncfusion.com/documentation/api/treegrid/#loadchildondemand) functionality.
 
 ## 28.1.35 (2024-12-18)

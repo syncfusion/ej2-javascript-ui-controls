@@ -2344,7 +2344,7 @@ export class Editor {
      * @returns {void}
      */
     public handleDelete(): void {
-        if ((!this.owner.isReadOnlyMode && this.canEditContentControl) || this.selection.isInlineFormFillMode()) {
+        if (!this.owner.isReadOnlyMode && this.canEditContentControl || (this.documentHelper.protectionType === 'FormFieldsOnly' && this.canEditContentControl && !isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.delete();
         }
         this.selection.checkForCursorVisibility();
@@ -2760,7 +2760,7 @@ export class Editor {
         const blockEndContentControl: ContentControl = new ContentControl(isInline ? 'Inline' : 'Block');
         let properties: ContentControlProperties = new ContentControlProperties(isInline ? 'Inline' : 'Block');
         properties.color = "#00000000";
-        this.selection.isEmpty ? properties.hasPlaceHolderText = true : properties.hasPlaceHolderText = false;
+        positionStart.isAtSamePosition(positionEnd) ? properties.hasPlaceHolderText = true : properties.hasPlaceHolderText = false;
         properties.isTemporary = false;
         properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
         properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
@@ -2850,7 +2850,8 @@ export class Editor {
             if (positionStart.isAtParagraphStart && positionEnd.isAtParagraphEnd) {
                 isInline = false;
             }
-            if (!this.selection.isEmpty && this.isInvalidElementPresent(positionStart, positionEnd)) {
+            let isEmpty: boolean = positionStart.isAtSamePosition(positionEnd);
+            if (!isEmpty && this.isInvalidElementPresent(positionStart, positionEnd)) {
                 this.openContentDialog(false);
                 return;
             }
@@ -2859,7 +2860,7 @@ export class Editor {
             const blockEndContentControl: ContentControl = new ContentControl(isInline ? 'Inline' : 'Block');
             let properties: ContentControlProperties = new ContentControlProperties(isInline ? 'Inline' : 'Block');
             properties.color = "#00000000";
-            this.selection.isEmpty ? properties.hasPlaceHolderText = true : properties.hasPlaceHolderText = false;
+            isEmpty ? properties.hasPlaceHolderText = true : properties.hasPlaceHolderText = false;
             properties.isTemporary = false;
             properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
             properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
@@ -7058,7 +7059,7 @@ export class Editor {
                 parser.isHtmlPaste = false;
                 parser.isContextBasedPaste = false;
             }
-            if (pasteContent[lastParagraphMarkCopiedProperty[this.keywordIndex]] && !isContextBasedPaste) {
+            if ((pasteContent[lastParagraphMarkCopiedProperty[this.keywordIndex]] && !isContextBasedPaste) || this.owner.documentEditorSettings.pasteAsNewParagraph) {
                 this.isLastParaMarkCopied = true;
                 let paragraphWidget: ParagraphWidget = new ParagraphWidget();
                 bodyWidget.childWidgets.push(paragraphWidget);
@@ -7672,7 +7673,7 @@ export class Editor {
                     row2 = row2.nextRow;
                     k++;
                 }
-                this.tableReLayout(table, startParagraph, cloneCells);
+                this.tableReLayout(table, startParagraph, cloneCells, true);
             }
             else {
                 let rowsToAdd: number;
@@ -11501,12 +11502,26 @@ export class Editor {
                 this.updateHistoryPosition(start, true);
             }
             cell = start.paragraph.associatedCell;
-            this.applyCharFormatCell(cell, selection, start, end, property, value, update);
+            let block: BlockWidget = this.applyCharFormatCell(cell, selection, start, end, property, value, update);
+            while (block) {
+                if (block instanceof ParagraphWidget) {
+                    block = this.applyCharFormat(block, selection, start, end, property, value, update);
+                } else {
+                    block = this.applyCharFormatForTable(0, block as TableWidget, selection, start, end, property, value, update);
+                }
+            }
             let table: TableWidget = cell.ownerTable;
 
             this.documentHelper.layout.layoutBodyWidgetCollection(table.index, table.containerWidget, table, false);
         } else {
-            this.applyCharFormat(paragraph, selection, start, end, property, value, update);
+            let block: BlockWidget = paragraph;
+            do {
+                if (block instanceof ParagraphWidget) {
+                    block = this.applyCharFormat(block, selection, start, end, property, value, update);
+                } else {
+                    block = this.applyCharFormatForTable(0, block as TableWidget, selection, start, end, property, value, update);
+                }
+            } while (block)
         }
     }
 
@@ -11526,20 +11541,13 @@ export class Editor {
         return splittedWidets[splittedWidets.length - 1] as ParagraphWidget;
     }
 
-    private getNextParagraphForCharacterFormatting(block: BlockWidget, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): void {
+    private getNextParagraphForCharacterFormatting(block: BlockWidget, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): BlockWidget {
         let widgetCollection: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         block = widgetCollection[widgetCollection.length - 1];
-        block = this.documentHelper.selection.getNextRenderedBlock(block);
-        if (!isNullOrUndefined(block)) { //Goto the next block.
-            if (block instanceof ParagraphWidget) {
-                this.applyCharFormat(block, this.documentHelper.selection, start, end, property, value, update);
-            } else {
-                this.applyCharFormatForTable(0, block as TableWidget, this.documentHelper.selection, start, end, property, value, update);
-            }
-        }
+        return this.documentHelper.selection.getNextRenderedBlock(block);
     }
 
-    private applyCharFormat(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): void {
+    private applyCharFormat(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): BlockWidget {
         paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
         let startOffset: number = 0;
         let length: number = selection.getParagraphLength(paragraph);
@@ -11635,9 +11643,9 @@ export class Editor {
         this.documentHelper.layout.reLayoutParagraph(paragraph, startLineWidget, 0);
 
         if (paragraph.equals(endParagraph)) {
-            return;
+            return undefined;
         }
-        this.getNextParagraphForCharacterFormatting(paragraph, start, end, property, value, update);
+        return this.getNextParagraphForCharacterFormatting(paragraph, start, end, property, value, update);
     }
     /**
      * Toggles the bold property of selected contents.
@@ -12384,7 +12392,7 @@ export class Editor {
     }
     // Cell
 
-    private applyCharFormatCell(cell: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): void {
+    private applyCharFormatCell(cell: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): BlockWidget {
         if (end.paragraph.isInsideTable) {
             let containerCell: TableCellWidget = selection.getContainerCellOf(cell, end.paragraph.associatedCell);
             if (containerCell.ownerTable.contains(end.paragraph.associatedCell)) {
@@ -12395,22 +12403,24 @@ export class Editor {
                     if (selection.isCellSelected(containerCell, start, end)) {
                         value = this.getCharacterFormatValueOfCell(cell, selection, value, property);
                         this.applyCharFormatForSelectedCell(containerCell, selection, property, value, update);
+                        return undefined;
                     } else {
                         if (startCell === containerCell) {
-                            this.applyCharFormat(start.paragraph, selection, start, end, property, value, update);
+                            return this.applyCharFormat(start.paragraph, selection, start, end, property, value, update);
                         } else {
-                            this.applyCharFormatRow(startCell.ownerRow, selection, start, end, property, value, update);
+                            return this.applyCharFormatRow(startCell.ownerRow, selection, start, end, property, value, update);
                         }
                     }
                 } else {//Format other selected cells in current table.
                     this.applyCharFormatForTableCell(containerCell.ownerTable, selection, containerCell, endCell, property, value, update);
+                    return undefined;
                 }
             } else {
-                this.applyCharFormatRow(containerCell.ownerRow, selection, start, end, property, value, update);
+                return this.applyCharFormatRow(containerCell.ownerRow, selection, start, end, property, value, update);
             }
         } else {
             let tableCell: TableCellWidget = selection.getContainerCell(cell);
-            this.applyCharFormatRow(tableCell.ownerRow, selection, start, end, property, value, update);
+            return this.applyCharFormatRow(tableCell.ownerRow, selection, start, end, property, value, update);
         }
     }
 
@@ -12426,13 +12436,13 @@ export class Editor {
     }
     // Row
 
-    private applyCharFormatRow(row: TableRowWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): void {
+    private applyCharFormatRow(row: TableRowWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): BlockWidget {
         value = this.getCharacterFormatValueOfCell((row.childWidgets[0] as TableCellWidget), selection, value, property);
-        this.applyCharFormatForTable(row.rowIndex, row.ownerTable, selection, start, end, property, value, update);
+        return this.applyCharFormatForTable(row.rowIndex, row.ownerTable, selection, start, end, property, value, update);
     }
     // Table
 
-    private applyCharFormatForTable(index: number, table: TableWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): void {
+    private applyCharFormatForTable(index: number, table: TableWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): BlockWidget {
         table = table.combineWidget(this.owner.viewer) as TableWidget;
         for (let i: number = index; i < table.childWidgets.length; i++) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
@@ -12441,11 +12451,11 @@ export class Editor {
             }
             if (end.paragraph.isInsideTable && selection.containsRow(row, end.paragraph.associatedCell)) {
                 this.documentHelper.layout.layoutBodyWidgetCollection(table.index, table.containerWidget, table, false);
-                return;
+                return undefined;
             }
         }
         this.documentHelper.layout.layoutBodyWidgetCollection(table.index, table.containerWidget, table, false);
-        this.getNextParagraphForCharacterFormatting(table, start, end, property, value, update);
+        return this.getNextParagraphForCharacterFormatting(table, start, end, property, value, update);
 
     }
 
@@ -18911,7 +18921,7 @@ export class Editor {
                     return;
                 }
             }
-            if ((!isNullOrUndefined(contentControl) && inline.type === 0 && inline.nextElement !== contentControl.reference) || (!isNullOrUndefined(contentControl) && inline.type === 0 && contentControl.contentControlProperties.lockContentControl && inline.nextElement === contentControl.reference)) {
+            if ((!isNullOrUndefined(contentControl) && inline.type === 0 && inline.nextElement !== contentControl.reference) || (!isNullOrUndefined(contentControl) && inline.type === 0 && (contentControl.contentControlProperties.lockContentControl || this.documentHelper.isFormFillProtectedMode) && inline.nextElement === contentControl.reference)) {
                 return;
             }
         }
@@ -18963,7 +18973,7 @@ export class Editor {
                 offset = inline.line.getOffset(inline, inline.length);
             }
             if (inline && inline.length === 1 && inline.nextNode instanceof ContentControl
-                && inline.previousNode instanceof ContentControl) {
+                && inline.previousNode instanceof ContentControl && !this.documentHelper.isFormFillProtectedMode) {
                 let start: ContentControl = inline.previousNode;
                 let end: ContentControl = inline.nextNode;
                 if (!start.contentControlProperties.lockContentControl) {
@@ -20059,7 +20069,7 @@ export class Editor {
             }
             // Remove content if content control is empty
             if (inline instanceof ContentControl && inline.previousNode instanceof ContentControl
-                && inline.previousNode.reference === inline) {
+                && inline.previousNode.reference === inline && !this.documentHelper.isFormFillProtectedMode) {
                 // Remove content control if there is no element presen in between start and end mark.
                 if (this.removeContentControlMark(inline.previousNode, inline)) {
                     return;
@@ -24139,7 +24149,10 @@ export class Editor {
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             this.editorHistory.currentBaseHistoryInfo.setContentControlCheckBox(contentControl, value);
         }
-        const checkBoxText: TextElementBox = contentControl.nextNode as TextElementBox;
+        let checkBoxText: TextElementBox = contentControl.nextNode as TextElementBox;
+        if (checkBoxText instanceof EditRangeStartElementBox || checkBoxText instanceof EditRangeEndElementBox) {
+            checkBoxText = checkBoxText.nextNode as TextElementBox;
+        }
         checkBoxText.isWidthUpdated = false;
         checkBoxText.text = value ? String.fromCharCode(9746) : String.fromCharCode(9744);
         contentControl.contentControlProperties.isChecked = value;
@@ -24222,6 +24235,7 @@ export class Editor {
                     value = JSON.stringify(sfdt);
                 }
                 this.paste(value);
+                this.updatePropertiesToBlock(contentControl, true);
             } else {
                 this.insertText(value);
             }

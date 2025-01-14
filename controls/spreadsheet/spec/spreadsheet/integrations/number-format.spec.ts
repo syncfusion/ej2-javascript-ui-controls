@@ -31,13 +31,13 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cells[0].value).toBe('43891');
             expect(cells[0].format).toBe('mmm-yy');
             expect(cellEle[0].textContent).toBe('Mar-20');
-            expect(cells[1].value).toBe('45392');
+            expect(cells[1].value).toBe('45757');
             expect(cells[1].format).toBe('d-mmm');
             expect(cellEle[1].textContent).toBe('10-Apr');
             expect(cells[2].value).toBe('43952');
             expect(cells[2].format).toBe('mmm-yy');
             expect(cellEle[2].textContent).toBe('May-20');
-            expect(cells[3].value).toBe('45465');
+            expect(cells[3].value).toBe('45830');
             expect(cells[3].format).toBe('d-mmm');
             expect(cellEle[3].textContent).toBe('22-Jun');
             expect(cells[4].value).toBe('44025');
@@ -90,7 +90,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             cellElems = helper.invoke('getRow', [2]).cells;
             expect(cellElems[1].textContent).toBe('Mar-20');
             helper.invoke('updateCell', [{ value: '10-Apr', format: 'dd-mmm' }, 'C3']);
-            expect(cells[2].value).toBe('45392');
+            expect(cells[2].value).toBe('45757');
             expect(cellElems[2].textContent).toBe('10-Apr');
             helper.invoke('updateCell', [{ value: '13-Jul-2020', format: 'd-mmm-yy' }, 'D3']);
             expect(cells[3].value).toBe('44025');
@@ -390,11 +390,11 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.textContent).toBe('22:45:c');
             expect(cellEle.classList.contains('e-right-align')).toBeFalsy();
             helper.invoke('updateCell', [{ value: '1/31' }, 'F2']);
-            expect(row.cells[5].value).toBe('45322');
+            expect(row.cells[5].value).toBe('45688');
             expect(row.cells[5].format).toBe('d-mmm');
             expect(cellEle.textContent).toBe('31-Jan');
             helper.invoke('updateCell', [{ value: '12/31' }, 'G2']);
-            expect(row.cells[6].value).toBe('45657');
+            expect(row.cells[6].value).toBe('46022');
             expect(row.cells[6].format).toBe('d-mmm');
             expect(helper.invoke('getCell', [1, 6]).textContent).toBe('31-Dec');
             helper.invoke('updateCell', [{ value: '1:2 PM' }, 'H2']);

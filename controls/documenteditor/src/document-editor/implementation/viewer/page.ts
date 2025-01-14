@@ -1772,7 +1772,7 @@ export class ParagraphWidget extends BlockWidget {
             }
         }
     }
-
+    
     private compareRevisions(revisionA: Revision[], revisionB: Revision[]): boolean {
         if (revisionA.length !== revisionB.length) {
             return false;

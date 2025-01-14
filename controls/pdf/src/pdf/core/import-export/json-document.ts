@@ -1,6 +1,6 @@
 import { _ExportHelper } from './xfdf-document';
 import { PdfDocument } from './../pdf-document';
-import { _stringToAnnotationFlags, _convertToColor, _encode, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _bytesToString, _hexStringToByteArray, _decode, _isNullOrUndefined } from './../utils';
+import { _stringToAnnotationFlags, _convertToColor, _encode, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _bytesToString, _hexStringToByteArray, _decode, _isNullOrUndefined, _compressStream } from './../utils';
 import { PdfPage } from './../pdf-page';
 import { PdfAnnotation, PdfLineAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
@@ -9,7 +9,6 @@ import { _PdfBaseStream, _PdfContentStream, _PdfStream } from './../base-stream'
 import { PdfForm } from './../form/form';
 import { PdfField } from './../form/field';
 import { PdfAnnotationFlag } from './../enumerator';
-import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
 export class _JsonDocument extends _ExportHelper {
     _isImport: boolean = false;
     _isColorSpace: boolean = false;
@@ -669,30 +668,12 @@ export class _JsonDocument extends _ExportHelper {
                 if (value.dictionary.has('Filter') && value.dictionary.get('Filter').name === 'DCTDecode') {
                     data = value.getString(true);
                 } else {
-                    data = value.getString();
-                    const byteArray: number[] = [];
-                    for (let i: number = 0; i < data.length; i++) {
-                        byteArray.push(data.charCodeAt(i));
-                    }
-                    const dataArray: Uint8Array = new Uint8Array(byteArray);
-                    const sw: CompressedStreamWriter = new CompressedStreamWriter();
-                    sw.write(dataArray, 0, dataArray.length);
-                    sw.close();
-                    value = sw.getCompressedString;
-                    const buffer: number[] = [];
-                    for (let i: number = 0; i < value.length; i++) {
-                        buffer.push(value.charCodeAt(i) & 0xff);
-                    }
-                    data = _byteArrayToHexString(new Uint8Array(buffer));
-                }
-                if (!streamDictionary.has('Filter')) {
-                    streamDictionary.update('Filter', _PdfName.get('FlateDecode'));
+                    data = _compressStream(value, true);
                 }
                 if (!streamDictionary.has('Length') && data && data !== '') {
                     streamDictionary.update('Length', baseStream.length);
                 }
-            }
-            if (!isNewReference) {
+            } else {
                 if (isImageStream && baseStream.stream) {
                     if (baseStream.stream instanceof _PdfStream) {
                         if (typeof baseStream._initialized === 'boolean' && baseStream._cipher) {

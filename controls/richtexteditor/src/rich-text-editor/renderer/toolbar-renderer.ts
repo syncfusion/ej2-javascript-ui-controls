@@ -662,7 +662,6 @@ export class ToolbarRenderer implements IRenderer {
         let proxy: this = this;
         let value: string;
         const colorPicker: ColorPicker = new ColorPicker({
-            enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
             inline: true,
             value: null,

@@ -85,7 +85,17 @@
   }
 
   .e-dialog .e-btn.e-dlg-closeicon-btn:hover span {
-    color: $dialog-active-icon-color;
+    @if $skin-name != 'tailwind3'
+    {
+      color: $dialog-active-icon-color;
+    }
+  }
+
+  .e-dialog button.e-btn.e-dlg-closeicon-btn:hover .e-btn-icon {
+    @if $skin-name =='tailwind3'
+      {
+      color: $dialog-hover-icon-color;
+    }
   }
 
   .e-dialog .e-btn.e-dlg-closeicon-btn:active span,

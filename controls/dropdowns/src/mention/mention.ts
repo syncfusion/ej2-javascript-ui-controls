@@ -479,7 +479,9 @@ export class Mention extends DropDownBase {
                 ? <HTMLElement>document.querySelector(<string>this.target)
                 : <HTMLElement>this.target) : this.element;
         if (this.isContentEditable(this.inputElement)) {
-            this.inputElement.setAttribute('contenteditable', 'true');
+            if (!this.inputElement.hasAttribute('contenteditable')) {
+                this.inputElement.setAttribute('contenteditable', 'true');
+            }
             addClass([this.inputElement], ['e-mention']);
             if (isNullOrUndefined(this.target)) {
                 addClass([this.inputElement], ['e-editable-element']);

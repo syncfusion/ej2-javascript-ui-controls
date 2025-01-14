@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 28.1.38 (2025-01-07)
+## 28.1.39 (2024-01-14)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I668014` - Performance improved for loading diagrams with complex hierarchical tree layouts with path nodes.
+- `#I672924` - EJ1 diagrams now load in EJ2 Diagram Builder even when the port shape is undefined.
+- `#I676157` - Fixed issue where completing Polyline drawing was not possible on iPad Safari browser.
+
+## 28.1.37 (2024-12-31)
 
 ### Diagram
 
@@ -10,6 +20,7 @@
 
 - `#I664086` - Bezier settings are now applied to freehand connectors during the drawing process.
 - `#I664088` - Segment points are now draggable even when the pointer is positioned on the outer part of an increased segment thumb size.
+- `#I658382` - Z-order is now updated correctly for HTML and native nodes when using `moveForward` or `sendBackward`.
 
 ## 28.1.36 (2024-12-24)
 

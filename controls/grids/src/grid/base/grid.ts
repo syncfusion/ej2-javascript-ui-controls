@@ -7012,7 +7012,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enableHover) {
             this.element.classList.add('e-gridhover');
         }
-        if (Browser.isSafari()) {
+        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) || Browser.isSafari()) {
             this.element.classList.add('e-mac-safari');
         }
         if (Browser.isDevice && this.adaptiveUIMode === 'Desktop') {

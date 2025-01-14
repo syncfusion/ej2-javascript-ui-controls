@@ -410,6 +410,8 @@ export const ERROR_VALIDATION_CLASS: string = 'e-schedule-error';
 /** @private */
 export const EVENT_TOOLTIP_ROOT_CLASS: string = 'e-schedule-event-tooltip';
 /** @private */
+export const TOOLTIP_HIDDEN_CLASS: string = 'e-tooltip-hidden';
+/** @private */
 export const ALLDAY_ROW_ANIMATE_CLASS: string = 'e-animate';
 /** @private */
 export const TIMESCALE_DISABLE: string = 'e-timescale-disable';

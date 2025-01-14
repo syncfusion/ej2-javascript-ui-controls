@@ -1646,6 +1646,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public selectedObject: { helperObject: NodeModel, actualObject: NodeModel } = { helperObject: undefined, actualObject: undefined };
     /** @private */
     public deleteDependentConnector: boolean = true;
+    /** @private */
+    public pathDataStorage: Map<string, PointModel[]> = new Map();
     /**
      * Constructor for creating the widget
      */
@@ -4557,6 +4559,41 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public addElements(obj: NodeModel[] | ConnectorModel[]): void {
         for (let i: number = 0; i < obj.length; i++) {
             this.add(obj[parseInt(i.toString(), 10)]);
+        }
+        // 930450: Diagram Taking Too Long to Load Due to Complex Hierarchical Tree Layout with Path Nodes
+        if (this.pathDataStorage) {
+            this.pathDataStorage.clear();
+        }
+    }
+    /**
+     * getPathdata from path data storage to access the path elements points
+     * @returns {PointModel[]} - Ruturns points of the path data
+     * @param {string} key - Path data as key
+     * @public method
+     */
+    public getPathData(key: string): PointModel[] {
+        // 930450: Diagram Taking Too Long to Load Due to Complex Hierarchical Tree Layout with Path Nodes
+        if (!this.pathDataStorage) {
+            this.pathDataStorage = new Map();
+        }
+        if (!this.pathDataStorage.has(key)) {
+            return [];
+        }
+        return this.pathDataStorage.get(key);
+    }
+    /**
+     * setPathdata to path data storage to access the path elements points
+     * @returns {void} - Set Path data method
+     * @param {string} key - Path data as key
+     * @param {PointModel[]} data - Path data's points
+     * @public method
+     */
+    public setPathData(key: string, data: PointModel[]): void {
+        // 930450: Diagram Taking Too Long to Load Due to Complex Hierarchical Tree Layout with Path Nodes
+        const existingData = this.pathDataStorage.get(key) || [];
+        // Push data only if existingData is empty
+        if (existingData.length === 0) {
+            this.pathDataStorage.set(key, data);
         }
     }
     /* tslint:enable */
@@ -7588,6 +7625,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                 }
+            }
+            // 930450: Diagram Taking Too Long to Load Due to Complex Hierarchical Tree Layout with Path Nodes
+            if (this.pathDataStorage) {
+                this.pathDataStorage.clear();
             }
             if (this.bpmnModule) {
                 for (const obj of (this.bpmnModule as any).bpmnTextAnnotationConnector) {

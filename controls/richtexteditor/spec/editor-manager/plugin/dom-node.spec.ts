@@ -464,7 +464,7 @@ describe('DOMNode plugin', () => {
     describe('875147 - Number or Bullet format list not applied properly and throws error on continuous click in RichTextEditor', () => {
         let editor: RichTextEditor;
         const content: string = '<ol><li><p class="textPtag">Provides an option to customize the quick toolbar for an image </p></li></ol><p class="imgPtag"><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>';
-        beforeEach(() => {
+        beforeAll(() => {
             editor = renderRTE({
                 toolbarSettings: {
                     items: ['OrderedList', 'UnorderedList']
@@ -472,7 +472,7 @@ describe('DOMNode plugin', () => {
                 value: content
             });
         });
-        afterEach(() => {
+        afterAll(() => {
             destroy(editor);
         });
 
@@ -492,27 +492,27 @@ describe('DOMNode plugin', () => {
     describe('878974 - Unexpected deletion of table header cells when attempting to insert a list within the header.', () => {
         let editor: RichTextEditor;
         const content: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th></tr></thead><tbody><tr><td class="e-cell-select" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`;
-        beforeEach((done: DoneFn) => {
+        beforeAll(() => {
             editor = renderRTE({
                 toolbarSettings: {
                     items: ['OrderedList', 'UnorderedList']
                 },
                 value: content
             });
-            done();
         });
-        afterEach((done: DoneFn) => {
+        afterAll(() => {
             destroy(editor);
-            done();
         });
         it('Check table header reamains after list insertion', (done: DoneFn) => {
             let currentTable: HTMLElement = editor.inputElement.querySelectorAll('th')[0] as HTMLElement;
             domSelection.setSelectionNode(document, currentTable);
             let numberlist: HTMLElement = editor.getToolbar().querySelector('[title="Numbered List (Ctrl+Shift+O)"]');
             numberlist.click();
-            let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><ol><li><br></li></ol></th><th><br></th></tr></thead><tbody><tr><td class="e-cell-select" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`;
-            expect(editor.inputElement.innerHTML === innerHTML).toBe( true);
-            done();
+            setTimeout(() => {
+                let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><ol><li><br></li></ol></th><th><br></th></tr></thead><tbody><tr><td class="e-cell-select" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`;
+                expect(editor.inputElement.innerHTML === innerHTML).toBe( true);
+                done();
+            }, 100);
         });
     });
 });

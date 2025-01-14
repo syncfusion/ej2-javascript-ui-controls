@@ -219,6 +219,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     @Property({ mentionChar: '@' })
     public mentionSettings: MentionModel;
 
+    /**
+     * Gets or sets a value indicating whether the final paragraph of pasted content should be appended as a new paragraph in the Document Editor.
+     *
+     * @default false
+     * @aspType bool
+     */
+    @Property(false)
+    public pasteAsNewParagraph: boolean;
+
 }
 
 /**
@@ -1803,6 +1812,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     }
                     if (this.enableCollaborativeEditing && this.collaborativeEditingHandlerModule) {
                         this.collaborativeEditingHandlerModule.updateCaretPosition();
+                    }
+                    if(!isNullOrUndefined(model.documentEditorSettings.pasteAsNewParagraph)){
+                        this.documentEditorSettings.pasteAsNewParagraph=model.documentEditorSettings.pasteAsNewParagraph;
                     }
                     break;
                 case 'height':

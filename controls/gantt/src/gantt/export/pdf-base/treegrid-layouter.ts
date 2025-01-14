@@ -291,30 +291,32 @@ export class PdfTreeGridLayouter extends ElementLayouter {
             for (let i: number = this.cellStartIndex; i <= this.cellEndIndex; i++) {
                 const cell: PdfTreeGridCell = row.cells.getCell(i);
                 const column: PdfTreeGridColumn = this.treegrid.columns.getColumn(i);
-                if (column.isTreeColumn) {
-                    leftAdjustment = (row.level) * 10;
-                }
-                const cancelSpans: boolean = ((cell.columnSpan > 1) && (i > this.cellEndIndex + 1));
-                if (!cancelSpans) {
-                    for (let j: number = 1; j < cell.columnSpan; j++) {
-                        row.cells.getCell(i + j).isCellMergeContinue = true;
+                if (!isNullOrUndefined(cell.value)) {
+                    if (column.isTreeColumn) {
+                        leftAdjustment = (row.level) * 10;
                     }
+                    const cancelSpans: boolean = ((cell.columnSpan > 1) && (i > this.cellEndIndex + 1));
+                    if (!cancelSpans) {
+                        for (let j: number = 1; j < cell.columnSpan; j++) {
+                            row.cells.getCell(i + j).isCellMergeContinue = true;
+                        }
+                    }
+                    let size: SizeF = new SizeF(column.width, height);
+                    if (cell.columnSpan > 1) {
+                        size = new SizeF(cell.width, height);
+                        i += cell.columnSpan;
+                    }
+                    if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
+                        cell.style.format = column.format;
+                    }
+                    cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
+                    /* eslint-disable-next-line */
+                    if (row.treegrid.style.allowHorizontalOverflow && (cell.columnSpan > this.cellEndIndex || i + cell.columnSpan > this.cellEndIndex + 1) && this.cellEndIndex < row.cells.count - 1) {
+                        row.rowOverflowIndex = this.cellEndIndex;
+                    }
+                    location.x += column.width;
+                    leftAdjustment = 0;
                 }
-                let size: SizeF = new SizeF(column.width, height);
-                if (cell.columnSpan > 1) {
-                    size = new SizeF(cell.width, height);
-                    i += cell.columnSpan;
-                }
-                if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
-                    cell.style.format = column.format;
-                }
-                cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
-                /* eslint-disable-next-line */
-                if (row.treegrid.style.allowHorizontalOverflow && (cell.columnSpan > this.cellEndIndex || i + cell.columnSpan > this.cellEndIndex + 1) && this.cellEndIndex < row.cells.count - 1) {
-                    row.rowOverflowIndex = this.cellEndIndex;
-                }
-                location.x += column.width;
-                leftAdjustment = 0;
             }
             this.currentBounds.y += height;
             /* eslint-disable-next-line */

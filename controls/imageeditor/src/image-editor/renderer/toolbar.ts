@@ -1177,9 +1177,12 @@ export class ToolbarModule {
             (!this.parent.uploadSettings.maxFileSize || size < this.parent.uploadSettings.maxFileSize)) {
             this.parent.notify('draw', {prop: 'fileSelect', value: {inputElement: inputElement, args: args }});
         } else {
-            if (!this.parent.isImageLoaded && !Browser.isDevice) {
+            if (!this.parent.isImageLoaded) {
                 this.destroyTopToolbar();
                 this.createToolbar();
+                if (Browser.isDevice) {
+                    this.destroyBottomToolbar();
+                }
             }
             this.parent.showDialogPopup('unsupported', !((filesTypes.indexOf(type) > -1 || isJPG || (type.indexOf('svg') > -1 && filesTypes.indexOf('svg') > -1))));
         }

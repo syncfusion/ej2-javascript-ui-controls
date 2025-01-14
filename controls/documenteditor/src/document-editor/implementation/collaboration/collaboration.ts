@@ -459,7 +459,9 @@ export class CollaborativeEditingHandler {
                             deleteComment = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.commentId);
                             if (isNullOrUndefined(deleteComment) && !isNullOrUndefined(markerData.ownerCommentId)) {
                                 ownerDeleteComment = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.ownerCommentId);
-                                deleteComment = this.documentEditor.documentHelper.layout.getCommentById(ownerDeleteComment.replyComments, markerData.commentId);
+                                if (!isNullOrUndefined(ownerDeleteComment)) {
+                                    deleteComment = this.documentEditor.documentHelper.layout.getCommentById(ownerDeleteComment.replyComments, markerData.commentId);
+                                }
                             }
                         }
                         if (!isNullOrUndefined(deleteComment)) {
@@ -709,11 +711,11 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.optionsPaneModule.searchIconClickInternal();
             }
         }
-        if (!isNullOrUndefined(contentControlProperties)) {
-            this.documentEditor.selection.contentControleditRegionHighlighters.clear();
-            this.documentEditor.selection.isHighlightContentControlEditRegion = true;
-            this.documentEditor.selection.onHighlightContentControl();
-            contentControlProperties = undefined;
+        contentControlProperties = undefined;
+        if (this.documentEditor.documentHelper.contentControlCollection.length > 0) {
+            this.documentEditor.selectionModule.contentControleditRegionHighlighters.clear();
+            this.documentEditor.selectionModule.isHighlightContentControlEditRegion = true;
+            this.documentEditor.selectionModule.onHighlightContentControl();
         }
         if (this.documentEditor.editor.isFieldOperation) {
             this.documentEditor.editorModule.layoutWholeDocument();

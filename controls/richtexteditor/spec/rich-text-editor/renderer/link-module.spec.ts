@@ -762,6 +762,44 @@ describe('Link Module', () => {
         });
     });
 
+    describe('931011 - RTE insert link validation fails when display text is empty', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '',
+                toolbarSettings: {
+                    items: ['CreateLink']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    
+        it('RTE insert link validation fails when display text is empty', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = { preventDefault: function () { }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let selectParent: any = new NodeSelection().getParentNodeCollection(range);
+            let selectNode: any = new NodeSelection().getNodeCollection(range);
+            let evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                selectParent: selectParent, selectNode: selectNode
+            };
+            (<any>rteObj).linkModule.linkDialog(evnArg);
+            let dialogInput = (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl');
+            dialogInput.value = 'www.example.com';
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = ' ';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            
+            const anchor: HTMLAnchorElement = rteObj.contentModule.getEditPanel().querySelector('a');
+            expect(anchor.href).toBe('http://www.example.com/');
+            expect(anchor.textContent).toBe('www.example.com');
+        });
+    });
+
     describe('EJ2-51959- Link is not generated properly, when pasteCleanUpModule is imported', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

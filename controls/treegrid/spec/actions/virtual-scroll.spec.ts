@@ -1922,6 +1922,128 @@ describe("EJ2-916490- The page refreshes when adding a record on the last page w
   });
 });
 
+describe("EJ2-926455- Collapsed record not in viewport", () => {
+  var virtualData2: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number | null }[] = [];
+
+  for (let i = 0; i < 100; i++) {
+  let parentTaskId: number = virtualData2.length + 1;
+
+  // Create parent task
+  let parent: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number | null } = {
+    TaskID: parentTaskId,
+    TaskName: `Project ${i + 1}`,
+    StartDate: '2024-12-01',
+    Duration: 50, // Example duration
+    Progress: 0, // Example progress
+    parentID: null, // No parent for top-level
+  };
+  virtualData2.push(parent);
+
+  // Create 100 child tasks for this parent
+  for (let j = 0; j < 30; j++) {
+    let childTaskId: number = virtualData2.length + 1;
+
+    // Create child task
+    let child: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+      TaskID: childTaskId,
+      TaskName: `Task ${j + 1} of Project ${i + 1}`,
+      StartDate: '2024-12-01',
+      Duration: 5 + (j % 3), // Example duration
+      Progress: j % 100, // Example progress
+      parentID: parentTaskId,
+    };
+    virtualData2.push(child);
+
+    // Make the 11th child (index 10) a parent of 100 nested tasks
+    if (j === 10) {
+      for (let k = 0; k < 10; k++) {
+        let nestedTaskId: number = virtualData2.length + 1;
+
+        // Create nested child task
+        let nestedChild: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+          TaskID: nestedTaskId,
+          TaskName: `Subtask ${k + 1} of Task ${childTaskId}`,
+          StartDate: '2024-12-01',
+          Duration: 3 + (k % 2), // Example duration
+          Progress: k % 50, // Example progress
+          parentID: childTaskId,
+        };
+        virtualData2.push(nestedChild);
+      }
+    }
+    if (j === 20) {
+      for (let k = 0; k < 10; k++) {
+        let nestedTaskId: number = virtualData2.length + 1;
+
+        // Create nested child task
+        let nestedChild: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+          TaskID: nestedTaskId,
+          TaskName: `Subtask ${k + 1} of Task ${childTaskId}`,
+          StartDate: '2024-12-01',
+          Duration: 3 + (k % 2), // Example duration
+          Progress: k % 50, // Example progress
+          parentID: childTaskId,
+        };
+        virtualData2.push(nestedChild);
+      }
+    }
+  }
+ }
+  let TreeGridObj: TreeGrid;
+  let oldTranslateY = 0;
+  const preventDefault: Function = new Function();
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+          dataSource: virtualData2,
+          enableVirtualization: true,
+          height: 300,
+          treeColumnIndex: 1,
+          enableVirtualMaskRow: true,
+          parentIdMapping: 'parentID',
+          idMapping: 'TaskID',
+          columns: [
+            { field: 'TaskID', isPrimaryKey: true },
+            { field: 'TaskName' },
+            { field: 'StartDate' },
+          ],
+          editSettings: {
+            allowEditing: true,
+            allowAdding: true,
+            allowDeleting: true,
+            mode: 'Row',
+            newRowPosition: 'Child',
+          },
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+      },
+      done
+    );
+  });
+  it("Scroll to Bottom", function (done: Function) {
+    let content: HTMLElement = <HTMLElement>TreeGridObj.getContent().firstChild;
+    EventHandler.trigger(content, "wheel");
+    content.scrollTop = 10;
+    content.scrollTop = 186813;
+    EventHandler.trigger(content, "scroll", { target: content });
+    setTimeout(done, 1000);
+});
+  it("Collapse last parentrecord", function (done: Function) {
+    const virtualTable: HTMLElement = <HTMLElement>TreeGridObj.getContent().querySelector('.e-virtualtable');
+    oldTranslateY = parseFloat(virtualTable.style.transform.split(',')[1].trim().replace('px)', ''));
+    TreeGridObj.collapseByKey(5050);
+    setTimeout(done, 500);
+  });
+  it("Compare TranslateY", function(done: Function) {
+    const virtualTable: HTMLElement = <HTMLElement>TreeGridObj.getContent().querySelector('.e-virtualtable');
+    const newTranslateY = parseFloat(virtualTable.style.transform.split(',')[1].trim().replace('px)', ''));
+    expect(oldTranslateY).not.toBe(newTranslateY);
+    done();
+  });
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
 describe("EJ2-58929 - Searching after scroll shows no records to display in case of Virtualization enabled", () => {
   let gridObj: TreeGrid;
   let actionComplete: () => void;

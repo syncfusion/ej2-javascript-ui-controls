@@ -951,6 +951,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.mentionSettings)) {
             this.documentEditor.documentEditorSettings.mentionSettings = this.documentEditorSettings.mentionSettings;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.pasteAsNewParagraph)) {
+            this.documentEditor.documentEditorSettings.pasteAsNewParagraph = this.documentEditorSettings.pasteAsNewParagraph;
+        }
     }
     /**
      * @private

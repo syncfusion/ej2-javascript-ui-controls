@@ -205,16 +205,26 @@ The [JavaScript Rating](https://www.syncfusion.com/javascript-ui-controls/js-rat
 
 ### JavaScript OTP Input
 
-The `JavaScript OTP Input` control is designed to securely enter and verify single-use passwords for multi-factor authentication purposes in various applications, such as banking, e-commerce, or account login processes. It has several built-in features such as support for input types, styling modes, placeholder, seperators, and customization.
+The [JavaScript OTP Input](https://www.syncfusion.com/javascript-ui-controls/js-otp-input?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm) control is designed to securely enter and verify single-use passwords for multi-factor authentication purposes in various applications, such as banking, e-commerce, or account login processes. It has several built-in features such as support for input types, styling modes, placeholder, seperators, and customization.
+
+
+<p align="center">
+  <a href="https://ej2.syncfusion.com/documentation/otp-input/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm">Getting Started</a> .
+  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/default.html">Online demos</a> .
+  <a href="https://www.syncfusion.com/javascript-ui-controls/js-otp-input?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript OTP Input Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-otp-input.png">
+</p>
 
 #### Key features
 
-* `Input types` - Allow specifying the input type as text, number, or password for the OTP input..
-* `Styling modes` - Offer built-in styling options such as underline, outline, or fill.
-* `Tooltip` - Displays additional information of the rating items.
-* `Placeholders` - Allow setting a hint character for each input field, indicating the expected value.
-* `Separators` - Specify a character to be placed between input fields. 
-* `Customization` - Allows customizing the default appearance, including input field styling, input length, and more. 
+* [Input types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/default.html) - Allow specifying the input type as text, number, or password for the OTP input.
+* [Styling modes](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Offer built-in styling options such as underline, outline, or fill.
+* [Placeholders](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Allow setting a hint character for each input field, indicating the expected value.
+* [Separators](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Specify a character to be placed between input fields. 
+* [Customization](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Allows customizing the default appearance, including input field styling, input length, and more.
 
 <p align="center">
 Trusted by the world's leading companies

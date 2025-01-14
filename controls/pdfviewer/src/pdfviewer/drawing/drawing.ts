@@ -3756,6 +3756,7 @@ export class Drawing {
             this.pdfViewer.clipboardData.clipObject = this.copyObjects();
             this.pdfViewer.renderDrawing(undefined, index);
             this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
+            this.copiedElementID = (this.pdfViewer.clipboardData.clipObject as any[])[0].id;
         }
         let isSearchboxDialogOpen: boolean;
         const searchBoxId: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_search_box');

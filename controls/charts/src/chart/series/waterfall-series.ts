@@ -215,9 +215,9 @@ export class WaterfallSeries extends ColumnBase {
     public processInternalData(json: Object[], series: Series): Object[] {
         const data: Object[] = json; let index: number; let sumValue : number = 0;
         const intermediateSum: number[] = (!isNullOrUndefined(series.intermediateSumIndexes) && series.intermediateSumIndexes.length > 0) ?
-            series.intermediateSumIndexes.sort() : series.intermediateSumIndexes;
-        const sumIndex: number[] = (!isNullOrUndefined(series.sumIndexes) && series.sumIndexes.length > 0) ? series.sumIndexes.sort() :
-            series.sumIndexes;
+            series.intermediateSumIndexes.sort((a: number, b: number) => a - b) : series.intermediateSumIndexes;
+        const sumIndex: number[] = (!isNullOrUndefined(series.sumIndexes) && series.sumIndexes.length > 0) ?
+            series.sumIndexes.sort((a: number, b: number) => a - b) : series.sumIndexes;
         let cumulativeSum: number = 0;
         for (let i: number = 0; i < data.length; i++) {
             cumulativeSum += data[i as number][series.yName] !== undefined ? data[i as number][series.yName] : 0;

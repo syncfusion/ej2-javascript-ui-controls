@@ -14,6 +14,7 @@ import { PdfForm } from './form';
 import { _ImageDecoder } from './graphics/images/image-decoder';
 import { _JpegDecoder } from './graphics/images/jpeg-decoder';
 import { _PngDecoder } from './graphics/images/png-decoder';
+import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
 /**
  * Gets the unsigned value.
  *
@@ -4198,6 +4199,34 @@ export function _isNullOrUndefined (value: any): boolean { // eslint-disable-lin
         return true;
     }
     return false;
+}
+/**
+ * Compresses the content of a PDFBaseStream
+ *
+ * @param {_PdfBaseStream} stream - Base stream to compress.
+ * @param {boolean} isExport - Denotes compress the stream as a hex-encoded string.
+ * @returns {boolean} compressed string.
+ */
+export function _compressStream(stream: _PdfBaseStream, isExport: boolean = false): string {
+    let value: string = stream.getString();
+    const byteArray: number[] = [];
+    for (let i: number = 0; i < value.length; i++) {
+        byteArray.push(value.charCodeAt(i));
+    }
+    const dataArray: Uint8Array = new Uint8Array(byteArray);
+    const sw: CompressedStreamWriter = new CompressedStreamWriter();
+    sw.write(dataArray, 0, dataArray.length);
+    sw.close();
+    value = sw.getCompressedString;
+    stream.dictionary.update('Filter', _PdfName.get('FlateDecode'));
+    if (isExport) {
+        const buffer: number[] = [];
+        for (let i: number = 0; i < value.length; i++) {
+            buffer.push(value.charCodeAt(i) & 0xff);
+        }
+        return _byteArrayToHexString(new Uint8Array(buffer));
+    }
+    return value;
 }
 /**
  * Base64 encoded string representing an empty PDF document.

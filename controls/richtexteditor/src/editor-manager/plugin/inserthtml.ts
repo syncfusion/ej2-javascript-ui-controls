@@ -378,7 +378,7 @@ export class InsertHtml {
             nodeSelection.setSelectionText(docElement, lastSelectionNode, lastSelectionNode, 0, 0);
         }
         else {
-            this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode, enterAction);
+            this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode);
         }
         this.alignCheck(editNode as HTMLElement);
         this.listCleanUp(nodeSelection, docElement);
@@ -640,9 +640,9 @@ export class InsertHtml {
     }
     private static cursorPos(
         lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document,
-        editNode?: Element, enterAction?: string): void {
+        editNode?: Element): void {
         (lastSelectionNode as HTMLElement).classList.add('lastNode');
-        editNode.innerHTML = updateTextNode(editNode.innerHTML, enterAction);
+        editNode.innerHTML = updateTextNode(editNode.innerHTML);
         lastSelectionNode = (editNode as HTMLElement).querySelector('.lastNode');
         if (!isNOU(lastSelectionNode)) {
             this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);

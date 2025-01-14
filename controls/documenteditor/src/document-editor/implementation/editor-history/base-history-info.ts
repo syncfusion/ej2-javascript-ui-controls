@@ -772,7 +772,7 @@ export class BaseHistoryInfo {
             }
             if (!insertTextPosition.isAtSamePosition(endTextPosition) && !isRemoveContent) {
                 isRemoveContent = this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'ClearCells'
-                    || this.action === 'DeleteCells';
+                    || this.action === 'DeleteCells' || this.action === 'PasteOverwrite' || this.action === "PasteRow" || this.action === 'PasteNested';
                 let skipDelete: boolean = (deletedNodes.length > 0 && this.action === 'ParaMarkTrack') || this.action === 'ClearRevisions' || this.action === 'AcceptTOC';
                 if (!(isRemoveContent) && this.action !== 'MergeCells' && this.action !== 'InsertRowAbove'
                     && this.action !== 'InsertRowBelow' && this.action !== 'InsertColumnLeft'

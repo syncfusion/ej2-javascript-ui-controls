@@ -2456,8 +2456,8 @@ describe('Audio Module', () => {
             (<any>rteObj).audioModule.onKeyUp();
             setTimeout(() => {
                 expect(removeSuccess).toBe(true);
+                done();
             },100);
-            done();
         });
      });
 

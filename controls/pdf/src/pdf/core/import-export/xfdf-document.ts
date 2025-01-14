@@ -7,7 +7,7 @@ import { PdfAnnotationCollection } from './../annotations/annotation-collection'
 import { _PdfAnnotationType, PdfAnnotationFlag } from './../enumerator';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
-import { _hexStringToByteArray, _stringToAnnotationFlags, _convertToColor, _bytesToString, _hexStringToString, _getSpecialCharacter, _getLatinCharacter, _getInheritableProperty, _getNewGuidString, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _encode } from './../utils';
+import { _hexStringToByteArray, _stringToAnnotationFlags, _convertToColor, _bytesToString, _hexStringToString, _getSpecialCharacter, _getLatinCharacter, _getInheritableProperty, _getNewGuidString, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _encode, _compressStream } from './../utils';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfCheckBoxField, PdfComboBoxField, PdfField, PdfListBoxField, PdfRadioButtonListField, PdfTextBoxField, PdfListField } from './../form/field';
 export abstract class _ExportHelper {
@@ -1232,7 +1232,7 @@ export class _XfdfDocument extends _ExportHelper {
             });
         }
     }
-    _writeObject(writer: _XmlWriter, primitive: any, dictionary: _PdfDictionary, key?: string): void { // eslint-disable-line
+    _writeObject(writer: _XmlWriter, primitive: any, dictionary: _PdfDictionary, key?: string, isNewReference?: boolean): void { // eslint-disable-line
         if (primitive !== null && typeof primitive !== 'undefined') {
             if (primitive instanceof _PdfName) {
                 this._writePrefix(writer, 'NAME', key);
@@ -1277,7 +1277,16 @@ export class _XfdfDocument extends _ExportHelper {
                 if ((streamDictionary.has('Subtype') &&
                     this._getValue(streamDictionary.get('Subtype')) === 'Image') ||
                     (!streamDictionary.has('Type') && !streamDictionary.has('Subtype'))) {
-                    const data: string = primitive.getString(true);
+                    let data: string;
+                    if (isNewReference) {
+                        if (streamDictionary.has('Filter') && streamDictionary.get('Filter').name === 'DCTDecode') {
+                            data = primitive.getString(true);
+                        } else {
+                            data = _compressStream(primitive, true);
+                        }
+                    } else {
+                        data = primitive.getString(true);
+                    }
                     if (!streamDictionary.has('Length') && data && data !== '') {
                         streamDictionary.update('Length', primitive.length);
                     }
@@ -1306,7 +1315,7 @@ export class _XfdfDocument extends _ExportHelper {
                 writer._writeEndElement();
                 writer._writeEndElement();
             } else if (primitive instanceof _PdfReference && this._crossReference) {
-                this._writeObject(writer, this._crossReference._fetch(primitive), dictionary, key);
+                this._writeObject(writer, this._crossReference._fetch(primitive), dictionary, key, primitive._isNew);
             }
         }
     }

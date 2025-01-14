@@ -4176,7 +4176,7 @@ describe('CR 898103 - Add milestone-', () => {
         expect(ganttObj.currentViewData.length).toBe(1);
     });
 });
-describe('Convert milestone to task using context menu', () => {
+describe('Convert milestone to task using context menu 1', () => {
     let ganttObj: Gantt;
     const projectNewData = [
         {
@@ -4273,7 +4273,7 @@ describe('Convert milestone to task using context menu', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1);
     });
 });
-describe('Convert milestone to task using context menu', () => {
+describe('Convert milestone to task using context menu - 2', () => {
     let ganttObj: Gantt;
     const projectNewData = [
         {
@@ -4466,5 +4466,186 @@ describe('CR:927770-Work not calculated correctly on parent task, after child ou
     });
     afterAll(() => {
         destroyGantt(ganttObj);
+    });
+});
+describe('Convert to task using context menu', () => {
+    let ganttObj: Gantt;
+    const projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            Duration: 0,
+            resources: [{ resourceId: 1, resourceUnit: 100 },{ resourceId: 2, resourceUnit: 100 }]
+        }
+    ];
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+            height: '450px',
+            allowSelection: true,
+            highlightWeekends: true,
+            allowUnscheduledTasks: true,
+            enableContextMenu: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+                allowNextRowEdit: true
+            },
+            disableHtmlEncode: false,
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomToFit', 'Indent', 'Outdent'],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                resourceInfo: 'resources',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate',
+                notes: 'info',
+                indicators: 'Indicators'
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'ID', textAlign: 'Left' },
+                { field: 'TaskName', headerText: 'Name' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Predecessor', headerText: 'Dependency' },
+                { field: 'Progress', headerText: 'Progress' },
+                { field: 'BaselineStartDate', headerText: 'Baseline Start Date' },
+                { field: 'BaselineEndDate', headerText: 'Baseline End Date' },
+                { field: 'resources', headerText: 'Resources' },
+                { field: 'info', headerText: 'Notes' },
+                { field: 'amount', headerText: 'Amount' }
+            ],
+            renderBaseline: true,
+            labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            splitterSettings: {
+                position: "53%"
+            },
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('07/06/2019'),
+            resourceNameMapping: 'resourceName',
+            resourceIDMapping: 'resourceId',
+            resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer' },
+                { resourceId: 2, resourceName: 'Rose Fuller' }
+            ]
+        }, done);
+    });
+    it('Converting to task', () => {
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_ToTask' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+});
+describe('CR:932689-When the context menu action is canceled, the added child record is still considered as a parent', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 }
+                        ]
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                enableContextMenu: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Add record - Child', () => {
+        ganttObj.actionBegin = function (args: any): void {
+            debugger;
+            if(args.requestType == "beforeAdd"){
+                if (args.recordIndex != 1 && args.rowPosition == "Child") {
+                    args.cancel = true;
+                }
+            }
+        }
+        // Adding Child record for child task-1 via context menu child - Restrict add action in actionBegin
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Child' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        expect(ganttObj.currentViewData[1].hasChildRecords).toBe(false);
+        expect(ganttObj.currentViewData.length).toBe(2);
     });
 });

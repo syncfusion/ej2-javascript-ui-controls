@@ -152,14 +152,22 @@ export class VirtualScroll {
                 endIndex = startIndex + this.parent.grid.pageSettings.pageSize;
             }
             if (!isNullOrUndefined(this.expandCollapseRec)) {
-                const resourceCount: HTMLTableRowElement[] = this.parent.getRows();
+                const resourceCount: number = this.parent.grid.pageSettings.pageSize;
                 let sIndex: number = visualData.indexOf(this.expandCollapseRec);
-                const tempdata: ITreeData[] = visualData.slice(sIndex, sIndex + resourceCount.length);
-                if (tempdata.length < resourceCount.length && sIndex >= 0 && startIndex !== 0) {
-                    sIndex = visualData.length - resourceCount.length;
+                const tempdata: ITreeData[] = visualData.slice(sIndex, sIndex + resourceCount);
+                if (tempdata.length < resourceCount && sIndex >= 0 && startIndex !== 0) {
+                    sIndex = visualData.length - resourceCount;
                     sIndex = sIndex > 0 ? sIndex : 0;
-                    startIndex = sIndex;
                     endIndex = visualData.length;
+                    if (endIndex - startIndex < resourceCount) {
+                        const newRowsCount: number = sIndex - startIndex;
+                        startIndex = sIndex;
+                        if (visualData.indexOf(this.expandCollapseRec) > visualData.length - resourceCount / 2) {
+                            const newTranslateY: number = translateY + (newRowsCount * this.parent.grid.getRowHeight());
+                            (this.parent.grid.contentModule as VirtualTreeContentRenderer)['translateY'] = newTranslateY;
+                            (this.parent.grid.contentModule as VirtualContentRenderer).virtualEle.adjustTable(0, newTranslateY);
+                        }
+                    }
                 } else if ( getValue('isCollapseAll', this.parent)) {
                     startIndex = 0;
                     endIndex = this.parent.grid.pageSettings.pageSize - 1;

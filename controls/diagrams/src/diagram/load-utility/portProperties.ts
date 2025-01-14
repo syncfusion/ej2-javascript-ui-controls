@@ -54,7 +54,12 @@ export class PortProperties {
                     newPort.shape = 'Custom';
                 }
                 else {
-                    newPort.shape = port.shape.charAt(0).toUpperCase() + (port.shape).slice(1) as PortShapes;
+                    // 930796: EJ1 Diagram Fails to Load in EJ2 Diagram Builder when port shape is undefined
+                    if ((port as EJ1Port).shape) {
+                        newPort.shape = port.shape.charAt(0).toUpperCase() + (port.shape).slice(1) as PortShapes;
+                    } else {
+                        newPort.shape = 'Square';
+                    }
                 }
                 newPort.visibility = this.setPortVisibility(port.visibility);
                 portCollection.push(newPort);

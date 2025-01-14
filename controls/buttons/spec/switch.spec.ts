@@ -114,6 +114,14 @@ describe('Switch', () => {
             element.parentElement.click();
             expect(element.parentElement.children[1].classList.contains('e-switch-active')).toEqual(false);
         });
+        it('Programmatic input click updates checked state correctly', () => {
+            specSwitch = new Switch({change: changeFn}, '#specSwitch');
+            expect(specSwitch.checked).toEqual(false);
+            element.click();
+            expect(specSwitch.checked).toEqual(true);
+            expect(element.checked).toEqual(true);
+            expect(i).toEqual(1);
+        });
         it('Switch with change event', () => {
             specSwitch = new Switch({change: changeFn}, '#specSwitch');
             element.parentElement.click();

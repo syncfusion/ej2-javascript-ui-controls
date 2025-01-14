@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 28.1.38 (2025-01-07)
+## 28.1.39 (2024-01-14)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I932270` - The issue with "Need to load images with policy tokens in the React ImageEditor component" has been resolved.
+
+## 28.1.33 (2024-12-12)
+
+### Image Editor
+
+#### Features
+
+- The Image Editor component now includes support for image restrictions through `uploadSettings`. Developers can specify allowed image extensions and set minimum and maximum image sizes. If an image does not meet the criteria, users will receive an alert message, ensuring improved image validation and better control over uploads.
+
+- The Image Editor component now supports the `WebP` format, allowing users to upload and save WEBP images.
 
 ### Image Editor
 

@@ -148,6 +148,14 @@ export interface IHtmlKeyboardEvent {
      * Specifies the enter key configuration.
      */
     enterAction?: string
+    /**
+     * Defines tag to be used when enter key is pressed.
+     */
+    enterKey?: string
+    /**
+     * Defines tag to be used when shift enter key is pressed.
+     */
+    shiftEnterKey?: string
 }
 
 /**

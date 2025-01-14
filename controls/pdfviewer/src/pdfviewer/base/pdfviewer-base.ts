@@ -1633,8 +1633,10 @@ export class PdfViewerBase {
 
     private requestSuccess(data: any, documentData: string | Uint8Array, password: string): void {
         if (this.clientSideRendering) {
-            if (data.isDigitalSignaturePresent && !isNullOrUndefined(data.digitialSignatureFile) && data.digitialSignatureFile !== '') {
-                this.pdfViewer.fileByteArray = this.convertBase64(data.digitialSignatureFile);
+            if (data.isDigitalSignaturePresent && !isNullOrUndefined(data.digitialSignatureFile) && data.digitialSignatureFile
+                && this.pdfViewer.pdfRenderer.digitialByteArray && this.pdfViewer.pdfRenderer.digitialByteArray.length > 0) {
+                this.pdfViewer.fileByteArray = this.pdfViewer.pdfRenderer.digitialByteArray;
+                this.pdfViewer.pdfRenderer.digitialByteArray = null;
             }
             else if (isNullOrUndefined(this.pdfViewer.fileByteArray) && this.pdfViewer.uploadedFileByteArray) {
                 this.pdfViewer.fileByteArray = this.pdfViewer.uploadedFileByteArray;

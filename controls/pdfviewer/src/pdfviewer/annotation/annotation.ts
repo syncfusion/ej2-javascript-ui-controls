@@ -1825,6 +1825,7 @@ export class Annotation {
      */
     public redo(): void {
         const actionObject: IActionElements = this.redoCollection.pop();
+        actionObject.annotation = (this.pdfViewer.nameTable as any)[actionObject.annotation.id];
         if (actionObject) {
             let shapeType: string = actionObject.annotation.shapeAnnotationType;
             this.isUndoRedoAction = true;
@@ -4990,7 +4991,14 @@ export class Annotation {
                     this.triggerAnnotationPropChange(currentAnnotation, false, false, false, true);
                 }
                 if (annotation.fillColor && currentAnnotation.fillColor !== annotation.fillColor) {
+                    redoClonedObject.fillColor = annotation.fillColor;
+                    this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Shape Fill', '', clonedObject, redoClonedObject);
                     this.triggerAnnotationPropChange(currentAnnotation, true, false, false, false);
+                }
+                if (annotation.fontColor && currentAnnotation.fontColor !== annotation.fontColor) {
+                    redoClonedObject.fontColor = annotation.fontColor;
+                    this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'fontColor', '', clonedObject, redoClonedObject);
+                    this.triggerAnnotationPropChange(currentAnnotation, false, false, false, false);
                 }
                 if (annotation.strokeColor && currentAnnotation.strokeColor !== annotation.strokeColor) {
                     this.triggerAnnotationPropChange(currentAnnotation, false, true, false, false);

@@ -169,7 +169,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     private clickHandler(evt?: Event): void {
         this.isDrag = false;
         this.focusOutHandler();
-        const beforeChangeEventArgs: BeforeChangeEventArgs = { event: evt, cancel: false, checked: this.element.checked };
+        const beforeChangeEventArgs: BeforeChangeEventArgs = { event: evt, cancel: false, checked: this.checked };
         this.trigger('beforeChange', beforeChangeEventArgs);
         if (!beforeChangeEventArgs.cancel) {
             this.changeState(!beforeChangeEventArgs.checked);

@@ -1412,6 +1412,9 @@ export class SfdtReader {
                 } else {
                     if(this.isPaste && !isNullOrUndefined(this.documentHelper.owner.editorModule.pasteImageIndex)) {
                         image.imageString = this.documentHelper.owner.editorModule.pasteImageIndex.get(inline[imageStringProperty[this.keywordIndex]]);
+                        if (!isNullOrUndefined(inline[metaFileImageStringProperty[this.keywordIndex]])) {
+                            image.metaFileImageString = this.documentHelper.owner.editorModule.pasteImageIndex.get(inline[metaFileImageStringProperty[this.keywordIndex]]);
+                        }
                     }
                     else {
                         image.imageString = inline[imageStringProperty[this.keywordIndex]];

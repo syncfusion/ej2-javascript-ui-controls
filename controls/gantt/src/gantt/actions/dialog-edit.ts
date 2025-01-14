@@ -2293,10 +2293,11 @@ export class DialogEdit {
                 disabled = true;
             }
             if (this.editedRecord.hasChildRecords) {
-                if ((column.field === this.parent.taskFields.endDate && ((!isNullOrUndefined(this.editedRecord['isManual']) &&
-                    this.editedRecord['isManual'] === false) || this.parent.taskMode === 'Auto')) || column.field === this.parent.taskFields.duration ||
-                    column.field === this.parent.taskFields.progress || column.field === this.parent.taskFields.work ||
-                    column.field === this.parent.taskFields.type) {
+                if ((column.field === this.parent.taskFields.endDate &&
+                    ((!isNullOrUndefined(this.editedRecord[this.parent.taskFields.manual]) &&
+                    this.editedRecord[this.parent.taskFields.manual] === false) || this.parent.taskMode === 'Auto')) ||
+                    column.field === this.parent.taskFields.duration || column.field === this.parent.taskFields.progress ||
+                    column.field === this.parent.taskFields.work || column.field === this.parent.taskFields.type) {
                     disabled = true;
                 }
             }

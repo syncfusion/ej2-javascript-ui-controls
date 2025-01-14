@@ -2804,7 +2804,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.placeHolderWrapper.innerHTML = this.placeholder;
                 if (this.inputElement.textContent.length === 0 && this.inputElement.childNodes.length < 2 && !isNOU(this.inputElement.firstChild) && (this.inputElement.firstChild.nodeName === 'BR' ||
                 ((this.inputElement.firstChild.nodeName === 'P' || this.inputElement.firstChild.nodeName === 'DIV') && !isNOU(this.inputElement.firstChild.firstChild) &&
-                this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
+                this.inputElement.firstChild.childNodes.length < 2 && this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
                     this.placeHolderWrapper.classList.add('enabled');
                 } else {
                     this.placeHolderWrapper.classList.remove('enabled');
@@ -3550,7 +3550,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const value: string = this.getUpdatedValue();
             this.setProperties({ value: value });
             this.valueContainer.value = this.value;
-            this.notify(events.toolbarRefresh, { args: e, documentNode: document });
             this.isValueChangeBlurhandler = true;
             this.invokeChangeEvent();
             this.isFocusOut = true;

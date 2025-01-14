@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I663652` - The calculations for both sum and intermediate sum indexes have been corrected.
+
 ## 28.1.38 (2025-01-07)
 
 ### Chart

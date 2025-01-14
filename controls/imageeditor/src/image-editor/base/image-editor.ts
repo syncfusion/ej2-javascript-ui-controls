@@ -1297,7 +1297,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('toolbar', { prop: 'create-contextual-toolbar', onPropertyChange: false });
         }
         if (!this.uploadSettings.allowedExtensions) {
-            this.uploadSettings.allowedExtensions = '.jpg, .jpeg, .png, .svg, .webp';
+            this.setProperties({ uploadSettings: { allowedExtensions: '.jpg, .jpeg, .png, .svg, .webp' } }, true);
         } else {
             this.notify('draw', { prop: 'setNullExtension', value: {extension: false }});
         }
@@ -3526,7 +3526,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const words: string = this.getExtensionString();
         const fileSizeObj: Object = { key: 'MinMaxSize' };
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: fileSizeObj }});
-        const andObj: Object = { key: 'and' };
+        const andObj: Object = { key: 'And' };
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: andObj }});
         let size: string;
         if (this.uploadSettings.minFileSize && this.uploadSettings.maxFileSize) {

@@ -4,6 +4,7 @@
 import { IToolbarStatus } from "../../../src";
 import { RichTextEditor, MarkdownFormatter, dispatchEvent, ToolbarStatusEventArgs } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
+import { MarkdownToolbarStatus } from '../../../src/rich-text-editor/actions/markdown-toolbar-status';
 
 describe(' Markdown editor update toolbar ', () => {
     let rteObj: RichTextEditor;
@@ -188,7 +189,7 @@ A double enter will end them
         });
     });
 
-    describe(' EJ2-13502 - Toolbar active state on focusOut', () => {
+    describe(' 931255 - Toolbar active state on focusOut', () => {
         let controlId: string;
         let status: IToolbarStatus;
         let editNode: HTMLTextAreaElement;
@@ -208,7 +209,7 @@ A double enter will end them
             editNode.style.height = "200px";
             controlId = rteObj.element.id;
         });
-        it(' Remove the active state of Bold toolbar item while click on document ', () => {
+        it(' Maintain the active state of Bold toolbar item while click on document ', () => {
             rteObj.formatter.editorManager.markdownSelection.setSelection(editNode, 0, 6);
             document.getElementById(controlId + "_toolbar_Bold").click();
             document.body.focus();
@@ -217,8 +218,11 @@ A double enter will end them
             (rteObj as any).inputElement.blur();
             document.body.click();
             dispatchEvent(rteObj.contentModule.getEditPanel(), 'focusout');
-            expect((rteObj.markdownEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(false);
-            expect(status.bold).toEqual(false);
+            expect((rteObj.markdownEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(true);
+            expect(status.bold).toEqual(true);
+            const args: { documentNode: Node | null } = { documentNode: document };
+            const markdownToolbarStatus = new MarkdownToolbarStatus(rteObj);
+            markdownToolbarStatus['onRefreshHandler'](args);
         });
         afterAll(() => {
             destroy(rteObj);

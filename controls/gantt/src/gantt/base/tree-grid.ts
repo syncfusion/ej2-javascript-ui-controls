@@ -212,6 +212,9 @@ export class GanttTreeGrid {
         setValue('contentModule.objectEqualityChecker', this.objectEqualityChecker, this.parent.treeGrid.grid);
     }
     private dataBound(args: object): void {
+        if (this.parent.isReact) {
+            this.parent['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
+        }
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
         if (this.parent.isVirtualScroll) {

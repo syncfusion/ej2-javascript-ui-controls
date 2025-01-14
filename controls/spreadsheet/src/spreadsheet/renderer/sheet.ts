@@ -224,6 +224,7 @@ export class SheetRender implements IRenderer {
      */
     public renderTable(args: SheetRenderArgs): void {
         let indexes: number[]; let row: Element; let hRow: Element; const sheet: SheetModel = this.parent.getActiveSheet();
+        let cell: Element;
         const frag: DocumentFragment = document.createDocumentFragment();
         frag.appendChild(this.headerPanel); frag.appendChild(this.contentPanel);
         if (this.parent.allowScrolling) {
@@ -294,11 +295,21 @@ export class SheetRender implements IRenderer {
                     this.cellRenderer.renderRowHeader(indexes[0], hRow);
                 }
             }
-            this.cellRenderer.render(<CellRenderArgs>{colIdx: indexes[1], rowIdx: indexes[0], cell: value,
+            cell = this.cellRenderer.render(<CellRenderArgs>{colIdx: indexes[1], rowIdx: indexes[0], cell: value,
                 address: key, lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: true, row: row, hRow: hRow,
                 pRow: row.previousSibling, pHRow: hRow.previousSibling, isRefreshing: args.isRefreshing,
                 first: layout ? (layout.includes('Row') ? (indexes[0] === args.indexes[0] ? 'Row' : (layout.includes('Column') ? (
                     indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' });
+            const notFirstRow: boolean = this.parent.scrollSettings.enableVirtualization && this.parent.viewport.topIndex !==
+                skipHiddenIdx(sheet, 0, true);
+            const notFirstCol: boolean = this.parent.scrollSettings.enableVirtualization && this.parent.viewport.leftIndex !==
+                skipHiddenIdx(sheet, 0, true, 'columns');
+            if (notFirstRow) {
+                this.checkRowMerge(indexes, args.indexes, cell, value, sheet);
+            }
+            if (notFirstCol) {
+                this.checkColMerge(indexes, args.indexes, cell, value, sheet);
+            }
             if (frozenCol && indexes[1] === lastFrozenCol) {
                 row = null;
             }

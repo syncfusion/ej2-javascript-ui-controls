@@ -1075,15 +1075,15 @@ export class ChartRows extends DateProcessor {
                 }
                 if (isNaN(parseInt(labelString, 10))) {
                     labelDiv = '<span class="' + cls.taskLabel + '" style="line-height:' +
-                        (data['isManual'] && data.hasChildRecords ? (Math.floor((60 / 100) * this.taskBarHeight)) : (this.taskBarHeight - 1)) +
-                        'px; text-align:' + (this.parent.enableRtl ? 'right;' : 'left;') +
+                        (data[this.parent.taskFields.manual] && data.hasChildRecords ? (Math.floor((60 / 100) * this.taskBarHeight)) :
+                            (this.taskBarHeight - 1)) + 'px; text-align:' + (this.parent.enableRtl ? 'right;' : 'left;') +
                         'display:' + 'inline-block;' +
                         'width:' + (data.ganttProperties.width - 10) + 'px; height:' +
                         this.taskBarHeight + 'px;"></span>';
                 } else {
                     labelDiv = '<span class="' +
                     cls.taskLabel + '" style="line-height:' +
-                        (data['isManual'] && data.hasChildRecords ? (Math.floor((60 / 100) * this.taskBarHeight)) : (this.taskBarHeight - 1)) + 'px;' +
+                        (data[this.parent.taskFields.manual] && data.hasChildRecords ? (Math.floor((60 / 100) * this.taskBarHeight)) : (this.taskBarHeight - 1)) + 'px;' +
                         (this.parent.viewType === 'ResourceView' ? 'display:inline-flex;' : '') +
                         (this.parent.viewType === 'ResourceView' ? 'width:' + (data.ganttProperties.width - 10) : '') + 'px; height:' +
                         (this.taskBarHeight - 1) + 'px;' + (this.parent.viewType === 'ResourceView' ? 'display: inline-flex;' : '') +

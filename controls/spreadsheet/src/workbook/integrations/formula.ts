@@ -1005,7 +1005,7 @@ export class WorkbookFormula {
                 sheetId = sheet.id.toString();
                 family = this.calculateInstance.getSheetFamilyItem(sheetId);
                 token = family.isSheetMember ? family.parentObjectToToken.get(sheetId) : '';
-                sheet.isSheetCalculated = true;
+                this.parent.setSheetPropertyOnMute(sheet, 'isSheetCalculated', true);
                 options.sheet = sheet;
                 sheet.rows.forEach((row: RowModel, rowIdx: number): void => {
                     options.rowIndex = rowIdx;

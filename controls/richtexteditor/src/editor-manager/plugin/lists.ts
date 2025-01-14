@@ -78,6 +78,17 @@ export class Lists {
         }
         return false;
     }
+    private createAutoList(enterKey: string, shiftEnterKey: string): boolean {
+        const autoListRules: Record<string, Record<string, boolean>> = {
+            BR: { BR: true, P: true, DIV: true },
+            P: { BR: false, P: true, DIV: true },
+            DIV: { BR: false, P: true, DIV: true }
+        };
+        if (autoListRules[enterKey as string] && autoListRules[enterKey as string][shiftEnterKey as string] !== undefined) {
+            return autoListRules[enterKey as string][shiftEnterKey as string];
+        }
+        return false;
+    }
     private spaceList(e: IHtmlKeyboardEvent): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
@@ -93,7 +104,8 @@ export class Lists {
         const startElementOLTest: boolean = this.testCurrentList(range);
         const preElementOLTest : boolean = this.testList(preElement);
         const nextElementOLTest : boolean = this.testList(nextElement);
-        if (!preElementOLTest && !nextElementOLTest && preElemULStart !== '*' && nextElemULStart !== '*') {
+        const nextElementBRTest : boolean = (range.startContainer as Element).previousElementSibling && (range.startContainer as Element).previousElementSibling.tagName === 'BR';
+        if (!preElementOLTest && !nextElementOLTest && preElemULStart !== '*' && nextElemULStart !== '*' && (this.createAutoList(e.enterKey, e.shiftEnterKey) || !nextElementBRTest)) {
             const brElement: HTMLElement = createElement('br');
             if (startElementOLTest) {
                 range.startContainer.textContent = range.startContainer.textContent.slice(

@@ -2465,7 +2465,11 @@ export class FormDesigner {
         case 'SignatureField': {
             obj.formFieldAnnotationType = formFieldType;
             obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
-            obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ? (options as unknown as SignatureIndicatorSettings).backgroundColor : '#daeaf7ff';
+            obj.isReadonly = this.pdfViewer.signatureFieldSettings.isReadOnly ? this.pdfViewer.signatureFieldSettings.isReadOnly :
+                (options.isReadOnly ? options.isReadOnly : false);
+            obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ?
+                PdfViewerUtils.setTransparencyToHex(this.colorNametoHashValue(
+                    (options as unknown as SignatureIndicatorSettings).backgroundColor)) : obj.isReadonly ? 'trasnparent' : '#daeaf7ff';
             obj.borderColor = !isNullOrUndefined((options as TextFieldSettings).borderColor) ?
                 (options as TextFieldSettings).borderColor : '#303030';
             obj.fontSize = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).fontSize) ?
@@ -2473,8 +2477,6 @@ export class FormDesigner {
             (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : 'None';
             obj.name = !isNullOrUndefined(options.name) ? options.name : 'Signature' + this.formFieldIndex;
             obj.isRequired = options.isRequired ? options.isRequired : false;
-            obj.isReadonly = this.pdfViewer.signatureFieldSettings.isReadOnly ? this.pdfViewer.signatureFieldSettings.isReadOnly :
-                (options.isReadOnly ? options.isReadOnly : false);
             obj.thickness = !isNullOrUndefined((options as any).thickness) ? (options as any).thickness : 1;
             const indicatorSettings: any = (options as SignatureFieldSettings).signatureIndicatorSettings ?
                 (options as SignatureFieldSettings).signatureIndicatorSettings :
@@ -2491,7 +2493,12 @@ export class FormDesigner {
         case 'InitialField': {
             obj.formFieldAnnotationType = formFieldType;
             obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
-            obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ? (options as unknown as SignatureIndicatorSettings).backgroundColor : '#daeaf7ff';
+            (obj as any).isReadonly = this.pdfViewer.initialFieldSettings.isReadOnly ?
+                this.pdfViewer.initialFieldSettings.isReadOnly : (options.isReadOnly ? options.isReadOnly : false);
+            obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ?
+                PdfViewerUtils.setTransparencyToHex(this.colorNametoHashValue(
+                    (options as unknown as SignatureIndicatorSettings).backgroundColor)) : (obj as any).isReadonly ? 'trasnparent' :
+                    '#daeaf7ff';
             obj.borderColor = !isNullOrUndefined((options as TextFieldSettings).borderColor) ?
                 (options as TextFieldSettings).borderColor : '#303030';
             obj.fontSize = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).fontSize) ?
@@ -2500,8 +2507,6 @@ export class FormDesigner {
             (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : 'None';
             (obj as any).name = !isNullOrUndefined(options.name) ? options.name : 'Initial' + this.formFieldIndex;
             (obj as any).isRequired = options.isRequired ? options.isRequired : false;
-            (obj as any).isReadonly = this.pdfViewer.initialFieldSettings.isReadOnly ?
-                this.pdfViewer.initialFieldSettings.isReadOnly : (options.isReadOnly ? options.isReadOnly : false);
             (obj as any).isInitialField = true;
             const indicatorSettingsInitial: any = (options as InitialFieldSettings).initialIndicatorSettings ?
                 (options as InitialFieldSettings).initialIndicatorSettings :
@@ -4415,7 +4420,18 @@ export class FormDesigner {
                 );
                 for (let k: number = 0; k < formFieldNotContains.length; k++) {
                     const items: any = this.loadedFormFieldValue(formFieldNotContains[parseInt(k.toString(), 10)]);
-                    formFieldsData.push({ Key: items.id + '_content', FormField: items });
+                    if (items.formFieldAnnotationType === 'RadioButton') {
+                        const index: number = formFieldsData.findIndex((field: any) => field.FormField.name === items.name);
+                        if (index && index >= 0) {
+                            formFieldsData[parseInt(index.toString(), 10)].FormField.radiobuttonItem.push(items);
+                        }
+                        else {
+                            formFieldsData.push({ Key: items.id + '_content', FormField: items });
+                        }
+                    }
+                    else {
+                        formFieldsData.push({ Key: items.id + '_content', FormField: items });
+                    }
                 }
             }
             for (let i: number = 0; i < formFieldsData.length; i++) {

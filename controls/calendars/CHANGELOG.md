@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.38 (2025-01-07)
+## 28.1.39 (2024-01-14)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I666998` - Fixed an issue where the start and end date selection was not maintained in the popup.
+
+## 28.1.37 (2024-12-31)
 
 ### DateRangePicker
 

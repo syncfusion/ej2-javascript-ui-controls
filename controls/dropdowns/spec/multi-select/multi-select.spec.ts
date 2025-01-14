@@ -1465,7 +1465,7 @@ describe('MultiSelect', () => {
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
             (<any>listObj).keyUp(keyboardEventArgs);
-            expect((<any>listObj).list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+            expect((<any>listObj).list.classList.contains(dropDownBaseClasses.noData)).toBe(true);
             listObj.destroy();
         });
         it('filtering with same selected value in Grouping', () => {
@@ -1493,7 +1493,7 @@ describe('MultiSelect', () => {
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput();
             (<any>listObj).keyUp(keyboardEventArgs);
-            expect((<any>listObj).list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+            expect((<any>listObj).list.classList.contains(dropDownBaseClasses.noData)).toBe(true);
             (<any>listObj).inputElement.value = "";
             //open action validation
             keyboardEventArgs.altKey = false;
@@ -11813,6 +11813,13 @@ describe('MultiSelect', () => {
             listObj.appendTo(element);
             (<any>listObj).element.setAttribute('autofocus', '');
             (<any>listObj).checkAutoFocus ();
+        });
+        it('- updateOldPropCssClass ', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:false,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            listObj.updateOldPropCssClass('e-custom-class');
         });
     });
 });

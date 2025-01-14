@@ -35,6 +35,14 @@
     content: '';
   }
 
+  .e-ddl.e-control-wrapper.e-input-group .e-ddl-icon.e-ddl-disable-icon {
+    position: relative;
+  }
+
+  .e-ddl.e-control-wrapper.e-input-group .e-ddl-icon.e-ddl-disable-icon::before {
+    content: '';
+  }
+
   .e-ddl-device-filter .e-filter-parent {
     background-color: $ddl-filter-background-color;
   }

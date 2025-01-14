@@ -1544,10 +1544,8 @@ export class DateRangePicker extends CalendarBase {
                 if (range.length > 1) {
                     this.invalidValueString = null;
                     const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
-                    const start : Date = this.globalize.parseDate(this.getAmPmValue(range[0]), dateOptions);
-                    const end : Date = this.globalize.parseDate(this.getAmPmValue(range[1]), dateOptions);
-                    const startDate: Date = this.getStartEndDate(start, false, range, dateOptions);
-                    const endDate: Date = this.getStartEndDate(end, true, range, dateOptions);
+                    const startDate: Date = this.globalize.parseDate(this.getAmPmValue(range[0]).trim(), dateOptions);
+                    const endDate: Date = this.globalize.parseDate(this.getAmPmValue(range[1]).trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
                         const prevStartVal: Date = this.startValue;
                         this.startValue = startDate;
@@ -1617,12 +1615,10 @@ export class DateRangePicker extends CalendarBase {
         this.updateHiddenInput();
     }
 
-    private getStartEndDate(date: Date, isEnd: boolean, range: string[], dateOptions: object): Date {
-        if (this.depth === 'Month') {
-            return this.globalize.parseDate(this.getAmPmValue(range[isEnd ? 1 : 0]).trim(), dateOptions);
-        } else if (this.depth === 'Year' && !isNullOrUndefined(date)) {
+    private getStartEndDate(date: Date, isEnd: boolean): Date {
+        if (this.currentView() === 'Year' && !isNullOrUndefined(date)) {
             return new Date(date.getFullYear(), date.getMonth() + (isEnd ? 1 : 0), isEnd ? 0 : 1);
-        } else if (!isNullOrUndefined(date)) {
+        } else if (this.currentView() === 'Decade' && !isNullOrUndefined(date)) {
             return new Date(date.getFullYear(), isEnd ? 11 : 0, isEnd ? 31 : 1);
         } else {
             return null;
@@ -2087,7 +2083,7 @@ export class DateRangePicker extends CalendarBase {
                     const isDisabledCell: boolean = (!ele.classList.contains(DISABLED) || ele.classList.contains(DATEDISABLED));
                     if (!ele.classList.contains(WEEKNUMBER) && isDisabledCell) {
                         const eleDate: Date = this.getIdValue(null, ele);
-                        const startDateValue: Date = new Date(+this.startValue);
+                        const startDateValue: Date = this.currentView() === 'Month' ? new Date(+this.startValue) : this.getStartEndDate(new Date(+this.startValue), false);
                         const eleDateValue: Date = new Date(+eleDate);
                         if (eleDateValue.setHours(0, 0, 0, 0) >= startDateValue.setHours(0, 0, 0, 0) && +eleDate <= +currentDate) {
                             addClass([ele], RANGEHOVER);
@@ -2126,9 +2122,11 @@ export class DateRangePicker extends CalendarBase {
                         const eleDate: Date = this.getIdValue(null, ele);
                         const eleDateValue: Date = this.getIdValue(null, ele);
                         if (!isNullOrUndefined(this.endValue)) {
+                            const eleStartDateValue: Date = this.currentView() === 'Month' ? new Date(+this.startValue) : this.getStartEndDate(new Date(+this.startValue), false);
+                            const eleEndDateValue: Date = this.currentView() === 'Month' ? new Date(+this.endValue) : this.getStartEndDate(new Date(+this.endValue), true);
                             if (this.currentView() === this.depth &&
-                                +eleDateValue.setHours(0, 0, 0, 0) >= +new Date(+this.startValue).setHours(0, 0, 0, 0)
-                                && +eleDateValue.setHours(0, 0, 0, 0) <= +new Date(+this.endValue).setHours(0, 0, 0, 0) &&
+                                +eleDateValue.setHours(0, 0, 0, 0) >= +eleStartDateValue.setHours(0, 0, 0, 0)
+                                && +eleDateValue.setHours(0, 0, 0, 0) <= +eleEndDateValue.setHours(0, 0, 0, 0) &&
                                 !this.isSameStartEnd(new Date(+this.startValue), new Date(+this.endValue)) &&
                                 +new Date(+this.startValue).setHours(0, 0, 0, 0) >= +this.min
                                 && +new Date(+this.endValue).setHours(0, 0, 0, 0) <= +this.max
@@ -2147,7 +2145,7 @@ export class DateRangePicker extends CalendarBase {
                             removeClass([ele], [RANGEHOVER]);
                         }
                         if (!ele.classList.contains(OTHERMONTH)) {
-                            const startDateValue: Date = new Date(+this.startValue);
+                            const startDateValue: Date = this.currentView() === 'Month' ? new Date(+this.startValue) : this.getStartEndDate(new Date(+this.startValue), false);
                             let eleDateValue: Date = new Date(+eleDate);
                             if (this.currentView() === this.depth &&
                                 +eleDateValue.setHours(0, 0, 0, 0) === +startDateValue.setHours(0, 0, 0, 0)
@@ -2158,7 +2156,7 @@ export class DateRangePicker extends CalendarBase {
                                 addClass([ele], [STARTDATE, SELECTED]);
                                 this.addSelectedAttributes(ele, this.startValue, true);
                             }
-                            const endDateValue: Date = new Date(+this.endValue);
+                            const endDateValue: Date = this.currentView() === 'Month' ? new Date(+this.endValue) : this.getStartEndDate(new Date(+this.endValue), true);
                             if (this.currentView() === 'Year') {
                                 eleDateValue = new Date(eleDateValue.getFullYear(), eleDateValue.getMonth() + 1, 0);
                             } else if (this.currentView() === 'Decade') {
@@ -2249,14 +2247,39 @@ export class DateRangePicker extends CalendarBase {
         if (event) {
             event.preventDefault();
         }
-        const date: Date = isNullOrUndefined(event) ? this.getIdValue(null, element)
+        let isValue: boolean;
+        let startDateValue : Date;
+        let endDateValue : Date;
+        const value: string = (<HTMLInputElement>this.inputElement).value;
+        if (!isNullOrUndefined(value) && value.trim() !== '') {
+            const range: string[] = value.split(' ' + this.separator + ' ');
+            if (range.length > 1 && ((this.currentView() === 'Year' && this.depth === 'Year')
+                || (this.currentView() === 'Decade' && this.depth === 'Decade'))) {
+                const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+                startDateValue = this.globalize.parseDate(this.getAmPmValue(range[0]).trim(), dateOptions);
+                endDateValue = this.globalize.parseDate(this.getAmPmValue(range[1]).trim(), dateOptions);
+                isValue = true;
+            }
+        }
+        let date: Date = isNullOrUndefined(event) ? this.getIdValue(null, element)
             : this.getIdValue(event, null);
+        if (!isNullOrUndefined(this.startValue)) {
+            if (this.currentView() === 'Year' && this.depth === 'Year') {
+                date = new Date(date.getFullYear(), date.getMonth(), this.startValue.getDate());
+            } else if (this.currentView() === 'Decade' && this.depth === 'Decade') {
+                date = new Date(date.getFullYear(), this.startValue.getMonth(), this.startValue.getDate());
+            }
+        }
         const y: number = date.getFullYear();
         const m: number = date.getMonth();
-        const firstDay: Date = new Date(y, m, 1);
-        const lastDay: Date = new Date(y, m + 1, 0);
-        const firstMonth: Date = new Date(y, 0, 1);
-        const lastMonth: Date = new Date(y, 11, 31);
+        const firstDay: Date = isValue ? new Date(y, m, startDateValue.getDate(), startDateValue.getHours(), startDateValue.getMinutes(),
+                                                  startDateValue.getSeconds()) : new Date(y, m, 1);
+        const lastDay: Date = isValue ? new Date(y, m, endDateValue.getDate(), endDateValue.getHours(), endDateValue.getMinutes(),
+                                                 endDateValue.getSeconds()) : new Date(y, m + 1, 0);
+        const firstMonth: Date = isValue ? new Date(y, startDateValue.getMonth(), startDateValue.getDate(), startDateValue.getHours(),
+                                                    startDateValue.getMinutes(), startDateValue.getSeconds()) : new Date(y, 0, 1);
+        const lastMonth: Date = isValue ? new Date(y, endDateValue.getMonth(), endDateValue.getDate(), endDateValue.getHours(),
+                                                   endDateValue.getMinutes(), endDateValue.getSeconds()) : new Date(y, 11, 31);
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             if (!this.isMobile || this.isMobile && !this.endButton.element.classList.contains(ACTIVE)) {
                 this.removeSelection();

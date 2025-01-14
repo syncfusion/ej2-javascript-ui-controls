@@ -165,6 +165,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private isUpdateHeaderHeight: boolean = false;
     private isUpdateFooterHeight: boolean = false;
     private filterArgs: KeyboardEventArgs;
+    private isReactTemplateUpdate: boolean = false;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -1887,6 +1888,7 @@ export class DropDownList extends DropDownBase implements IInput {
             if (!this.isSecondClick) {
                 setTimeout(() => {
                     proxy.cloneElements(); proxy.isSecondClick = true;
+                    proxy.isSecondClick = proxy.isReact && proxy.isFiltering() && proxy.dataSource instanceof DataManager && !proxy.list.querySelector('ul') ? false : true;
                 }, duration);
             }
         } else {
@@ -2744,6 +2746,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.getInitialData){
             this.updateActionCompleteDataValues(ulElement, list);
             this.getInitialData = false;
+            this.isReactTemplateUpdate = true;
             this.searchLists(this.filterArgs);
             return;
         }
@@ -3175,6 +3178,9 @@ export class DropDownList extends DropDownBase implements IInput {
                             addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
                         }
                         this.renderReactTemplates();
+                        if (this.isReact && this.isFiltering() && this.dataSource instanceof DataManager && this.list.querySelector('ul') && !this.isSecondClick) {
+                            this.executeCloneElements();
+                        }
                         if (!isNullOrUndefined(this.popupObj)) {
                             this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
                         }
@@ -3267,6 +3273,10 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.destroyPopup();
                 if (this.isFiltering() && this.actionCompleteData.list && this.actionCompleteData.list.length > 0) {
                     this.isActive = true;
+                    if (this.isReactTemplateUpdate && this.isReact && this.itemTemplate && !this.enableVirtualization) {
+                        this.actionCompleteData.ulElement = this.renderItems(this.actionCompleteData.list, this.fields);
+                        this.isReactTemplateUpdate = false;
+                    }
                     if (this.enableVirtualization){
                         this.onActionComplete(this.ulElement, this.listData as any[], null, true);
                     }
@@ -4560,7 +4570,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (isSelectVal && this.enableVirtualization && this.selectedLI.classList) {
             isSelectVal = this.selectedLI.classList.contains('e-active');
         }
-        if (this.inputElement && this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
+        if (this.inputElement && this.inputElement.value === '' && !this.isInteracted && (this.isSelectCustom ||
             isSelectVal && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
             this.clearAll(e);

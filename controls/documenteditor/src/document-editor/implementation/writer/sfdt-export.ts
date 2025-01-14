@@ -1459,8 +1459,8 @@ export class SfdtExport {
     }
     private writeLine(line: LineWidget, offset: number, inlines: any): void {
         this.contentInline = [];
-        let isContentStarted: boolean = false;
-        let contentControl: boolean = false;
+        // let isContentStarted: boolean = false;
+        // let contentControl: boolean = false;
         let isEnd: boolean = line === this.endLine;
         let lineWidget: LineWidget = line;
         let started: boolean = false;
@@ -1474,29 +1474,29 @@ export class SfdtExport {
             let inline: any = undefined;
             length += element.length;
             started = length > offset;
-            if (element instanceof ContentControl) {
-                if (!started) {
-                    isContentStarted = element.type === 0 ? true : false;
-                }
-                contentControl = true;
-            }
-            if (element instanceof TextElementBox && element.hasOwnProperty('contentControlProperties') && started && !contentControl) {
-                isContentStarted = true;
-            }
-            if (element instanceof ContentControl) {
-                if (isContentStarted) {
-                    if (element.type === 1) {
-                        isContentStarted = false;
-                    }
-                }
-                if (contentControl) {
-                    if (element.type === 1) {
-                        contentControl = false;
-                    }
-                }
-            }
+            // if (element instanceof ContentControl) {
+            //     if (!started) {
+            //         isContentStarted = element.type === 0 ? true : false;
+            //     }
+            //     contentControl = true;
+            // }
+            // if (element instanceof TextElementBox && element.hasOwnProperty('contentControlProperties') && started && !contentControl) {
+            //     isContentStarted = true;
+            // }
+            // if (element instanceof ContentControl) {
+            //     if (isContentStarted) {
+            //         if (element.type === 1) {
+            //             isContentStarted = false;
+            //         }
+            //     }
+            //     if (contentControl) {
+            //         if (element.type === 1) {
+            //             contentControl = false;
+            //         }
+            //     }
+            // }
             ended = isEnd && length >= this.endOffset;
-            if (!started || isContentStarted) {
+            if (!started) {
                 continue;
             }
             if (element instanceof ContentControl || this.startContent || this.blockContent) {

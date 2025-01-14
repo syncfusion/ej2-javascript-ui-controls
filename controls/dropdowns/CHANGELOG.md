@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I933368` - Issue with "Filter input loss focus if the last letter is removed using backspace in listbox" has been resolved.
+
+### Mention
+
+#### Bug Fixes
+
+- `#FB64462` - Resolved an issue where the `readonly` feature was not functioning correctly when integrating the Rich Text Editor with the mention functionality.
+
 ## 28.1.38 (2025-01-07)
 
 ### DropDownTree

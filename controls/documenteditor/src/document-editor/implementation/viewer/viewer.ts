@@ -1523,27 +1523,29 @@ export class DocumentHelper {
     private compositionEnd = (event: CompositionEvent): void => {
         if (this.isComposingIME && !this.owner.isReadOnlyMode) {
             const text: string = this.getEditableDivTextContent();
-            if (text !== '') {
-                this.owner.editorModule.insertIMEText(text, false);
-            }
-            this.isComposingIME = false;
-            this.lastComposedText = '';
-            this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
-            this.editableDiv.innerHTML = '';
-            if (this.owner.editorHistoryModule) {
+            setTimeout(() => {
                 if (text !== '') {
-                    this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
+                    this.owner.editorModule.insertIMEText(text, false);
                 }
-                this.owner.editorHistoryModule.updateComplexHistory();
-                if (text === '') {
-                    //When the composition in live. The Undo operation will terminate the composition and empty text will be return from text box.
-                    //At that time the the history should be updated. Undo the operation and clear the redo stack. This undo operation will not be saved for redo operation.
-                    this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
-                    this.owner.editorHistoryModule.undo();
-                    this.owner.editorHistoryModule.redoStack.pop();
+                this.isComposingIME = false;
+                this.lastComposedText = '';
+                this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
+                this.editableDiv.innerHTML = '';
+                if (this.owner.editorHistoryModule) {
+                    if (text !== '') {
+                        this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
+                    }
+                    this.owner.editorHistoryModule.updateComplexHistory();
+                    if (text === '') {
+                        //When the composition in live. The Undo operation will terminate the composition and empty text will be return from text box.
+                        //At that time the the history should be updated. Undo the operation and clear the redo stack. This undo operation will not be saved for redo operation.
+                        this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
+                        this.owner.editorHistoryModule.undo();
+                        this.owner.editorHistoryModule.redoStack.pop();
+                    }
+                    this.owner.editorModule.isSkipOperationsBuild = false;
                 }
-                this.owner.editorModule.isSkipOperationsBuild = false;
-            }
+            }, 0);
         }
         event.preventDefault();
         this.isCompositionUpdated = false;
@@ -2622,11 +2624,23 @@ export class DocumentHelper {
             if(!isNullOrUndefined(this.owner.editorModule) && !isNullOrUndefined(this.owner.selectionModule)){
                 let contentControl: ContentControl = this.owner.editorModule.getContentControl();
                 let iscontentControl: boolean = this.owner.selectionModule.checkContentControlLocked();
-                if ((!isNullOrUndefined(contentControl) && !contentControl.contentControlProperties.lockContents && !this.isDocumentProtected && iscontentControl && event.button === 0) || (!isNullOrUndefined(contentControl) &&  !contentControl.contentControlProperties.lockContents && this.protectionType =='FormFieldsOnly' && event.button === 0)){
-                    if(contentControl.contentControlProperties.type === 'CheckBox'){
-                        this.owner.editor.toggleContentControlCheckBox(contentControl, !contentControl.contentControlProperties.isChecked);
-                        if (contentControl.contentControlProperties.isTemporary) {
-                            this.owner.editor.removeContentControl();
+                if ((!isNullOrUndefined(contentControl) && !contentControl.contentControlProperties.lockContents && iscontentControl && event.button === 0) || (!isNullOrUndefined(contentControl) && !contentControl.contentControlProperties.lockContents && this.protectionType == 'FormFieldsOnly' && event.button === 0)) {
+                    if (!this.owner.isReadOnly) {
+                        if (this.isDocumentProtected) {
+                            if ((this.selection.checkSelectionIsAtEditRegion() || this.isFormFillProtectedMode) && contentControl.contentControlProperties.type === 'CheckBox') {
+                                this.owner.editor.toggleContentControlCheckBox(contentControl, !contentControl.contentControlProperties.isChecked);
+                                if (contentControl.contentControlProperties.isTemporary) {
+                                    this.owner.editor.removeContentControl();
+                                }
+                            }
+                        }
+                        else {
+                            if (contentControl.contentControlProperties.type === 'CheckBox') {
+                                this.owner.editor.toggleContentControlCheckBox(contentControl, !contentControl.contentControlProperties.isChecked);
+                                if (contentControl.contentControlProperties.isTemporary) {
+                                    this.owner.editor.removeContentControl();
+                                }
+                            }
                         }
                     }
                 }
@@ -2643,6 +2657,9 @@ export class DocumentHelper {
             if (this.isMouseDown && this.isLeftButtonPressed(event) && this.isDocumentProtected
                 && this.protectionType === 'FormFieldsOnly' && this.selection) {
                 let widget: LineWidget = this.getLineWidget(touchPoint);
+                if (isNullOrUndefined(widget)) {
+                    return;
+                }
                 let formField: FieldElementBox = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
                 if (isNullOrUndefined(formField)) {
                     formField = this.selection.getCurrentFormField(true);
@@ -2713,6 +2730,14 @@ export class DocumentHelper {
             }
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !isNullOrUndefined(this.selection.caret)) {
                 this.selection.caret.style.display = 'none';
+            }
+            if (!isNullOrUndefined(this.dragStartParaInfo) && !isNullOrUndefined(this.dragEndParaInfo) && this.dragEndParaInfo.paragraph.equals(this.dragStartParaInfo.paragraph)
+                && this.dragStartParaInfo.offset < this.dragEndParaInfo.offset) {
+                let index = 0;
+                let currentInline: ElementInfo = this.dragStartParaInfo.paragraph.getInline(this.dragEndParaInfo.offset, index);
+                if (!isNullOrUndefined(currentInline.element) && currentInline.element instanceof ImageElementBox && currentInline.element.textWrappingStyle !== "Inline") {
+                    this.isDragStarted = false;
+                }
             }
             if (this.isDragStarted) {
                 this.isDragging = true;

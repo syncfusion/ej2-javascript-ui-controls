@@ -1311,6 +1311,50 @@ describe('ListBox', () => {
             expect(listObj.liCollections.length).toEqual(2);
             expect(listObj.liCollections[0].innerText).toEqual("McLaren Z1");
         });
+
+        it('EJ2-933368 - Filter input retains focus when the last letter is removed using backspace in listbox', () => {
+            listObj = new ListBox({ dataSource: vegetableData, allowFiltering: true }, elem);
+            let inputElement = listObj.list.querySelector('.e-input-filter') as HTMLInputElement;
+            inputElement.click();
+            inputElement.value = 'c';
+            listObj.dataBind();
+            listObj.keyDownStatus = true;
+            listObj.onInput();
+            listObj.KeyUp({
+                preventDefault: () => {},
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                metaKey: false,
+                char: '',
+                key: 'c',
+                charCode: 99,
+                keyCode: 67,
+                which: 67,
+                code: 'KeyC',
+            });
+            listObj.dataBind();
+            inputElement = listObj.list.querySelector('.e-input-filter') as HTMLInputElement;
+            inputElement.click();
+            inputElement.value = '';
+            listObj.dataBind();
+            listObj.keyDownStatus = true;
+            listObj.onInput();
+            listObj.KeyUp({
+                preventDefault: () => {},
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                metaKey: false,
+                char: '',
+                key: 'Backspace',
+                charCode: 0,
+                keyCode: 8,
+                which: 8,
+                code: 'Backspace',
+            });
+            expect(document.activeElement).toBe(inputElement);
+        });
     });
 
     describe('Coverage improvement', () => {

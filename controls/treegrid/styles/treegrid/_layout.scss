@@ -198,6 +198,19 @@
       }
     }
 
+    
+    .e-treegridexpand,
+    .e-treegridcollapse {
+      color: $treegrid-right-arrow-icon-color;
+      cursor: pointer;
+      font-size: $treegrid-right-arrow-icon-font-size;
+      height: $treegrid-right-arrow-icon-height;
+      padding: $treegrid-right-arrow-icon-padding;
+      text-align: center;
+      vertical-align: text-bottom;
+      width: $treegrid-right-arrow-icon-width;
+    }
+
     .e-treecell {
       display: table-cell;
       @if $skin-name == 'bootstrap5' or $skin-name == 'boostrap5-dark' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' or $theme-name == 'fluent2' {
@@ -458,21 +471,6 @@
           border-bottom-color: $childborder-color;
         }
       }
-    }
-  }
-
-  .e-treegrid,
-  .e-grid {
-    .e-treegridexpand,
-    .e-treegridcollapse {
-      color: $treegrid-right-arrow-icon-color;
-      cursor: pointer;
-      font-size: $treegrid-right-arrow-icon-font-size;
-      height: $treegrid-right-arrow-icon-height;
-      padding: $treegrid-right-arrow-icon-padding;
-      text-align: center;
-      vertical-align: text-bottom;
-      width: $treegrid-right-arrow-icon-width;
     }
   }
 

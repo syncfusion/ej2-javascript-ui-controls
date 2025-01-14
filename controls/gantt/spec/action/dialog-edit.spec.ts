@@ -13828,6 +13828,11 @@ describe('Add new record with notes value', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/3/2019')
         }
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
 describe('Dialog editing - With task name has -', () => {
     let ganttObj: Gantt;
@@ -14045,5 +14050,99 @@ describe('Dialog editing - With task name has -', () => {
         let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
         triggerMouseEvent(saveRecord, 'click');
         expect(ganttObj.flatData.length).toBe(1862);
+    });
+});
+describe('CR:933235-Decimal work value is updating, when record adding with dayWorkingTime', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks',
+                type: 'type'
+            },
+            taskType: 'FixedUnit',
+                editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            resources: [
+                { resourceId: 1, resourceName: 'Rose Fuller' },
+                { resourceId: 2, resourceName: 'Fuller King' }
+            ],
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'unit'
+            },
+            workUnit: 'Hour',
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll'
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            dayWorkingTime: [
+                { from: 9, to: 12 },
+                { from: 13, to: 16 },
+            ],
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'resources', headerText: 'Resources', width: '190' },
+                { field: 'work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'type', headerText: 'Task Type', width: '110' },
+            ],
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: '${Progress}%',
+            },
+            splitterSettings: {
+                    columnIndex: 2,
+            },
+            projectStartDate: new Date('03/28/2024'),
+            projectEndDate: new Date('07/28/2024')
+        }, done);
+    });
+    it('Adding task with resource with FixedUnit', () => {
+        ganttObj.openAddDialog();
+        let workField: any = document.querySelector('#' + ganttObj.element.id + 'work') as HTMLInputElement;
+        if (workField) {
+            let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'work')).ej2_instances[0];
+            inputObj.value = 8;
+            inputObj.dataBind();
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+            let resourceCheckbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            triggerMouseEvent(resourceCheckbox1, 'click');
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-primary') as HTMLElement;
+            triggerMouseEvent(saveButton, 'click');
+            expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(8);
+            expect(ganttObj.currentViewData.length).toBe(1);
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });

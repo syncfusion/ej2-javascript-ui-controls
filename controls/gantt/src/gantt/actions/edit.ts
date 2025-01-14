@@ -3946,9 +3946,13 @@ export class Edit {
         }
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
-        if (this.dialogModule.isAddNewResource && !this.parent.isEdit && this.parent.taskFields.work &&
-            this.parent.taskType !== 'FixedWork'){
-            this.parent.dataOperation.updateWorkWithDuration(cAddedRecord[0]);
+        if (this.dialogModule.isAddNewResource && !this.parent.isEdit && this.parent.taskFields.work) {
+            if (this.parent.taskType === 'FixedDuration') {
+                this.parent.dataOperation.updateWorkWithDuration(cAddedRecord[0]);
+            }
+            if (this.parent.taskType === 'FixedUnit') {
+                this.parent.dataOperation.updateDurationWithWork(cAddedRecord[0]);
+            }
         }
         this.updateRowIndex();
         this.parent.trigger('actionComplete', args);
@@ -4041,6 +4045,9 @@ export class Edit {
             const parentItem: IGanttData = this.parent.getParentTask(this.newlyAddedRecordBackup.parentItem);
             const parentIndex: number = parentItem.childRecords.indexOf(this.newlyAddedRecordBackup);
             parentItem.childRecords.splice(parentIndex, 1);
+            if (parentItem.childRecords.length === 0 && parentItem.hasChildRecords) {
+                parentItem.hasChildRecords = false;
+            }
         }
         flatRecords.splice(flatRecordsIndex, 1);
         currentViewData.splice(currentViewDataIndex, 1);

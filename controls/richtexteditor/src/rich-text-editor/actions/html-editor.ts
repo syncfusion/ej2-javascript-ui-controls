@@ -439,7 +439,9 @@ export class HtmlEditor {
                 const eventArgs: IHtmlKeyboardEvent = {
                     callBack: null,
                     event: ((e as NotifyArgs).args as KeyboardEventArgs),
-                    name: 'keydown-handler'
+                    name: 'keydown-handler',
+                    enterKey: this.parent.enterKey,
+                    shiftEnterKey: this.parent.shiftEnterKey
                 };
                 const actionBeginArgs: ActionBeginEventArgs = {
                     cancel: false,

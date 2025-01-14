@@ -3457,6 +3457,55 @@ describe('Remote data', () => {
     });
 });
 
+describe('Remote data with TotalRecords count', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                allowPaging: true,
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+            },
+            done
+        );
+    });
+    it('Expand Parent Row', function (done) {
+        rows = gridObj.getRows();
+        gridObj.dataBound = () => {
+            done();
+        }
+        gridObj.expandRow(rows[0]);
+    });
+    it('Check totalRecordsCount and then Collapse', function (done) {
+        const childrenCount = 10;
+        expect(gridObj.grid.pageSettings.totalRecordsCount === 60 + childrenCount).toBe(true);
+        rows = gridObj.getRows();
+        gridObj.collapseRow(rows[0]);
+        setTimeout(done, 500);
+    });
+    it('Check totalrecords count', () => {
+        expect(gridObj.grid.pageSettings.totalRecordsCount === 60).toBe(true);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
 describe('Checking template position in react', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {

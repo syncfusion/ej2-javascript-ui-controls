@@ -1131,7 +1131,10 @@ export class Render {
     }
 
     private rowCellBoundEvent(args: QueryCellInfoEventArgs): void {
-        let tCell: HTMLElement = args.cell as HTMLElement;
+        const tCell: HTMLElement = args.cell as HTMLElement;
+        let rowOuterDiv: HTMLElement = createElement('div', {
+            className: cls.PIVOT_ROW_CONTAINER
+        });
         if (tCell && (this.parent.notEmpty) && this.engine.headerContent) {
             const customClass: string = this.parent.hyperlinkSettings.cssClass;
             const index: string = this.parent.isTabular ? tCell.getAttribute('data-colindex') : '0';
@@ -1171,7 +1174,7 @@ export class Render {
                     if (!this.parent.isTabular) {
                         do {
                             if (level > 0) {
-                                tCell.appendChild(createElement('span', {
+                                rowOuterDiv.appendChild(createElement('span', {
                                     className: level === 0 ? '' : cls.NEXTSPAN
                                 }));
                             }
@@ -1180,7 +1183,7 @@ export class Render {
                         level = levelPosition ? (levelPosition - 1) : 0;
                         this.lastSpan = levelPosition ? this.lastSpan : 0;
                         if (!cell.hasChild && (!isValueCell ? level : 0) > 0) {
-                            tCell.appendChild(createElement('span', {
+                            rowOuterDiv.appendChild(createElement('span', {
                                 className: cls.LASTSPAN
                             }));
                         }
@@ -1203,7 +1206,7 @@ export class Render {
                         tCell.setAttribute('fieldname', fieldName);
                     }
                 } else {
-                    tCell = this.onOlapRowCellBoundEvent(tCell, cell);
+                    rowOuterDiv = this.onOlapRowCellBoundEvent(tCell, rowOuterDiv, cell);
                 }
                 let localizedText: string = cell.formattedText;
                 if (cell.type) {
@@ -1233,7 +1236,7 @@ export class Render {
                     tCell.classList.add(cls.ROWSHEADER);
                 }
                 if (cell.hasChild === true && !cell.isNamedSet) {
-                    tCell.appendChild(createElement('div', {
+                    rowOuterDiv.appendChild(createElement('div', {
                         className: (cell.isDrilled === true ? cls.COLLAPSE : cls.EXPAND) + ' ' + cls.ICON,
                         attrs: {
                             'title': cell.isDrilled === true ? this.parent.localeObj.getConstant('collapse') :
@@ -1241,7 +1244,7 @@ export class Render {
                         }
                     }));
                 }
-                tCell.appendChild(createElement('span', {
+                rowOuterDiv.appendChild(createElement('span', {
                     className: cls.CELLVALUE,
                     innerHTML: (this.parent.isRowCellHyperlink || cell.enableHyperlink ? '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>' : localizedText)
                 }));
@@ -1252,15 +1255,16 @@ export class Render {
                         (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
                         if ((this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName
                             === vSort.headerText) {
-                            tCell.appendChild(createElement('span', {
+                            rowOuterDiv.appendChild(createElement('span', {
                                 className: (vSort.sortOrder === 'Descending' ?
                                     'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
                                     'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon') + (cell.hasChild ? ' e-value-sort-align' : ''),
-                                styles: tCell.style.textAlign === 'right' ? 'float: left' : ''
+                                styles: rowOuterDiv.style.textAlign === 'right' ? 'float: left' : ''
                             }));
                         }
                     }
                 }
+                tCell.appendChild(rowOuterDiv);
             } else {
                 const innerText: string = tCell.innerText;
                 tCell.innerText = '';
@@ -1324,7 +1328,7 @@ export class Render {
         }
     }
 
-    private onOlapRowCellBoundEvent(tCell: HTMLElement, cell: IAxisSet): HTMLElement {
+    private onOlapRowCellBoundEvent(tCell: HTMLElement, rowOuterDiv: HTMLElement, cell: IAxisSet): HTMLElement {
         tCell.innerText = '';
         const rowMeasurePos: number = (this.engine as OlapEngine).rowMeasurePos;
         if (this.parent.enableVirtualization) {
@@ -1355,13 +1359,13 @@ export class Render {
                 }
                 let indent: number = 0;
                 for (let iPos: number = 0; iPos < nxtIndextCount; iPos++) {
-                    tCell.appendChild(createElement('span', {
+                    rowOuterDiv.appendChild(createElement('span', {
                         className: cls.NEXTSPAN
                     }));
                     indent++;
                 }
                 for (let iPos: number = 0; iPos < lastIndextCount && nxtIndextCount > 0; iPos++) {
-                    tCell.appendChild(createElement('span', {
+                    rowOuterDiv.appendChild(createElement('span', {
                         className: cls.LASTSPAN
                     }));
                 }
@@ -1427,12 +1431,12 @@ export class Render {
                 const hasChild: boolean = this.lvlCollection[this.lvlPosCollection[lvlPos as number]].hasChild;
                 const prevHasChild: boolean = lvlPos > 0 ? this.lvlCollection[this.lvlPosCollection[lvlPos - 1]].hasChild : false;
                 if (prevHasChild && !hasChild) {
-                    tCell.appendChild(createElement('span', {
+                    rowOuterDiv.appendChild(createElement('span', {
                         className: cls.LASTSPAN
                     }));
                 }
                 if (lvlPos !== currPos) {
-                    tCell.appendChild(createElement('span', {
+                    rowOuterDiv.appendChild(createElement('span', {
                         className: cls.NEXTSPAN
                     }));
                     indent++;
@@ -1441,12 +1445,12 @@ export class Render {
             }
             if (this.parent.dataSourceSettings.grandTotalsPosition === 'Top' && (!isNullOrUndefined(this.parent.olapEngineModule) && this.parent.olapEngineModule.olapValueAxis === 'row') && this.parent.dataType === 'olap' &&
                 (cell.valueSort.levelName.toString()).indexOf(this.parent.localeObj.getConstant('grandTotal') + this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) === 0) {
-                tCell.appendChild(createElement('span', {
+                rowOuterDiv.appendChild(createElement('span', {
                     className: cls.NEXTSPAN
                 }));
             }
             if (cell.memberType === 3 && cell.level === -1 && Object.keys(this.lvlCollection).length > 1) {
-                tCell.appendChild(createElement('span', {
+                rowOuterDiv.appendChild(createElement('span', {
                     className: cls.NEXTSPAN
                 }));
                 indent++;
@@ -1454,6 +1458,7 @@ export class Render {
             this.indentCollection[cell.rowIndex] = indent;
             this.maxIndent = this.maxIndent > indent ? this.maxIndent : indent;
         }
+        rowOuterDiv.setAttribute('fieldname', cell.hierarchy);
         tCell.setAttribute('fieldname', cell.hierarchy);
         const grandTotal: boolean = (this.parent.olapEngineModule.tupRowInfo[cell.ordinal] ?
             (this.parent.olapEngineModule.tupRowInfo[cell.ordinal].measurePosition === 0 ?
@@ -1462,7 +1467,7 @@ export class Render {
         if (grandTotal) {
             tCell.classList.add('e-gtot');
         }
-        return tCell;
+        return rowOuterDiv;
     }
 
     private columnCellBoundEvent(args: HeaderCellInfoEventArgs): void {

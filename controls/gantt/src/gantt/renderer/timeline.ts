@@ -129,6 +129,9 @@ export class Timeline {
      * @returns {void}
      */
     public processZooming(isZoomIn: boolean): void {
+        if (this.parent.isReact) {
+            this.parent['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
+        }
         this.isZoomToFit = false;
         this.isZoomedToFit = false;
         const action: string = isZoomIn ? 'ZoomIn' : 'ZoomOut';
@@ -285,6 +288,9 @@ export class Timeline {
      * @private
      */
     public processZoomToFit(): void {
+        if (this.parent.isReact) {
+            this.parent['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
+        }
         this.isZoomToFit = true;
         this.isZooming = false;
         this.isZoomedToFit = true;
@@ -1285,6 +1291,16 @@ export class Timeline {
         }
         case 'Day':
             lastDay.setHours(24, 0, 0, 0);
+            if (this.parent.timelineModule.customTimelineSettings.bottomTier.count === 6) {
+                if (((lastDay.getHours() - firstDay.getHours()) === -2)) {
+                    // Reducing 2-hrs to match one day for firstDay:
+                    firstDay.setTime(firstDay.getTime() - (2 * 3600000));
+                }
+                if (this.parent.isInDst(firstDay)) {
+                    // Reducing 2-hrs to match one day for firstDay and 1-hr for DST handle:
+                    firstDay.setTime(firstDay.getTime() - (3 * 3600000));
+                }
+            }
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24 * (count - 1));
             increment = this.checkDate(firstDay, lastDay, increment, count, mode);
             break;
@@ -1301,12 +1317,12 @@ export class Timeline {
                     increment = date.getTime() - firstDay.getTime();
                 }
             }
-            if (isFirstCell && count === 6) {
-                if (firstDay.getHours() !== 0) {
-                    date.setHours(6, 0, 0, 0);
-                    increment = date.getTime() - firstDay.getTime();
-                }
-            }
+            // if (isFirstCell && count === 6) {
+            //     if (firstDay.getHours() !== 0) {
+            //         date.setHours(6, 0, 0, 0);
+            //         increment = date.getTime() - firstDay.getTime();
+            //     }
+            // }
             increment = this.checkDate(firstDay, lastDay, increment, count, mode);
             break;
         }
@@ -1454,7 +1470,7 @@ export class Timeline {
         }
         if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks)) ||
             (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks)) ||
-            (hasDST && newDateOffset !== dubNewDateOffset && dubNewDateOffset > newDateOffset &&
+            (newDateOffset !== dubNewDateOffset && hasDST && dubNewDateOffset > newDateOffset &&
                 timelineStartTime <= dstStartTime)) {
             let temp: number;
             let totalHour: number = 0;
@@ -1479,10 +1495,14 @@ export class Timeline {
                 totalHour = this.calculateTotalHours(mode, count);
                 if (incrementHour !== totalHour && incrementHour < totalHour && !(tier === 'topTier' && bottomTierCountIsOneAndUnitIsHour)) {
                     temp = this.getIncrement(scheduleWeeks, count, mode) + (1000 * 60 * 60);
-                    thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
-                    if (thWidth === 0 && mode === 'Minutes') {
-                        const perMinuteWidth: number = this.parent.perDayWidth / 1440;
-                        thWidth = perMinuteWidth * count;
+                    const value: number = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+                    const tierWidth: number = tier === 'topTier' ? this.topTierCellWidth : this.bottomTierCellWidth;
+                    if (tierWidth >= value) {
+                        thWidth = value;
+                        if (thWidth === 0 && mode === 'Minutes') {
+                            const perMinuteWidth: number = this.parent.perDayWidth / 1440;
+                            thWidth = perMinuteWidth * count;
+                        }
                     }
                 }
             }

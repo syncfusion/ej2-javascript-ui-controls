@@ -280,7 +280,7 @@ export class DataValidation {
                     if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = false; }
                 },
                 open: (args: PopupEventArgs) => {
-                    args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
+                    args.popup.offsetX = this.listObj.enableRtl ? 3 : -tdEle.offsetWidth + (this.parent.enableRtl ? 4 : 24);
                     args.popup.offsetY = -((tdEle.querySelector('.e-control-wrapper.e-ddl') as HTMLElement).offsetHeight - 18);
                     args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
                     if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = true; }

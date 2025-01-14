@@ -1,10 +1,11 @@
 /**
  * Toolbar renderer spec
  */
-import { Browser, isNullOrUndefined } from "@syncfusion/ej2-base";
+import { Browser } from "@syncfusion/ej2-base";
 import { renderRTE,dispatchEvent, destroy } from './../render.spec';
 import { NodeSelection } from './../../../src/selection/index';
-import { RichTextEditor } from "../../../src";
+import { BaseQuickToolbar, RichTextEditor } from "../../../src";
+import { BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, SHIFT_ARROW_DOWN_EVENT_INIT } from "../../constant.spec";
 
 describe('Toolbar - Renderer', () => {
 
@@ -154,7 +155,7 @@ describe('Toolbar - Renderer', () => {
     describe('863259: dropdown active state not working when drop down is opened', function () {
         let rteObj: RichTextEditor;
         let rteEle: any;
-        beforeAll(function (done: DoneFn) {
+        beforeEach(function (done: DoneFn) {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
@@ -181,7 +182,7 @@ describe('Toolbar - Renderer', () => {
                 done();
             }, 100);
         });
-        afterAll(function (done: DoneFn) {
+        afterEach(function (done: DoneFn) {
             destroy(rteObj);
             done();
         });
@@ -331,6 +332,43 @@ describe('Toolbar - Renderer', () => {
         });
         afterAll(function () {
             destroy(rteObj);
+        });
+    });
+
+    describe('933195 - Backspace key action not working with Text Quick Toolbar.', ()=>{
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                enablePersistence: true,
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'FontColor', 'BackgroundColor']
+                },
+            })
+        });
+        afterAll(()=>{
+            destroy(editor);
+        });
+        it('Should be able to type after opening the Quick toolbar and selecting the text.', (done: DoneFn)=>{
+            editor.focusIn();
+            editor.inputElement.innerHTML = `<p>Sample text content</p><h1>Sample Heading</h1>`;
+            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            editor.selectAll();
+            const shiftKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', SHIFT_ARROW_DOWN_EVENT_INIT);
+            const shiftKeyUpEvent: KeyboardEvent =  new KeyboardEvent('keyup', SHIFT_ARROW_DOWN_EVENT_INIT);
+            editor.inputElement.dispatchEvent(shiftKeyDownEvent);
+            editor.inputElement.dispatchEvent(shiftKeyUpEvent);
+            expect(editor.inputElement.innerHTML).not.toBe('<p><br></p>');
+            const backSpaceKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUpEvent: KeyboardEvent =  new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(backSpaceKeyDownEvent);
+            editor.inputElement.dispatchEvent(backSpaceKeyUpEvent);
+            setTimeout(() => {
+                const textBaseQuickToolbar: BaseQuickToolbar = editor.quickToolbarModule.textQTBar;
+                expect(editor.inputElement.innerHTML).toBe('<p><br></p>');
+                expect((textBaseQuickToolbar as any).colorPickerObj.fontColorPicker.enablePersistence).toBe(false);
+                expect((textBaseQuickToolbar as any).colorPickerObj.backgroundColorPicker.enablePersistence).toBe(false);
+                done();
+            }, 100);
         });
     });
 });

@@ -78,7 +78,7 @@ describe('905285 - List Creation Misplacement When Pressing 1. + Space in Rich T
         const nodetext: any = rteObj.inputElement.childNodes[0];
         new NodeSelection().setSelectionText(document, nodetext, nodetext, 0, 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<p>Abc<br>1.</p><p><br></p>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br></p><p>Abc<br>1.</p>');
     });
 
     afterAll(() => {

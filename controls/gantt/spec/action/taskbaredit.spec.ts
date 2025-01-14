@@ -8092,7 +8092,7 @@ describe('Unschedule task offset', () => {
             }, done);
     });
     beforeEach((done: Function) => {
-        setTimeout(done, 500);
+        setTimeout(done, 1000);
     });
     it('Moving Taskbar date formate', () => {
         ganttObj.tooltipSettings.editing = '<div>game</div>';
@@ -8105,6 +8105,66 @@ describe('Unschedule task offset', () => {
         args['element'] = dragElement;
         args['target'] =  dragElement;
         ganttObj.editModule.taskbarEditModule['editTooltip']['updateTooltipPosition'](args);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Coverage test case', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{ TaskID: 2, TaskName: 'Task 2', EndDate: new Date('04/02/2019') },
+                    { TaskID: 3, TaskName: 'task 3', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 , Predecessor:'2'}
+                ],
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                dateFormat: 'dd MMM, y',
+                highlightWeekends: true,
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('Calling getPointerPosition', () => {
+        const dummyEvent: any = {
+            pageX: 100,
+            pageY: 150,
+            clientX: 50,
+            clientY: 75
+        };
+        const position = ganttObj.tooltipModule['getPointorPosition'](dummyEvent);
+        expect(position.x).toBe(100);
+        expect(position.y).toBe(150);
     });
     afterAll(() => {
         if (ganttObj) {

@@ -112,7 +112,10 @@ export class PdfRenderer {
     }
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
-    private digitialByteArray: Uint8Array;
+    /**
+     * @private
+     */
+    public digitialByteArray: Uint8Array;
     private loadedByteArray: Uint8Array;
     private loadImportedBase64String: string;
     private password: string;
@@ -253,7 +256,11 @@ export class PdfRenderer {
             this.digitialByteArray = digitalSignatureDoc.save();
             digitalSignatureDoc.destroy();
         }
-        return { pageCount: this.pageCount, pageSizes: this.pageSizes, uniqueId: documentId, PdfRenderedFormFields: pdfRenderedFormFields, RestrictionSummary: this.restrictionList, isDigitalSignaturePresent: this.formFieldsBase.mIsDigitalSignaturePresent, digitialSignatureFile: this.digitialByteArray ? _encode(this.digitialByteArray) : '', isTaggedPdf: isTaggedPdf, pageRotation: this.pageRotationCollection };
+        return { pageCount: this.pageCount, pageSizes: this.pageSizes, uniqueId: documentId,
+            PdfRenderedFormFields: pdfRenderedFormFields, RestrictionSummary: this.restrictionList,
+            isDigitalSignaturePresent: this.formFieldsBase.mIsDigitalSignaturePresent,
+            digitialSignatureFile: this.digitialByteArray ? true : false,
+            isTaggedPdf: isTaggedPdf, pageRotation: this.pageRotationCollection };
     }
 
     private documentSecurity(password: string): void {

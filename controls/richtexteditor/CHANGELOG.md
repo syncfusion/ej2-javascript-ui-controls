@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F64367` - Now, the Rich Text Editor toolbar works properly and maintains its state after focus is lost.
+
+- `#I668053` - Now, the placeholder in the Rich Text Editor works properly when the content contains two empty lines.
+
+- `#I636887` - Now, the insert link validation works properly when the display text is empty in the Rich Text Editor.
+
+- `#I621623` - Now, the paste performance of larger documents has been slightly improved.
+
 ## 28.1.38 (2025-01-07)
 
 ### RichTextEditor

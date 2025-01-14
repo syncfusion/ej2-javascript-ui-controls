@@ -1,4 +1,5 @@
 import { PdfViewer } from '../index';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * @hidden
@@ -258,9 +259,11 @@ export class AjaxHandler {
     }
 
     private setCustomAjaxHeaders(): void {
-        for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
-            this.httpRequest.setRequestHeader(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerName,
-                                              this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerValue);
+        if (!isNullOrUndefined(this.pdfViewer.ajaxRequestSettings) && !isNullOrUndefined(this.pdfViewer.ajaxRequestSettings.ajaxHeaders)) {
+            for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
+                this.httpRequest.setRequestHeader(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerName,
+                                                  this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerValue);
+            }
         }
     }
 }

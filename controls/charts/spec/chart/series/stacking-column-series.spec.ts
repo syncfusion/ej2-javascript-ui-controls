@@ -1545,6 +1545,369 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Staking Column - Checking datalabel.', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                series: [
+                    {
+                        trendlines: [],
+                        dataSource: [
+                            {
+                                x: 'AA0',
+                                y: 1,
+                                text: '1.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'BB0',
+                                y: 2,
+                                text: '2.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'CC0',
+                                y: 3,
+                                text: '3.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'DD0',
+                                y: 4,
+                                text: '4.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'EE0',
+                                y: 5,
+                                text: '5.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'FF0',
+                                y: 6,
+                                text: '6.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'GG0',
+                                y: 7,
+                                text: '7.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'HH0',
+                                y: 8,
+                                text: '8.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'II0',
+                                y: 9,
+                                text: '9.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                            {
+                                x: 'JJ0',
+                                y: 10,
+                                text: '10.00',
+                                tooltip: '',
+                                fill: null,
+                            },
+                        ],
+                        xName: 'x',
+                        yName: 'y',
+                        type: 'StackingColumn',
+                        columnFacet: 'Rectangle',
+                        name: 'DRIVE',
+                        xAxisName: null,
+                        yAxisName: null,
+                        pointColorMapping: 'fill',
+                        visible: true,
+                        border: {
+                            color: 'transparent',
+                            width: 0,
+                        },
+                        dashArray: '',
+                        marker: {
+                            border: {
+                                color: 'Transparent',
+                            },
+                            visible: false,
+                            shape: 'Circle',
+                            width: 7.999999998,
+                            height: 7.999999998,
+                            dataLabel: {
+                                font: {
+                                    color: 'Black',
+                                    fontFamily: 'Arial',
+                                    fontStyle: 'normal',
+                                    fontWeight: 'default',
+                                    size: '11.423999786376953px',
+                                },
+                                border: {},
+                                visible: true,
+                                labelIntersectAction: 'None',
+                                angle: 0,
+                                fill: 'Transparent',
+                                name: 'text',
+                                alignment: 'Center',
+                                position: 'Bottom',
+                            },
+                        },
+                        fill: '#418cf0',
+                        width: 1.3333,
+                        animation: {
+                            enable: true,
+                        },
+                        tooltipFormat: ' machine_name : ${point.x}<br/>DRIVE : ${point.text}',
+                    },
+                    {
+                        trendlines: [],
+                        dataSource: [
+                            {
+                                x: 'AA0',
+                                y: 1,
+                                text: '1.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'BB0',
+                                y: 2,
+                                text: '2.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'CC0',
+                                y: 3,
+                                text: '3.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'DD0',
+                                y: 4,
+                                text: '4.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'EE0',
+                                y: 5,
+                                text: '5.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'FF0',
+                                y: 6,
+                                text: '6.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'GG0',
+                                y: 7,
+                                text: '7.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'HH0',
+                                y: 8,
+                                text: '8.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'II0',
+                                y: 9,
+                                text: '9.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                            {
+                                x: 'JJ0',
+                                y: 10,
+                                text: '10.00',
+                                tooltip: '',
+                                fill: '#ef5350',
+                            },
+                        ],
+                        xName: 'x',
+                        yName: 'y',
+                        type: 'StackingColumn',
+                        columnFacet: 'Rectangle',
+                        name: 'HEATING',
+                        xAxisName: null,
+                        yAxisName: null,
+                        pointColorMapping: 'fill',
+                        visible: true,
+                        border: {
+                            color: 'transparent',
+                            width: 0,
+                        },
+                        dashArray: '',
+                        marker: {
+                            border: {
+                                color: 'Transparent',
+                            },
+                            visible: false,
+                            shape: 'Circle',
+                            width: 7.999999998,
+                            height: 7.999999998,
+                            dataLabel: {
+                                font: {
+                                    color: 'Black',
+                                    fontFamily: 'Arial',
+                                    fontStyle: 'normal',
+                                    fontWeight: 'default',
+                                    size: '11.423999786376953px',
+                                },
+                                border: {},
+                                visible: true,
+                                labelIntersectAction: 'None',
+                                angle: 0,
+                                fill: 'Transparent',
+                                name: 'text',
+                                alignment: 'Center',
+                                position: 'Bottom',
+                            },
+                        },
+                        fill: '#ef5350',
+                        width: 1.3333,
+                        animation: {
+                            enable: true,
+                        },
+                        tooltipFormat: ' machine_name : ${point.x}<br/>HEATING : ${point.text}',
+                    },
+                ],
+               
+                primaryXAxis: {
+                    titleStyle: {
+                        color: 'Black',
+                        size: '10.666666664px',
+                        fontFamily: 'Segoe UI',
+                        fontStyle: 'Default',
+                    },
+                    title: '',
+                    labelStyle: {
+                        color: 'Black',
+                        fontFamily: 'Segoe UI',
+                        size: '10.666666664px',
+                        fontStyle: 'Normal',
+                        fontWeight: 'Default',
+                    },
+                    border: {},
+                    lineStyle: {
+                        color: '#808080',
+                        width: 0,
+                    },
+                    majorGridLines: {
+                        width: 0,
+                    },
+                    minorGridLines: {
+                        width: 0,
+                    },
+                    majorTickLines: {
+                        width: 0,
+                    },
+                    minorTickLines: {
+                        width: 0,
+                    },
+                    minorTicksPerInterval: 4,
+                    multiLevelLabels: [],
+                    stripLines: [],
+                    edgeLabelPlacement: 'Shift',
+                    isIndexed: false,
+                    labelFormat: '',
+                    tickPosition: 'Outside',
+                    labelRotation: -45,
+                    visible: true,
+                    valueType: 'Category',
+                },
+                primaryYAxis: {
+                    titleStyle: {
+                        color: 'Black',
+                        size: '10.666666664px',
+                        fontFamily: 'Segoe UI',
+                        fontStyle: 'Default',
+                    },
+                    title: '',
+                    labelStyle: {
+                        color: 'Black',
+                        fontFamily: 'Segoe UI',
+                        size: '10.666666664px',
+                        fontStyle: 'Normal',
+                        fontWeight: 'Default',
+                    },
+                    border: {},
+                    lineStyle: {
+                        color: '#808080',
+                        width: 0,
+                    },
+                    majorGridLines: {
+                        color: '#dcdcdc',
+                        width: 1.3333,
+                    },
+                    minorGridLines: {
+                        width: 0,
+                    },
+                    majorTickLines: {
+                        width: 0,
+                    },
+                    minorTickLines: {
+                        width: 0,
+                    },
+                    minorTicksPerInterval: 4,
+                    multiLevelLabels: [],
+                    stripLines: [],
+                    edgeLabelPlacement: 'Shift',
+                    labelFormat: '',
+                    labelPlacement: 'OnTicks',
+                    tickPosition: 'Outside',
+                    labelIntersectAction: 'Trim',
+                    visible: true,
+                    plotOffset: 10,
+                },
+            });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Stacking column - datalabel position', function (done) {
+            loaded = function (args) {
+                let legendElement = document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('x');
+                let legendElement1 = document.getElementById('container_Series_1_Point_0_Text_0').getAttribute('x');
+                expect(legendElement).toBe('36.4');
+                expect(legendElement1).toBe('36.4');
+                legendElement = document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');
+                legendElement1 = document.getElementById('container_Series_1_Point_0_Text_0').getAttribute('y');
+                expect(legendElement).toBe('336.3104248046875');
+                expect(legendElement1).toBe('322.5380078125');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

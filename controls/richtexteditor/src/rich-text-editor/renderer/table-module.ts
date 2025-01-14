@@ -1,4 +1,4 @@
-import { createElement, detach, closest, Browser, L10n, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { createElement, detach, closest, Browser, L10n, isNullOrUndefined as isNOU, getComponent } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, EventHandler, addClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IRenderer, IDropDownItemModel, OffsetPosition, ResizeArgs } from '../base/interface';
 import { IColorPickerEventArgs, ITableArgs, ITableNotifyArgs, IToolbarItemModel, NotifyArgs, ICssClassArgs } from '../base/interface';
@@ -58,7 +58,7 @@ export class Table {
     private resizeIconPositionTime: number;
     private isResizeBind: boolean = true;
     private isDestroyed: boolean;
-
+    private createTablePopupBoundFn: () => void
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -85,7 +85,6 @@ export class Table {
         this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
         this.parent.on(events.keyDown, this.keyDown, this);
-        this.parent.on(events.keyUp, this.keyUp, this);
         this.parent.on(events.tableModulekeyUp, this.tableModulekeyUp, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
@@ -107,7 +106,6 @@ export class Table {
         this.parent.off(events.mouseDown, this.cellSelect);
         this.parent.off(events.tableColorPickerChanged, this.setBGColor);
         this.parent.off(events.keyDown, this.keyDown);
-        this.parent.off(events.keyUp, this.keyUp);
         this.parent.off(events.tableModulekeyUp, this.tableModulekeyUp);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
@@ -208,18 +206,6 @@ export class Table {
         this.hideTableQuickToolbar();
     }
 
-    private keyUp (e: NotifyArgs): void {
-        const target: HTMLElement = <HTMLElement>(e.args as KeyboardEventArgs).target;
-        if ((e.args as KeyboardEventArgs).key.toLocaleLowerCase() === 'escape' && target && target.classList && (this.popupObj && !closest(target, '[id=' + '\'' + this.popupObj.element.id + '\'' + ']')) && this.popupObj) {
-            let createTableToolbarBtn: HTMLElement = this.popupObj.relateTo as HTMLElement;
-            if (createTableToolbarBtn.nodeName !== 'BUTTON') {
-                createTableToolbarBtn = createTableToolbarBtn.querySelector('span.e-create-table');
-                createTableToolbarBtn = createTableToolbarBtn.parentElement as HTMLElement;
-            }
-            this.popupObj.hide();
-            if (createTableToolbarBtn) { createTableToolbarBtn.focus(); }
-        }
-    }
     private keyDown(e: NotifyArgs): void {
         const event: KeyboardEventArgs = e.args as KeyboardEventArgs;
         // eslint-disable-next-line
@@ -619,8 +605,7 @@ export class Table {
     private deleteTable(): void {
         const table: HTMLElement = this.parent.contentModule.getEditPanel().querySelector('table.e-cell-select');
         this.removeResizeElement();
-        if (table)
-        {
+        if (table) {
             const brElement: HTMLBRElement = document.createElement('br');
             let containerEle: HTMLElement | null = brElement;
             if (this.parent.enterKey === 'DIV') {
@@ -1823,6 +1808,8 @@ export class Table {
         const header: string = '1X1';
         const insertbtn: string = this.l10n.getConstant('inserttablebtn');
         this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup' + this.parent.getCssClass(true), id: this.rteID + '_table' });
+        this.createTablePopupBoundFn = this.createTablePopupKeyDown.bind(this);
+        this.dlgDiv.addEventListener('keydown', this.createTablePopupBoundFn);
         this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' + this.parent.getCssClass(true) });
         this.tblHeader.innerHTML = header;
         this.dlgDiv.appendChild(this.tblHeader);
@@ -1860,6 +1847,7 @@ export class Table {
             // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 EventHandler.remove(btnEle, 'click', this.insertTableDialog);
+                this.dlgDiv.removeEventListener('keydown', this.createTablePopupBoundFn);
                 detach(btnEle);
                 if (this.createTableButton && !this.createTableButton.isDestroyed) {
                     this.createTableButton.destroy();
@@ -2246,6 +2234,7 @@ export class Table {
             this.createTableButton.destroy();
             this.createTableButton = null;
         }
+        this.createTablePopupBoundFn = null;
         this.isDestroyed = true;
     }
 
@@ -2272,6 +2261,16 @@ export class Table {
             const tablePosition: OffsetPosition = this.calcPos(this.curTable);
             tableReBox.style.cssText = 'top: ' + (tablePosition.top + parseInt(getComputedStyle(this.curTable).height, 10) - 4) +
             'px; left:' + (tablePosition.left + parseInt(getComputedStyle(this.curTable).width, 10) - 4) + 'px;';
+        }
+    }
+
+    private createTablePopupKeyDown(e: KeyboardEvent): void {
+        if (e.key === 'Escape') {
+            const popupRootElem: HTMLElement = (e.target as HTMLElement).closest('.e-rte-table-popup') as HTMLElement;
+            const popup: Popup  = getComponent(popupRootElem, 'popup');
+            const tableToolbarButton: HTMLElement = popup.relateTo as HTMLElement;
+            popup.hide();
+            tableToolbarButton.focus({preventScroll: true});
         }
     }
 }

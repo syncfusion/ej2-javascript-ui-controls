@@ -120,426 +120,199 @@ export class WUniqueFormat {
         return type;
     }
     private static getRowFormatType(property: string): number {
-        if (property === 'allowBreakAcrossPages') {
-            return 1;
+        switch (property) {
+            case 'allowBreakAcrossPages': return 1;
+            case 'isHeader': return 2;
+            case 'height': return 3;
+            case 'heightType': return 4;
+            case 'gridBefore': return 5;
+            case 'gridBeforeWidth': return 6;
+            case 'gridBeforeWidthType': return 7;
+            case 'gridAfter': return 8;
+            case 'gridAfterWidth': return 9;
+            case 'gridAfterWidthType': return 10;
+            case 'leftMargin': return 11;
+            case 'topMargin': return 12;
+            case 'bottomMargin': return 13;
+            case 'rightMargin': return 14;
+            case 'leftIndent': return 15;
+            default: return 0;
         }
-        if (property === 'isHeader') {
-            return 2;
-        }
-        if (property === 'height') {
-            return 3;
-        }
-        if (property === 'heightType') {
-            return 4;
-        }
-        if (property === 'gridBefore') {
-            return 5;
-        }
-        if (property === 'gridBeforeWidth') {
-            return 6;
-        }
-        if (property === 'gridBeforeWidthType') {
-            return 7;
-        }
-        if (property === 'gridAfter') {
-            return 8;
-        }
-        if (property === 'gridAfterWidth') {
-            return 9;
-        }
-        if (property === 'gridAfterWidthType') {
-            return 10;
-        }
-        if (property === 'leftMargin') {
-            return 11;
-        }
-        if (property === 'topMargin') {
-            return 12;
-        }
-        if (property === 'bottomMargin') {
-            return 13;
-        }
-        if (property === 'rightMargin') {
-            return 14;
-        }
-        if (property === 'leftIndent') {
-            return 15;
-        }
-        return 0;
     }
+    
     private static getListFormatType(property: string): number {
-        if (property === 'listId') {
-            return 1;
+        switch (property) {
+            case 'listId': return 1;
+            case 'listLevelNumber': return 2;
+            case 'nsid': return 3;
+            default: return 0;
         }
-        if (property === 'listLevelNumber') {
-            return 2;
-        }
-        if (property === 'nsid') {
-            return 3;
-        }
-        return 0;
     }
+    
     private static getTableFormatType(property: string): number {
-        if (property === 'leftMargin') {
-            return 1;
+        switch (property) {
+            case 'leftMargin': return 1;
+            case 'rightMargin': return 2;
+            case 'topMargin': return 3;
+            case 'bottomMargin': return 4;
+            case 'cellSpacing': return 5;
+            case 'leftIndent': return 6;
+            case 'tableAlignment': return 7;
+            case 'preferredWidth': return 8;
+            case 'preferredWidthType': return 9;
+            case 'bidi': return 10;
+            case 'allowAutoFit': return 11;
+            case 'horizontalPositionAbs': return 12;
+            case 'horizontalPosition': return 13;
+            default: return 0;
         }
-        if (property === 'rightMargin') {
-            return 2;
-        }
-        if (property === 'topMargin') {
-            return 3;
-        }
-        if (property === 'bottomMargin') {
-            return 4;
-        }
-        if (property === 'cellSpacing') {
-            return 5;
-        }
-        if (property === 'leftIndent') {
-            return 6;
-        }
-        if (property === 'tableAlignment') {
-            return 7;
-        }
-        if (property === 'preferredWidth') {
-            return 8;
-        }
-        if (property === 'preferredWidthType') {
-            return 9;
-        }
-        if (property === 'bidi') {
-            return 10;
-        }
-        if (property === 'allowAutoFit') {
-            return 11;
-        }
-        if (property === 'horizontalPositionAbs') {
-            return 12;
-        }
-        if (property === 'horizontalPosition') {
-            return 13;
-        }
-        return 0;
     }
+    
     private static getListLevelType(property: string): number {
-        if (property === 'listLevelPattern') {
-            return 1;
+        switch (property) {
+            case 'listLevelPattern': return 1;
+            case 'startAt': return 2;
+            case 'followCharacter': return 3;
+            case 'numberFormat': return 4;
+            case 'restartLevel': return 5;
+            case 'isLegalStyleNumbering': return 6;
+            case 'paraStyleName': return 7;
+            default: return 0;
         }
-        if (property === 'startAt') {
-            return 2;
-        }
-        if (property === 'followCharacter') {
-            return 3;
-        }
-        if (property === 'numberFormat') {
-            return 4;
-        }
-        if (property === 'restartLevel') {
-            return 5;
-        }
-        if (property === 'isLegalStyleNumbering') {
-            return 6;
-        }
-        if (property === 'paraStyleName') {
-            return 7;
-        }
-        return 0;
     }
-
+    
     private static getShadingPropertyType(property: string): number {
-        if (property === 'backgroundColor') {
-            return 1;
+        switch (property) {
+            case 'backgroundColor': return 1;
+            case 'foregroundColor': return 2;
+            case 'textureStyle': return 3;
+            default: return 0;
         }
-        if (property === 'foregroundColor') {
-            return 2;
-        }
-        if (property === 'textureStyle') {
-            return 3;
-        }
-        return 0;
     }
+    
     private static getCellFormatPropertyType(property: string): number {
-        if (property === 'leftMargin') {
-            return 1;
+        switch (property) {
+            case 'leftMargin': return 1;
+            case 'rightMargin': return 2;
+            case 'topMargin': return 3;
+            case 'bottomMargin': return 4;
+            case 'columnSpan': return 5;
+            case 'rowSpan': return 6;
+            case 'verticalAlignment': return 7;
+            case 'preferredWidthType': return 8;
+            case 'preferredWidth': return 9;
+            case 'cellWidth': return 10;
+            default: return 0;
         }
-        if (property === 'rightMargin') {
-            return 2;
-        }
-        if (property === 'topMargin') {
-            return 3;
-        }
-        if (property === 'bottomMargin') {
-            return 4;
-        }
-        if (property === 'columnSpan') {
-            return 5;
-        }
-        if (property === 'rowSpan') {
-            return 6;
-        }
-        if (property === 'verticalAlignment') {
-            return 7;
-        }
-        if (property === 'preferredWidthType') {
-            return 8;
-        }
-        if (property === 'preferredWidth') {
-            return 9;
-        }
-        if (property === 'cellWidth') {
-            return 10;
-        }
-        return 0;
     }
+    
     private static getBorderPropertyType(property: string): number {
-        if (property === 'color') {
-            return 1;
+        switch (property) {
+            case 'color': return 1;
+            case 'lineStyle': return 2;
+            case 'lineWidth': return 3;
+            case 'shadow': return 4;
+            case 'space': return 5;
+            case 'hasNoneStyle': return 6;
+            default: return 0;
         }
-        if (property === 'lineStyle') {
-            return 2;
-        }
-        if (property === 'lineWidth') {
-            return 3;
-        }
-        if (property === 'shadow') {
-            return 4;
-        }
-        if (property === 'space') {
-            return 5;
-        }
-        if (property === 'hasNoneStyle') {
-            return 6;
-        }
-        return 0;
     }
+    
     private static getCharacterFormatPropertyType(property: string): number {
-        if (property === 'fontColor') {
-            return 1;
+        switch (property) {
+            case 'fontColor': return 1;
+            case 'fontFamily': return 2;
+            case 'fontSize': return 3;
+            case 'bold': return 4;
+            case 'italic': return 5;
+            case 'underline': return 6;
+            case 'strikethrough': return 7;
+            case 'baselineAlignment': return 8;
+            case 'highlightColor': return 9;
+            case 'bidi': return 10;
+            case 'bdo': return 11;
+            case 'boldBidi': return 12;
+            case 'italicBidi': return 13;
+            case 'fontFamilyBidi': return 14;
+            case 'fontSizeBidi': return 15;
+            case 'allCaps': return 16;
+            case 'localeIdBidi': return 17;
+            case 'complexScript': return 18;
+            case 'fontFamilyFarEast': return 19;
+            case 'fontFamilyAscii': return 20;
+            case 'fontFamilyNonFarEast': return 21;
+            case 'localeIdAscii': return 22;
+            case 'localeIdFarEast': return 23;
+            case 'characterSpacing': return 24;
+            case 'scaling': return 25;
+            case 'underlineColor': return 27;
+            case 'fontHintType': return 28;
+            default: return 0;
         }
-        if (property === 'fontFamily') {
-            return 2;
-        }
-        if (property === 'fontSize') {
-            return 3;
-        }
-        if (property === 'bold') {
-            return 4;
-        }
-        if (property === 'italic') {
-            return 5;
-        }
-        if (property === 'underline') {
-            return 6;
-        }
-        if (property === 'strikethrough') {
-            return 7;
-        }
-        if (property === 'baselineAlignment') {
-            return 8;
-        }
-        if (property === 'highlightColor') {
-            return 9;
-        }
-        if (property === 'bidi') {
-            return 10;
-        }
-        if (property === 'bdo') {
-            return 11;
-        }
-        if (property === 'boldBidi') {
-            return 12;
-        }
-        if (property === 'italicBidi') {
-            return 13;
-        }
-        if (property === 'fontFamilyBidi') {
-            return 14;
-        }
-        if (property === 'fontSizeBidi') {
-            return 15;
-        }
-        if (property === 'allCaps') {
-            return 16;
-        }
-        if (property === 'localeIdBidi') {
-            return 17;
-        }
-        if (property === 'complexScript') {
-            return 18;
-        }
-        if (property === 'fontFamilyFarEast') {
-            return 19;
-        }
-        if (property === 'fontFamilyAscii') {
-            return 20;
-        }
-        if (property === 'fontFamilyNonFarEast') {
-            return 21;
-        }
-        if (property === 'localeIdAscii') {
-            return 22;
-        }
-        if (property === 'localeIdFarEast') {
-            return 23;
-        }
-        if (property === 'characterSpacing') {
-            return 24;
-        }
-        if (property === 'scaling') {
-            return 25;
-        }
-        if (property === 'underlineColor'){
-            return 27;
-        }
-        if (property === 'fontHintType') {
-            return 28;
-        }
-        return 0;
     }
+    
     private static getParaFormatPropertyType(property: string): number {
-        if (property === 'leftIndent') {
-            return 1;
+        switch (property) {
+            case 'leftIndent': return 1;
+            case 'rightIndent': return 2;
+            case 'firstLineIndent': return 3;
+            case 'textAlignment': return 4;
+            case 'beforeSpacing': return 5;
+            case 'afterSpacing': return 6;
+            case 'lineSpacing': return 7;
+            case 'lineSpacingType': return 8;
+            case 'outlineLevel': return 9;
+            case 'bidi': return 10;
+            case 'contextualSpacing': return 11;
+            case 'keepWithNext': return 12;
+            case 'keepLinesTogether': return 13;
+            case 'widowControl': return 14;
+            case 'spaceBeforeAuto': return 15;
+            case 'spaceAfterAuto': return 16;
+            default: return 0;
         }
-        if (property === 'rightIndent') {
-            return 2;
-        }
-        if (property === 'firstLineIndent') {
-            return 3;
-        }
-        if (property === 'textAlignment') {
-            return 4;
-        }
-        if (property === 'beforeSpacing') {
-            return 5;
-        }
-        if (property === 'afterSpacing') {
-            return 6;
-        }
-        if (property === 'lineSpacing') {
-            return 7;
-        }
-        if (property === 'lineSpacingType') {
-            return 8;
-        }
-        if (property === 'outlineLevel') {
-            return 9;
-        }
-        if (property === 'bidi') {
-            return 10;
-        }
-        if (property === 'contextualSpacing') {
-            return 11;
-        }
-        if (property === 'keepWithNext') {
-            return 12;
-        }
-        if (property === 'keepLinesTogether') {
-            return 13;
-        }
-        if (property === 'widowControl') {
-            return 14;
-        }
-        if (property === 'spaceBeforeAuto') {
-            return 15;
-        }
-        if (property === 'spaceAfterAuto') {
-            return 16;
-        }
-        return 0;
     }
+    
     private static getColumnFormatType(property: string): number {
-        if (property === 'width') {
-            return 1;
+        switch (property) {
+            case 'width': return 1;
+            case 'space': return 2;
+            default: return 0;
         }
-        if (property === 'space') {
-            return 2;
-        }
-        return 0;
     }
+    
     private static getSectionFormatType(property: string): number {
-        if (property === 'headerDistance') {
-            return 1;
+        switch (property) {
+            case 'headerDistance': return 1;
+            case 'footerDistance': return 2;
+            case 'differentFirstPage': return 3;
+            case 'differentOddAndEvenPages': return 4;
+            case 'pageWidth': return 5;
+            case 'pageHeight': return 6;
+            case 'leftMargin': return 7;
+            case 'topMargin': return 8;
+            case 'rightMargin': return 9;
+            case 'bottomMargin': return 10;
+            case 'bidi': return 11;
+            case 'restartPageNumbering': return 12;
+            case 'pageStartingNumber': return 13;
+            case 'endnoteNumberFormat': return 14;
+            case 'endnotePosition': return 15;
+            case 'footNoteNumberFormat': return 16;
+            case 'footnotePosition': return 17;
+            case 'restartIndexForEndnotes': return 18;
+            case 'restartIndexForFootnotes': return 19;
+            case 'initialFootNoteNumber': return 20;
+            case 'initialEndNoteNumber': return 21;
+            case 'pageNumberStyle': return 22;
+            case 'numberOfColumns': return 23;
+            case 'equalWidth': return 24;
+            case 'lineBetweenColumns': return 25;
+            case 'columns': return 26;
+            case 'breakCode': return 27;
+            default: return 0;
         }
-        if (property === 'footerDistance') {
-            return 2;
-        }
-        if (property === 'differentFirstPage') {
-            return 3;
-        }
-        if (property === 'differentOddAndEvenPages') {
-            return 4;
-        }
-        if (property === 'pageWidth') {
-            return 5;
-        }
-        if (property === 'pageHeight') {
-            return 6;
-        }
-        if (property === 'leftMargin') {
-            return 7;
-        }
-        if (property === 'topMargin') {
-            return 8;
-        }
-        if (property === 'rightMargin') {
-            return 9;
-        }
-        if (property === 'bottomMargin') {
-            return 10;
-        }
-        if (property === 'bidi') {
-            return 11;
-        }
-        if (property === 'restartPageNumbering') {
-            return 12;
-        }
-        if (property === 'pageStartingNumber') {
-            return 13;
-        }
-        if (property === 'endnoteNumberFormat') {
-            return 14;
-        }
-        if (property === 'endnotePosition') {
-            return 15;
-        }
-        if (property === 'footNoteNumberFormat') {
-            return 16;
-        }
-        if (property === 'footnotePosition') {
-            return 17;
-        }
-        if (property === 'restartIndexForEndnotes') {
-            return 18;
-        }
-        if (property === 'restartIndexForFootnotes') {
-            return 19;
-        }
-        if (property === 'initialFootNoteNumber') {
-            return 20;
-        }
-        if (property === 'initialEndNoteNumber') {
-            return 21;
-        }
-        if (property === 'pageNumberStyle') {
-            return 22;
-        }
-        if (property === 'numberOfColumns') {
-            return 23;
-        }
-        if (property === 'equalWidth') {
-            return 24;
-        }
-        if (property === 'lineBetweenColumns') {
-            return 25;
-        }
-        if (property === 'columns') {
-            return 26;
-        }
-        if (property === 'breakCode') {
-            return 27;
-        }
-        return 0;
-    }
+    }    
     /**
      * @private
      */

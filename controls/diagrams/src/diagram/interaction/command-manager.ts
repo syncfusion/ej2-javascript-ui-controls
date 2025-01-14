@@ -3277,11 +3277,11 @@ export class CommandHandler {
                     if (this.diagram.mode === 'SVG') {
                         const nodeIdToUpdate: string = intersectArray[intersectArray.length - 1].id;
                         const element: NodeModel | ConnectorModel = intersectArray[intersectArray.length - 1];
-                        if (element && !(element.shape.type === 'HTML'
-                            || element.shape.type === 'Native')) {
-                            // this.moveForwardSvgNode(nodeId);
-                            this.moveAfterSvgNode(nodeId, nodeIdToUpdate);
-                        }
+                        // if (element && !(element.shape.type === 'HTML'
+                        //     || element.shape.type === 'Native')) {
+                        // this.moveForwardSvgNode(nodeId);
+                        this.moveAfterSvgNode(nodeId, nodeIdToUpdate);
+                        // }
                         this.updateNativeNodeIndex(nodeIdToUpdate, nodeId);
                     } else {
                         this.diagram.refreshCanvasLayers();
