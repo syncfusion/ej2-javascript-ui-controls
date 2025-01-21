@@ -573,6 +573,28 @@ export class HtmlEditor {
             }
             if (isNOU(this.oldRangeElement)) {
                 return;
+            } else if (findBlockElement[0].previousSibling) {
+                const prevSibling: HTMLElement = findBlockElement[0].previousSibling as HTMLElement;
+                const currentElement: HTMLElement = findBlockElement[0] as HTMLElement;
+                if (prevSibling.textContent.trim()) {
+                    if (prevSibling.lastChild.nodeName === 'BR') {
+                        prevSibling.removeChild(prevSibling.lastChild);
+                    }
+                    const cursorpointer: number = prevSibling.lastChild.textContent.length;
+                    const lastChild: HTMLElement = prevSibling.lastChild as HTMLElement;
+                    const childNodes: Node[] = Array.from(currentElement.childNodes);
+                    for (let i: number = 0; i < childNodes.length; i++) {
+                        prevSibling.appendChild(childNodes[i as number].cloneNode(true));
+                    }
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                        this.parent.contentModule.getDocument(),
+                        lastChild,
+                        cursorpointer
+                    );
+                    currentElement.parentNode.removeChild(currentElement);
+                } else {
+                    prevSibling.parentNode.removeChild(prevSibling);
+                }
             } else {
                 if (this.oldRangeElement.tagName === 'OL' || this.oldRangeElement.tagName === 'UL') {
                     this.oldRangeElement = this.oldRangeElement.lastElementChild.lastElementChild

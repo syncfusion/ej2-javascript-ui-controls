@@ -328,7 +328,8 @@ export class MaskedDateTime {
                     return;
                 }
                 this.isDayPart = true;
-                this.dayTypeCount = this.dayTypeCount + 1;
+                const maxDaysInMonth: number = new Date(newDateValue.getFullYear(), newDateValue.getMonth() + 1, 0).getDate();
+                this.dayTypeCount += (this.dayTypeCount === 0 && (parseInt(date + '0', 10) > maxDaysInMonth)) ? 2 : 1;
             } else {
                 this.isDayPart = false;
                 this.dayTypeCount = this.isDateZero ? this.dayTypeCount + 1 : this.dayTypeCount;
@@ -450,7 +451,7 @@ export class MaskedDateTime {
             newDateValue.setHours(Math.floor(newDateValue.getHours() / 12) * 12 + (this.hour % 12));
             this.isNavigate = this.hour.toString().length === 2;
             this.isHourPart = true;
-            this.hourTypeCount = this.hourTypeCount + 1;
+            this.hourTypeCount = (this.hourTypeCount === 0 && this.hour && (parseInt(this.hour + '0', 10) > 12)) ? 2 : this.hourTypeCount + 1;
             break;
         case 'H':
             this.hour = (this.isHourPart && newDateValue.getHours().toString().length < 2 &&
@@ -466,7 +467,7 @@ export class MaskedDateTime {
             newDateValue.setHours(this.hour);
             this.isNavigate = this.hour.toString().length === 2;
             this.isHourPart = true;
-            this.hourTypeCount = this.hourTypeCount + 1;
+            this.hourTypeCount = (this.hourTypeCount === 0 && this.hour && (parseInt(this.hour + '0', 10) > 23)) ? 2 : this.hourTypeCount + 1;
             break;
         case 'm':
         {
@@ -483,7 +484,7 @@ export class MaskedDateTime {
             newDateValue.setMinutes(minutes);
             this.isNavigate = minutes.toString().length === 2;
             this.isMinutePart = true;
-            this.minuteTypeCount = this.minuteTypeCount + 1;
+            this.minuteTypeCount = (this.minuteTypeCount === 0 && (parseInt(minutes + '0', 10) > 59)) ? 2 : this.minuteTypeCount + 1;
             break;
         }
         case 's':
@@ -501,7 +502,7 @@ export class MaskedDateTime {
             newDateValue.setSeconds(seconds);
             this.isNavigate = seconds.toString().length === 2;
             this.isSecondsPart = true;
-            this.secondTypeCount = this.secondTypeCount + 1;
+            this.secondTypeCount = (this.secondTypeCount === 0 && (parseInt(seconds + '0', 10) > 59)) ? 2 : this.secondTypeCount + 1;
             break;
         }
         case 'a':

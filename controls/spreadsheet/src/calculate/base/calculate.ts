@@ -6,7 +6,9 @@ import { getModules, ModuleLoader } from '../common/index';
 import { CommonErrors, FormulasErrorsStrings } from '../common/enum';
 import { IFormulaColl, FailureEventArgs, StoredCellInfo } from '../common/interface';
 import { Parser } from './parser';
-import { getRangeIndexes, getCellIndexes, getCellAddress, isDateTime } from '../../workbook/index';
+import { getRangeIndexes, getCellIndexes, getCellAddress, isDateTime, workbookFormulaOperation } from '../../workbook/index';
+import { getSheetIndexByName } from '../../workbook/index';
+import { DataUtil } from '@syncfusion/ej2-data';
 
 /**
  * Represents the calculate library.
@@ -94,7 +96,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         'requires 2 arguments',
         '#NAME?',
         'too complex',
-        'circular reference: ',
+        '#CIRCULARREF!',
         'missing formula',
         'improper formula',
         'invalid expression',
@@ -298,7 +300,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      */
     public isUpperChar(text: string): boolean {
         const charCode: number = text.charCodeAt(0);
-        return ((charCode > 64) && (charCode < 91));
+        return charCode > 64 && charCode < 91;
     }
 
     private resetKeys(): void {
@@ -313,43 +315,49 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @returns {void} - update Dependent Cell
      */
     public updateDependentCell(cellRef: string): void {
-        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
-        let cell: string = this.cell;
-        if (cell !== this.emptyString) {
-            if (family.sheetNameToParentObject !== null) {
-                const token: string = family.parentObjectToToken.get(this.grid);
-                if (cell.indexOf(this.sheetToken) === -1) {
-                    cell = token + cell;
+        let formulaCell: string = this.cell;
+        if (formulaCell !== this.emptyString) {
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+            if (family.sheetNameToParentObject) {
+                if (!formulaCell.includes(this.sheetToken)) {
+                    formulaCell = family.parentObjectToToken.get(this.grid) + formulaCell;
                 }
-                if (cellRef.indexOf(this.sheetToken) === -1) {
-                    cellRef = token + cellRef;
+                if (!cellRef.includes(this.sheetToken)) {
+                    cellRef = family.parentObjectToToken.get(this.grid) + cellRef;
                 }
             }
-
-            if (this.getDependentCells().has(cellRef)) {
-                const formulaCells: string[] = this.getDependentCells().get(cellRef);
-                if (formulaCells.indexOf(cell) < 0 && cell !== cellRef) {
-                    formulaCells.push(cell);
+            if (formulaCell !== cellRef) {
+                const dependentCellMap: Map<string, string[]> = this.getDependentCells();
+                if (!dependentCellMap.has(cellRef)) {
+                    dependentCellMap.set(cellRef, []);
                 }
-            } else {
-                this.getDependentCells().set(cellRef, [cell]);
+                const dependentCells: string[] = dependentCellMap.get(cellRef);
+                if (dependentCells.indexOf(formulaCell) === -1) {
+                    const formulaDependentCellMap: Map<string, Map<string, string>> = this.getDependentFormulaCells();
+                    const cellRefObj: { [key: string]: boolean } = {};
+                    const checkCircularReference: (refCell: string) => void = (refCell: string): void => {
+                        if (formulaDependentCellMap.has(refCell)) {
+                            const formalaRefCells: Map<string, string> = formulaDependentCellMap.get(refCell);
+                            if (formalaRefCells.has(formulaCell)) {
+                                throw this.formulaErrorStrings[FormulasErrorsStrings.CircularReference];
+                            } else if (!cellRefObj[refCell as string]) {
+                                cellRefObj[refCell as string] = true;
+                                formalaRefCells.forEach((refCell: string): void => {
+                                    checkCircularReference(refCell);
+                                });
+                            }
+                        }
+                    };
+                    checkCircularReference(cellRef);
+                    dependentCells.push(formulaCell);
+                    if (!formulaDependentCellMap.has(formulaCell)) {
+                        formulaDependentCellMap.set(formulaCell, new Map());
+                        formulaDependentCellMap.get(formulaCell).set(cellRef, cellRef);
+                    } else if (!formulaDependentCellMap.get(formulaCell).has(cellRef)) {
+                        formulaDependentCellMap.get(formulaCell).set(cellRef, cellRef);
+                    }
+                }
             }
-            this.addToFormulaDependentCells(cellRef);
-        }
-    }
-
-    private addToFormulaDependentCells(cellRef: string): void {
-        let cell1: string = this.cell;
-        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
-        if (family.sheetNameToParentObject != null && cell1.indexOf(this.sheetToken) === -1) {
-            const token: string = family.parentObjectToToken.get(this.grid);
-            cell1 = token + cell1;
-        }
-        if (!this.getDependentFormulaCells().has(cell1)) {
-            this.getDependentFormulaCells().set(cell1, new Map());
-            this.getDependentFormulaCells().get(cell1).set(cellRef, cellRef);
-        } else if (!(this.getDependentFormulaCells().get(cell1)).has(cellRef)) {
-            this.getDependentFormulaCells().get(cell1).set(cellRef, cellRef);
         }
     }
 
@@ -1272,182 +1280,198 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.getErrorStrings()[CommonErrors.NA];
     }
 
-    public computeVHLookup(range: string[], vLookup?: boolean): string {
-        let lookupValue: string; let idxNumber: string;
-        let lookupArray: string; let matchArray: string;
-        let rangeLookup: string; const checkCriteria: string[] = [];
-        const findMaxVal: string[] | string = []; const result: string[] | string = [];
+    public computeVHLookup(range: string[], isVlookup?: boolean): string {
         const argArr: string[] = range;
-        const isVlookup: string = vLookup ? this.trueValue : this.falseValue;
-        if (argArr[0] === '' || argArr[1] === '') {
+        if (isNullOrUndefined(argArr) || argArr.length < 3 || argArr.length > 4) {
+            return this.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
+        }
+        if (argArr[1] === '') {
             return this.getErrorStrings()[CommonErrors.NA];
         }
-        lookupValue = this.getValueFromArg(argArr[0]);
-        if (argArr[0].indexOf(this.tic) > -1 && argArr[0].toUpperCase().split(this.tic).join('') !== this.trueValue &&
-            argArr[0].toUpperCase().split(this.tic).join('') !== this.falseValue && this.isNaN(this.parseFloat(argArr[0].split(this.tic).join('')))) {
-            lookupValue = lookupValue.split(this.tic).join('');
-        }
-        if (this.getErrorStrings().indexOf(lookupValue) > -1) { return lookupValue; }
-        if (this.isCellReference(argArr[2]) || argArr[2].includes(this.arithMarker)) {
-            idxNumber = this.getValueFromArg(argArr[2]) || '0';
+        let lookupValue: string = this.getValueFromArg(argArr[0]);
+        if (lookupValue) {
+            if (lookupValue.includes(this.tic)) {
+                const lookupVal: string = lookupValue.split(this.tic).join('');
+                if (lookupVal && !this.isNumber(lookupVal)) {
+                    const lookupValUpper: string = lookupVal.toUpperCase();
+                    if (lookupValUpper !== this.trueValue && lookupValUpper !== this.falseValue) {
+                        lookupValue = lookupVal;
+                    }
+                }
+            }
         } else {
-            idxNumber = this.getValueFromArg(argArr[2]).split(this.tic).join('');
+            lookupValue = '0';
         }
-        idxNumber = idxNumber.toUpperCase() === this.trueValue ? '1' :
-            idxNumber.toUpperCase() === this.falseValue ? '0' : idxNumber;
-        const idxNum: number = this.parseFloat(idxNumber);
-        const rangeSplit: string[] = argArr[1].split(':');
-        if (this.isCellReference(rangeSplit[0]) && this.isCellReference(rangeSplit[1])) {
-            const index: number = argArr[1].indexOf(':');
-            let rowIdx: number = this.rowIndex(this.substring(argArr[1], 0, index));
-            let colIdx: number = this.colIndex(this.substring(argArr[1], 0, index));
-            let endRowIdx: number = this.rowIndex(this.substring(argArr[1], index + 1, index + argArr[1].length - index - 1));
-            let endColIdx: number = this.colIndex(this.substring(argArr[1], index + 1, index + argArr[1].length - index - 1));
+        const errorStrings: string[] = this.getErrorStrings();
+        if (errorStrings.indexOf(lookupValue) > -1) {
+            return lookupValue;
+        }
+        const colIdxVal: string = (this.getValueFromArg(argArr[2]) || '0').split(this.tic).join('').toUpperCase();
+        const colNumIdx: number = this.parseFloat(colIdxVal === this.trueValue ? '1' : colIdxVal);
+        if (colNumIdx < 1) {
+            return errorStrings[CommonErrors.Value];
+        }
+        let isExactMatchLookup: boolean;
+        if (argArr[3]) {
+            argArr[3] = this.getValueFromArg(argArr[3]).split(this.tic).join('');
+            if (errorStrings.indexOf(argArr[3]) > -1) {
+                return argArr[3];
+            }
+            const rangeLookup: string = argArr[3].toUpperCase();
+            if (rangeLookup === this.falseValue || argArr[3] === '0') {
+                isExactMatchLookup = true;
+            } else if (!(rangeLookup === this.trueValue || argArr[3] === '1')) {
+                return errorStrings[CommonErrors.Value];
+            }
+        }
+        const rangeArr: string[] = argArr[1].split(':');
+        let startIdx: number; let endIdx: number; let idx: number; let grid: Object;
+        let getLookupRangeValue: (idx: number) => string; let getMatchRangeValue: () => string;
+        if (this.isCellReference(rangeArr[0]) && this.isCellReference(rangeArr[1])) {
+            let rowIdx: number = this.rowIndex(rangeArr[0]);
+            let colIdx: number = this.colIndex(rangeArr[0]);
+            let endRowIdx: number = this.rowIndex(rangeArr[1]);
+            let endColIdx: number = this.colIndex(rangeArr[1]);
             if (rowIdx > endRowIdx) {
                 [rowIdx, endRowIdx] = [endRowIdx, rowIdx];
             }
             if (colIdx > endColIdx) {
                 [colIdx, endColIdx] = [endColIdx, colIdx];
             }
-            let sheetIdx: string | number = '';
-            if (argArr[1].indexOf('!') === 0) {
-                sheetIdx = argArr[1]; sheetIdx = sheetIdx.replace('!', '');
-                sheetIdx = sheetIdx.indexOf('!'); sheetIdx = argArr[1].substring(0, sheetIdx + 2);
+            if (!(rowIdx > 0 && endRowIdx <= 1048576 && colIdx > 0 && endColIdx <= 16384)) {
+                return this.getErrorStrings()[CommonErrors.Name];
             }
-            if (isVlookup === this.trueValue) {
-                lookupArray = sheetIdx + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(colIdx) + endRowIdx;
-            } else {
-                lookupArray = sheetIdx + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(endColIdx) + rowIdx;
-            }
-            let matchArrayIndex: number;
-            if (isVlookup === this.trueValue) {
-                matchArrayIndex = colIdx + idxNum - 1;
-                if (matchArrayIndex > endColIdx) {
-                    return this.getErrorStrings()[CommonErrors.Ref];
+            grid = this.grid;
+            let sheetToken: string = '';
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(grid);
+            if (argArr[1].startsWith('!')) {
+                sheetToken = argArr[1].substring(0, argArr[1].replace('!', '').indexOf('!') + 2);
+                if (family.tokenToParentObject !== null) {
+                    this.grid = family.tokenToParentObject.get(sheetToken);
                 }
-            } else {
-                matchArrayIndex = rowIdx + idxNum - 1;
-                if (matchArrayIndex > endRowIdx) {
-                    return this.getErrorStrings()[CommonErrors.Ref];
-                }
+            }  else if (family.parentObjectToToken !== null) {
+                sheetToken = family.parentObjectToToken.get(grid);
             }
-            if (idxNum < 1 || this.isNaN(idxNum)) {
-                return this.getErrorStrings()[CommonErrors.Value];
-            } else {
-                if (isVlookup === this.trueValue) {
-                    matchArray = sheetIdx + getAlphalabel(matchArrayIndex) + rowIdx + ':' + getAlphalabel(matchArrayIndex) + endRowIdx;
-                } else {
-                    matchArray = sheetIdx + getAlphalabel(colIdx) + matchArrayIndex + ':' + getAlphalabel(endColIdx) + matchArrayIndex;
-                }
+            const sheetId: number = this.getSheetId(this.grid);
+            const sheetInfoArgs: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
+                action: 'getSheetInfo', sheetInfo: [] };
+            (this.parentObject as { notify?: Function }).notify(workbookFormulaOperation, sheetInfoArgs);
+            if (getSheetIndexByName(this.parentObject, 'Sheet' + sheetId, sheetInfoArgs.sheetInfo) === -1) {
+                this.grid = grid;
+                return errorStrings[CommonErrors.Ref];
             }
-        }
-        argArr[3] = argArr[3] ? argArr[3] : this.trueValue;
-        if (this.isCellReference(argArr[3])) {
-            argArr[3] = this.getValueFromArg(argArr[3]);
+            const getCellValue: (row: number, col: number, curCell: string) => string = this.getCellValueFn(grid, this.cell, sheetId, true);
+            if (isVlookup) {
+                const matchIndex: number = colIdx + colNumIdx - 1;
+                if (matchIndex > endColIdx) {
+                    return errorStrings[CommonErrors.Ref];
+                }
+                startIdx = rowIdx; endIdx = endRowIdx;
+                const lookupColText: string = sheetToken + getAlphalabel(colIdx);
+                getLookupRangeValue = (idx: number): string => {
+                    return getCellValue(idx, colIdx, lookupColText + idx);
+                };
+                const matchColText: string = sheetToken + getAlphalabel(matchIndex);
+                getMatchRangeValue = (): string => {
+                    return getCellValue(idx, matchIndex, matchColText + idx) || '0';
+                };
+            } else {
+                const matchIndex: number = rowIdx + colNumIdx - 1;
+                if (matchIndex > endRowIdx) {
+                    return errorStrings[CommonErrors.Ref];
+                }
+                startIdx = colIdx; endIdx = endColIdx;
+                let matchColText: string;
+                getLookupRangeValue = (idx: number): string => {
+                    matchColText = sheetToken + getAlphalabel(idx);
+                    return getCellValue(rowIdx, idx, matchColText + rowIdx);
+                };
+                getMatchRangeValue = (): string => {
+                    return getCellValue(matchIndex, idx, matchColText + matchIndex) || '0';
+                };
+            }
         } else {
-            argArr[3] = this.getValueFromArg(argArr[3]).split(this.tic).join('');
+            return errorStrings[CommonErrors.Value];
         }
-        if (this.getErrorStrings().indexOf(argArr[3]) > -1) { return argArr[3]; }
-        if (argArr[3].toUpperCase() === this.falseValue || argArr[3] === '0') {
-            rangeLookup = this.falseValue;
-        } else if (argArr[3].toUpperCase() === this.trueValue || argArr[3] === '1') {
-            rangeLookup = this.trueValue;
-        } else {
-            return this.getErrorStrings()[CommonErrors.Value];
-        }
-        const lookupRangeArray: string[] | string = this.getCellCollection(lookupArray);
-        const matchRangeArray: string[] | string = this.getCellCollection(matchArray);
-        for (let i: number = 0; i < lookupRangeArray.length; i++) {
-            findMaxVal.push(this.getValueFromArg(lookupRangeArray[i as number]).split(this.tic).join(''));
-        }
-        const criteriaVal: number = this.parseFloat(lookupValue);
-        if (rangeLookup === 'FALSE') { // For EXACT Match
-            for (let j: number = 0; j < lookupRangeArray.length; j++) {
-                checkCriteria[j as number] = this.getValueFromArg(lookupRangeArray[j as number]).split(this.tic).join('');
-                if (!isNullOrUndefined(matchRangeArray[j as number])) {
-                    if (!this.isNaN(criteriaVal) && checkCriteria[j as number] !== '' && criteriaVal === this.parseFloat(checkCriteria[j as number])) {
-                        result.push(this.getValueFromArg(matchRangeArray[j as number]).split(this.tic).join('') || '0');
-                    } else if (checkCriteria[j as number] !== '' && lookupValue.toUpperCase() === checkCriteria[j as number].toUpperCase()) {
-                        result.push(this.getValueFromArg(matchRangeArray[j as number]).split(this.tic).join('') || '0');
-                    } else if (lookupValue.indexOf('*') > -1 || lookupValue.indexOf('?') > -1) {
-                        let criteriaValue: string = lookupValue;
-                        if (lookupValue.indexOf('*') > -1) {
-                            criteriaValue = criteriaValue.replace(/\*/g, '').trim();
-                            if (this.isCellReference(criteriaValue)) {
-                                criteriaValue = this.getValueFromArg(criteriaValue);
-                            }
-                            const asteriskIndex: number = lookupValue.indexOf('*');
-                            if (lookupValue[0] === '*') { criteriaValue = '*' + criteriaValue; }
-                            if (lookupValue[lookupValue.length - 1] === '*') { criteriaValue += '*'; }
-                            if (asteriskIndex > 0 && asteriskIndex < lookupValue.length - 1) {
-                                criteriaValue = lookupValue.substring(0, asteriskIndex) + '*' + lookupValue.substring(asteriskIndex + 1);
-                            }
-                        }
-                        const stack: string[] = [];
-                        const wildcardResult: string = this.findWildCardValue(
-                            criteriaValue.toLowerCase(), checkCriteria[j as number].toLowerCase());
-                        stack.push(wildcardResult);
-                        stack.push(lookupValue);
-                        if (this.processLogical(stack, 'equal') === this.trueValue) {
-                            result.push(this.getValueFromArg(matchRangeArray[j as number]).split(this.tic).join('') || '0');
-                        }
+        let result: string; let lookupRangeVal: string;
+        const matchedResult: string[] | string = [];
+        if (isExactMatchLookup) {
+            let isMatchFound: () => boolean;
+            if (this.isNumber(lookupValue)) {
+                const lookupNumVal: number = this.parseFloat(lookupValue);
+                isMatchFound = (): boolean => {
+                    return lookupNumVal === this.parseFloat(lookupRangeVal);
+                };
+            } else if (lookupValue.includes('*') || lookupValue.includes('?')) {
+                let criteriaValue: string = lookupValue;
+                const asteriskIndex: number = lookupValue.indexOf('*');
+                if (asteriskIndex > -1) {
+                    criteriaValue = criteriaValue.replace(/\*/g, '').trim();
+                    if (this.isCellReference(criteriaValue)) {
+                        criteriaValue = this.getValueFromArg(criteriaValue);
+                    }
+                    if (asteriskIndex === 0) {
+                        criteriaValue = '*' + criteriaValue;
+                    } else if (asteriskIndex === lookupValue.length - 1) {
+                        criteriaValue += '*';
+                    } else {
+                        criteriaValue = lookupValue.substring(0, asteriskIndex) + '*' + lookupValue.substring(asteriskIndex + 1);
                     }
                 }
-            }
-            if (result.length > 0) {
-                return result[0];
+                criteriaValue = criteriaValue.toLowerCase();
+                isMatchFound = (): boolean => {
+                    return this.processLogical(
+                        [this.findWildCardValue(criteriaValue, lookupRangeVal.toLowerCase()), lookupValue], 'equal') === this.trueValue;
+                };
             } else {
-                return this.getErrorStrings()[CommonErrors.NA];
+                const lookupValUpper: string = lookupValue.toUpperCase();
+                isMatchFound = (): boolean => {
+                    return lookupValUpper === lookupRangeVal.toUpperCase();
+                };
             }
-        } else if (rangeLookup === 'TRUE') { // For APPROXIMATE Match
-            const num: number[] = findMaxVal.map((value: string) => { return value === '' ? NaN : Number(value); }).sort((a: number, b: number) => a - b);
-            const maxVal: number = num[num.length - 1];
-            const minVal: number = num[0];
-            const lookup: string = lookupValue.toUpperCase();
-            for (let k: number = 0; k < lookupRangeArray.length; k++) {
-                checkCriteria[k as number] = this.getValueFromArg(lookupRangeArray[k as number]).split(this.tic).join('');
-                if (!isNullOrUndefined(matchRangeArray[k as number]) && lookupValue !== '' && checkCriteria[k as number] !== '' && (lookup === this.trueValue || lookup === this.falseValue) && lookup === checkCriteria[k as number].toUpperCase()) {
-                    result.push(this.getValueFromArg(matchRangeArray[k as number]).split(this.tic).join('') || '0');
-                } else if (!isNullOrUndefined(matchRangeArray[k as number]) && lookupValue !== '' && checkCriteria[k as number] !== '' && lookup === checkCriteria[k as number].toUpperCase()) {
-                    result.push(this.getValueFromArg(matchRangeArray[k as number]).split(this.tic).join('') || '0');
+            for (idx = startIdx; idx <= endIdx; idx++) {
+                lookupRangeVal = getLookupRangeValue(idx);
+                if (lookupRangeVal && isMatchFound()) {
+                    matchedResult.push(getMatchRangeValue());
                 }
             }
-            for (let a: number = 0; a < num.length; a++) {
-                checkCriteria[a as number] = num[a as number].toString().split(this.tic).join('');
-                if (!isNullOrUndefined(matchRangeArray[a as number]) && lookupValue !== '' && !this.isNaN(criteriaVal) && checkCriteria[a as number] !== '' && criteriaVal === this.parseFloat(checkCriteria[a as number])) {
-                    result.push(this.getValueFromArg(matchRangeArray[a as number]).split(this.tic).join('') || '0');
-                }
+            result = matchedResult.length ? matchedResult[0] : errorStrings[CommonErrors.NA];
+        } else if (lookupValue.indexOf('*') > -1 || lookupValue.indexOf('?') > -1) {
+            result = errorStrings[CommonErrors.NA];
+        } else {
+            let matchVal: number; let checkMatchFn: () => void;
+            if (this.isNumber(lookupValue)) {
+                const lookupNumVal: number = this.parseFloat(lookupValue);
+                const comparer: Function = DataUtil.fnSort('');
+                checkMatchFn = (): void => {
+                    matchVal = comparer(
+                        this.isNumber(lookupRangeVal) ? this.parseFloat(lookupRangeVal) : lookupRangeVal || null, lookupNumVal);
+                };
+            } else {
+                const collator: Intl.Collator = new Intl.Collator(
+                    (<{ locale?: string }>this.parentObject).locale || 'en-US', { sensitivity:  'base' });
+                checkMatchFn = (): void => {
+                    matchVal = (!lookupRangeVal || this.isNumber(lookupRangeVal)) ? null : collator.compare(lookupRangeVal, lookupValue);
+                };
             }
-            if (result.length > 0) {
-                return result[result.length - 1];
-            } else if (lookupValue.indexOf('*') > -1 || lookupValue.indexOf('?') > -1 ||
-                lookup.split(this.tic).join('') === this.trueValue || lookup.split(this.tic).join('') === this.falseValue) {
-                return this.getErrorStrings()[CommonErrors.NA];
-            } else if (criteriaVal > maxVal && !isNullOrUndefined(matchRangeArray[lookupRangeArray.length - 1])) {
-                return this.getValueFromArg(matchRangeArray[lookupRangeArray.length - 1]).split(this.tic).join('');
-            }
-            if (findMaxVal.indexOf(lookupValue.split(this.tic).join('')) < 0 && lookupValue !== this.trueValue && lookupValue !== this.falseValue) {
-                if (!this.isNaN(criteriaVal) && lookupValue !== '' && !this.isNaN(maxVal) && !this.isNaN(minVal)) {
-                    const temp: number[] = [];
-                    for (let b: number = 0; b < num.length; b++) {
-                        if (criteriaVal > num[b as number]) {
-                            temp.push(num[b as number]);
-                        }
-                    }
-                    const index: number = temp.length - 1;
-                    if (!isNullOrUndefined(matchRangeArray[index as number]) && index >= 0) {
-                        return this.getValueFromArg(matchRangeArray[index as number]).split(this.tic).join('') || '0';
-                    }
-                } else if (this.isNaN(criteriaVal) && lookupValue !== '' && this.isNaN(maxVal) && this.isNaN(minVal)) {
-                    const str: string[] = findMaxVal.sort();
-                    const index: number = this.findClosestMatch(lookupValue.split(this.tic).join(''), str);
-                    if (!isNullOrUndefined(matchRangeArray[index as number]) && index >= 0) {
-                        return this.getValueFromArg(matchRangeArray[index as number]).split(this.tic).join('') || '0';
+            let skipCheck: boolean;
+            for (idx = startIdx; idx <= endIdx; idx++) {
+                lookupRangeVal = getLookupRangeValue(idx);
+                if (!skipCheck) {
+                    checkMatchFn();
+                    if (matchVal === 0) {
+                        matchedResult.push(getMatchRangeValue());
+                    } else if (matchVal < 0) {
+                        matchedResult.push(getMatchRangeValue());
+                    } else if (matchVal > 0 && matchedResult.length) {
+                        skipCheck = true;
                     }
                 }
             }
+            result = matchedResult.length ? matchedResult[matchedResult.length - 1] : errorStrings[CommonErrors.NA];
         }
-        return this.getErrorStrings()[CommonErrors.NA];
+        this.grid = grid;
+        return result;
     }
 
     private findClosestMatch(searchValue: string, sortedArray: string[]): number {
@@ -2753,10 +2777,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      */
     public isDigit(text: string): boolean {
         const charCode: number = text.charCodeAt(0);
-        if ((charCode > 47) && (charCode < 58)) {
-            return true;
-        }
-        return false;
+        return charCode > 47 && charCode < 58;
     }
 
     private findLastIndexOfq(fString: string): number {
@@ -2771,83 +2792,86 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     /**
      * To get the exact value from argument.
      *
-     * @param {string} arg - Formula argument for getting a exact value.
+     * @param {string} val - Formula argument for getting a exact value.
      * @param {boolean} isUnique - It specifies unique formula or not.
      * @param {boolean} isIfError - It specifies `IFERROR` formula or not.
      * @param {boolean} isSubtotal - It specifies subtotal formula.
      * @returns {string} - To get the exact value from argument.
      */
-    public getValueFromArg(arg: string, isUnique?: boolean, isIfError?: boolean, isSubtotal?: boolean): string {
-        arg = arg.trim();
-        let s: string | number = arg;
-        let dateTime: Date = this.dateTime1900;
-        let pObjCVal: string | number = s;
-        if (isNullOrUndefined(s) || this.isTextEmpty(s)) {
-            return s;
-        } else if (arg[0] === this.tic || arg[0] === this.singleTic) {
-            let parsedVal: string = arg.split(this.tic).join('');
-            dateTime = this.isDate(parsedVal);
-            if (this.isNaN(this.parseFloat(parsedVal)) && !isNullOrUndefined(dateTime) &&
-                !this.isNaN(dateTime.getDate()) && this.dateTime1900 <= dateTime) {
-                return this.toOADate(dateTime, true).toString();
-            } else if (arg[arg.length - 1] === this.tic) {
+    public getValueFromArg(val: string, isUnique?: boolean, isIfError?: boolean, isSubtotal?: boolean): string {
+        val = val.trim();
+        if (!val || this.getErrorStrings().indexOf(val) > -1) {
+            return val;
+        }
+        const firstChar: string = val[0];
+        if (firstChar === this.tic || firstChar === this.singleTic) {
+            let parsedVal: string = val.split(this.tic).join('');
+            if (this.isNaN(this.parseFloat(parsedVal))) {
+                const dateTime: Date = this.isDate(parsedVal);
+                if (dateTime && !this.isNaN(dateTime.getDate())) {
+                    return this.toOADate(dateTime, true).toString();
+                }
+            }
+            if (val.endsWith(this.tic)) {
                 const decimalSep: string = this.getParseDecimalSeparator();
                 if (decimalSep !== '.' && parsedVal.includes(decimalSep)) {
                     parsedVal = parsedVal.replace(decimalSep, '.');
                     if (this.isNumber(parsedVal)) {
-                        arg = parsedVal;
+                        val = parsedVal;
                     }
                 }
             }
-            return arg;
+            return val;
         } else {
-            arg = arg.split('u').join('-');
-            const decimalSep: string = this.getParseDecimalSeparator();
-            if (!this.isUpperChar(s[0]) && (this.isDigit(s[0]) || s[0] === decimalSep || s[0] === '-' || s[0] === 'n')) {
-                if (s[0] === 'n') {
-                    s = s.substring(1);
-                    if (s.indexOf('"n') > - 1) {
-                        s = s.replace('"n', '"');
+            const isFirstCharUpper: boolean = this.isUpperChar(firstChar);
+            if (!isFirstCharUpper) {
+                const decimalSep: string = this.getParseDecimalSeparator();
+                if (this.isDigit(firstChar) || firstChar === decimalSep || firstChar === '-' || firstChar === 'n') {
+                    if (firstChar === 'n') {
+                        val = val.substring(1);
+                        if (val.indexOf('"n') > - 1) {
+                            val = val.replace('"n', '"');
+                        }
                     }
-                }
-                if (decimalSep !== '.' && s.includes(decimalSep)) {
-                    const parsedVal: string = s.replace(decimalSep, '.');
-                    if (this.isNumber(parsedVal)) {
-                        s = parsedVal;
+                    if (decimalSep !== '.' && val.includes(decimalSep)) {
+                        const parsedVal: string = val.replace(decimalSep, '.');
+                        if (this.isNumber(parsedVal)) {
+                            val = parsedVal;
+                        }
                     }
+                    return val;
                 }
-                return s;
             }
         }
-        const symbolArray: string[] = ['+', '-', '/', '*', ')', ')', '{'];
-        if ((this.parser.indexOfAny(s, symbolArray) === -1 && this.isUpperChar(s[0])) || s[0] === this.sheetToken) {
-            if (s !== this.trueValue && s !== this.falseValue && this.isCellReference(s)) {
-                const f: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
-                if (f.sheetNameToParentObject !== null && f.sheetNameToParentObject.size > 0 && s.indexOf(this.sheetToken) === -1) {
-                    const token: string = f.parentObjectToToken.get(this.grid);
-                    s = token + s;
+        const tokenAvail: boolean = firstChar === this.sheetToken;
+        if (tokenAvail || (this.isUpperChar(firstChar) && !['+', '-', '/', '*', ')', ')', '{'].some((opr: string) => val.includes(opr)))) {
+            const isCellRef: boolean = this.isCellReference(val);
+            if (isCellRef && !tokenAvail) {
+                const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+                if (family.sheetNameToParentObject !== null && family.parentObjectToToken.has(this.grid)) {
+                    val = family.parentObjectToToken.get(this.grid) + val;
                 }
             }
-            if (s === this.cell) {
-                const dependent: string[] = this.getDependentCells().get(s);
-                if (dependent != null && dependent.indexOf(s) > -1) {
-                    this.arrayRemove(dependent, s);
+            if (val === this.cell) {
+                const dependent: string[] = this.getDependentCells().get(val);
+                if (dependent != null && dependent.indexOf(val) > -1) {
+                    this.arrayRemove(dependent, val);
                 }
                 if (!this.getDependentFormulaCells().has(this.cell)) {
                     this.clearFormulaDependentCells(this.cell);
                 }
                 if (!isUnique) {
-                    throw new FormulaError(this.formulaErrorStrings[FormulasErrorsStrings.CircularReference] + s);
+                    throw new FormulaError(this.formulaErrorStrings[FormulasErrorsStrings.CircularReference]);
                 }
             }
-            pObjCVal = this.getParentObjectCellValue(s, false, isUnique, isSubtotal);
-            this.updateDependentCell(s);
-            return pObjCVal.toString();
+            const result: string | number = this.getParentObjectCellValue(val, false, isUnique, isSubtotal).toString();
+            if (isCellRef) {
+                this.updateDependentCell(val);
+            }
+            return result;
+        } else {
+            return this.computeValue(val, false, isIfError);
         }
-        if (this.getErrorStrings().indexOf(arg) > -1) {
-            return arg;
-        }
-        return this.computeValue(pObjCVal.toString(), false, isIfError);
     }
 
     public isDate(date: any): Date {
@@ -3033,75 +3057,94 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (val === this.trueValue || val === this.falseValue) {
             return val;
         }
-        const i: number = val.lastIndexOf(this.sheetToken);
-        let row: number = 0;
-        let col: number = 0;
+        const tokenIdx: number = val.lastIndexOf(this.sheetToken);
         const grid: Object = this.grid;
-        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(grid);
-        if (i > -1 && family.tokenToParentObject !== null) {
-            this.grid = family.tokenToParentObject.get(val.substring(0, i + 1));
-            row = this.rowIndex(val);
-            col = this.colIndex(val);
-        } else if (i === -1) {
+        let cellRef: string;
+        if (tokenIdx > -1) {
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(grid);
+            if (family.tokenToParentObject !== null) {
+                this.grid = family.tokenToParentObject.get(val.substring(0, tokenIdx + 1));
+                cellRef = val.substring(tokenIdx + 1);
+            } else {
+                return this.getErrorStrings()[CommonErrors.Value];
+            }
+        } else {
             let j: number = 0;
             while (j < val.length && this.isChar(val[j as number])) {
                 j++;
             }
-            if (j === val.length || !this.isValidCell(val)) {
-                val = val.toLowerCase();
+            if (j === val.length) {
                 return val === '' ? this.getErrorStrings()[CommonErrors.Value] : this.getErrorStrings()[CommonErrors.Name];
             } else {
-                row = this.rowIndex(val);
-                col = this.colIndex(val);
+                cellRef = val;
+                const family: CalcSheetFamilyItem = this.getSheetFamilyItem(grid);
                 if (family.isSheetMember && family.parentObjectToToken != null) {
                     val = family.parentObjectToToken.get(this.grid) + val;
                 }
             }
         }
-        const saveCell: string = (this.cell === '' || this.cell === null) ? '' : this.cell;
-        this.cell = val;
-        if (saveCell === this.cell && !isUnique) {
-            throw this.formulaErrorStrings[FormulasErrorsStrings.CircularReference];
-        }
-        const cValue: string | number = this.getParentCellValue(row, col, this.grid, saveCell, grid, refresh,
-                                                                isUnique, isSubtotal);
-        this.grid = grid;
-        this.cell = saveCell;
-        return cValue;
-    }
-
-    private getParentCellValue(
-        row: number, col: number, grd: Object, fromCell: string, fromCellGrd: Object, refresh: boolean, isUnique?: boolean,
-        isSubtotal?: boolean): number | string {
-        // formulainfotable
-        let cValue: number | string;
-        const gridId: number = this.getSheetId(grd);
-        if ((this.parentObject as any).getValueRowCol === undefined) {
-            cValue = this.getValueRowCol(gridId, row, col);
-        } else {
-            if (fromCell) {
-                fromCell = fromCellGrd === grd ? '' : fromCell + ',' +
-                    (fromCellGrd && typeof fromCellGrd === 'string' && Number(fromCellGrd) > -1 ? fromCellGrd : this.getSheetID(fromCellGrd));
+        if (this.isDigit(cellRef[0])) {
+            const alphabetStartIdx: number = cellRef.search(/[a-zA-Z]/);
+            if (alphabetStartIdx > 0) {
+                cellRef = cellRef.substring(alphabetStartIdx, cellRef.length) + cellRef.substring(0, alphabetStartIdx);
             }
-            cValue = (this.parentObject as any).getValueRowCol(gridId, row, col, fromCell, refresh,
-                                                               isUnique, isSubtotal);
         }
-        if (isNullOrUndefined(cValue)) {
-            cValue = this.emptyString;
+        const row: number = this.rowIndex(cellRef);
+        const col: number = this.colIndex(cellRef);
+        let result: string | number;
+        if (!(row > 0 && row <= 1048576 && col > 0 && col <= 16384)) {
+            result = this.getErrorStrings()[CommonErrors.Name];
         } else {
-            cValue = cValue.toString();
-            const decimalSep: string = this.getParseDecimalSeparator();
-            if (decimalSep !== '.' && cValue.includes(decimalSep)) {
-                const parsedVal: string = cValue.replace(decimalSep, '.');
-                if (this.isNumber(parsedVal)) {
-                    cValue = parsedVal;
+            const sheetId: number = this.getSheetId(this.grid);
+            if ((this.parentObject as { notify?: Function }).notify) {
+                const sheetInfoArgs: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
+                    action: 'getSheetInfo', sheetInfo: [] };
+                (this.parentObject as { notify?: Function }).notify(workbookFormulaOperation, sheetInfoArgs);
+                if (getSheetIndexByName(this.parentObject, 'Sheet' + sheetId, sheetInfoArgs.sheetInfo) === -1) {
+                    this.grid = grid;
+                    return this.getErrorStrings()[CommonErrors.Ref];
                 }
             }
+            result = this.getCellValueFn(grid, this.cell, sheetId, false, refresh, isUnique, isSubtotal)(row, col, val);
         }
-        // if (cValue[cValue.length - 1] == ("%") && !this.isNaN(d)) {
-        //     cValue = (Number(d) / 100).toString();
-        // }
-        return cValue;
+        this.grid = grid;
+        return result;
+    }
+
+    private getCellValueFn(
+        grid: Object, actCell: string, sheetId: number, updateDependentCell?: boolean, refresh?: boolean, isUnique?: boolean,
+        isSubtotal?: boolean): (row: number, col: number, curCell: string) => string {
+        let fromCell: string = actCell;
+        if (fromCell) {
+            fromCell = grid === this.grid ? '' :
+                fromCell + ',' + (typeof grid === 'string' && Number(grid) > -1 ? grid : this.getSheetID(grid));
+        }
+        const getValueRowCol: Function = (<{ getValueRowCol?: Function }>this.parentObject).getValueRowCol.bind(this.parentObject) ||
+            this.getValueRowCol.bind(this);
+        return (row: number, col: number, curCell: string): string => {
+            if (actCell === curCell && !isUnique) {
+                throw this.formulaErrorStrings[FormulasErrorsStrings.CircularReference];
+            }
+            this.cell = curCell;
+            let val: string | number = getValueRowCol(sheetId, row, col, fromCell, refresh, isUnique, isSubtotal);
+            if (isNullOrUndefined(val)) {
+                val = this.emptyString;
+            } else {
+                val = val.toString();
+                const decimalSep: string = this.getParseDecimalSeparator();
+                if (decimalSep !== '.' && val.includes(decimalSep)) {
+                    const parsedVal: string = val.replace(decimalSep, '.');
+                    if (this.isNumber(parsedVal)) {
+                        val = parsedVal;
+                    }
+                }
+            }
+            this.cell = actCell;
+            if (updateDependentCell) {
+                this.updateDependentCell(curCell);
+            }
+            return val;
+        };
     }
 
     private isValidCell(args: string): boolean {
@@ -3112,7 +3155,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         const row: number = this.rowIndex(args);
         const col: number = this.colIndex(args);
-        return (row > 0 && row <= 1048576 && col > 0 && col <= 16384);
+        return row > 0 && row <= 1048576 && col > 0 && col <= 16384;
     }
 
     /**
@@ -3239,11 +3282,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         formula.setFormulaValue(ex);
                         isCompute = false;
                     }
+                } else {
+                    this.parser.isError = false;
                 }
                 if (isCompute) {
                     this.parser.isFormulaParsed = true;
                     const cValue: string | number = this.calculateFormula(formula.getParsedFormula(), refresh);
-                    isComputedValueChanged = (cValue !== formula.getFormulaValue());
+                    isComputedValueChanged = cValue !== formula.getFormulaValue() && (!(this.parentObject as { isEdit?: boolean }).isEdit ||
+                        cValue !== this.formulaErrorStrings[FormulasErrorsStrings.CircularReference]);
                     formula.setFormulaValue(cValue);
                 }
             } else {
@@ -3252,6 +3298,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 if (!this.getDependentFormulaCells().has(cellTxt)) {
                     this.getDependentFormulaCells().set(cellTxt, new Map<string, string>());
                 }
+                this.getFormulaInfoTable().set(cellTxt, formula);
                 try {
                     formula.setParsedFormula(this.parser.parseFormula(changeArgs.getValue()));
                 } catch (ex) {
@@ -3259,12 +3306,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     isCompute = false;
                 }
                 if (isCompute) {
-                    formula.setFormulaValue(this.calculateFormula(formula.getParsedFormula(), refresh));
-                }
-                if (this.getFormulaInfoTable().has(cellTxt)) {
-                    this.getFormulaInfoTable().set(cellTxt, formula);
-                } else {
-                    this.getFormulaInfoTable().set(cellTxt, formula);
+                    const cValue: string | number = this.calculateFormula(formula.getParsedFormula(), refresh);
+                    isComputedValueChanged = cValue !== this.formulaErrorStrings[FormulasErrorsStrings.CircularReference];
+                    formula.setFormulaValue(cValue);
                 }
             }
             if (isCompute) {

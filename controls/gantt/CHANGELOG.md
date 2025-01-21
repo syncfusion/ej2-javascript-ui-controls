@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I665780` - Baseline and taskbar width mismatched when using the same dates for both issue has been fixed.
+- `#I678186` - Decimal work value is updating, when record add issue has been fixed.
+- `#I679179` - Offset value was not calculated properly issue has been fixed.
+
 ## 28.1.39 (2024-01-14)
 
 ### GanttChart

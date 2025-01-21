@@ -113,8 +113,8 @@ export class FilterMenuRenderer {
                 this.dlgObj.destroy();
                 remove(elem);
             }
-            if (this.parent.isColumnMenuFilterClosing) {
-                document.getElementById(this.parent.element.id + '_columnmenu').focus();
+            if (!isNullOrUndefined(this.dlgObj['storeActiveElement'])) {
+                this.dlgObj['storeActiveElement'].focus();
             }
         }
         this.parent.notify(events.filterDialogClose, {});

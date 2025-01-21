@@ -1590,7 +1590,7 @@ export class TaskProcessor extends DateProcessor {
             }
             else {
                 if (isValid) {
-                    if (ganttData.durationUnit === 'day' && /^\d+\.\d+$/.test(ganttData.duration.toString()) && this.parent.timelineModule.bottomTier === 'Day'
+                    if (this.parent.taskFields.duration && ganttData.durationUnit === 'day' && /^\d+\.\d+$/.test(ganttData.duration.toString()) && this.parent.timelineModule.bottomTier === 'Day'
                         && isNullOrUndefined(ganttData.segments)) {
                         const holidaysCount: number = this.parent.holidays && this.parent.holidays.length > 0
                             ? this.getHolidaysCount(sDate, eDate)

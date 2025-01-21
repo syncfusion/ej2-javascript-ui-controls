@@ -340,8 +340,8 @@ export class CellRenderer implements ICellRenderer {
         if (this.parent.calculationMode === 'Automatic' || args.isSortAction || args.action === 'calculate' || args.isDependentRefresh) {
             this.parent.notify(workbookFormulaOperation, eventArgs);
         }
-        if (args.cell.value === undefined && this.parent.calculationMode === 'Manual' &&
-            !(this.parent.getActiveSheet().isSheetCalculated)) {
+        if ((args.cell.value === undefined && this.parent.calculationMode === 'Manual' && !this.parent.getActiveSheet().isSheetCalculated)
+            || (this.parent.isEdit && args.cell.value === '#CIRCULARREF!')) {
             args.cell.value = '0';
         }
         args.cell.value = getCell(

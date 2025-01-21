@@ -486,8 +486,6 @@ export class GanttTreeGrid {
                 (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as Object) = record;
             }
             this.parent.notify('updateModel', {});
-            const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
-            focussedElement.focus();
         } else if (getValue('type', args) === 'save') {
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {
                 const data: IGanttData = getValue('data', args);

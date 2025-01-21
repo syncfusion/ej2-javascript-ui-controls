@@ -981,6 +981,10 @@ export class SpellChecker {
                 httpRequest.setRequestHeader('Content-Type', 'application/json');
                 let headers = this.documentHelper.owner.headers;
                 /* eslint-disable @typescript-eslint/no-explicit-any */
+                if (isByPage)
+                {
+                    word = word.replace(String.fromCharCode(160), ' ');
+                }
                 const spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
                 const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SpellCheck', headers: headers, timeout: 0, cancel: false, withCredentials: false };
                 headers = httprequestEventArgs.headers;

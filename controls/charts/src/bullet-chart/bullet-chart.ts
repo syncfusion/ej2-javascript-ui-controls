@@ -660,7 +660,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         if (!this.minimum) {
             this.minimum = 0;
         }
-        if (!this.maximum) {
+        if (!this.maximum && this.ranges.length) {
             this.maximum = 0;
             for (let i: number = 0; i < this.ranges.length; i++) {
                 this.maximum = this.maximum > this.ranges[i as number].end ? this.maximum : this.ranges[i as number].end;

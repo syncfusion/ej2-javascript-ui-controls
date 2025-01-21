@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I681174` - The issue with "Blob url not opening in image editor" has been resolved.
+
 ## 28.1.39 (2024-01-14)
 
 ### Image Editor

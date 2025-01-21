@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 28.1.39 (2024-01-14)
+## 28.1.41 (2025-01-21)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I681943` - The issue with "Escape key closes all submenus instead of last submenu" has been resolved.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I668145` - The issue with "Script error thrown while selecting the dynamically updated submenu items in the context menu" has been resolved.
+
+## 28.1.37 (2024-12-31)
 
 ### Tab
 

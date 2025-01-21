@@ -279,23 +279,6 @@
         border-radius: 10px;
       }
     }
-    .e-assist-send {
-      position: absolute;
-      right: 20px;
-      font-size: $send-icon-size;
-      bottom: $send-icon-bottom;
-      padding-top: 2px;
-    }
-    .e-assist-send.disabled {
-      pointer-events: none;
-      opacity: .5;
-      cursor: not-allowed;
-    }
-    .e-assist-send.enabled {
-      pointer-events: auto;
-      opacity: 1;
-      cursor: pointer;
-    }
     .e-footer {
       position: relative;
       margin: 0 auto 24px;
@@ -313,7 +296,7 @@
       .hide-scrollbar textarea {
         scrollbar-width: none;
       }
-      &:has(.e-rtl) .e-assist-send {
+      &:has(.e-rtl):not(.e-footer-template) .e-assist-send {
         right: unset;
         left: 20px;
       }
@@ -341,6 +324,25 @@
           @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
             padding: 4px 8px 4px 12px;
           }
+        }
+      }
+      &:not(.e-footer-template) {
+        .e-assist-send {
+          position: absolute;
+          right: 20px;
+          font-size: $send-icon-size;
+          bottom: $send-icon-bottom;
+          padding-top: 2px;
+        }
+        .e-assist-send.disabled {
+          pointer-events: none;
+          opacity: .5;
+          cursor: not-allowed;
+        }
+        .e-assist-send.enabled {
+          pointer-events: auto;
+          opacity: 1;
+          cursor: pointer;
         }
       }
     }
@@ -407,7 +409,7 @@
     .e-views .e-content-body:focus-visible,
     .e-views .e-content-container .e-prompt-text:focus-visible,
     .e-views .e-suggestions li:focus-visible,
-    .e-footer .e-assist-send:not(.disabled):focus-visible,
+    .e-footer:not(.e-footer-template) .e-assist-send:not(.disabled):focus-visible,
     .e-stop-response:focus-visible {
       outline: 1px solid;
     }

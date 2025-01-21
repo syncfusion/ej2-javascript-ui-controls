@@ -1127,7 +1127,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (firstUl && firstUl.getAttribute('aria-multiselectable')) {
             firstUl.removeAttribute('aria-multiselectable');
         }
-        this.oldValue = this.value;
+        this.setOldValue();
         if (!this.isRemoteData) {
             this.isInitialized = true;
         }
@@ -1566,7 +1566,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.triggerChangeEvent(event);
         }
         this.removeValue = false;
-        this.oldValue = this.value;
+        this.setOldValue();
         this.trigger('blur');
     }
 
@@ -1600,7 +1600,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 element: this.element
             };
             this.trigger('change', eventArgs);
-            this.oldValue = this.value;
+            this.setOldValue();
         }
     }
 
@@ -2083,6 +2083,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             frameSpan.classList.add(CHECK);
             ariaState = 'true';
             if (!this.isReverseUpdate) {
+                this.setOldValue();
                 this.isCheckAllCalled = true;
                 this.treeObj.checkAll();
                 if (!this.changeOnBlur) {
@@ -2238,7 +2239,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     }
                 }
                 if (valArr.length !== 0) {
-                    this.oldValue = this.value;
+                    this.setOldValue();
                     this.setProperties({ value: valArr }, true);
                     this.setValidValue();
                 } else {
@@ -2247,7 +2248,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             } else {
                 data = this.getItems(this.text);
                 if (!isNOU(data)) {
-                    this.oldValue = this.value;
+                    this.setOldValue();
                     this.setProperties({ value: [data[this.fields.value].toString()] }, true);
                     this.setValidValue();
                 } else {
@@ -2262,7 +2263,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             return;
         }
         if (!this.isInitialized) {
-            this.oldValue = this.value;
+            this.setOldValue();
             if (this.treeObj.selectedNodes.length > 0 && !this.showCheckBox) {
                 this.setProperties({ value: this.treeObj.selectedNodes }, true);
                 if (this.allowMultiSelection) {
@@ -2841,7 +2842,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private onBeforeSelect(args: NodeSelectEventArgs): void {
         if (args.isInteracted) {
-            this.oldValue = this.value ? this.value.slice() : this.value;
+            this.setOldValue();
             if (this.value === null) {
                 this.setProperties({ value: [] }, true);
             }
@@ -2962,7 +2963,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private beforeCheck(args: NodeCheckEventArgs): void {
         if (args.isInteracted) {
-            this.oldValue = this.value ? this.value.slice() : this.value;
+            this.setOldValue();
         }
     }
 
@@ -3498,7 +3499,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (Array.isArray(this.value) && this.value.length === 0 && this.text == null) { return; }
         Input.setValue(null, this.inputEle, this.floatLabelType);
         if (!isDynamicChange) {
-            this.oldValue = this.value;
+            this.setOldValue();
             this.setProperties({ value: [] }, true);
             this.showOrHideValueTemplate(false);
         }
@@ -3533,6 +3534,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.showSelectAll && this.value && this.value.length === 0) {
             this.setLocale(false);
         }
+    }
+
+    private setOldValue(): void {
+        this.oldValue = Array.isArray(this.value) ? this.value.slice() : this.value;
     }
 
     private selectAllItems(state: boolean): void {

@@ -267,5 +267,44 @@ describe('DropDown Tree control List datasource', () => {
                 }, 400);
             }, 400);
         });
+        it('change event is triggered after dynamically adding values and selecting SelectAll', function () {
+            let changedEvent: boolean = false;
+            var addNewValueButton = document.createElement('button');
+            addNewValueButton.id = 'addNewValueButton';
+            addNewValueButton.innerText = 'Add new value';
+            document.body.appendChild(addNewValueButton);
+            ddTreeObj = new DropDownTree({
+                fields: {
+                    dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded'
+                },
+                allowMultiSelection: true,
+                showCheckBox: true,
+                showSelectAll: true,
+                changeOnBlur: false,
+                treeSettings: { autoCheck: true, loadOnDemand: true, expandOn: 'Auto' },
+                change: function(args) {
+                    changedEvent = true;
+            },  
+            }, '#tree1');
+            expect(i).toEqual(0);
+            addNewValueButton.addEventListener('click', function () {
+                if (ddTreeObj) {
+                    ddTreeObj.value = ['8'];
+                    ddTreeObj.dataBind();
+                }
+            });
+            addNewValueButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+            addNewValueButton.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+            addNewValueButton.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+            expect(changedEvent).toEqual(true);
+            ddTreeObj.showPopup();
+            var selectAllCheckbox = document.querySelector('.e-selectall-parent');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+                selectAllCheckbox.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+                selectAllCheckbox.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+            }
+            expect(changedEvent).toEqual(true);
+        });
     });
 });

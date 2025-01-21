@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### Signature
+
+#### Bug Fixes
+
+- `#I679504`  - Issue with "The `getSignature` method not shown in signature component instance for VUE platforms" has been resolved.
+
 ## 28.1.37 (2024-12-31)
 
 ### Uploader

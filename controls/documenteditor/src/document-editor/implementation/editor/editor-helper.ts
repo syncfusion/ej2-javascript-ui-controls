@@ -81,6 +81,7 @@ export class HelperMethods {
         text = text.replace('\v', ' ');
         text = text.replace('\t', ' ');
         text = text.replace('/', ' ');
+        text = text.replace(String.fromCharCode(160), ' ');
 
         const stringarr: string[] = text.split(' ');
         const spellColl: any = [];

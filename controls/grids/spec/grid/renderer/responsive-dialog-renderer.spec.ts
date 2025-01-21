@@ -1157,6 +1157,11 @@ describe('Adaptive renderer', () => {
             expect(document.querySelector('.e-rescolumnchooserdiv')).not.toBeNull();
             done();
         });
+
+        it('932457: Two column chooser dialog opens on programmatically opens the column chooser using openColumnChooser method', function (done) {
+            expect(document.querySelectorAll('.e-ccdlg').length === 1).toBeTruthy();
+            done();
+        });
     
         afterAll(() => {
             document.body.removeChild(openButton);

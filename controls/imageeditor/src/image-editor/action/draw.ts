@@ -3607,14 +3607,16 @@ export class Draw {
             this.openImageData(dropArea);
             return;
         }
-        let fileType: string = this.getFileExtensionFromURL(this.openURL as string).toLowerCase();
+        let fileType: string = this.getFileExtensionFromURL(this.openURL as string);
         if (fileType) {
+            fileType = fileType.toLowerCase();
             fileType = (fileType === 'jpg' || fileType === 'jpeg') ? 'jpeg' : fileType;
         }
         const isAllowedFileType: boolean = (fileType ? (extension.indexOf(fileType) > -1 ||
                                   (fileType === 'jpeg' && (parent.uploadSettings.allowedExtensions.indexOf('jpg') > -1 ||
                                                            parent.uploadSettings.allowedExtensions.indexOf('jpeg') > -1))) : false) || this.isNullExtension;
-        if ((this.openURL as string).indexOf('data:image/') > -1 && (this.openURL as string).indexOf('base64') > -1) {
+        if (((this.openURL as string).indexOf('data:image/') > -1 && (this.openURL as string).indexOf('base64') > -1) ||
+            (this.openURL as string).indexOf('blob') > -1) {
             this.openImageData(dropArea, true);
         } else if (parent.uploadSettings.minFileSize || parent.uploadSettings.maxFileSize) {
             this.getImageSizeFromURL(this.openURL.toString(), (imageSizeMB: number | null) => {

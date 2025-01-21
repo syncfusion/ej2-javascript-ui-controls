@@ -232,7 +232,10 @@ export interface DialogBeforeOpenEventArgs {
      * Defines the value that can be displayed in dialog’s content area, you can override it with your own custom message.
      */
     content?: string;
-
+    /**
+     * Defines the cell address.
+     */
+    cellAddress?: string;
 }
 
 /**

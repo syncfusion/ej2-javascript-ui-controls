@@ -197,6 +197,9 @@ export class Parser {
                 try {
                     text = text.substring(0, k) + this.parseSimple(s) + text.substring(i + 1);
                 } catch (ex) {
+                    if (ex === this.parent.formulaErrorStrings[FormulasErrorsStrings.CircularReference]) {
+                        throw ex;
+                    }
                     const args: FailureEventArgs = this.exceptionArgs(ex);
                     if (!this.isFailureTriggered) {
                         this.parent.trigger('onFailure', args);
@@ -854,6 +857,9 @@ export class Parser {
             }
             return text;
         } catch (ex) {
+            if (ex === this.parent.formulaErrorStrings[FormulasErrorsStrings.CircularReference]) {
+                throw ex;
+            }
             return ex;
         }
     }

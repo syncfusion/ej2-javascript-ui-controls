@@ -14,7 +14,8 @@ export class Search implements IAction {
     public headerFocus: boolean = false;
     //Module declarations
     private parent: IGrid;
-    private refreshSearch: boolean;
+    /** @hidden */
+    public refreshSearch: boolean;
     private actionCompleteFunc: Function;
 
     /**

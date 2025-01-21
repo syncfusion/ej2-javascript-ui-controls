@@ -11,7 +11,7 @@ import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editA
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference, workbookFormulaOperation } from '../../workbook/index';
 import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange, dialog, locale } from '../common/index';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged, mouseDown } from '../common/index';
-import { checkFormulaRef, getData, VisibleMergeIndexArgs } from '../../workbook/index';
+import { checkFormulaRef, getData, VisibleMergeIndexArgs, clearFormulaDependentCells } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
 import { BeforeOpenEventArgs, Dialog as DialogComponent } from '@syncfusion/ej2-popups';
@@ -1060,21 +1060,35 @@ export class Edit {
             if (!isNullOrUndefined(updatedCell)) {
                 cellValue = updatedCell.value.toString();
             }
-            const isInvalidFormula: boolean = this.formulaErrorStrings.indexOf(cellValue) > -1 || (cellValue && cellValue.includes('circular reference:'));
-            if (isInvalidFormula) {
-                delete updatedCell.value;
-                delete updatedCell.formula;
+            const isCircularRefError: boolean = cellValue === '#CIRCULARREF!';
+            const isInvalidFormula: boolean = this.formulaErrorStrings.indexOf(cellValue) > -1;
+            if (isInvalidFormula || isCircularRefError) {
+                let isDlgOpenCancel: boolean;
                 if (e) {
                     const target: Element = e.target as Element;
                     const ribbonCls: string[] = ['e-toolbar-item', 'e-tab-wrap', 'e-text-wrap', 'e-tab-text', 'e-caret'];
                     const skipAlertCls: string[] = ['e-scroller', 'e-main-panel', 'e-autofill'];
                     if ((!ribbonCls.some((cls: string) => target.classList.contains(cls)) || !closest(target, '.e-ribbon')) &&
                         !skipAlertCls.some((cls: string) => target.classList.contains(cls))) {
-                        this.showFormulaAlertDlg(cellValue);
+                        isDlgOpenCancel = this.showFormulaAlertDlg(cellValue, isCircularRefError);
                     }
-                    e.preventDefault();
+                    if (!isDlgOpenCancel) {
+                        e.preventDefault();
+                    }
                 }
-                return;
+                if (!isDlgOpenCancel) {
+                    delete updatedCell.value;
+                    delete updatedCell.formula;
+                    this.parent.notify(clearFormulaDependentCells, { cellRef: sheet.activeCell, clearFormulaInfo: true });
+                    if (checkIsFormula(oldValue)) {
+                        this.parent.updateCellInfo({ formula: oldValue }, sheet.activeCell);
+                    } else if (oldCellValue) {
+                        this.parent.updateCellInfo({ value: oldCellValue }, sheet.activeCell);
+                    }
+                    return;
+                } else {
+                    updatedCell.value = '0';
+                }
             }
             let indexes: number[][];
             if (<boolean>evtArgs.isFormulaDependent) {
@@ -1574,15 +1588,35 @@ export class Edit {
         }
     }
 
-    private showFormulaAlertDlg(errorString: string): void {
+    private showFormulaAlertDlg(errorString: string, triggerBeforeOpenEvt?: boolean): boolean {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const alertDialog: Dialog = this.parent.serviceLocator.getService('dialog') as Dialog;
         let cursorPosition: number;
         const errorKey: string = this.getFormulaErrorKey(errorString);
+        let cancel: boolean;
+        const content: string = l10n.getConstant(errorKey);
+        const dlgInst: { visible: boolean, element: HTMLElement } = alertDialog.dialogInstance;
+        if (dlgInst && dlgInst.visible && dlgInst.element.classList.contains('e-circularref-dlg')) {
+            return cancel;
+        }
         alertDialog.show({
-            width: 400, isModal: true, showCloseIcon: true, target: this.parent.element, cssClass: 'e-validation-error-dlg',
-            content: l10n.getConstant(errorKey),
-            beforeOpen: () => {
+            width: 400, isModal: true, showCloseIcon: true, target: this.parent.element, cssClass: 'e-validation-error-dlg e-circularref-dlg',
+            content: content,
+            beforeOpen: (args: BeforeOpenEventArgs): void => {
+                if (triggerBeforeOpenEvt) {
+                    const sheet: SheetModel = this.parent.getActiveSheet();
+                    const dlgArgs: DialogBeforeOpenEventArgs = { dialogName: 'CircularReferenceDialog', element: args.element,
+                        target: args.target, cancel: args.cancel, cellAddress: `${sheet.name}!${sheet.activeCell}`, content: content };
+                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                    if (dlgArgs.cancel) {
+                        args.cancel = cancel = true;
+                        alertDialog.hide(true);
+                        return;
+                    } else if (dlgArgs.content !== content) {
+                        alertDialog.dialogInstance.content = dlgArgs.content;
+                        alertDialog.dialogInstance.dataBind();
+                    }
+                }
                 if (window.getSelection().rangeCount > 0) {
                     const range: Range = window.getSelection().getRangeAt(0);
                     cursorPosition = range.endOffset;
@@ -1590,21 +1624,27 @@ export class Edit {
             },
             buttons: [{
                 buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true},
-                click: (): void => {
-                    alertDialog.hide();
-                }
+                click: (): void => alertDialog.hide()
             }],
             close: (): void => {
-                const elem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
-                const selection: Selection = document.getSelection();
-                const range: Range = document.createRange();
-                range.setStart(elem.firstChild, cursorPosition);
-                range.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(range);
-                elem.focus();
+                if (!cancel) {
+                    const elem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
+                    if (elem.childElementCount) {
+                        const textContent: string = elem.textContent;
+                        cursorPosition = textContent.length;
+                        elem.textContent = textContent;
+                    }
+                    const selection: Selection = document.getSelection();
+                    const range: Range = document.createRange();
+                    range.setStart(elem.firstChild, cursorPosition);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    elem.focus();
+                }
             }
         }, false);
+        return cancel;
     }
 
     private getFormulaErrorKey(errorString: string): string {
@@ -1631,12 +1671,11 @@ export class Edit {
         case 'requires 3 arguments':
             errorKey = 'Requires3Arguments';
             break;
+        case '#CIRCULARREF!':
+            errorKey = 'FormulaCircularRef';
+            break;
         default:
-            if (errorString.includes('circular reference')) {
-                errorKey = 'FormulaCircularRef';
-            } else {
-                errorKey = 'InvalidFormulaError';
-            }
+            errorKey = 'InvalidFormulaError';
         }
         return errorKey;
     }

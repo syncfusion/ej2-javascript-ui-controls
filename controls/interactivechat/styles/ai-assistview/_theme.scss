@@ -130,12 +130,6 @@
         background: $scrollbar-color;
       }
     }
-    .e-assist-send {
-      color: $send-icon-color;
-      &.disabled {
-        color: $send-icon-disabled-color;
-      }
-    }
     .e-footer {
       textarea::-webkit-scrollbar-thumb {
         background: $scrollbar-color;
@@ -144,6 +138,14 @@
       .e-input-group.e-multi-line-input {
         @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
           border: 1px solid $assist-view-border-color !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+      &:not(.e-footer-template) {
+        .e-assist-send {
+          color: $send-icon-color;
+          &.disabled {
+            color: $send-icon-disabled-color;
+          }
         }
       }
     }

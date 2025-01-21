@@ -2669,7 +2669,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const temp: string | Function = this.pageSettings.template;
         const settings: PageSettingsModel = Object.assign({template: undefined}, this.pageSettings);
         if (this.enableVirtualization && this.enablePersistence && this.contentModule &&
-            (this.contentModule as VirtualContentRenderer).getPageFromTop) {
+            (this.contentModule as VirtualContentRenderer).getPageFromTop && !isNullOrUndefined(this.scrollPosition) &&
+            !isNullOrUndefined(this.scrollPosition.top)) {
             settings['properties']['currentPage'] = (this.contentModule as VirtualContentRenderer).getPageFromTop(this.scrollPosition.top, { block: 1});
         }
         this.setProperties({pageSettings: settings}, true);
@@ -5158,7 +5159,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden
+     * Get an array of row objects.
+     *
      * @returns {Row<Column>[]} Returns the Row object
      */
     public getRowsObject(): Row<Column>[] {
@@ -7203,8 +7205,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mouseMoveHandler(e: MouseEvent): void {
         if (this.isEllipsisTooltip()) {
             const element: HTMLElement = parentsUntil((e.target as Element), 'e-ellipsistooltip') as HTMLElement;
-            if (this.prevElement !== element || e.type === 'mouseout') {
+            if (e.type === 'mouseout' && (this.prevElement !== element || element !== parentsUntil((e.relatedTarget as Element), 'e-ellipsistooltip') as HTMLElement)) {
                 this.toolTipObj.close();
+                this.prevElement = null;
             }
             const tagName: string = (e.target as Element).tagName;
             const elemNames: string[] = ['A', 'BUTTON', 'INPUT'];
@@ -7221,14 +7224,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         contentDiv[`${domSetter}`] = this.sanitize(element.innerText);
                         this.toolTipObj.content = contentDiv;
                     }
-                    this.prevElement = element;
                     if (this.enableHtmlSanitizer) {
                         this.toolTipObj.enableHtmlSanitizer = true;
                     }
                     if (col && col.disableHtmlEncode) {
                         (<{ enableHtmlParse?: boolean }>this.toolTipObj).enableHtmlParse = false;
                     }
-                    this.toolTipObj['open'](element);
+                    if (element !== this.prevElement) {
+                        this.toolTipObj['open'](element);
+                    }
+                    this.prevElement = element;
                 }
             }
         }

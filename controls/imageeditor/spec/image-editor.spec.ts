@@ -9775,5 +9775,30 @@ describe('ImageEditor', () => {
                 done();
             }, 100);
         });
+
+        it('blob url passing in open method', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                let imageData = imageEditor.getImageData();
+                let canvas = document.createElement('canvas');
+                let ctx: any = canvas.getContext('2d');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                ctx.putImageData(imageData, 0, 0);
+                canvas.toBlob((blob) => {
+                    let blobUrl = URL.createObjectURL(blob as any);
+                    imageEditor.open(blobUrl);
+                    setTimeout(() => {
+                        expect(imageEditor.baseImg.src.indexOf('blob')).toEqual(0);
+                        expect(imageEditor.isImageLoaded).toBeTruthy();
+                        done();
+                    }, 100);
+                });
+                done();
+            }, 100);
+        });
     });
 });

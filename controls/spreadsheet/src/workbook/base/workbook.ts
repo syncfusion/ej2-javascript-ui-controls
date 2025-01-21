@@ -1,5 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';
-import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex, Sheet, moveSheet, duplicateSheet } from './sheet';
+import { initSheet, getSheet, getSheetIndexFromId, getSheetIndex, Sheet, moveSheet, duplicateSheet } from './sheet';
 import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
@@ -1106,15 +1106,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public getValueRowCol(
         sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string,
         refresh?: boolean, isUnique?: boolean, isSubtotal?: boolean): string | number {
-        const args: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
-            action: 'getSheetInfo', sheetInfo: []
-        };
-        this.notify(events.workbookFormulaOperation, args);
-        if (getSheetIndexByName(this, 'Sheet' + sheetId, args.sheetInfo) === -1) {
-            const errArgs: { action: string, refError: string } = { action: 'getReferenceError', refError: '' };
-            this.notify(events.workbookFormulaOperation, errArgs);
-            return errArgs.refError;
-        }
         let sheetIndex: number = getSheetIndexFromId(this, sheetId);
         const sheet: SheetModel = getSheet(this, sheetIndex);
         let cell: CellModel = getCell(rowIndex - 1, colIndex - 1, sheet);
@@ -1574,6 +1565,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 action: 'updateCellValue', address: range, value: val, sheetIndex: sheetIdx,
                 cellInformation: cellInformation, isRedo: isRedo, isDependentUpdate: isDependentUpdate
             });
+            if (this.isEdit && cellModel.value === '#CIRCULARREF!') {
+                cellModel.value = '0';
+            }
         } else if (!isNullOrUndefined(cell.format) && cellModel.formattedText) {
             delete cellModel.formattedText;
         }

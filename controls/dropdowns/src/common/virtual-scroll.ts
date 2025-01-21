@@ -303,6 +303,7 @@ export class VirtualScroll {
         }
         if (this.component === 'multiselect') {
             this.parent.updatevirtualizationList();
+            this.parent.checkMaxSelection();
         }
         this.parent.getSkeletonCount();
         this.parent.skeletonCount = this.parent.totalItemCount !== 0 && this.parent.totalItemCount < this.parent.itemCount * 2 &&

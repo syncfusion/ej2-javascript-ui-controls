@@ -131,6 +131,12 @@
       }
     }
 
+    &.e-mac-safari .e-numericitem {
+      @if $pager-skin == 'fluent2' {
+        vertical-align: top;
+      }
+    }
+
     div.e-pagermsgdiv {
       padding-right: 6px;
       padding-top: 4px;

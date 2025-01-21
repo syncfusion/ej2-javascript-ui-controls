@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-## 28.1.39 (2024-01-14)
+## 28.1.41 (2025-01-21)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I676738` - Now, the radio button is visible on the non-rendered page when saving the document.
+- `#I675055`, `#678431` - Now, the script error no longer occurs when using the PDF Viewer in React with `Vite` in production.
+- `#I678021` - Now, the free text annotation is not missing when saving a document with Unicode text and newline characters.
+- `#I680495` - Now, the annotations are visible in the customer provided document.
+
+#### Breaking Changes
+
+- `#I676549` - In the `pageRenderComplete` event, the page number property now reflects the actual page number instead of the page index.
+
+## 28.1.39 (2025-01-14)
 
 ### PDF Viewer
 
@@ -10,8 +25,6 @@
 
 - `#I674223` - Now, the form field alignment is correctly preserved after downloading the document in a `standalone` PDF Viewer.
 - `#I665085` - Now, the PDF viewer no longer crashes when loading large size digital signature document.
-- `#I676738` - Now, the radio button is visible on the non-rendered page when saving the document.
-- `#I675055`, `#678431` - Now, the script error no longer occurs when using the PDF Viewer in React with `Vite` in production.
 
 ## 28.1.38 (2025-01-07)
 

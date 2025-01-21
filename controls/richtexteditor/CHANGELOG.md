@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I677837` - Now, the removal of the `div` element from the content when pressing the enter key followed by the backspace key has been resolved.
+
+- `#I680214` - Now, the console error thrown when the editor parent document has an `iframe` document with a different origin has been resolved.
+
 ## 28.1.39 (2024-01-14)
 
 ### RichTextEditor

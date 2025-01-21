@@ -48,7 +48,7 @@ import { InfiniteScroll } from '../actions/infinite-scroll';
 import { Filter } from '../actions/filter';
 import { ContextMenu } from '../actions/context-menu';
 import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
-import { ColumnChooser } from '../..';
+import { ColumnChooser, Search } from '../..';
 
 /**
  * Specifies grid interfaces.
@@ -596,6 +596,8 @@ export interface IGrid extends Component<HTMLElement> {
     infiniteScrollModule?: InfiniteScroll;
 
     resizeModule: Resize;
+
+    searchModule: Search;
 
     focusModule?: FocusStrategy;
 

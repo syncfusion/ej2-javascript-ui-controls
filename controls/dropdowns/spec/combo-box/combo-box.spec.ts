@@ -2041,6 +2041,55 @@ describe('ComboBox', () => {
             (<any>ddl).onFilterUp(keyEventArgs);
         });
     });
+
+    describe('combobox with react template', () => {
+        let ddlObj: any;
+        let element: HTMLInputElement;
+        let data: DataManager = new DataManager({
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
+        });
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74
+        };
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'combobox' });
+            document.body.appendChild(element);
+            ddlObj = new ComboBox({
+                dataSource: data,
+                fields: { value: 'EmployeeID', text: 'FirstName' },
+                allowFiltering: true,
+                filtering: function (e: FilteringEventArgs) {
+                    let query = new Query();
+                    query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
+                    e.updateData(data, query);
+                }
+            });
+            ddlObj.appendTo('#combobox');
+        });
+        it('remote data filtering', (done) => {
+            ddlObj.isReact = true;
+            let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+            ddlObj.dropDownClick(mouseEventArgs);
+            ddlObj.filterInput.value = "j";
+            ddlObj.onInput(keyEventArgs);
+            ddlObj.onFilterUp(keyEventArgs);
+            setTimeout(() => {
+                let liElement = ddlObj.list.querySelectorAll('li');
+                if(liElement && liElement.length > 0){
+                    mouseEventArgs = { preventDefault: function () { }, target: liElement[0] };
+                    ddlObj.onDocumentClick(mouseEventArgs);
+                }
+                done()
+            }, 800);
+        });
+        afterAll(() => {
+            ddlObj.destroy();
+            element.remove();
+        });
+    });
     describe('EJ2-22523: Form reset', () => {
         let element: HTMLInputElement;
         let data: { [key: string]: Object }[] = [

@@ -2926,9 +2926,11 @@ export class PdfViewerBase {
     private setUnloadRequestHeaders(): any {
         const myHeaders: any = new Headers();
         myHeaders.append('Content-Type', 'application/json;charset=UTF-8');
-        for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
-            myHeaders.append(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerName,
-                             this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerValue);
+        if (!isNullOrUndefined(this.pdfViewer.ajaxRequestSettings) && !isNullOrUndefined(this.pdfViewer.ajaxRequestSettings.ajaxHeaders)) {
+            for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
+                myHeaders.append(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerName,
+                                 this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerValue);
+            }
         }
         return myHeaders;
     }
@@ -8629,17 +8631,19 @@ export class PdfViewerBase {
         if (data.image && data.uniqueId === proxy.documentId) {
             const currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
             proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
-            const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
+            pageIndex = !isNullOrUndefined(data.pageNumber) ? data.pageNumber : pageIndex;
+            // changed the page index to pageNumber. TaskID - 931967
+            data.pageNumber = pageIndex + 1;
             if (((viewPortWidth >= currentPageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) && !isTileRender) {
-                proxy.storeWinData(data, pageNumber);
+                proxy.storeWinData(data, pageIndex);
             } else {
-                proxy.storeWinData(data, pageNumber, data.tileX, data.tileY);
+                proxy.storeWinData(data, pageIndex, data.tileX, data.tileY);
             }
             if (((viewPortWidth >= currentPageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) && !isTileRender) {
-                proxy.renderPage(data, pageNumber);
+                proxy.renderPage(data, pageIndex);
                 proxy.pdfViewer.firePageRenderComplete(data);
             } else {
-                proxy.tileRenderPage(data, pageNumber);
+                proxy.tileRenderPage(data, pageIndex);
             }
         }
     }

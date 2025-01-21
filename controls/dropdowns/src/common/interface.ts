@@ -98,5 +98,6 @@ export interface IDropdownlist extends Component<HTMLElement> {
     findListElement(list: HTMLElement, findNode: string, attribute: string, value: string | boolean | number): HTMLElement;
     scrollStop(e?: Event): void;
     targetElement(): string;
+    checkMaxSelection(): void
 }
 

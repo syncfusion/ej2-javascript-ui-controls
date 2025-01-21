@@ -1597,7 +1597,7 @@ describe('Filtering duration Column With Parent Div element', () => {
             showColumnMenu:true,
             renderBaseline: true,
             filterSettings: {
-                type: 'Menu'
+                type: 'Excel'
             }
         });
         ganttObj.appendTo('#ganttContainer');

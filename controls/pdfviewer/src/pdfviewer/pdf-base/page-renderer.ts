@@ -413,7 +413,7 @@ export class PageRenderer{
                             }
                             if (annotation._dictionary.has('Name')) {
                                 rubberStampAnnotation.Name = annotation._dictionary.get('Name');
-                                if (annotation._dictionary.get('Name').name.includes('#23D') || annotation._dictionary.get('Name').name.includes('#D')) {
+                                if (annotation._dictionary.get('Name').name && (annotation._dictionary.get('Name').name.includes('#23D') || annotation._dictionary.get('Name').name.includes('#D'))) {
                                     rubberStampAnnotation.IsDynamic = true;
                                 }
                                 if (!isNullOrUndefined(rubberStampAnnotation.Subject) &&

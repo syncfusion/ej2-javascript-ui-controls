@@ -4288,9 +4288,6 @@ export class BasicFormulas {
      */
     public ComputeVLOOKUP(...range: string[]): string | number {
         const argArr: string[] = range;
-        if (isNullOrUndefined(argArr) || (argArr.length === 1 && argArr[0] === '') || argArr.length < 3 || argArr.length > 4) {
-            return this.parent.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
-        }
         return this.parent.computeVHLookup(argArr, true);
     }
 
@@ -4301,9 +4298,6 @@ export class BasicFormulas {
      */
     public ComputeHLOOKUP(...range: string[]): string | number {
         const argArr: string[] = range;
-        if (isNullOrUndefined(argArr) || (argArr.length === 1 && argArr[0] === '') || argArr.length < 3 || argArr.length > 4) {
-            return this.parent.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
-        }
         return this.parent.computeVHLookup(argArr);
     }
 

@@ -20,7 +20,7 @@ export class PdfViewerUtils {
                 for (let i: number = 0; i < text.length; i++) {
                     const ch: string = text[parseInt(i.toString(), 10)];
                     font._fontInternal._ttfReader._getGlyph(ch);
-                    if (!font._fontInternal._ttfReader._isFontPresent) {
+                    if (!font._fontInternal._ttfReader._isFontPresent && (ch !== ' ') && !this.hasEscapeSequences(ch)) {
                         return font._fontInternal._ttfReader._isFontPresent;
                     }
                 }
@@ -31,6 +31,18 @@ export class PdfViewerUtils {
             return false;
         }
         return false;
+    }
+
+    /**
+     * Checks if the given character is an escape sequence.
+     *
+     * @param {string} char - The character to be checked.
+     * @private
+     * @returns {boolean} - Returns true if the character is an escape sequence, otherwise false.
+     */
+    private static hasEscapeSequences(char: string): boolean {
+        const escapeRegex: RegExp = /[\0\b\t\n\v\f\r'"\\]/;
+        return escapeRegex.test(char);
     }
 
     /**

@@ -908,8 +908,8 @@ export class PivotChart {
                 }) : currentYAxis;
                 currentYAxis.labelFormat = currentYAxis.labelFormat ?
                     currentYAxis.labelFormat : (percentChart ? '' : (!resFormat ? format : 'N'));
-                currentYAxis.title = (this.chartSettings.multipleAxisMode === 'Combined') ? yAxisTitles.join(' - ') :
-                    currentYAxis.title ? currentYAxis.title : measureAggregatedName;
+                currentYAxis.title = currentYAxis.title ? currentYAxis.title :
+                    (this.chartSettings.multipleAxisMode === 'Combined') ? yAxisTitles.join(' - ') : measureAggregatedName;
                 currentYAxis.zoomFactor = isNullOrUndefined(this.chartSettings.primaryYAxis.zoomFactor) ? 1
                     : this.chartSettings.primaryYAxis.zoomFactor;
                 currentYAxis.edgeLabelPlacement = this.chartSettings.primaryYAxis.edgeLabelPlacement ?

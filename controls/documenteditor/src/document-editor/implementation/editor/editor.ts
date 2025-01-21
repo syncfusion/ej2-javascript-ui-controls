@@ -11548,6 +11548,13 @@ export class Editor {
     }
 
     private applyCharFormat(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): BlockWidget {
+        let previousSplittedWidget: ParagraphWidget = paragraph.previousSplitWidget as ParagraphWidget;
+        let isPageBreak: boolean = false;
+        if (!isNullOrUndefined(previousSplittedWidget) && previousSplittedWidget instanceof ParagraphWidget) {
+            if (previousSplittedWidget.isEndsWithPageBreak) {
+                isPageBreak = true;
+            }
+        }
         paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
         let startOffset: number = 0;
         let length: number = selection.getParagraphLength(paragraph);
@@ -11633,14 +11640,13 @@ export class Editor {
                 j += index;
 
                 if (endOffset <= count + inlineLength) {
-                    break;
+                break;
                 }
                 count += inlineLength;
             }
         }
         let endParagraph: ParagraphWidget = end.paragraph;
-
-        this.documentHelper.layout.reLayoutParagraph(paragraph, startLineWidget, 0);
+        this.documentHelper.layout.reLayoutParagraph(paragraph, isPageBreak ? 0 : startLineWidget, 0);
 
         if (paragraph.equals(endParagraph)) {
             return undefined;

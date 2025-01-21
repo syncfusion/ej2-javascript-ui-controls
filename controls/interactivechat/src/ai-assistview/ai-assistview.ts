@@ -1012,7 +1012,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.activateSendIcon(this.textareaObj.value.length);
         }
         this.trigger('promptRequest', eventArgs);
-        if (this.contentWrapper) { this.updateScroll(this.contentWrapper); }
+        if (this.contentWrapper) { this.scrollToBottom(); }
     }
 
     private addPrompt(): void {
@@ -1539,6 +1539,17 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.isResponseRequested = false;
         }
         this.isProtectedOnChange = prevOnChange;
+    }
+
+    /**
+     * Scrolls the view to the bottom to display the most recent response in the AIAssistView component.
+     * This method programmatically scrolls the view to the bottom,
+     * typically used when new responses are added or to refocus on the latest response.
+     *
+     * @returns {void}
+     */
+    public scrollToBottom(): void {
+        this.updateScroll(this.contentWrapper);
     }
 
     /**

@@ -946,11 +946,13 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     }
 
     /**
-     * To get the signature as Base 64.
+     * Gets the signature as a Base 64 string.
      *
-     * @private
-     * @param {SignatureFileType} type - Specifies the type of the image format.
-     * @returns {string}.
+     * This method is used to retrieve the current signature on the canvas as a Base 64-encoded string, in the specified image format.
+     *
+     * @param {SignatureFileType} [type] - Specifies the type of the image format.
+     * Can be one of 'Png', 'Jpeg', or 'Svg'. If not specified, the default is 'Png'.
+     * @returns {string} - Returns the Base 64 string of the signature in the specified format.
      */
 
     public getSignature(type?: SignatureFileType): string {

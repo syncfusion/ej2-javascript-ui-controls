@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### AI AssistView
+
+#### Features
+
+- `#I669136` - Now we have provided a new method `scrollToBottom()` to programmatically scroll the view to the bottom in the AssistView.
+
 ## 27.1.48 (2024-09-18)
 
 ### AI AssistView

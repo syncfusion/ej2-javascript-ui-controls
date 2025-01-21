@@ -2,6 +2,7 @@ import { SpreadsheetModel, Spreadsheet, DialogBeforeOpenEventArgs, CellSaveEvent
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, reportedBugData, EJ2_53702_SUBTOTALS, EJ2_53702_INDEX, EJ2_53702_UNIQUE, EJ2_53702_SLOPE_SHEET1, EJ2_53702_SLOPE_SHEET2 } from '../util/datasource.spec';
 import { CellModel, getCell, getRangeAddress, DefineNameModel, RowModel, SheetModel, getFormatFromType, setCell } from '../../../src/index';
+import { getComponent } from '@syncfusion/ej2-base';
 
 /**
  *  Formula spec.
@@ -12022,7 +12023,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J24', '=VLOOKUP(10+10,D2:F11,3,false)');
             expect(helper.invoke('getCell', [23, 9]).textContent).toBe('600');
             helper.edit('J25', '=VLOOKUP(10*1-5,G2:H11,2)');
-            expect(helper.invoke('getCell', [24, 9]).textContent).toBe('27');
+            expect(helper.invoke('getCell', [24, 9]).textContent).toBe('50');
             helper.edit('J26', '=VLOOKUP(900/3,F2:G11,2,false)');
             expect(helper.invoke('getCell', [25, 9]).textContent).toBe('7');
             done();
@@ -12365,7 +12366,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('L2', '=HLOOKUP(COUNT(E2:F11),E2:G10,2,false)');
             expect(helper.invoke('getCell', [1, 11]).textContent).toBe('30');
             helper.edit('L3', '=HLOOKUP(AVERAGE(H2:H11),D2:G11,3)');
-            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('300');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('15');
             helper.edit('L4', '=HLOOKUP(SUM(D2,H2),D5:F8,3,false)');
             expect(helper.invoke('getCell', [3, 11]).textContent).toBe('20');
             helper.edit('L5', '=HLOOKUP(NOT(TRUE),I4:I8,5,false)');
@@ -12390,7 +12391,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('L13', '=HLOOKUP(10,,2,FALSE)');
             expect(helper.invoke('getCell', [12, 11]).textContent).toBe('#N/A');
             helper.edit('L14', '=HLOOKUP(10,D2:G5,3,)');
-            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('15');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('20');
             helper.edit('L15', '=HLOOKUP(10,D2:E11,,)');
             expect(helper.invoke('getCell', [14, 11]).textContent).toBe('#VALUE!');
             done();
@@ -12487,6 +12488,7 @@ describe('Spreadsheet formula module ->', () => {
     });
 
     describe('UI - Interaction', () => {
+        let calcObj: any;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -12494,13 +12496,149 @@ describe('Spreadsheet formula module ->', () => {
             helper.invoke('destroy');
         });
         it('Open circular reference dialog->', (done: Function) => {
-            helper.edit('I1', '19');
-            helper.edit('I2', '20');
-            helper.edit('I3', '=I1+I2+I3');
+            helper.invoke('updateCell', [{ value: '19' }, 'I1']);
+            helper.invoke('updateCell', [{ value: '20' }, 'I2']);
+            helper.editInUI('=I1+I2+I3', 'I3', true);
             setTimeout(() => {
                 helper.setAnimationToNone('.e-control.e-dialog');
                 expect(helper.getElement('.e-control.e-dialog')).not.toBeNull();
-                helper.click('.e-control .e-footer-content button:nth-child(1)');
+                calcObj = helper.getInstance().workbookFormulaModule.calculateInstance;
+                expect(calcObj.getFormulaInfoTable().size).toBe(0);
+                expect(calcObj.getDependentCells().size).toBe(0);
+                expect(calcObj.getDependentFormulaCells().size).toBe(0);
+                helper.click('.e-control.e-dialog .e-footer-content button:nth-child(1)');
+                helper.invoke('closeEdit');
+                done();
+            });
+        });
+        it('Editing formula by using circular reference of the dependent formula cells->', (done: Function) => {
+            helper.invoke('updateCell', [{ formula: '=SUM(I10+1)' }, 'I5']);
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            expect(JSON.stringify(sheet.rows[4].cells[8])).toBe('{"formula":"=SUM(I10+1)","value":1}');
+            helper.invoke('updateCell', [{ value: '10' }, 'I10']);
+            expect(JSON.stringify(sheet.rows[9].cells[8])).toBe('{"value":10}');
+            helper.editInUI('=SUM(I5+2)', 'I10', true, sheet.rows[9].cells[8].value);
+            setTimeout(() => {
+                expect(JSON.stringify(sheet.rows[9].cells[8])).toBe('{"value":10}');
+                const alertDlg: HTMLElement = helper.getElementFromSpreadsheet('.e-validation-error-dlg.e-dialog');
+                expect(alertDlg.querySelector('.e-dlg-content').textContent).toBe('We found that you typed a formula with a circular reference.');
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg.e-dialog .e-footer-content button:nth-child(1)');
+                expect(calcObj.getFormulaInfoTable().size).toBe(1);
+                const dependentCells: any = calcObj.getDependentCells();
+                expect(dependentCells.size).toBe(2);
+                expect(dependentCells.get('!0!I10').length).toBe(1);
+                expect(dependentCells.get('!0!I5').length).toBe(0);
+                expect(calcObj.getDependentFormulaCells().size).toBe(1);
+                helper.invoke('closeEdit');
+                done();
+            });
+        });
+        it('Calculating formulas which contains circular reference of the dependent cells using calculateNow() ->', (done: Function) => {
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            setCell(3, 8, sheet, { formula: '=SUM(I9)' });
+            setCell(8, 8, sheet, { formula: '=SUM(I4)' });
+            setCell(10, 8, sheet, { formula: '=I11' });
+            helper.invoke('calculateNow');
+            setTimeout(() => {
+                expect(JSON.stringify(sheet.rows[3].cells[8])).toBe('{"formula":"=SUM(I9)","value":0}');
+                expect(!!calcObj.getFormulaInfoTable().get('!0!I4')).toBeTruthy();
+                const dependentCells: string[] = calcObj.getDependentCells().get('!0!I9');
+                expect(dependentCells.length).toBe(1);
+                expect(dependentCells[0]).toBe('!0!I4');
+                expect(JSON.stringify(sheet.rows[8].cells[8])).toBe('{"formula":"=SUM(I4)","value":"0"}');
+                expect(calcObj.getDependentCells().get('!0!I4').length).toBe(0);
+                expect(!!calcObj.getFormulaInfoTable().get('!0!I9')).toBeTruthy();
+                expect(JSON.stringify(sheet.rows[10].cells[8])).toBe('{"formula":"=I11","value":"0"}');
+                expect(calcObj.getDependentCells().get('!0!I11')).toBeUndefined();
+                expect(!!calcObj.getFormulaInfoTable().get('!0!I11')).toBeTruthy();
+                const alertDlg: HTMLElement = helper.getElementFromSpreadsheet('.e-control.e-dialog');
+                expect(alertDlg.querySelector('.e-dlg-content').textContent).toBe('When a formula refers to one or more circular references, this may result in an incorrect calculation.');
+                helper.setAnimationToNone('.e-control.e-dialog');
+                helper.click('.e-dialog .e-footer-content button:nth-child(1)');
+                done();
+            });
+        });
+        it('Changing common circular reference alert dialog content->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const sheet: SheetModel = spreadsheet.sheets[0];
+            setCell(3, 9, sheet, { formula: '=SUM(J9 + 1)' });
+            setCell(8, 9, sheet, { formula: '=SUM(J4 + 2)' });
+            setCell(10, 9, sheet, { formula: '=J11' });
+            let errorMsg: string = 'Circular reference found in: ';
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                expect(args.dialogName).toBe('CircularReferenceDialog');
+                expect(args.content).toBe('When a formula refers to one or more circular references, this may result in an incorrect calculation.');
+                const dlgInst: any = getComponent(<HTMLElement>args.element, 'dialog');
+                if (dlgInst.content === 'When a formula refers to one or more circular references, this may result in an incorrect calculation.') {
+                    errorMsg +=  args.cellAddress;
+                } else {
+                    errorMsg += `, ${args.cellAddress}`;
+                }
+                args.content = errorMsg;
+            };
+            spreadsheet.dataBind();
+            helper.invoke('calculateNow');
+            setTimeout(() => {
+                expect(JSON.stringify(sheet.rows[3].cells[9])).toBe('{"formula":"=SUM(J9 + 1)","value":1}');
+                expect(!!calcObj.getFormulaInfoTable().get('!0!J4')).toBeTruthy();
+                const dependentCells: string[] = calcObj.getDependentCells().get('!0!J9');
+                expect(dependentCells.length).toBe(1);
+                expect(dependentCells[0]).toBe('!0!J4');
+                expect(JSON.stringify(sheet.rows[8].cells[9])).toBe('{"formula":"=SUM(J4 + 2)","value":"0"}');
+                expect(calcObj.getDependentCells().get('!0!J4').length).toBe(0);
+                expect(!!calcObj.getFormulaInfoTable().get('!0!J9')).toBeTruthy();
+                expect(JSON.stringify(sheet.rows[10].cells[9])).toBe('{"formula":"=J11","value":"0"}');
+                expect(calcObj.getDependentCells().get('!0!J11')).toBeUndefined();
+                expect(!!calcObj.getFormulaInfoTable().get('!0!J11')).toBeTruthy();
+                const alertDlg: HTMLElement = helper.getElementFromSpreadsheet('.e-control.e-dialog');
+                expect(alertDlg.querySelector('.e-dlg-content').textContent).toBe('Circular reference found in: Sheet1!J9, Sheet1!J11');
+                helper.setAnimationToNone('.e-control.e-dialog');
+                helper.click('.e-dialog .e-footer-content button:nth-child(1)');
+                done();
+            });
+        });
+        it('Canceling the editing circular reference dialog ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                args.cancel = true;
+                expect(args.dialogName).toBe('CircularReferenceDialog');
+                expect(args.cellAddress).toBe('Sheet1!L1');
+            };
+            spreadsheet.dataBind();
+            helper.editInUI('=L1', 'L1', true);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-validation-error-dlg.e-dialog.e-popup-open')).toBeNull();
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[0].cells[11])).toBe('{"value":"0","formula":"=L1"}');
+                expect(!!calcObj.getFormulaInfoTable().get('!0!L1')).toBeTruthy();
+                expect(calcObj.getDependentCells().get('!0!L1')).toBeUndefined();
+                expect(calcObj.getDependentFormulaCells().get('!0!L1').size).toBe(0);
+                done();
+            });
+        });
+        it('Changing the editing circular reference dialog content ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const customAlertContent: string = 'You have typed the formula with circular reference';
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                expect(args.dialogName).toBe('CircularReferenceDialog');
+                expect(args.cellAddress).toBe('Sheet1!L1');
+                args.content = customAlertContent;
+            };
+            spreadsheet.dataBind();
+            helper.editInUI('=L1+10', 'L1', true, '=L1');
+            setTimeout(() => {
+                spreadsheet.dialogBeforeOpen = undefined;
+                spreadsheet.dataBind();
+                const alertDlg: HTMLElement = helper.getElementFromSpreadsheet('.e-validation-error-dlg.e-dialog');
+                expect(alertDlg.classList.contains('e-popup-open')).toBeTruthy();
+                expect(alertDlg.querySelector('.e-dlg-content').textContent).toBe(customAlertContent);
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[0].cells[11])).toBe('{"formula":"=L1","value":"0"}');
+                expect(!!calcObj.getFormulaInfoTable().get('!0!L1')).toBeTruthy();
+                expect(calcObj.getDependentCells().get('!0!L1')).toBeUndefined();
+                expect(calcObj.getDependentFormulaCells().get('!0!L1').size).toBe(0);
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg.e-dialog .e-footer-content button:nth-child(1)');
+                helper.invoke('closeEdit');
                 done();
             });
         });
@@ -12508,13 +12646,15 @@ describe('Spreadsheet formula module ->', () => {
             helper.invoke('selectRange', ['J1']);
             helper.triggerKeyNativeEvent(113);
             const editElem: HTMLElement = helper.getCellEditorElement();
-            editElem.textContent = '=SU';
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.notify('editOperation', { action: 'refreshEditor', value: '=SU', refreshCurPos: true, refreshEditorElem: true });
             helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
             setTimeout(() => {
+                expect(document.querySelector(`#${helper.id}_ac_popup .e-list-parent.e-ul`).childElementCount).toBe(5);
                 helper.click('.e-ddl.e-popup li:nth-child(2)');
-                helper.getElement('.e-spreadsheet-edit').textContent = '=SUM(H2:H11)';
+                spreadsheet.notify('editOperation', { action: 'refreshEditor', value: '=SUM(H2:H11)', refreshCurPos: true, refreshEditorElem: true });
                 helper.triggerKeyNativeEvent(13);
-                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":554,"formula":"=SUM(H2:H11)"}');
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[0].cells[9])).toBe('{"value":554,"formula":"=SUM(H2:H11)"}');
                 done();
             });
         });
@@ -12576,14 +12716,16 @@ describe('Spreadsheet formula module ->', () => {
             editElem.textContent = '=S';
             helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
             setTimeout(() => {
+                expect(document.querySelector(`#${helper.id}_ac_popup .e-list-parent.e-ul`).childElementCount).toBe(10);
                 editElem.textContent = '=SU';
                 helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
                 setTimeout(() => {
+                    expect(document.querySelector(`#${helper.id}_ac_popup .e-list-parent.e-ul`).childElementCount).toBe(5);
                     helper.click('.e-ddl.e-popup li:nth-child(2)');
-                    helper.getElement('.e-spreadsheet-edit').textContent = '=SUM(H2:H11)';
+                    helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=SUM(H2:H11)', refreshCurPos: true, refreshEditorElem: true });
                     helper.triggerKeyNativeEvent(13);
                     setTimeout(() => {
-                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{"value":554,"formula":"=SUM(H2:H11)"}');
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{"formula":"=SUM(H2:H11)","value":554}');
                         done();
                     });
                 });
@@ -12602,7 +12744,7 @@ describe('Spreadsheet formula module ->', () => {
             setTimeout(() => {
                 helper.setAnimationToNone('.e-control.e-dialog');
                 expect(helper.getElement('.e-control.e-dialog')).not.toBeNull();
-                helper.click('.e-control .e-footer-content button:nth-child(1)');
+                helper.click('.e-control.e-dialog:not(.e-validation-error-dlg) .e-footer-content button:nth-child(1)');
                 done();
             });
         });
@@ -12621,6 +12763,7 @@ describe('Spreadsheet formula module ->', () => {
                     helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
                     setTimeout(() => {
                         expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":554,"formula":"=SUM(SUM(H2:H11))"}');
+                        helper.invoke('closeEdit');
                         done();
                     });
                 });
@@ -12629,12 +12772,12 @@ describe('Spreadsheet formula module ->', () => {
         it('Cancelling the circular reference error dialog', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
-            args.cancel = true;
+                args.cancel = true;
             };
-            helper.edit('I1', '19');
-            helper.edit('I2', '20');
-            helper.edit('I3', '=I1+I2+I3');
-            setTimeout(function () {
+            spreadsheet.dataBind();
+            setCell(2, 8, spreadsheet.getActiveSheet(), { formula: '=I1+I2+I3' });
+            helper.invoke('calculateNow');
+            setTimeout((): void => {
                 expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open:not(.e-validation-error-dlg)')).toBeNull();
                 helper.invoke('selectRange', ['K2']);
                 done();
@@ -12694,6 +12837,9 @@ describe('Spreadsheet formula module ->', () => {
                 helper.triggerKeyEvent('keydown', 13, null, false, false, nameBox);
                 setTimeout(function () {
                     expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open:not(.e-validation-error-dlg)')).toBeNull();
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.dialogBeforeOpen = undefined;
+                    spreadsheet.dataBind();
                     done();
                 });
             }, 20);
@@ -16815,29 +16961,26 @@ describe('Spreadsheet formula module ->', () => {
     });
     describe('EJ2-62878, EJ2-62887 ->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }] }, {} ]}, done);
+            helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }] }, {} ], activeSheetIndex: 1 }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
         it('Console error on deleting or inserting rows and cannot able to delete a row', (done: Function) => {
-            helper.getElement('.e-sheet-tab').querySelectorAll('.e-toolbar-item')[1].click();
+            helper.invoke('updateCell', [{ formula: '=UNIQUE(Sheet1!A1:A3)' }, 'A1']);
+            helper.getElement('.e-sheet-tab').querySelectorAll('.e-toolbar-item')[0].click();
             setTimeout(() => {
-                helper.edit('A1', '=UNIQUE(Sheet1!A1:A3)');
-                helper.getElement('.e-sheet-tab').querySelectorAll('.e-toolbar-item')[0].click();
+                expect(getCell(2, 0, helper.getInstance().sheets[0]).value).toBe('3');
+                expect(getCell(0, 0, helper.getInstance().sheets[1]).formula).toBe('=UNIQUE(Sheet1!A1:A3)');
+                helper.invoke('delete', [2, 2, 'Row']);
                 setTimeout(() => {
-                    expect(getCell(2, 0, helper.getInstance().sheets[0]).value).toBe('3');
+                    expect(helper.getInstance().sheets[0].rows[2]).toBeUndefined();
+                    expect(getCell(0, 0, helper.getInstance().sheets[1]).formula).toBe('=UNIQUE(Sheet1!A1:A2)');
+                    helper.invoke('insertRow', [1, 1]);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('2');
                     expect(getCell(0, 0, helper.getInstance().sheets[1]).formula).toBe('=UNIQUE(Sheet1!A1:A3)');
-                    helper.invoke('delete', [2, 2, 'Row']);
-                    setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].rows[2]).toBeUndefined();
-                        expect(getCell(0, 0, helper.getInstance().sheets[1]).formula).toBe('=UNIQUE(Sheet1!A1:A2)');
-                        helper.invoke('insertRow', [1, 1]);
-                        expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('2');
-                        expect(getCell(0, 0, helper.getInstance().sheets[1]).formula).toBe('=UNIQUE(Sheet1!A1:A3)');
-                        done();
-                    }, 10);
-                });
+                    done();
+                }, 10);
             });
         });
         it('The formula reference not updated properly while pasting the formula with multiple cells', (done: Function) => {

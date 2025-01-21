@@ -222,6 +222,10 @@ describe('DDList_Virtualization', () => {
                 keyEventArgs.action = 'pageUp';
                 dropObj.keyActionHandler(keyEventArgs);
                 expect((li[2] as Element).classList.contains('e-active')).toBe(true);
+                keyEventArgs.action = 'pageDown';
+                dropObj.handleVirtualKeyboardActions(keyEventArgs);
+                keyEventArgs.action = 'pageUp';
+                dropObj.handleVirtualKeyboardActions(keyEventArgs);
                 done();
             }, 500);
         });

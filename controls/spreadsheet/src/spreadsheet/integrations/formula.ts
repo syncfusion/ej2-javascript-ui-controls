@@ -88,8 +88,6 @@ export class Formula {
     private performFormulaOperation(args: { [key: string]: Object }): void {
         const action: string = <string>args.action;
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let dialogInst: Dialog;
-        let dialogContent: string;
         switch (action) {
         case 'renderAutoComplete':
             this.renderAutoComplete();
@@ -112,28 +110,39 @@ export class Formula {
         case 'isFormulaEditing':
             args.isFormulaEdit = this.isFormula;
             break;
-        case 'isCircularReference':
-            dialogInst = (this.parent.serviceLocator.getService(dialog) as Dialog);
-            dialogContent = l10n.getConstant('CircularReference');
-            if (!(dialogInst.dialogInstance && dialogInst.dialogInstance.visible && dialogInst.dialogInstance.content === dialogContent)) {
+        case 'isCircularReference': {
+            const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
+            const dialogContent: string = l10n.getConstant('CircularReference');
+            const triggerEvent: (dlgArgs: DialogBeforeOpenEventArgs) => void = (dlgArgs: DialogBeforeOpenEventArgs): void => {
+                this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                if (dlgArgs.content !== dialogContent) {
+                    dialogInst.dialogInstance.content = dlgArgs.content;
+                    dialogInst.dialogInstance.dataBind();
+                }
+            };
+            const dlgInst: { visible: boolean, element: HTMLElement } = dialogInst.dialogInstance;
+            if (dlgInst && dlgInst.visible && dlgInst.element.classList.contains('e-circularref-dlg')) {
+                triggerEvent(
+                    { dialogName: 'CircularReferenceDialog', element: dlgInst.element, target: this.parent.element, cancel: false,
+                        cellAddress: <string>args.address, content: dialogContent });
+            } else {
+                const cellAddress: string = <string>args.address;
                 dialogInst.show({
-                    height: 180, width: 400, isModal: true, showCloseIcon: true,
-                    content: l10n.getConstant('CircularReference'),
+                    height: 180, width: 400, isModal: true, showCloseIcon: true, cssClass: 'e-circularref-dlg', content: dialogContent,
                     beforeOpen: (args: BeforeOpenEventArgs): void => {
-                        const dlgArgs: DialogBeforeOpenEventArgs = {
-                            dialogName: 'CircularReferenceDialog',
-                            element: args.element, target: args.target, cancel: args.cancel
-                        };
-                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        const dlgArgs: DialogBeforeOpenEventArgs = { dialogName: 'CircularReferenceDialog', element: args.element,
+                            target: args.target, cancel: args.cancel, cellAddress, content: dialogContent };
+                        triggerEvent(dlgArgs);
                         if (dlgArgs.cancel) {
                             args.cancel = true;
+                            dialogInst.hide(true);
                         }
                     }
                 });
             }
             args.argValue = '0';
             break;
-
+        }
         }
     }
 

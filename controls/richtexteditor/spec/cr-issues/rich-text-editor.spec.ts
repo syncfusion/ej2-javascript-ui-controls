@@ -7,6 +7,7 @@ import { renderRTE, destroy, setCursorPoint } from './../rich-text-editor/render
 import { NodeSelection } from '../../src/selection/selection';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { BASIC_MOUSE_EVENT_INIT } from '../constant.spec';
+import { ENTERKEY_EVENT_INIT, BACKSPACE_EVENT_INIT } from '../constant.spec';
 
 describe('RTE CR issues ', () => {
 
@@ -1456,6 +1457,33 @@ describe('RTE CR issues ', () => {
         it('The empty textarea element is not inserted using the ExecuteCommandAsync method', () => {
             rteObj.executeCommand('insertHTML',`<textarea id="text" name="text" miplato_id="text"></textarea>`);
             expect(rteObj.inputElement.innerHTML).toBe('<p id="rte"><textarea id="text" name="text" miplato_id="text"></textarea>RichTextEditor</p>');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('933152 - The Div element is removed from the content when pressing the Enter key followed by the Backspace key', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><br/><br/></p><div id="user_email_signature_content"><p style="line-height: 1.5;"><span style="font-size: 12pt;"><span style="font-family: Trebuchet MS;">Testing</span></span></p></div>`,
+            });
+        });
+        it('Press Enter and Backspace before text in div', (done: Function) => {
+            rteObj.focusIn();
+            let targetElement = rteObj.element.querySelector('#user_email_signature_content p span span') as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, targetElement, 0);
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+            setTimeout(() => {
+                rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT));
+                rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT));
+                setTimeout(() => {
+                    expect(rteObj.value).toBe('<p><br><br></p><div id="user_email_signature_content"><p style="line-height: 1.5;"><span style="font-size: 12pt;"><span style="font-family: Trebuchet MS;">Testing</span></span></p></div>');
+                    done();
+                }, 100);
+            }, 100);
         });
         afterAll(() => {
             destroy(rteObj);

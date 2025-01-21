@@ -410,6 +410,25 @@ export class Point {
 }
 
 /**
+ * Specifies the information of the position of the legend in maps.
+ */
+
+export class LegendLocation {
+    /**
+     * Defines the x position in string.
+     */
+    public x: string;
+    /**
+     * Defines the y position in string.
+     */
+    public y: string;
+    constructor(x: string, y: string) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+/**
  * Defines the latitude and longitude values that define a map location.
  */
 export class Coordinate {

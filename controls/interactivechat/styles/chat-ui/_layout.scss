@@ -92,23 +92,6 @@
       top: 20px;
       left: 0;
     }
-    .e-chat-send {
-      position: absolute;
-      right: 15px;
-      font-size: $chat-send-icon-size;
-      bottom: $chat-send-icon-bottom;
-      padding-top: 2px;
-    }
-    .e-chat-send.disabled {
-      pointer-events: none;
-      opacity: .5;
-      cursor: not-allowed;
-    }
-    .e-chat-send.enabled {
-      pointer-events: auto;
-      opacity: 1;
-      cursor: pointer;
-    }
     .e-footer {
       position: relative;
       margin: 0 auto;
@@ -127,7 +110,7 @@
       .hide-scrollbar textarea {
         scrollbar-width: none;
       }
-      &:has(.e-rtl) .e-chat-send {
+      &:has(.e-rtl):not(.e-footer-template) .e-chat-send {
         right: unset;
         left: 20px;
       }
@@ -157,8 +140,27 @@
           }
         }
       }
+      &:not(.e-footer-template) {
+        .e-chat-send {
+          position: absolute;
+          right: 15px;
+          font-size: $chat-send-icon-size;
+          bottom: $chat-send-icon-bottom;
+          padding-top: 2px;
+        }
+        .e-chat-send.disabled {
+          pointer-events: none;
+          opacity: .5;
+          cursor: not-allowed;
+        }
+        .e-chat-send.enabled {
+          pointer-events: auto;
+          opacity: 1;
+          cursor: pointer;
+        }
+      }
     }
-    .e-footer .e-chat-send:not(.disabled):focus-visible {
+    .e-footer:not(.e-footer-template) .e-chat-send:not(.disabled):focus-visible {
       outline: 1px solid;
     }
     .e-chat-content,

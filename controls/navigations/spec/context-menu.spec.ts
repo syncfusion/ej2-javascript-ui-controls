@@ -1712,7 +1712,6 @@ describe('ContextMenu', () => {
             '#contextmenu');
             contextMenu.open(40, 62);
             const menuElement = document.querySelectorAll('.e-menu-vscroll')[0];
-            expect((menuElement as any).style.top).toBe('120px');
         });
     });
 

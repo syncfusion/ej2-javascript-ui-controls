@@ -247,6 +247,11 @@
     font-family: 'e-icons';
   }
 
+  .e-pv-squiggly-icon::before {
+    content: '\e9ee';
+    font-family: 'e-icons';
+  }
+  
   .e-pv-strikethrough-icon::before {
     content: '\ebf1';
     font-family: 'e-icons';

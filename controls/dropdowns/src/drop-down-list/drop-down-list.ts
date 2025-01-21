@@ -746,7 +746,9 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected setEnableRtl(): void {
-        Input.setEnableRtl(this.enableRtl, [this.inputElement.parentElement]);
+        if (!isNullOrUndefined(this.inputElement) && !isNullOrUndefined(this.inputElement.parentElement)) {
+            Input.setEnableRtl(this.enableRtl, [this.inputElement.parentElement]);
+        }
         if (this.popupObj) {
             this.popupObj.enableRtl = this.enableRtl;
             this.popupObj.dataBind();
@@ -3749,6 +3751,9 @@ export class DropDownList extends DropDownBase implements IInput {
 
     private updateInitialData(): void {
         const currentData : {[key: string]: object}[] | string[] | boolean[] | number[] = this.selectData;
+        if (isNullOrUndefined(currentData)) {
+            return;
+        }
         const ulElement: HTMLElement = this.renderItems(currentData as {[key: string]: object}[], this.fields);
         this.list.scrollTop = 0;
         this.virtualListInfo = {
@@ -3779,7 +3784,7 @@ export class DropDownList extends DropDownBase implements IInput {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
         }
-        else if (!this.list.querySelector('.e-virtual-ddl')) {
+        else if (!this.list.querySelector('.e-virtual-ddl') && this.list.parentElement) {
             const virualElement: HTMLElement = this.createElement('div', {
                 id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
             });
@@ -4511,7 +4516,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.isReact && this.isFiltering() && this.itemTemplate != null) {
             setTimeout(() => {
                 proxy.cloneElements();
-                proxy.isSecondClick = true;
+                proxy.isSecondClick = proxy.isReact && proxy.isFiltering() && proxy.dataSource instanceof DataManager && !proxy.list.querySelector('ul') ? false : true;
             }, duration);
         }
     }

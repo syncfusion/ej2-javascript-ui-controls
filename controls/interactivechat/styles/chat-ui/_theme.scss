@@ -22,12 +22,6 @@
         background: $chat-left-bg-color-hover;
       }
     }
-    .e-chat-send {
-      color: $chat-send-icon-color;
-      &.disabled {
-        color: $chat-send-icon-disabled-color;
-      }
-    }
     .e-message-wrapper {
       &::-webkit-scrollbar-thumb {
         background: $chat-scrollbar-color;
@@ -79,6 +73,14 @@
       .e-input-group.e-multi-line-input {
         @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
           border: 1px solid $chat-border-color !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+      &:not(.e-footer-template) {
+        .e-chat-send {
+          color: $chat-send-icon-color;
+          &.disabled {
+            color: $chat-send-icon-disabled-color;
+          }
         }
       }
     }

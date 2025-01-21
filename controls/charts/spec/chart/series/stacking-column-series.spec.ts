@@ -1896,15 +1896,17 @@ describe('Chart Control', () => {
             loaded = function (args) {
                 let legendElement = document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('x');
                 let legendElement1 = document.getElementById('container_Series_1_Point_0_Text_0').getAttribute('x');
-                expect(legendElement).toBe('36.4');
-                expect(legendElement1).toBe('36.4');
+                expect(legendElement).toBe('16');
+                expect(legendElement1).toBe('16');
                 legendElement = document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');
                 legendElement1 = document.getElementById('container_Series_1_Point_0_Text_0').getAttribute('y');
-                expect(legendElement).toBe('336.3104248046875');
-                expect(legendElement1).toBe('322.5380078125');
+                expect(legendElement).toBe('132.31040954589844');
+                expect(legendElement1).toBe('127.8333958943685');
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.height = '240px';
+            chartObj.width = '336px';
             chartObj.refresh();
         });
     });

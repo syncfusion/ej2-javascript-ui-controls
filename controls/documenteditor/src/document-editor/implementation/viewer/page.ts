@@ -4907,6 +4907,10 @@ export abstract class ElementBox {
     /**
      * @private
      */
+    public isSpellCheckTriggred: boolean = false;
+    /**
+     * @private
+     */
     public revisions: Revision[] = [];
     /**
      * @private

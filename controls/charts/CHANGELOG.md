@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I651775` - The data label position for the stacked column now renders properly.
+- `#F195744` - The tooltip for the stacking column series now renders properly during keyboard navigation.
+
+### Bullet Chart
+
+#### Bug Fixes
+
+- `#I676482` - The bullet chart will render properly even when the range is set to empty.
+
 ## 28.1.39 (2024-01-14)
 
 ### Chart

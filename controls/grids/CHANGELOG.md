@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### Grid
+
+#### Bug fixes
+
+- `#I676657` - Resolved an issue where two column chooser dialog were opened when the `openColumnChooser` method was called programmatically in an adaptive layout.
+- `#I932065` - Fixed the tooltip flickering issue when the mouse moves inside the grid header.
+- `#I675890` - Resolved an issue where the grid refresh action was triggered on search focus-out when performing a search for the same key.
+
 ## 28.1.38 (2025-01-07)
 
 ### Grid

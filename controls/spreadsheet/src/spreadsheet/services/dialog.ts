@@ -58,7 +58,9 @@ export class Dialog {
         this.dialogInstance = new DialogComponent(model);
         this.dialogInstance.createElement = this.parent.createElement;
         this.dialogInstance.appendTo(div);
-        this.dialogInstance.refreshPosition();
+        if (this.dialogInstance) {
+            this.dialogInstance.refreshPosition();
+        }
     }
 
     /**

@@ -326,7 +326,7 @@ describe("Resize - Actions Module", () => {
     describe('Bug 919439: Editor resize not completed when the mouse is out outside of chrome window.', () => {
         let editor: RichTextEditor;
         let externalIframe: HTMLIFrameElement;
-        beforeAll((done: Function) => {
+        beforeAll(() => {
             editor = renderRTE({
                 iframeSettings: {
                     enable: true
@@ -338,12 +338,10 @@ describe("Resize - Actions Module", () => {
             externalIframe.height = '400';
             externalIframe.style.backgroundColor = 'lightblue';
             document.body.appendChild(externalIframe);
-            done();
         });
-        afterAll((done: Function) => {
+        afterAll(() => {
             destroy(editor);
             document.body.removeChild(externalIframe);
-            done();
         });
         it('Should stop resize when mouse out over the iframe document', (done) => {
             const resizeElement: HTMLElement = editor.element.querySelector('.e-resize-handle');
@@ -369,6 +367,76 @@ describe("Resize - Actions Module", () => {
                 expect((editor.resizeModule as any).isResizing).toBe(false);
                 done();
             }, 100);
+        });
+    });
+
+    describe('934144: Console error is throwing when 2 iframes are rendered in Rich text editor', ()=> {
+        let editor: RichTextEditor;
+        let consoleSpy = jasmine.createSpy('console');
+        const iframes: HTMLIFrameElement[] = [];
+        beforeAll(()=>{
+            const urls = [
+                'https://example.com',
+                'https://example.com',
+                'https://example.com',
+            ];
+            for (let i = 0; i < urls.length; i++) {
+                const iframe = document.createElement('iframe');
+                iframe.className= "ej2-rte"
+                iframe.src = urls[i];
+                iframe.width = '100%';
+                iframe.height = '600px';
+                document.body.appendChild(iframe);
+                iframes.push(iframe);
+            }
+            editor = renderRTE({
+                enableResize: true
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+            for (let i:number = 0; i < iframes.length; i++) {
+                const element = iframes[i];
+                element.remove();
+            }
+        });
+        it('Should not throw error when the contentDocument property of the iframe element is accessed.', (done: DoneFn) => {
+            setTimeout(() => {
+                expect(consoleSpy).not.toHaveBeenCalled();
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('934144: Console error is throwing when 2 iframes are rendered in Rich text editor', ()=> {
+        let editor: RichTextEditor;
+        let consoleSpy = jasmine.createSpy('console');
+        const iframes: HTMLIFrameElement[] = [];
+        beforeAll(()=>{
+            const iframe = document.createElement('iframe');
+            iframe.className= "ej2-rte"
+            iframe.src = window.location.href;
+            iframe.width = '100%';
+            iframe.height = '600px';
+            document.body.appendChild(iframe);
+            iframes.push(iframe);
+            editor = renderRTE({
+                enableResize: true
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+            for (let i:number = 0; i < iframes.length; i++) {
+                const element = iframes[i];
+                element.remove();
+            }
+        });
+        it('For coverage.', (done: DoneFn) => {
+            setTimeout(() => {
+                expect(consoleSpy).not.toHaveBeenCalled();
+                (editor.resizeModule as any).destroy();
+                done();
+            }, 2000);
         });
     });
 });

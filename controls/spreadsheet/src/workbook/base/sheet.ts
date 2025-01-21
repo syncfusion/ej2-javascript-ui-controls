@@ -441,13 +441,13 @@ export function getSheetNameFromAddress(address: string): string {
  * To get sheet index from sheet name.
  *
  * @hidden
- * @param {Workbook} context - Specifies the context.
+ * @param {Object} context - Specifies the context.
  * @param {string} name - Specifies the name.
  * @param {SheetModel} info - Specifies the sheet info.
  * @returns {number} - To get the sheet index by name.
  */
 export function getSheetIndexByName
-(context: Workbook, name: string, info: { visibleName: string, sheet: string, index: number }[]): number {
+(context: Object, name: string, info: { visibleName: string, sheet: string, index: number }[]): number {
     const len: number = info.length;
     for (let i: number = 0; i < len; i++) {
         if (info[i as number].sheet.toUpperCase() === name.toUpperCase()) {

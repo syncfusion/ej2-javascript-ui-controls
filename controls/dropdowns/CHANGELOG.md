@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I679101` - Fixed the issue where an error was encountered when filtering in the ComboBox with custom values disabled and virtualization enabled.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I678070` - The issue change event is not triggered when checking SelectAll checkbox after dynamically selecting any node in the Dropdown Tree component has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I662148` - Fixed an issue where the value was not bound to the Multiselect component.
+
 ## 28.1.39 (2024-01-14)
 
 ### ListBox

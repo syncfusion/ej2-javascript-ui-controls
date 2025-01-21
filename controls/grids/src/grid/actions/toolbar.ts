@@ -731,6 +731,7 @@ export class Toolbar {
 
     private keyUpHandler(e: KeyboardEvent): void {
         if (e.keyCode === 13) {
+            this.parent.searchModule.refreshSearch = false;
             this.search();
         }
         if (this.searchElement) {
@@ -793,6 +794,7 @@ export class Toolbar {
         if (e.target && (e.target as HTMLElement).id === this.parent.element.id + '_searchbar' &&
             !(e.relatedTarget && ((e.relatedTarget as HTMLElement).id === this.parent.element.id + '_clearbutton' ||
                 (e.relatedTarget as HTMLElement).id === this.parent.element.id + '_searchbutton'))) {
+            this.parent.searchModule.refreshSearch = false;
             this.search();
         }
     }

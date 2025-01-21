@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I675886` - Fixed an issue where values were not updated correctly when a mask was configured.
+
 ## 28.1.39 (2024-01-14)
 
 ### DateRangePicker

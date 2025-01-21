@@ -185,14 +185,24 @@ export class SpreadsheetHelper extends TestHelper {
         spreadsheet.endEdit();
     }
 
-    public editInUI(value: string, address?: string): void {
-        let spreadsheet: Spreadsheet = this.getInstance();
+    public editInUI(value: string, address?: string, refreshCurPos?: boolean, oldValue?: string): void {
+        const spreadsheet: any = this.getInstance();
         if (address) {
             spreadsheet.selectRange(address);
         }
         spreadsheet.startEdit();
-        this.getElementFromSpreadsheet('.e-spreadsheet-edit').textContent = value;
-        spreadsheet.endEdit();
+        const editor: HTMLElement = this.getElementFromSpreadsheet('.e-spreadsheet-edit');
+        editor.textContent = value;
+        if (refreshCurPos) {
+            spreadsheet.editModule.editCellData.value = value;
+            if (oldValue) {
+                spreadsheet.editModule.editCellData.oldValue = oldValue;
+            }
+            spreadsheet.notify('editOperation', { action: 'refreshEditor', value: value, refreshCurPos: true, refreshEditorElem: true });
+            this.triggerKeyNativeEvent(13, false, false, null, 'keydown', false, editor);
+        } else {
+            spreadsheet.endEdit();
+        }
     }
 
     public setAnimationToNone(selector: string, isTab?: boolean): void {

@@ -1,5 +1,5 @@
 import { getDPRValue, hideAutoFillElement, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
-import { closest, detach, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { closest, detach, EventHandler, initializeCSPTemplate, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth } from '../common/index';
 import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit, refreshFilterCellsOnResize } from '../common/index';
@@ -529,11 +529,15 @@ export class Resize {
                     showTipPointer: false
                 });
                 if (isColResize) {
-                    tooltip.content = 'Width:(' + Math.round(trgt.getBoundingClientRect().width).toString() + ' pixels)';
+                    tooltip.content = initializeCSPTemplate((): string => {
+                        return 'Width:(' + Math.round(trgt.getBoundingClientRect().width).toString() + ' pixels)';
+                    });
                 } else if (isRowResize) {
-                    tooltip.content = 'Height:(' + Math.round(trgt.getBoundingClientRect().height).toString() + ' pixels)';
+                    tooltip.content = initializeCSPTemplate((): string => {
+                        return 'Height:(' + Math.round(trgt.getBoundingClientRect().height).toString() + ' pixels)';
+                    });
                     tooltip.offsetX = -((this.parent.getMainContent().parentElement.clientWidth / 2) -
-                    Math.round(trgt.getBoundingClientRect().width));
+                        Math.round(trgt.getBoundingClientRect().width));
                 }
                 tooltip.appendTo('.' + className);
                 tooltip.open();

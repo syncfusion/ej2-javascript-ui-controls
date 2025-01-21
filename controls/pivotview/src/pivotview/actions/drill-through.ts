@@ -64,13 +64,16 @@ export class DrillThrough {
             ele = target;
         }
         if (ele) {
-            if (this.parent.pivotValues.length > 0 && (this.parent.allowDrillThrough && ele.classList.contains('e-valuescontent')
-                || this.parent.editSettings.allowEditing)) {
+            if (this.parent.pivotValues.length > 0 && this.parent.dataSourceSettings.values.length > 0 &&
+                (this.parent.allowDrillThrough || this.parent.editSettings.allowEditing) && ele.classList.contains('e-valuescontent')) {
                 const colIndex: number = Number(ele.getAttribute('data-colindex'));
                 const rowIndex: number = Number(ele.getAttribute('index'));
-                this.executeDrillThrough(
-                    this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet, rowIndex, colIndex, ele
-                );
+                if (!isNullOrUndefined(this.parent.pivotValues[rowIndex as number]) &&
+                    !isNullOrUndefined(this.parent.pivotValues[rowIndex as number][colIndex as number])) {
+                    this.executeDrillThrough(
+                        this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet, rowIndex, colIndex, ele
+                    );
+                }
             }
         }
     }

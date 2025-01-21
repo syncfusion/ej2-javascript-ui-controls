@@ -220,7 +220,7 @@ export class Legend {
                     } else {
                         legendText = '';
                     }
-                    if (legend.position === 'Left' || legend.position === 'Right') {
+                    if (legend.position === 'Left' || legend.position === 'Right' || legend.position === 'Float') {
                         for (let i: number = 0; i < this.legendCollection.length; i++) {
                             const legendItem: object = this.legendCollection[i as number];
                             const legendTextSize: Size = measureText(legendItem['text'], legend.textStyle);
@@ -1460,8 +1460,12 @@ export class Legend {
         const areaWidth: number = totalRect.width;
         const totalWidth: number = map.availableSize.width;
         const totalHeight: number = map.availableSize.height;
-        const locationX: number = !isNullOrUndefined(legend.location.x) ? legend.location.x : 0;
-        const locationY: number = !isNullOrUndefined(legend.location.y) ? legend.location.y : 0;
+        const locationX: number = !isNullOrUndefined(legend.location.x) ? (typeof (legend.location.x) === 'string' &&
+            (legend.location.x as string).indexOf('%') > -1 ? (map.availableSize.width / 100) * parseFloat(legend.location.x) :
+            typeof (legend.location.x) === 'string' ? parseFloat(legend.location.x) : legend.location.x) : 0;
+        const locationY: number = !isNullOrUndefined(legend.location.y) ? (typeof (legend.location.y) === 'string' &&
+            (legend.location.y as string).indexOf('%') > -1 ? (map.availableSize.height / 100) * parseFloat(legend.location.y) :
+            typeof (legend.location.y) === 'string' ? parseFloat(legend.location.y) : legend.location.y) : 0;
         if (legend.position === 'Float') {
             this.translate = map.isTileMap ? new Point(locationX, locationY + (spacing / 4)) :
                 new Point(locationX + map.mapAreaRect.x, locationY + map.mapAreaRect.y);

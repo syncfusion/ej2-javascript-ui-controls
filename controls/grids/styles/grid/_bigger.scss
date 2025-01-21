@@ -1424,6 +1424,12 @@
     padding-right: $grid-res-toolbar-search-wrapper-padding-right;
   }
 
+  .e-label.e-choosercheck.e-checkboxwrap {
+    @if $grid-skin == 'fluent'{
+      width: 125px;
+    }
+  }
+
   .e-row .e-input-group .e-control.e-input {
     @if $grid-skin == 'material3' or $grid-skin == 'material3-dark' {
       padding-bottom: 0;

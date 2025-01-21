@@ -464,9 +464,15 @@ export class Print {
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         let locationX: any = printInstance.calculateTextPosition(textWidth, cellWidth, currentX,
                                                                                                  position);
-                                        let locationY: number = currentY[k as number] + (verticalAlign === 'top' ? textHeight + 2 :
-                                            verticalAlign === 'middle' ? cellHeight > ((cellHeight / 2) + (textHeight / 2)) ?
-                                                ((cellHeight / 2) + (textHeight / 2)) : cellHeight : cellHeight);
+                                        let locationY: number = currentY[k as number];
+                                        const midValue: number = (cellHeight / 2) + (textHeight / 2);
+                                        if (verticalAlign === 'top') {
+                                            context.textBaseline = 'top'; // Set baseline to the top to ensure consistent vertical placement. Baseline at top means no additional offset needed
+                                        } else if (verticalAlign === 'middle' && cellHeight > midValue) {
+                                            locationY += midValue; // Center text vertically
+                                        } else {
+                                            locationY += cellHeight; // Align text in default or bottom
+                                        }
                                         if (!isNullOrUndefined(cell.style)) {
                                             locationY = (!isNullOrUndefined(cell.style.borderBottom) && cell.style.borderBottom.indexOf('double') > -1) || (!isNullOrUndefined(cell.style.borderTop) && cell.style.borderTop.indexOf('double') > -1) ? locationY - 2 : locationY;
                                             locationX = (!isNullOrUndefined(cell.style.borderLeft) && cell.style.borderLeft.indexOf('double') > -1) || (!isNullOrUndefined(cell.style.borderRight) && cell.style.borderRight.indexOf('double') > -1) ? locationX + (position === 'Left' ? 2 : -3) : locationX ;

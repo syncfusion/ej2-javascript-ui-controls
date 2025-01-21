@@ -21,7 +21,7 @@ import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
 import { WColumnFormat, WSectionFormat } from '../format';
 import { FontScriptType, TextWrappingStyle } from '../../index';
-import { TextSizeInfo } from './text-helper';
+import { TextHelper, TextSizeInfo } from './text-helper';
 import { DocumentCanvasElement, DocumentCanvasRenderingContext2D } from './document-canvas';
 import { Dictionary } from '../../base/dictionary';
 import { getPathString, PathSegment, pathSegmentCollection, PointModel, processPathData, splitArrayCollection, transformPath } from '../utility/path-util';
@@ -90,7 +90,7 @@ export class Renderer {
         return this.documentHelper.owner.viewer;
     }
     public renderWidgets(page: Page, left: number, top: number, width: number, height: number): void {
-        if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page)) {
+        if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page) || isNullOrUndefined(page.bodyWidgets)) {
             return;
         }
         this.pageContext.fillStyle = HelperMethods.getColor(this.documentHelper.backgroundColor);
@@ -1798,7 +1798,7 @@ private calculatePathBounds(data: string): Rect {
                         elementBox.canTrigger = true;
                         }
                         elementBox.isVisible = false;
-                        if (!elementBox.isSpellChecked || elementBox.line.paragraph.isChangeDetected) {
+                        if ((!elementBox.isSpellChecked && !elementBox.isSpellCheckTriggred) || elementBox.line.paragraph.isChangeDetected) {
                             elementBox.ischangeDetected = true;
                         }
                     }
@@ -2340,7 +2340,7 @@ private calculatePathBounds(data: string): Rect {
             left -= elementBox.width;
         }
         if (this.documentHelper.owner.isSpellCheck) {
-            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
+            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && elementBox.text.trim() !== '' && !this.documentHelper.textHelper.containsSpecialCharAlone(elementBox.text) && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
                 elementBox.canTrigger = true;
                 this.leftPosition = this.pageLeft;
                 this.topPosition = this.pageTop;
@@ -2370,6 +2370,7 @@ private calculatePathBounds(data: string): Rect {
                 } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
                     elementBox.ischangeDetected = false;
                     this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
+                    elementBox.isSpellCheckTriggred = true;
                 }
             }
         }

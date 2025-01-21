@@ -131,7 +131,7 @@ export class WorkbookFormula {
         }
     }
 
-    private clearFormulaDependentCells(args: { cellRef?: string, isOpen?: boolean }): void {
+    private clearFormulaDependentCells(args: { cellRef?: string, isOpen?: boolean, clearFormulaInfo?: boolean }): void {
         if (args.isOpen as boolean) {
             this.calculateInstance.getDependentCells().clear();
             this.calculateInstance.getFormulaInfoTable().clear();
@@ -143,6 +143,9 @@ export class WorkbookFormula {
         const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
         if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
             cellRef = family.parentObjectToToken.get(sheetId) + cellRef;
+        }
+        if (args.clearFormulaInfo && this.calculateInstance.getFormulaInfoTable().has(cellRef)) {
+            this.calculateInstance.getFormulaInfoTable().delete(cellRef);
         }
         this.calculateInstance.clearFormulaDependentCells(cellRef);
     }

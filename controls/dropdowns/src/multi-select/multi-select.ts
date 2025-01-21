@@ -762,6 +762,8 @@ export class MultiSelect extends DropDownBase implements IInput {
     private header: HTMLElement;
     private footer: HTMLElement;
     private initStatus: boolean;
+    private isInitRemoteVirtualData: boolean;
+    private isDynamicRemoteVirtualData: boolean;
     private popupWrapper: HTMLDivElement;
     private keyCode: number;
     private beforePopupOpen: boolean;
@@ -772,8 +774,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     private selectAllEventEle: HTMLLIElement[] = [];
     private filterParent: HTMLElement;
     private removeIndex: number;
-    private resetMainList: HTMLElement = null;
-    private resetFilteredData: boolean = false;
     private preventSetCurrentData: boolean = false;
     private virtualCustomData: { [key: string]: string | Object };
     private isSelectAllLoop: boolean = false;
@@ -1348,6 +1348,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             if (!this.enableVirtualization || (this.enableVirtualization && (!(this.dataSource instanceof DataManager)))){
                 this.initialValueUpdate();
+            } else {
+                this.initialValueUpdate(this.listData, true);
             }
             this.initialUpdate();
             this.refreshPlaceHolder();
@@ -1964,11 +1966,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         this.updateDataList();
-        if (this.resetMainList)
-        {
-            this.mainList = this.resetMainList;
-            this.resetMainList = null;
-        }
         this.refreshListItems(null);
         if (this.mode !== 'Box' && this.mode !== 'CheckBox') {
             this.updateDelimView();
@@ -4133,7 +4130,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         });
     }
     protected search(e: KeyboardEventArgs): void {
-        this.resetFilteredData = true;
         this.preventSetCurrentData = false;
         this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
         if (!isNullOrUndefined(e)) {
@@ -4381,7 +4377,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 } else {
                     if (this.listData) {
                         if (this.enableVirtualization) {
-                            if (delim) {
+                            if (delim && !this.isDynamicRemoteVirtualData) {
                                 data = this.delimiterWrapper && this.delimiterWrapper.innerHTML === '' ? data :
                                     this.delimiterWrapper.innerHTML;
                             }
@@ -4393,7 +4389,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 text = this.text.split(delimiterChar);
                             } else {
                                 temp = isInitialVirtualData && delim ? this.text : this.getTextByValue(value);
-                                const textValues: string = isInitialVirtualData ? this.text : (this.text && this.text !== '' ? this.text + this.delimiterChar + temp : temp);
+                                const textValues: string = this.isDynamicRemoteVirtualData && value != null && value !== '' ? this.getTextByValue(value) : isInitialVirtualData ? this.text : (this.text && this.text !== '' ? this.text + this.delimiterChar + temp : temp);
                                 data += temp + delimiterChar + ' ';
                                 text.push(textValues);
                                 hiddenElementContent = this.hiddenElement.innerHTML;
@@ -4552,7 +4548,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             (this.mode === 'Box' || this.mode === 'Default'))) ||
                         (this.enableVirtualization && value != null && text != null && !isCustomData)) {
                         const currentText: string[] = [];
-                        const textValues: string = this.text != null && this.text !== '' ? this.text + this.delimiterChar + text : text;
+                        const textValues: string = this.isDynamicRemoteVirtualData && text != null && text !== '' ? text : this.text != null && this.text !== '' ? this.text + this.delimiterChar + text : text;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
                         this.addChip(text, value);
@@ -5875,12 +5871,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     public onPropertyChanged(newProp: MultiSelectModel, oldProp: MultiSelectModel): void {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))
         || newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
-            if (this.resetFilteredData)
-            {
-                // The filtered data is not being reset in the component after the user focuses out.
-                this.resetMainList = !this.resetMainList ? this.mainList : this.resetMainList;
-                this.resetFilteredData = false;
-            }
             this.mainList = null;
             this.mainData = null;
             this.isFirstClick = false;
@@ -6147,6 +6137,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 if (!this.enableVirtualization || (this.enableVirtualization && (!(this.dataSource instanceof DataManager)))){
                     this.initialValueUpdate();
+                } else if (!this.isInitRemoteVirtualData) {
+                    this.isDynamicRemoteVirtualData = true;
+                    this.initialValueUpdate(this.listData, true);
+                    this.isDynamicRemoteVirtualData = false;
+                    this.initialUpdate();
                 }
                 if (this.mode !== 'Box' && !this.inputFocus) {
                     this.updateDelimView();
@@ -6748,9 +6743,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                             if (((e as ResultData).result as any).length > 0) {
                                 listItems = ((e as ResultData).result as any);
                                 this.initStatus = false;
+                                this.isInitRemoteVirtualData = true;
                                 setTimeout(() => {
                                     this.initialValueUpdate(listItems, true);
                                     this.initialUpdate();
+                                    this.isInitRemoteVirtualData = false;
                                 }, 100);
                                 this.initStatus = true;
                             }

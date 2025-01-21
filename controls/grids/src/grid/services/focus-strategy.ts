@@ -115,7 +115,7 @@ export class FocusStrategy {
         const isGantt: boolean = parentsUntil((e.target as Element), 'e-gantt') && (e.target as Element).classList.contains('e-rowcell')
             && (!isNullOrUndefined((e.target as Element).nextElementSibling)
             && (e.target as Element).nextElementSibling.classList.contains('e-rowcell')) ? true : false;
-        if ((this.parent.isEdit || e && (!e.relatedTarget || closest(<HTMLElement>e.relatedTarget, '.e-grid'))
+        if ((this.parent.isEdit || e && (!e.relatedTarget || closest(<HTMLElement>e.relatedTarget, '.e-grid') || closest(<HTMLElement>e.relatedTarget, '.e-grid-popup'))
             && !(this.parent.element.classList.contains('e-childgrid') && !this.parent.element.matches(':focus-within')))
             && !(!isGantt && isNullOrUndefined(e.relatedTarget) && parseInt((e.target as Element).getAttribute('data-colindex'), 10) === 0
             && parseInt((e.target as Element).getAttribute('index'), 10) === 0) && !(!isGantt && isNullOrUndefined(e.relatedTarget)
@@ -1068,6 +1068,7 @@ export class FocusStrategy {
 
     public filterfocus(): void {
         if (this.parent.filterSettings.type !== 'FilterBar') {
+            this.removeFocus();
             this.restoreFocus();
         }
     }

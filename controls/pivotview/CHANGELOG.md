@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.1.41 (2025-01-21)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I657448` - Double-clicking the 'No records to display' cell for drill-through in an empty pivot table will no longer trigger an error.
+- `#I679703` - The Y-axis title can now be customized for the Pivot Chart when using the 'Combined' multiple axis mode.
+
 ## 28.1.38 (2025-01-07)
 
 ### Pivot Table

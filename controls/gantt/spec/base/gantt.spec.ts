@@ -5462,3 +5462,92 @@ describe('Gantt chart-scroll action after zooming', () => {
         }
     });
 });
+describe('render task without duration', () => {
+    const morphUTCDateStringToLocalDate = (date: string): Date | undefined => {
+        const initialDate = new Date(date);
+        const actual = new Date(
+          initialDate.getUTCFullYear(),
+          initialDate.getUTCMonth(),
+          initialDate.getUTCDate(),
+          initialDate.getUTCHours(),
+          initialDate.getUTCMinutes()
+        );
+        return actual;
+      };
+    let GanttData = [{
+        id: '7',
+        name: '1.1 task',
+        targetfinish: morphUTCDateStringToLocalDate('2025-01-09T08:48:00Z'),
+        targetstart: morphUTCDateStringToLocalDate('2025-01-08T08:00:00Z'),
+        currentstartdate: morphUTCDateStringToLocalDate('2025-01-08T08:00:00Z'),
+        currentfinishdate: morphUTCDateStringToLocalDate('2025-01-09T08:48:00Z'),
+      },]
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: (GanttData),
+  taskFields: {
+    id: 'id',
+    name: 'name',
+    startDate: 'currentstartdate',
+    endDate: 'currentfinishdate',
+    baselineStartDate: 'targetstart',
+    baselineEndDate: 'targetfinish',
+  },
+  renderBaseline: true,
+  editSettings: {
+    allowAdding: true,
+    allowEditing: true,
+    allowDeleting: true,
+    allowTaskbarEditing: true,
+    showDeleteConfirmDialog: true,
+  },
+  enableContextMenu: true,
+  resourceFields: {
+    id: 'resourceId',
+    name: 'resourceName',
+    unit: 'Unit',
+  },
+  workUnit: 'Hour',
+  taskType: 'FixedDuration',
+  toolbar: [
+    'Add',
+    'Edit',
+    'Update',
+    'Delete',
+    'Cancel',
+    'ExpandAll',
+    'CollapseAll',
+    'Refresh',
+    'ZoomIn',
+  ],
+  allowSelection: true,
+  height: '450px',
+  treeColumnIndex: 1,
+  columns: [
+    { field: 'TaskID', visible: false },
+    { field: 'TaskName', headerText: 'Task Name', width: '180' },
+    {
+      field: 'StartDate',
+      headerText: 'Start Date',
+    },
+    {
+      field: 'EndDate',
+      headerText: 'End Date',
+    },
+    { field: 'resources', headerText: 'Resources', width: '160' },
+    { field: 'Work', width: '110' },
+    { field: 'taskType', headerText: 'Task Type', width: '110' },
+  ],
+            }, done);
+    });
+    it('Check task width', () => {
+        expect(ganttObj.flatData[0].ganttProperties.width).toBe(45.1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

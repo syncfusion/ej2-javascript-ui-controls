@@ -338,6 +338,7 @@ export class ColumnChooser implements IAction {
         if (this.parent.enableAdaptiveUI) {
             if (!this.isColumnChooserOpen) {
                 this.parent.showResponsiveCustomColumnChooser();
+                return;
             }
             this.isColumnChooserOpen = false;
             this.renderDlgContent();

@@ -48,7 +48,7 @@ export class Resize {
         this.iframeElement = this.parent.contentModule.getDocument().querySelectorAll('iframe');
         if (!isNullOrUndefined(this.iframeElement)) {
             this.iframeElement.forEach((iframe: HTMLIFrameElement) => {
-                EventHandler.add(iframe.contentDocument, 'mouseup', this.stopResize, this);
+                EventHandler.add(iframe, 'load', this.onIFrameLoad, this);
             });
         }
         this.touchStartEvent = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
@@ -56,6 +56,18 @@ export class Resize {
         EventHandler.add(this.resizer, this.touchStartEvent, this.resizeStart, this);
     }
 
+    private onIFrameLoad(e: Event): void {
+        const iframe: HTMLIFrameElement = e.target as HTMLIFrameElement;
+        if (iframe.nodeName === 'IFRAME' && iframe.contentDocument) {
+            EventHandler.add(iframe.contentDocument, 'mouseup', this.stopResize, this);
+        }
+    }
+
+    private removeMouseUpEventListener(iframe: HTMLIFrameElement): void {
+        if (iframe.contentDocument) {
+            EventHandler.remove(iframe.contentDocument, 'mouseup', this.stopResize);
+        }
+    }
     private resizeStart(e?: MouseEvent | TouchEvent | PointerEvent): void {
         this.isResizing = false;
         if (e.cancelable) {
@@ -164,7 +176,7 @@ export class Resize {
         }
         if (!isNullOrUndefined(this.iframeElement)) {
             this.iframeElement.forEach((iframe: HTMLIFrameElement) => {
-                EventHandler.remove(iframe.contentDocument, 'mouseup', this.stopResize);
+                this.removeMouseUpEventListener(iframe);
             });
         }
         if (this.resizer) {

@@ -3603,6 +3603,14 @@
         }
       }
 
+      .e-label.e-fltrcheck.e-wrapfilter {
+        width: $grid-checkboxfiltertext-width;
+        white-space: normal;
+      }
+      .e-label.e-choosercheck.e-checkboxwrap {
+        width: $grid-columnchoosertext-width;
+        white-space: normal;
+      }
       .e-rowcell.e-frozen-right-border,
       .e-headercell.e-frozen-right-border,
       .e-filterbarcell.e-frozen-right-border {

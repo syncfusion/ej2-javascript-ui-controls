@@ -2492,6 +2492,16 @@ export class StickyNotesAnnotation {
         } else {
             currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
         }
+        if (!currentAnnotation) {
+            const annotationKeys: string[] = Object.keys(this.pdfViewer.nameTable);
+            for (let i: number = 0; i < annotationKeys.length; i++) {
+                const annotObject: any = (this.pdfViewer.nameTable as any)[annotationKeys[parseInt(i.toString(), 10)]];
+                if (parentElement === annotObject.annotName){
+                    currentAnnotation = annotObject;
+                    break;
+                }
+            }
+        }
         if (currentAnnotation) {
             const commentsDiv: HTMLElement = document.getElementById(currentAnnotation.annotName);
             const pageNumber: number = parseInt(commentsDiv.accessKey.split('_')[0], 10);

@@ -3647,8 +3647,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 const pointIndex: number = +(targetId.split('_Series_')[1].replace('_Symbol', '').split('_Point_')[1]);
                 const pointRegion: ChartLocation = this.visibleSeries[seriesIndex as number].points[pointIndex as number].
                     symbolLocations[0];
-                this.mouseX = pointRegion.x + this.initialClipRect.x;
-                this.mouseY = pointRegion.y + this.initialClipRect.y;
+                this.mouseX = pointRegion.x + this.initialClipRect.x - (this.visibleSeries[seriesIndex as number].type.indexOf('StackingBar') > -1 ?
+                    this.visibleSeries[seriesIndex as number].marker.height / 2 : 0);
+                this.mouseY = pointRegion.y + this.initialClipRect.y + (this.visibleSeries[seriesIndex as number].type.indexOf('StackingColumn') > -1 ?
+                    this.visibleSeries[seriesIndex as number].marker.height / 2 : 0);
                 if (this.highlightModule) {
                     this.highlightModule.highlightChart(document.getElementById(targetId), 'mousemove');
                     this.highlightModule.completeSelection(document.getElementById(targetId), 'mousemove');

@@ -861,10 +861,10 @@ export class ConnectorLineEdit {
                     }
                 }
             }
-            if (validPredecessor.length === 0) {
-                this.cumulativePredecessorChanges = [];
-            }
-            if (!isRecursive && this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+            if (!isRecursive) {
+                if (validPredecessor.length === 0) {
+                    this.cumulativePredecessorChanges = [];
+                }
                 if (prevPredecessor && prevPredecessor.length > 0 && this.cumulativePredecessorChanges &&
                     this.cumulativePredecessorChanges.length > 0) {
                     const matchingObjects: IPredecessor[] = prevPredecessor.map((objectToCompare: IPredecessor) => {

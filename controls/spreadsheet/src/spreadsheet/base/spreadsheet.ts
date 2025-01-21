@@ -2193,10 +2193,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public setValueRowCol(sheetId: number, value: string | number, rowIndex: number,
                           colIndex: number, formula?: string, isRandomFormula?: boolean): void {
-        if (value === 'circular reference: ') {
-            const circularArgs: { action: string, argValue: string } = {
-                action: 'isCircularReference', argValue: value
-            };
+        if (!this.isEdit && value === '#CIRCULARREF!') {
+            const sheet: SheetModel = getSheet(this, getSheetIndexFromId(this, sheetId));
+            const circularArgs: { action: string, argValue: string, address: string } = { action: 'isCircularReference', argValue: value,
+                address: `${sheet.name}!${getColumnHeaderText(colIndex)}${rowIndex}` };
             this.notify(formulaOperation, circularArgs);
             value = circularArgs.argValue;
         }

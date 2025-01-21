@@ -661,6 +661,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private domKeyHandler(e: KeyboardEventArgs): void {
         if (e.keyCode === 27) {
+            if (this.isMenuVisible()) {
+                e.stopImmediatePropagation();
+            }
             e.action = ESCAPE;
             this.leftEscKeyHandler(e);
         }
@@ -1509,7 +1512,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     args.curData[(<obj>args.fields)[fields.id] as string] = getUniqueID('menuitem');
                 }
                 if (isNullOrUndefined(args.curData.htmlAttributes)) {
-                    args.curData.htmlAttributes = {};
+                    Object.defineProperty(args.curData, 'htmlAttributes', {
+                        value: {},
+                        writable: true,
+                        enumerable: true,
+                        configurable: true
+                    });
                 }
                 if (Browser.isIE) {
                     if (!(args.curData.htmlAttributes as obj).role) {

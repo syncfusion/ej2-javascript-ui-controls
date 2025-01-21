@@ -456,7 +456,7 @@ export class DataLabel {
         if (!(dataLabel.enableRotation === true && dataLabel.angle !== 0) &&
             !((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
                 (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
-            rect.x = rect.x < 0 ? padding : rect.x;
+            rect.x = rect.x < 0 ? (series.type === 'StackingColumn' && !this.inverted ? 0 : padding) : rect.x;
             rect.y = (rect.y < 0 && !this.chart.requireInvertedAxis) && !(dataLabel.labelIntersectAction === 'None') ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
                 - (clipRect.x + clipRect.width) + padding : 0;
@@ -608,8 +608,12 @@ export class DataLabel {
         const margin: MarginModel = this.margin;
         const textLength: number = (series.marker.dataLabel.enableRotation ? textSize.width :
             (!this.inverted ? textSize.height : textSize.width));
-        this.extraSpace = this.borderWidth + textLength / 2 + (position !== 'Outer' && series.type.indexOf('Column') > -1 &&
-            (Math.abs(rect.height - textSize.height) < padding) ? 0 : padding);
+        if (position === 'Bottom' && series.type === 'StackingColumn' && !this.inverted && rect.height < textSize.height) {
+            this.extraSpace = this.borderWidth + ((Math.abs(rect.height - textSize.height / 2) < padding) ? 0 : padding);
+        } else {
+            this.extraSpace = this.borderWidth + textLength / 2 + (position !== 'Outer' && series.type.indexOf('Column') > -1 &&
+                (Math.abs(rect.height - textSize.height) < padding) ? 0 : padding);
+        }
         if (series.type === 'StackingColumn100' || series.type === 'StackingBar100') {
             position = (position === 'Outer') ? 'Top' : position;
         } else if (series.type.indexOf('Range') > -1) {
