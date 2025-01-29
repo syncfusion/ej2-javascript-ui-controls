@@ -3,7 +3,7 @@
  */
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE, destroy, setCursorPoint } from './../rich-text-editor/render.spec';
+import { renderRTE, destroy, dispatchEvent as dispatchEve, setCursorPoint } from './../rich-text-editor/render.spec';
 import { NodeSelection } from '../../src/selection/selection';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { BASIC_MOUSE_EVENT_INIT } from '../constant.spec';
@@ -230,7 +230,91 @@ describe('RTE CR issues ', () => {
             }, 100);
         });
     });
-    
+
+    describe('Bug 927325: The "& times;" symbol is converted to "x" when focus is removed from the editor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value: `<p>&times &divide &ne</p>`,
+                placeholder: 'Type something'
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it("Value should be same as entered, should not change to x", (done) => {
+            rteObj.focusIn();
+            expect(rteObj.inputElement.innerText === '&times &divide &ne').toBe(true);
+            done();
+        });
+        it("Value should be same as entered, should not change to x after the focus out", (done) => {
+            rteObj.focusOut();
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerText === '&times &divide &ne').toBe(true);
+                done();
+            }, 110);
+        });
+        it("Value should be same as entered, should not change to x after the code view switch", (done) => {
+            let sourceCode: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEve(sourceCode, 'mousedown');
+            dispatchEve(sourceCode, 'mouseup');
+            sourceCode.click();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === `<p>&amp;times &amp;divide &amp;ne</p>`).toBe(true);
+                done();
+            }, 50)
+        });
+        it("Value should be same as entered, should not change to x after the code view switch and focus out", (done) => {
+            rteObj.focusOut();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === `<p>&amp;times &amp;divide &amp;ne</p>`).toBe(true);
+                done();
+            }, 50)
+        });
+        it("Value should be same as entered, should not change to x, after the pre view switch", (done) => {
+            rteObj.focusIn();
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.inputElement.innerText === '&times &divide &ne').toBe(true);
+            done();
+        });
+        it("Value should be same as entered, should not change to x after the code view switch and focus out, when sanitizer is off", (done) => {
+            rteObj.enableHtmlSanitizer = false;
+            rteObj.focusOut();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === `<p>&amp;amp;times &amp;amp;divide &amp;amp;ne</p>`).toBe(true);
+                done();
+            }, 50)
+        });
+        it("Value should be same as entered, should not change to x, after the pre view switch, when sanitizer is off", (done) => {
+            rteObj.enableHtmlSanitizer = false;
+            rteObj.focusIn();
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.inputElement.innerText === '&times &divide &ne').toBe(true);
+            done();
+        });
+        it("Value should be same as entered, should not change to x", (done) => {
+            rteObj.enableHtmlSanitizer = true;
+            rteObj.focusIn();
+            rteObj.executeCommand('insertHTML', '<p>&times &divide &ne</p>');
+            expect(rteObj.inputElement.innerText === '&times &divide &ne\n\n&times &divide &ne').toBe(true);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
     describe('875856 - Using indents on Numbered or Bulleted list turns into nested list in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let rteEle: Element;

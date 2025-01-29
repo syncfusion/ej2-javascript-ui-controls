@@ -1077,8 +1077,7 @@ export class ChartRows extends DateProcessor {
                     labelDiv = '<span class="' + cls.taskLabel + '" style="line-height:' +
                         (data[this.parent.taskFields.manual] && data.hasChildRecords ? (Math.floor((60 / 100) * this.taskBarHeight)) :
                             (this.taskBarHeight - 1)) + 'px; text-align:' + (this.parent.enableRtl ? 'right;' : 'left;') +
-                        'display:' + 'inline-block;' +
-                        'width:' + (data.ganttProperties.width - 10) + 'px; height:' +
+                        'display:' + 'inline-block;' + 'width:' + (data.ganttProperties.width - 10) + 'px; height:' +
                         this.taskBarHeight + 'px;"></span>';
                 } else {
                     labelDiv = '<span class="' +

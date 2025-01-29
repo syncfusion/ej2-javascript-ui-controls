@@ -35,6 +35,7 @@ import { RowDragDropHeaderRenderer } from '../renderer/row-drag-header-indent-re
 import * as literals from '../base/string-literals';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
 import { Grid } from '../base/grid';
+import { VirtualContentRenderer } from './virtual-content-renderer';
 
 /**
  * Content module is used to render grid content
@@ -140,6 +141,10 @@ export class Render {
                 return;
             }
             this.parent.notify(events.destroyEditForm, args);
+            if (args.requestType === 'virtualscroll' && (this.parent.getDataModule().isRemote() || 'result' in this.parent.dataSource)
+                && args.virtualInfo && args.virtualInfo.direction === 'down') {
+                (this.parent.contentModule as VirtualContentRenderer).prevInfo = args.virtualInfo;
+            }
             if ((this.parent as Grid).groupModule && args.preventFocusOnGroup) {
                 (this.parent as Grid).groupModule.preventFocusOnGroup = args.preventFocusOnGroup;
             }

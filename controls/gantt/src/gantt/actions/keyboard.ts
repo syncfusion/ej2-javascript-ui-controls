@@ -170,7 +170,7 @@ export class FocusModule {
                 }
             }
             break;
-        case 'cancelRequest':
+        case 'escape':
             if (!isNullOrUndefined(ganttObj.editModule) && !isNullOrUndefined(ganttObj.editModule.cellEditModule)) {
                 ganttObj.editModule.cellEditModule.isCellEdit = false;
                 if (!isNullOrUndefined(ganttObj.toolbarModule)) {

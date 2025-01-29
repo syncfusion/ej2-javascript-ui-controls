@@ -410,16 +410,18 @@ export class Point {
 }
 
 /**
- * Specifies the information of the position of the legend in maps.
+ * Specifies the position of the legend on the map, with options to set the
+ * position values as percentages. The legend is placed relative to the Maps,
+ * ensuring responsiveness.
  */
 
-export class LegendLocation {
+export class RelativePoint {
     /**
-     * Defines the x position in string.
+     * Defines the horizontal position of the legend as a percentage.
      */
     public x: string;
     /**
-     * Defines the y position in string.
+     * Defines the vertical position of the legend as a percentage.
      */
     public y: string;
     constructor(x: string, y: string) {

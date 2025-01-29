@@ -546,7 +546,10 @@
         }
 
         .e-list-text {
-          @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
+          @if ($skin-name == 'FluentUI') {
+            padding: $treeview-icon-padding;
+          }
+          @else if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
             padding: 0 $treeview-drag-icon-padding;
           }
           @if $skin-name == 'fluent2' {
@@ -570,9 +573,6 @@
           @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
             box-sizing: content-box;
             padding-left: $treeview-drag-icon-padding;
-            @if ($skin-name == 'FluentUI') {
-              padding-top: 8px;
-            }
           }
         }
       }
@@ -580,7 +580,7 @@
       .e-icon-collapsible::before,
       .e-icon-expandable::before {
         font-size: $treeview-drag-icon-font-size;
-        @if ($skin-name != 'bootstrap5' or $skin-name == 'bootstrap5.3' and $skin-name != 'FluentUI') {
+        @if (($skin-name != 'bootstrap5' or $skin-name == 'bootstrap5.3') and $skin-name != 'FluentUI') {
           padding: $treeview-drag-icon-padding;
         }
         @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind') {

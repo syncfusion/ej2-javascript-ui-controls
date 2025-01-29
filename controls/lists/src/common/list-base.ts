@@ -318,6 +318,17 @@ export namespace ListBase {
                     id,
                     i, options);
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
+                if (Object.prototype.hasOwnProperty.call(fieldData, fields.tooltip)) {
+                    let tooltipText: string = <string>fieldData[fields.tooltip];
+                    if (options && options.enableHtmlSanitizer) {
+                        tooltipText = SanitizeHtmlHelper.sanitize(tooltipText);
+                    } else {
+                        let tooltipTextElement: HTMLElement = createElement('span', { innerHTML: tooltipText });
+                        tooltipText = tooltipTextElement.innerText;
+                        tooltipTextElement = null;
+                    }
+                    li.setAttribute('title', tooltipText);
+                }
                 if (curOpt.itemNavigable && checkboxElement.length) {
                     prepend(checkboxElement, li.firstElementChild);
                 }
@@ -909,6 +920,9 @@ export namespace ListBase {
         if (dataSource && Object.prototype.hasOwnProperty.call(fieldData, fields.enabled) && fieldData[fields.enabled].toString() === 'false') {
             li.classList.add(cssClass.disabled);
         }
+        if (options && options.enableHtmlSanitizer) {
+            text = SanitizeHtmlHelper.sanitize(text);
+        }
         if (grpLI) {
             li.innerText = text;
         } else {
@@ -1027,8 +1041,7 @@ export namespace ListBase {
                 ? true : false;
         }
         if (options && options.enableHtmlSanitizer) {
-            // eslint-disable-next-line no-self-assign
-            text = text;
+            text = SanitizeHtmlHelper.sanitize(text);
         }
         const li: HTMLElement = createElement('li', {
             className: (grpLI === true ? cssClass.group : cssClass.li) + ' ' + (isNullOrUndefined(className) ? '' : className),
@@ -1090,7 +1103,7 @@ export namespace ListBase {
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 });
                 if (options && options.enableHtmlSanitizer) {
-                    element.innerText = SanitizeHtmlHelper.sanitize(text);
+                    element.innerText = text;
                 } else {
                     element.innerHTML = text;
                 }

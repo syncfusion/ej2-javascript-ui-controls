@@ -860,6 +860,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             enableDrillThrough: this.pivotGridModule ?
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this)),
+            savedFieldList: (action === 'onDrop' && this.engineModule.fieldList !== null) ? this.engineModule.fieldList : undefined,
             enableOptimizedRendering: this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
                 this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage),
             requestType: 'string',
@@ -882,7 +883,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             memberName: memberName,
             fetchRawDataArgs: rawDataArgs,
             editArgs: editArgs,
-            hash: this.pivotGridModule ? this.pivotGridModule.guid : this.guid,
+            hash: this.pivotGridModule ? this.pivotGridModule.guid : this.staticPivotGridModule ?
+                this.staticPivotGridModule.guid : this.guid,
             isGroupingUpdated: (this.currentAction === 'onRefresh' && this.dataSourceSettings.groupSettings.length > 0) ? true :
                 ((this.pivotGridModule && this.pivotGridModule.groupingModule) ? this.pivotGridModule.groupingModule.isUpdate : false)
         };
@@ -1752,7 +1754,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             };
             control.trigger(events.fieldListRefreshed, eventArgs);
             if (!this.isPopupView) {
-                control.guid = this.guid;
                 this.staticPivotGridModule = control;
                 control.isStaticRefresh = true;
             }

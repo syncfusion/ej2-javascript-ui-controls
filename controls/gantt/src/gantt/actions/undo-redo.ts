@@ -163,7 +163,7 @@ export class UndoRedo {
                 this.sortedColumnsLength = 0;
                 if (updateAction['sortColumns'].length > 0) {
                     for (let i: number = 0; i < updateAction['sortColumns'].length; i++) {
-                        this.parent.treeGrid.sortByColumn(updateAction['sortColumns'][i as number]['field'], updateAction['sortColumns'][i as number]['direction']);
+                        this.parent.treeGrid.sortByColumn(updateAction['sortColumns'][i as number]['field'], updateAction['sortColumns'][i as number]['direction'], i > 0 ? true : false);
                     }
                 }
                 else {

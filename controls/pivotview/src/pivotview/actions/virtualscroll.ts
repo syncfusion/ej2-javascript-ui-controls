@@ -21,6 +21,7 @@ export class VirtualScroll {
     /** @hidden */
     public direction: string;
     private keyboardEvents: KeyboardEvents;
+    private isScrolling: boolean = false;
 
     /**
      * Constructor for PivotView scrolling.
@@ -296,25 +297,30 @@ export class VirtualScroll {
 
     private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
         return (e: Event) => {
-            const ele: HTMLElement = this.parent.isAdaptive ? mCont :
-                closest(mCont, '.' + cls.GRID_CONTENT).querySelector('.' + cls.VIRTUALTABLE_DIV);
-            const enableOptimizedRendering: boolean = this.parent.virtualScrollSettings && this.parent.virtualScrollSettings.allowSinglePage && this.parent.dataType === 'pivot';
-            if (enableOptimizedRendering) {
-                if (this.direction === 'vertical') {
-                    if (this.parent.element.querySelector('.' + cls.PIVOT_CONTENT_LOADER)) {
-                        addClass([fCont], ['e-virtual-pivot-content']);
-                        removeClass([this.parent.element.querySelector('.' + cls.PIVOT_CONTENT_LOADER)], [cls.PIVOT_HIDE_LOADER]);
-                    }
-                } else {
-                    if (this.parent.element.querySelector('.' + cls.PIVOT_CONTENT_LOADER)) {
-                        addClass([mHdr, mCont], ['e-virtual-pivot-content']);
-                        removeClass([this.parent.element.querySelector('.' + cls.PIVOT_CONTENT_LOADER)], [cls.PIVOT_HIDE_LOADER]);
+            const enableOptimizedRendering: boolean = this.parent.virtualScrollSettings &&
+                this.parent.virtualScrollSettings.allowSinglePage && this.parent.dataType === 'pivot';
+            if (this.isScrolling || !enableOptimizedRendering) {
+                this.isScrolling = false;
+                const ele: HTMLElement = this.parent.isAdaptive ? mCont :
+                    closest(mCont, '.' + cls.GRID_CONTENT).querySelector('.' + cls.VIRTUALTABLE_DIV);
+                if (enableOptimizedRendering) {
+                    if (this.direction === 'vertical') {
+                        if (this.parent.element.querySelector('.' + cls.PIVOT_CONTENT_LOADER)) {
+                            addClass([fCont], ['e-virtual-pivot-content']);
+                            removeClass([this.parent.element.querySelector('.' + cls.PIVOT_CONTENT_LOADER)], [cls.PIVOT_HIDE_LOADER]);
+                        }
+                    } else {
+                        if (this.parent.element.querySelector('.' + cls.PIVOT_CONTENT_LOADER)) {
+                            addClass([mHdr, mCont], ['e-virtual-pivot-content']);
+                            removeClass([this.parent.element.querySelector('.' + cls.PIVOT_CONTENT_LOADER)], [cls.PIVOT_HIDE_LOADER]);
+                        }
                     }
                 }
+                this.update(
+                    this.parent.element.querySelector('.' + cls.GRID_CLASS + ' .' +
+                        cls.CONTENT_CLASS).scrollTop * this.parent.verticalScrollScale,
+                    ele.scrollLeft * this.parent.horizontalScrollScale, e, ele, mHdr, mCont);
             }
-            this.update(
-                this.parent.element.querySelector('.' + cls.GRID_CLASS + ' .' + cls.CONTENT_CLASS).scrollTop * this.parent.verticalScrollScale,
-                ele.scrollLeft * this.parent.horizontalScrollScale, e, ele, mHdr, mCont);
         };
     }
 
@@ -350,6 +356,7 @@ export class VirtualScroll {
                 return;
             }
             this.parent.scrollDirection = this.direction = 'horizondal';
+            this.isScrolling = true;
             horiOffset = left - this.parent.scrollPosObject.horizontalSection - eleScrollLeft;
             horiOffset = this.parent.enableRtl ? horiOffset : -horiOffset;
             const vertiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',').length > 1 ?
@@ -517,6 +524,7 @@ export class VirtualScroll {
                     this.parent.scrollPosObject.horizontalSection = 0;
                 }
                 this.parent.scrollDirection = this.direction = 'vertical';
+                this.isScrolling = true;
                 let vertiOffset: number = -((top - this.parent.scrollPosObject.verticalSection - mCont.scrollTop));
                 const horiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim();
                 if (vertiOffset > this.parent.virtualDiv.clientHeight) {

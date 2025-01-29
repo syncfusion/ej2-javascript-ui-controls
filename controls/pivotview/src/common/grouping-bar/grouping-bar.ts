@@ -508,13 +508,17 @@ export class GroupingBar implements IAction {
                     }
                 }
                 if (this.parent.isTabular) {
-                    const pivotButtons: NodeListOf<HTMLElement> = this.rowAxisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS);
-                    this.rowAxisWidth =  this.getPivotButtonsTotalWidth(pivotButtons);
-                    if (this.parent.engineModule.rowMaxLevel === 0 && pivotButtons.length === 1) {
-                        this.rowAxisWidth = 250;
-                    }
-                    if ((this.parent.element.getBoundingClientRect().width * 0.8) <= this.rowAxisWidth) {
-                        this.rowAxisWidth = pivotButtons.length * this.parent.gridSettings.columnWidth;
+                    if (this.parent.dataSourceSettings.valueAxis === 'row') {
+                        this.rowAxisWidth = this.rowAxisPanel.querySelector('.e-tabular-group-rows').getBoundingClientRect().width;
+                    } else {
+                        const pivotButtons: NodeListOf<HTMLElement> = this.rowAxisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS);
+                        this.rowAxisWidth = this.getPivotButtonsTotalWidth(pivotButtons);
+                        if (this.parent.engineModule.rowMaxLevel === 0 && pivotButtons.length === 1) {
+                            this.rowAxisWidth = 250;
+                        }
+                        if ((this.parent.element.getBoundingClientRect().width * 0.8) <= this.rowAxisWidth) {
+                            this.rowAxisWidth = pivotButtons.length * this.parent.gridSettings.columnWidth;
+                        }
                     }
                 }
                 this.parent.posCount = 0;

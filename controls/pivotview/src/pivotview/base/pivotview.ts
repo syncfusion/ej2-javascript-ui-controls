@@ -2934,14 +2934,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         pivotValue: string,
                         pivotCount: string,
                         indexObject: string,
-                        rawData: string
+                        rawData: string,
+                        isEmptyData: boolean,
+                        isEngineUpdated: boolean
                     } = JSON.parse(this.request.responseText);
                     if (this.currentAction === 'fetchFieldMembers') {
                         const currentMembers: { [key: string]: Object } = JSON.parse(engine.members);
                         const dateMembers: IAxisSet[] = [];
                         const members: { [key: string]: Object } = {};
-                        this.engineModule.globalize = !isNullOrUndefined(this.globalize) ? this.globalize : new Internationalization();
-                        this.engineModule.formatFields = this.engineModule.setFormattedFields(this.dataSourceSettings.formatSettings);
                         const isDateField: boolean = PivotUtil.isDateField(engine.memberName as string, this.engineModule as PivotEngine);
                         const isNumberType: boolean = this.engineModule.fieldList[engine.memberName].type === 'number';
                         const keys: string[] = Object.keys(currentMembers);
@@ -3032,7 +3032,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             columnIndex: valueSort.ColumnIndex as number
                         };
                         this.engineModule.pivotValues = pivotValues;
-                        this.engineModule.isEmptyData = this.dataSourceSettings.values.length === 0 ? true : false;
+                        this.engineModule.isEmptyData = engine.isEmptyData;
+                        this.engineModule.isEngineUpdated = engine.isEngineUpdated;
                         for (const value of this.dataSourceSettings.values) {
                             this.engineModule.valueAxisFields[value.name] = value;
                         }
@@ -3096,6 +3097,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             allowDataCompression: this.allowDataCompression,
             enableDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this)),
+            savedFieldList: (action === 'onDrop' && this.engineModule.fieldList !== null) ? this.engineModule.fieldList : undefined,
             enableOptimizedRendering: this.enableVirtualization && this.virtualScrollSettings &&
                 this.virtualScrollSettings.allowSinglePage,
             requestType: 'string',
@@ -5284,8 +5286,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 rowText = rowText.split(this.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
             } else {
                 if (this.isTabular) {
-                    cell = (this.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
-                    rowText = cell.valueSort.levelName.toString();
+                    while (level > 0) {
+                        colIndex--;
+                        cell = this.pivotValues[rowIndex as number][colIndex as number];
+                        rowText = rowText + this.dataSourceSettings.valueSortSettings.headerDelimiter + cell.formattedText;
+                        level = level - 1;
+                    }
                 } else {
                     while (level > 0 || cell.index === undefined) {
                         rowIndex--;
@@ -5299,8 +5305,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             }
-            rowText = this.isTabular ? rowText.split(this.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ') :
-                rowText.split(this.dataSourceSettings.valueSortSettings.headerDelimiter).reverse().join(' - ');
+            rowText = rowText.split(this.dataSourceSettings.valueSortSettings.headerDelimiter).reverse().join(' - ');
         }
         return rowText;
     }
@@ -5352,7 +5357,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.lastCellClicked = (e.target as Element);
         }
         if (this.isCellBoxMultiSelection) {
-            this.isMouseDown = true;
+            this.isMouseDown = (e.target as Element).closest('.' + cls.PIVOT_BUTTON_CLASS) ? false : true;
             this.isMouseUp = false;
             this.lastSelectedElement = undefined;
         }
@@ -6187,8 +6192,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this$.olapEngineModule.pivotValues = observedArgs.pivotValues;
                     this$.pivotValues = this$.olapEngineModule.pivotValues;
                 } else {
-                    this$.setProperties(this$.engineModule.pivotValues = observedArgs.pivotValues, true);
-                    this$.setProperties(this$.pivotValues = this$.engineModule.pivotValues, true);
+                    this$.engineModule.pivotValues = observedArgs.pivotValues;
+                    this$.setProperties({ pivotValues: this$.engineModule.pivotValues }, true);
                 }
                 this$.notify(events.dataReady, {});
                 this$.notEmpty = true;
@@ -6353,7 +6358,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
             }
             for (let i: number = 0; i < pivotValues.length; i++) {
-                for (let j: number = 1; (pivotValues[i as number] && j < pivotValues[i as number].length); j++) {
+                for (let j: number = this.isTabular ? (this.engineModule.rowMaxLevel + 1) : 1; (pivotValues[i as number] &&
+                    j < pivotValues[i as number].length); j++) {
                     if ((pivotValues[i as number][j as number] as IAxisSet).axis === 'value' && (pivotValues[i as number][j as number] as IAxisSet).formattedText !== '') {
                         (pivotValues[i as number][j as number] as IAxisSet).style = undefined;
                         (pivotValues[i as number][j as number] as IAxisSet).cssClass = undefined;
@@ -6462,7 +6468,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (!isNullOrUndefined(this.hyperlinkSettings.headerText)) {
                 const headerDelimiter: string = this.dataSourceSettings.valueSortSettings.headerDelimiter ? this.dataSourceSettings.valueSortSettings.headerDelimiter : '.';
                 for (let i: number = 0; i < pivotValues.length; i++) {
-                    for (let j: number = 1; (pivotValues[i as number] && j < pivotValues[i as number].length); j++) {
+                    for (let j: number = this.isTabular ? (this.engineModule.rowMaxLevel + 1) : 1; (pivotValues[i as number] &&
+                        j < pivotValues[i as number].length); j++) {
                         if ((pivotValues[i as number][j as number] as IAxisSet).axis === 'value') {
                             let label: string = this.hyperlinkSettings.headerText;
                             if (((pivotValues[i as number][0] as IAxisSet).valueSort.levelName as string).indexOf(label) > -1) {

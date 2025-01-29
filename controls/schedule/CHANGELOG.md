@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.3 (2025-01-29)
+
+### Schedule
+
+#### Bug fixes
+
+- `#F195714` - The issue where the `showWeekNumber` property was enabled but the calendar did not display the week numbers in the Scheduler has been resolved.
+- `#I679226` - An issue with swipe functionality not working in the custom month view in mobile mode has been resolved.
+
 ## 28.1.39 (2024-01-14)
 
 ### Schedule

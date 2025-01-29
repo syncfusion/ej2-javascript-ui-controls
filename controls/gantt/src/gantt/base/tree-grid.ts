@@ -86,7 +86,9 @@ export class GanttTreeGrid {
         setValue('registeredTemplate', this.registeredTemplate, this.parent.treeGrid);
         const ref: string = 'viewContainerRef';
         setValue('viewContainerRef', this.parent[`${ref}`], this.parent.treeGrid);
-        this.parent.treeGrid.appendTo(this.treeGridElement);
+        if (!this.treeGridElement.contains(this.parent.treeGrid.element)) {
+            this.parent.treeGrid.appendTo(this.treeGridElement);
+        }
         if (this.parent.treeGrid.grid && this.parent.toolbarModule && (this.parent as Gantt).isReact) {
             (this.parent.treeGrid.grid as Grid).portals = (this.parent as Gantt).portals;
         }
@@ -570,7 +572,12 @@ export class GanttTreeGrid {
                 // To maintain 1st record selection, while deleting the last parent record at Virtual mode
                 dataCollection.map((data: Object, index: number) => {
                     if (!isNullOrUndefined(this.parent.currentSelection)
-                    && (data['ganttProperties'].taskId === this.parent.currentSelection[this.parent.taskFields.id]))  {
+                    && (data['ganttProperties'].taskId === this.parent.currentSelection[this.parent.taskFields.id]) &&
+                    (
+                        (this.parent.viewType === 'ResourceView' &&
+                         data['ganttProperties'].rowUniqueID === this.parent.currentSelection.rowUniqueID) ||
+                        this.parent.viewType !== 'ResourceView'
+                    ))  {
                         indexvalue = index;
                     }
                 });

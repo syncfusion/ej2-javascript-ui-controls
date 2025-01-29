@@ -3590,6 +3590,27 @@ export class Editor {
         if (this.documentHelper.isBookmarkInserted && selection.bookmarks.length > 0) {
             this.extendSelectionToBookmarkStart();
         }
+        let initComplexHistory: boolean = false;
+        if (selection.isEmpty) {
+            const isAtParagraphStart = selection.start.isAtParagraphStart;
+            const isAtParagraphEnd = selection.end.isAtParagraphEnd;
+            if (isAtParagraphStart || isAtParagraphEnd) {
+                const inlineObj: ElementInfo = selection.start.currentWidget.getInline(selection.start.offset, 0);
+                const element: ElementBox = inlineObj.element;
+                if (element && element instanceof ContentControl && element.contentControlWidgetType === 'Block' && element.reference &&
+                    element.paragraph !== element.reference.paragraph) {
+                    this.initComplexHistory('Insert');
+                    initComplexHistory = true;
+                    this.onEnter();
+                    if (isAtParagraphStart) {
+                        const previousParagraph: Widget = element.paragraph.previousWidget;
+                        if (previousParagraph instanceof ParagraphWidget && previousParagraph.isEmpty()) {
+                            selection.moveToPreviousParagraph();
+                        }
+                    }
+                }
+            }
+        }
         if (isNullOrUndefined(revisionType) || revisionType === 'Insertion') {
             this.initHistory('Insert');
             if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
@@ -3862,6 +3883,9 @@ export class Editor {
             }
             if ((isNullOrUndefined(revisionType) || revisionType === 'Insertion') && !this.isFieldOperation) {
                 this.reLayout(selection);
+            }
+            if (initComplexHistory && this.editorHistory) {
+                this.editorHistory.updateComplexHistory();
             }
             this.documentHelper.isTextInput = false;
         }
@@ -11550,10 +11574,8 @@ export class Editor {
     private applyCharFormat(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): BlockWidget {
         let previousSplittedWidget: ParagraphWidget = paragraph.previousSplitWidget as ParagraphWidget;
         let isPageBreak: boolean = false;
-        if (!isNullOrUndefined(previousSplittedWidget) && previousSplittedWidget instanceof ParagraphWidget) {
-            if (previousSplittedWidget.isEndsWithPageBreak) {
-                isPageBreak = true;
-            }
+        if (!isNullOrUndefined(previousSplittedWidget) && previousSplittedWidget instanceof ParagraphWidget && previousSplittedWidget.isEndsWithPageBreak) {
+            isPageBreak = true;
         }
         paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
         let startOffset: number = 0;
@@ -20608,7 +20630,6 @@ export class Editor {
             let context = draw.getContext('2d');
             context.scale(displayPixelRatio, displayPixelRatio);
             context.drawImage(drawImage, 0, 0, width, height);
-            imageElementBox.imageString = draw.toDataURL('image/png', 1);
             if (this.owner.enableCollaborativeEditing) {
                 this.documentHelper.addBase64StringInCollection(imageElementBox);
                 imageElementBox.element.src = this.documentHelper.getImageString(imageElementBox);
@@ -20616,6 +20637,7 @@ export class Editor {
                 this.isImageInsert = false;
                 this.isRemoteAction = false;
             }
+            this.viewer.documentHelper.images.get(parseInt(imageElementBox.imageString))[1] = draw.toDataURL('image/png', 1);
         };
         drawImage.src = base64String;
         if (this.isRemoteAction) {
@@ -20900,13 +20922,16 @@ export class Editor {
      * @returns {void}
      */
     public updateListItemsTillEnd(blockAdv: BlockWidget, updateNextBlockList: boolean): void {
-        let block: BlockWidget = updateNextBlockList ? this.documentHelper.selection.getNextRenderedBlock(blockAdv) : blockAdv;
-        while (!isNullOrUndefined(block) && !this.documentHelper.isTextInput) {
-            //Updates the list value of the rendered paragraph.
-            this.updateRenderedListItems(block);
-            block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
-        }
-
+        let splittedWidget: BlockWidget[] = blockAdv.getSplitWidgets() as BlockWidget[];
+        let nextBlock: BlockWidget = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
+        if (!isNullOrUndefined(nextBlock)) {
+            let block: BlockWidget = updateNextBlockList ? this.documentHelper.selection.getNextRenderedBlock(blockAdv) : blockAdv;
+            while (!isNullOrUndefined(block) && !this.documentHelper.isTextInput) {
+                //Updates the list value of the rendered paragraph.
+                this.updateRenderedListItems(block);
+                block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+            }
+        }    
     }
     /**
      * @param block

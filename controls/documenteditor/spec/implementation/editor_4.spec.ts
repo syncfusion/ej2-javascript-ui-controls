@@ -903,3 +903,53 @@ describe('Select and delete multiple paragraph', () => {
         expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] instanceof BookmarkElementBox).toBe(true);
     });
 });
+
+describe('Insert text after and before the block content control', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Insert text before the block content control', () => {
+        console.log('Insert text before the block content control');
+        editor.editor.insertText('Text before the content control1');
+        editor.editor.onEnter();
+        editor.editor.insertText('Text before the content control2');
+        editor.selectionModule.selectAll();
+        editor.editor.insertContentControl('RichText');
+        editor.selectionModule.select('0;0;0', '0;0;0');
+        editor.editor.insertText('Syncfusion');
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+        editor.editorHistoryModule.undo();
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        editor.editorHistoryModule.redo();
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+        editor.editorHistoryModule.undo();
+    });
+    it('Insert text after the block content control', () => {
+        console.log('Insert text after the block content control');
+        editor.selectionModule.select('0;1;33', '0;1;33');
+        editor.editor.insertText('Syncfusion');
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+        editor.editorHistoryModule.undo();
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        editor.editorHistoryModule.redo();
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+    });
+});

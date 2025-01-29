@@ -575,9 +575,11 @@ export class Month extends ViewBase implements IRenderer {
 
     public getMonthStart(currentDate: Date): Date {
         const useDisplayDate: boolean = this.parent.currentView === 'Month' && !isNullOrUndefined(
-            this.parent.activeViewOptions.displayDate) && (this.parent.uiStateValues.isCustomMonth || this.isCustomRange());
+            this.parent.activeViewOptions.displayDate) && !(this.parent.uiStateValues.isSwipeScroll) &&
+            (this.parent.uiStateValues.isCustomMonth || this.isCustomRange());
         const date: Date = useDisplayDate ? this.parent.activeViewOptions.displayDate : !(this.parent.uiStateValues.isCustomMonth ||
-            this.isCustomRange()) && this.isCustomMonth() ? currentDate : this.parent.calendarUtil.firstDateOfMonth(currentDate);
+            (!this.parent.uiStateValues.isSwipeScroll && this.isCustomRange())) && this.isCustomMonth() ? currentDate :
+            this.parent.calendarUtil.firstDateOfMonth(currentDate);
         const monthStart: Date = util.getWeekFirstDate(date, this.parent.activeViewOptions.firstDayOfWeek);
         return new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
     }

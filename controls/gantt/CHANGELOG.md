@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.3 (2025-01-29)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I679476` - Delay occurs when sample is loaded with the critical path issue has been fixed.
+- `#I679518` - Invalid dependency lines are displayed when edit settings are not enabled issue has been fixed.
+
 ## 28.1.41 (2025-01-21)
 
 ### GanttChart

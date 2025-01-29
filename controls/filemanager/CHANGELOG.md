@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.41 (2025-01-21)
+## 28.2.3 (2025-01-29)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I677561` - The issue with the File Manager component's details view related to date formatting has been resolved.
+
+## 28.1.39 (2024-01-14)
 
 ### FileManager
 

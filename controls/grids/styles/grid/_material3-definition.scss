@@ -190,7 +190,7 @@ $grid-cell-border-color: rgba($border-light) !default;
 $grid-content-bg-color: rgba($content-bg-color) !default;
 $grid-row-selection-bg-color: $table-bg-color-selected !default;
 $grid-cell-selection-bg-color: $table-bg-color-selected !default;
-$grid-hover-bg-color: $table-bg-color-hover !default;
+$grid-hover-bg-color: linear-gradient(0deg, rgba($on-surface, .05), rgba($on-surface, .05)), rgba($surface) !default;
 $grid-content-font-size: $text-sm !default;
 $grid-header-height: 20px !default;
 $grid-bigger-header-height: 24px !default;

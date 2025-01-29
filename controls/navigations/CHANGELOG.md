@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.3 (2025-01-29)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I677520` - The issue with TreeView is not focusable when dynamically adding a data source to an empty TreeView component has been resolved.
+
 ## 28.1.41 (2025-01-21)
 
 ### Menu

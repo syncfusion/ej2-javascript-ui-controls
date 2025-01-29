@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.3 (2025-01-29)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I679703` - The arguments in the `axisMultiLabelRender` event can now be modified correctly.
+
 ## 28.1.41 (2025-01-21)
 
 ### Chart

@@ -558,6 +558,7 @@ export function sanitizeHelper(value: string, parent: IRichTextEditor): string {
  */
 export function parseHelper(value: string): string {
     const temp: HTMLElement = createElement('div');
+    value = value.replace(/&(times|divide|ne)/g, '&amp;amp;$1');
     temp.innerHTML = value;
     const fontElements: NodeListOf<HTMLFontElement> = temp.querySelectorAll('font');
     fontElements.forEach((font: HTMLFontElement) => {

@@ -186,10 +186,15 @@ export class PivotChart {
                 fieldPosition[fieldPosition.length - 2] : lastHierarchy;
             drillDimension = lastDimension;
         }
+        let reductionLevel: number = 0;
+        let reductionLevelCount: number = 0;
+        let finalReductionLevel: number = 0;
         for (const rKey of rKeys) {
             const rowIndex: number = Number(rKey);
+            let drillMem: boolean = false;
             if (!isNullOrUndefined(pivotValues[rowIndex as number])) {
-                const header: IAxisSet = pivotValues[rowIndex as number][0] as IAxisSet;
+                const colIndex: number = this.parent.gridSettings.layout === 'Tabular' ? this.parent.engineModule.rowMaxLevel : 0;
+                const header: IAxisSet = pivotValues[rowIndex as number][colIndex as number] as IAxisSet;
                 const valueSort: string[] = header && header.valueSort && !isNullOrUndefined(header.valueSort.levelName) ?
                     header.valueSort.levelName.toString().split(delimiter) : undefined;
                 isValidHeader = false;
@@ -210,9 +215,12 @@ export class PivotChart {
                 }
                 if (header && header.axis === 'row' && (this.dataSourceSettings.rows.length === 0 ? true :
                     (header.type !== 'grand sum' && isValidHeader))) {
-                    const firstRowCell: IAxisSet = pivotValues[rowIndex as number][0] as IAxisSet;
-                    if (firstRowCell.isSum) {
-                        continue;
+                    const firstRowCell: IAxisSet = pivotValues[rowIndex as number][this.parent.gridSettings.layout === 'Tabular' ?
+                        this.parent.engineModule.rowMaxLevel : 0] as IAxisSet;
+                    if (this.parent.gridSettings.layout !== 'Tabular') {
+                        if (firstRowCell.isSum) {
+                            continue;
+                        }
                     }
                     const tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
                         (this.engineModule as OlapEngine).tupRowInfo[firstRowCell.ordinal] : undefined;
@@ -242,8 +250,64 @@ export class PivotChart {
                             prevCell = firstRowCell;
                         }
                     } else if (firstRowCell.type !== 'value') {
-                        if (!(prevLevel === undefined || prevLevel < currrentLevel)) {
-                            indexCount++;
+                        if (this.parent.gridSettings.layout === 'Tabular') {
+                            const firstRowLevelName: string = firstRowCell.valueSort.levelName as string;
+                            const levelNameCollection: string[] = firstRowLevelName.split(delimiter);
+                            const formattedTextCollection: string[] = firstRowCell.formattedText.split(' ');
+                            for (let n: number = 0; n < this.parent.dataSourceSettings.drilledMembers.length; n++) {
+                                const drillItems: string[] = this.parent.dataSourceSettings.drilledMembers[n as number].items;
+                                for (let v: number = 0; v < drillItems.length; v++) {
+                                    const drillItemsCollection: string[] = drillItems[v as number].split(this.parent.dataSourceSettings
+                                        .drilledMembers[n as number].delimiter);
+                                    if (drillItemsCollection[drillItemsCollection.length - 1] === firstRowCell.formattedText.split(' ')[0]
+                                        && drillItemsCollection[0] === levelNameCollection[0]) {
+                                        drillMem = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            const valueSortIndex: number = (valueSort.length - 2) !== (this.parent.engineModule.rowMaxLevel - 1) ?
+                                (valueSort.length - 2) : this.parent.engineModule.rowMaxLevel - 1;
+                            for (let k: number = 0; k <= this.parent.engineModule.rowMaxLevel; k++) {
+                                if (this.headerColl[indexCount as number] && this.headerColl[indexCount as number][k as number]) {
+                                    if (firstRowCell.isSum) {
+                                        if (firstRowCell.level > 0) {
+                                            indexCount = indexCount - (firstRowCell.level === this.parent.engineModule.rowMaxLevel - 1 ?
+                                                reductionLevel - 1 : reductionLevelCount - 1);
+                                            firstRowCell.formattedText = formattedTextCollection.length > 2 ? formattedTextCollection
+                                                .slice(0, formattedTextCollection.length - 1).join(' ') : formattedTextCollection[0];
+                                            firstRowCell.hasChild = true;
+                                            break;
+                                        } else {
+                                            indexCount = indexCount - (finalReductionLevel - 1);
+                                            firstRowCell.formattedText = formattedTextCollection.length > 2 ? formattedTextCollection
+                                                .slice(0, formattedTextCollection.length - 1).join(' ') : formattedTextCollection[0];
+                                            firstRowCell.hasChild = true;
+                                            break;
+                                        }
+                                    } else {
+                                        if (this.headerColl[indexCount as number][k as number] && valueSort[valueSortIndex as number] !==
+                                            this.headerColl[indexCount as number][k as number].name) {
+                                            indexCount++;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (!firstRowCell.isSum) {
+                                reductionLevel++;
+                                reductionLevelCount++;
+                                finalReductionLevel++;
+                            }
+                            if (!this.parent.dataSourceSettings.expandAll) {
+                                firstRowCell.isDrilled = drillMem ? true : false;
+                            } else {
+                                firstRowCell.isDrilled = drillMem ? false : true;
+                            }
+                        } else {
+                            if (!(prevLevel === undefined || prevLevel < currrentLevel)) {
+                                indexCount++;
+                            }
                         }
                         prevLevel = currrentLevel;
                     }
@@ -274,6 +338,25 @@ export class PivotChart {
                         } else {
                             this.headerColl[indexCount as number] = {};
                             this.headerColl[indexCount as number][currrentLevel as number] = cellInfo;
+                        }
+                        if (this.parent.gridSettings.layout === 'Tabular') {
+                            if (firstRowCell.isSum) {
+                                if (firstRowCell.level > 0) {
+                                    indexCount = indexCount + (firstRowCell.level === this.parent.engineModule.rowMaxLevel - 1 ?
+                                        reductionLevel - 1 : reductionLevelCount - 1);
+                                } else {
+                                    indexCount = indexCount + (finalReductionLevel - 1);
+                                }
+                            }
+                            if (firstRowCell.level === 0) {
+                                reductionLevelCount = 0;
+                                reductionLevel = 0;
+                                finalReductionLevel = 0;
+                            } else if (firstRowCell.level === this.parent.engineModule.rowMaxLevel - 1) {
+                                reductionLevel = 0;
+                            } else if (firstRowCell.level < this.parent.engineModule.rowMaxLevel - 1 && firstRowCell.level !== 0) {
+                                reductionLevelCount = 0;
+                            }
                         }
                     }
                     const rows: IPivotRows = pivotValues[rowIndex as number];
@@ -311,7 +394,8 @@ export class PivotChart {
                             }
                         }
                     }
-                    for (const cKey of cKeys) {
+                    for (let f: number = this.parent.gridSettings.layout === 'Tabular' ? this.parent.engineModule.rowMaxLevel : 0; f < cKeys.length; f++) {
+                        const cKey: string = cKeys[f as number];
                         const cellIndex: number = Number(cKey);
                         const cell: IAxisSet = pivotValues[rowIndex as number][cellIndex as number] as IAxisSet;
                         const measureAllow: boolean = isNullOrUndefined(cell.rowHeaders) ? this.dataSourceSettings.rows.length === 0 : true;
@@ -1651,8 +1735,9 @@ export class PivotChart {
         let delimiter: string = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
             this.dataSourceSettings.drilledMembers[0].delimiter : '**';
         const fieldName: string = labelInfo.fieldName as string;
+        const currentColIndex: number = this.parent.gridSettings.layout === 'Tabular' ? this.parent.engineModule.rowMaxLevel : labelInfo.colIndex as number;
         const currentCell: IAxisSet = this.engineModule.pivotValues[labelInfo.rowIndex as number][
-            labelInfo.colIndex as number] as IAxisSet;
+            currentColIndex as number] as IAxisSet;
         let memberUqName: string =
             (currentCell.valueSort.levelName as string).
                 split(this.engineModule.valueSortSettings.headerDelimiter).join(delimiter);

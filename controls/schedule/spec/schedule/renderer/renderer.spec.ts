@@ -2,7 +2,7 @@
  * Schedule data module
  */
 import { Query, DataManager } from '@syncfusion/ej2-data';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, ScheduleModel } from '../../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, ScheduleModel, View } from '../../../src/schedule/index';
 import { defaultData, timezoneData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
@@ -280,6 +280,59 @@ describe('Data module', () => {
         });
     });
 
+    describe('Schedule Date Range Calendar Week Number Testing', function () {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Testing',
+            StartTime: new Date(2023, 0, 1, 9, 0),
+            EndTime: new Date(2023, 0, 1, 10, 30)
+        }];
+        beforeAll(function (done: DoneFn) {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                showWeekNumber: true,
+                selectedDate: new Date(2023, 0, 1),
+                currentView: 'Week',
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'Year', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
+                eventSettings: { dataSource: eventData }
+            };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(function () {
+            util.destroy(schObj);
+        });
+        function testWeekNumberInView(view: View) {
+            it(`Checking week number in date range calendar popup for ${view} view`, function (done: DoneFn) {
+                schObj.currentView = view;
+                schObj.dataBind();
+                const dateRangeElement: HTMLElement = schObj.element.querySelector('.e-date-range') as HTMLElement;
+                util.triggerMouseEvent(dateRangeElement, 'click');
+                const popupWrapper: HTMLElement | null = document.querySelector('.e-header-calendar');
+                const weekNumberElements: NodeListOf<Element> = popupWrapper.querySelectorAll('.e-cell.e-week-number');
+                if (view === 'Month' || view === 'Year' || view === 'TimelineMonth') {
+                    expect(popupWrapper).not.toBeNull();
+                    expect(weekNumberElements.length).toBe(0);
+                } else {
+                    expect(popupWrapper).not.toBeNull();
+                    expect(weekNumberElements.length).toBeGreaterThan(0);
+                    expect(weekNumberElements[1].innerHTML.trim()).toBe('<span>1</span>');
+                }
+                util.triggerMouseEvent(dateRangeElement, 'click');
+                done();
+            });
+        }
+        testWeekNumberInView('Day');
+        testWeekNumberInView('Week');
+        testWeekNumberInView('Month');
+        testWeekNumberInView('Agenda');
+        testWeekNumberInView('Year');
+        testWeekNumberInView('TimelineDay');
+        testWeekNumberInView('TimelineWeek');
+        testWeekNumberInView('TimelineWorkWeek');
+        testWeekNumberInView('TimelineMonth');
+    });
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

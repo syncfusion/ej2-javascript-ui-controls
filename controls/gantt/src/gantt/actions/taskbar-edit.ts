@@ -2351,6 +2351,8 @@ export class TaskbarEdit extends DateProcessor {
     public mouseUpHandler(e: PointerEvent): void {
         const mouseDragged: boolean = this.isMouseDragged;
         this.previousMouseMove = null;
+        this.leftValue = 0;
+        this.previousLeftValue = 0;
         this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
         if (this.taskBarEditAction && this.isMouseDragged) {
             if ((!this.dragMouseLeave && this.taskBarEditedAction) || (this.parent.allowTaskbarDragAndDrop)) {

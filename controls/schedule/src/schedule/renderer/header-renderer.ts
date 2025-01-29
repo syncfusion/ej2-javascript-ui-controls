@@ -507,6 +507,7 @@ export class HeaderRenderer {
             min: this.parent.minDate,
             max: this.parent.maxDate,
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
+            weekNumber: this.parent.activeViewOptions.showWeekNumber,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             depth: calendarView,

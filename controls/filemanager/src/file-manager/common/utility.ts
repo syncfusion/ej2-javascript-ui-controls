@@ -2,7 +2,7 @@ import { IFileManager, ReadArgs, SortOrder, SearchArgs, FileDragEventArgs, Befor
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
 import { read, paste, Search, filter, Download, Delete, isFileSystemData } from '../common/operations';
-import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement, Draggable, Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement, Draggable, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { closest, DragEventArgs, detach } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -700,20 +700,15 @@ export function setNodeId(result: ReadArgs, rootId: string): void {
  * set the date object
  *
  * @param {Object[]} args - specifies the file object.
- * @param {Internationalization} localeString - The internationalization object for formatting dates.
- * @param {string} dateFormat - The date format string.
  * @returns {void}
  * @private
  */
-export function setDateObject(args: Object[], localeString: Internationalization, dateFormat: string): void {
+export function setDateObject(args: Object[]): void {
     for (let i: number = 0; i < args.length; i++) {
         const createdDate: Date = new Date(getValue('dateCreated', args[i as number]));
         const modifiedDate: Date = new Date(getValue('dateModified', args[i as number]));
-        if (isNOU(dateFormat)) {
-            dateFormat = 'MM/dd/yyyy';
-        }
-        setValue('_fm_created', localeString.formatDate(createdDate, {format: dateFormat }), args[i as number]);
-        setValue('_fm_modified', localeString.formatDate(modifiedDate, {format: dateFormat}), args[i as number]);
+        setValue('_fm_created', createdDate, args[i as number]);
+        setValue('_fm_modified', modifiedDate, args[i as number]);
     }
 }
 

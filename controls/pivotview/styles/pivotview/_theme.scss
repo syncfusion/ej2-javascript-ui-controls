@@ -341,11 +341,6 @@
       -ms-user-select: none;
       user-select: none;
       -webkit-touch-callout: none;
-      align-items: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      height: inherit;
 
       @if ($skin-name == 'tailwind') {
         padding-left: 12px;

@@ -2,9 +2,11 @@
  * RTE - Image Browser module spec
  */
 import { detach, isNullOrUndefined, Browser } from "@syncfusion/ej2-base";
-import { IRenderer, RichTextEditor, QuickToolbar } from "../../../src/rich-text-editor/index";
+import { IRenderer, RichTextEditor, QuickToolbar, PasteCleanup, ImageSuccessEventArgs } from "../../../src/rich-text-editor/index";
 import { ActionBeginEventArgs } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy } from "./../render.spec";
+import { Popup } from "@syncfusion/ej2-popups";
+import { Uploader } from "@syncfusion/ej2-inputs";
 
 let hostUrl: string = 'https://ej2-aspcore-service.azurewebsites.net/';
 
@@ -135,6 +137,53 @@ describe('FileManager module', () => {
                 expect(isNullOrUndefined(fileEle)).toBe(true);
                 done();
             }, 500);
+        });
+    });
+
+    describe('931520 - PasteCleanup - popupClose method', () => {
+        let rteObj: RichTextEditor;
+        let pasteCleanup: PasteCleanup;
+        let popupObj: Popup;
+        let uploadObj: Uploader;
+        let imgElem: HTMLImageElement;
+        let e: ImageSuccessEventArgs;
+
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: '<p>RTE content</p>',
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                inlineMode: {
+                    enable: true
+                }
+            });
+            pasteCleanup = (rteObj as any).pasteCleanupModule;
+            popupObj = new Popup(rteObj.element, {
+                height: '85px',
+                width: '300px'
+            });
+            uploadObj = new Uploader();
+            imgElem = document.createElement('img');
+            e = {
+                element: imgElem,
+                file: { statusCode: '2', name: 'test.png' } as any
+            } as unknown as ImageSuccessEventArgs;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it('PasteCleanup - popupClose method', (done: Function) => {
+            (pasteCleanup as any).popupClose(popupObj, uploadObj, imgElem, e);
+            rteObj.insertImageSettings.path = "/test/";
+            (pasteCleanup as any).popupClose(popupObj, uploadObj, imgElem, e);
+            (pasteCleanup as any).popupClose(popupObj, uploadObj, imgElem, {
+                element: imgElem,
+                file: { statusCode: '3', name: 'test.png' }
+            });
+            done();
         });
     });
 

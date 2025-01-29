@@ -17597,3 +17597,39 @@ describe('Preserve target node expanded state even setting preventTargetExpand p
         }, 500);
     });
 });
+describe('TreeView dynamic datasource addition and keyboard navigation', () => {
+    let treeObj: any;
+    const ele: HTMLElement = createElement('div', { id: 'treeContainer' });
+    const button: HTMLButtonElement = createElement('button', { id: 'addNodesButton', innerHTML: 'Add Nodes' }) as HTMLButtonElement;
+    const keyboardEventArgs: any = {
+        preventDefault: (): void => {},
+        action: null
+    };
+
+    beforeAll(() => {
+        document.body.appendChild(ele);
+        document.body.appendChild(button);
+    });
+
+    afterAll(() => {
+        if (treeObj) {treeObj.destroy(); }
+        document.body.innerHTML = '';
+    });
+
+    it('should focus the first node after adding datasource dynamically', () => {
+        treeObj = new TreeView({
+            fields: { dataSource: [] , id: 'id', text: 'name', parentID: 'pid', hasChildren: 'hasChild', isChecked: 'isChecked' }
+        });
+        treeObj.appendTo(ele);
+        button.addEventListener('click', () => {
+            treeObj.addNodes(localData7);
+        });
+        button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        const li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        expect(li[0].classList.contains('e-node-focus')).toBe(false);
+        keyboardEventArgs.action = 'tab';
+        treeObj.focusIn();
+        expect(li.length).toBeGreaterThan(0);
+        expect(li[0].classList.contains('e-node-focus')).toBe(true);
+    });
+});

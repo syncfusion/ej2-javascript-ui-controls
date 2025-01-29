@@ -2,11 +2,21 @@
 
 ## [Unreleased]
 
+## 28.2.3 (2025-01-29)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I588147` - Now, the text `&times` remains unchanged and is not converted to `x` in the Rich Text Editor, regardless of the insertion method used.
+
 ## 28.1.41 (2025-01-21)
 
 ### RichTextEditor
 
 #### Bug Fixes
+
+- `#I675751` - Now, the uploading popup closes properly after pasting multiple images in the Rich Text Editor.
 
 - `#I677837` - Now, the removal of the `div` element from the content when pressing the enter key followed by the backspace key has been resolved.
 

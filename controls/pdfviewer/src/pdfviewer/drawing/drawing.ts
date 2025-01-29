@@ -18,7 +18,7 @@ import { AnnotationResizerLocation, AnnotationSelectorSettingsModel } from '../i
 import { DiagramHtmlElement } from './html-element';
 import { IFormField, IFormFieldBound } from '../form-designer';
 import { FormFieldModel } from '../pdfviewer-model';
-import { FontStyle, FormFieldType } from '../base';
+import { FontStyle, FormFieldType, ISize } from '../base';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -2863,11 +2863,15 @@ export class Drawing {
         if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel) {
             actualObject.wrapper.width = undefined;
             actualObject.wrapper.height = undefined;
-            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+            const pageHeight: number = this.pdfViewer.viewerBase.pageSize[actualObject.pageIndex].height;
+            actualObject.wrapper.measureFreeText(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height),
+                                                 pageHeight);
             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel = false;
         }
         else {
-            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+            const pageHeight: number = this.pdfViewer.viewerBase.pageSize[actualObject.pageIndex].height;
+            actualObject.wrapper.measureFreeText(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height),
+                                                 pageHeight);
         }
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (actualObject && actualObject.formFieldAnnotationType) {
@@ -2919,7 +2923,9 @@ export class Drawing {
                     children[parseInt(i.toString(), 10)].width = actualObject.bounds.width;
                 }
             }
-            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+            const pageHeight: number = this.pdfViewer.viewerBase.pageSize[actualObject.pageIndex].height;
+            actualObject.wrapper.measureFreeText(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height),
+                                                 pageHeight);
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         }
         this.pdfViewer.renderDrawing(undefined, actualObject.pageIndex);

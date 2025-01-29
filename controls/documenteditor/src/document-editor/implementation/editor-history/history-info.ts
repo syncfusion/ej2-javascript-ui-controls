@@ -46,6 +46,12 @@ export class HistoryInfo extends BaseHistoryInfo {
         const action: Action = this.action;
         let operations: Operation[] = [];
         switch (action) {
+        case 'Insert':
+            for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
+                operations.push(currentHistory.getInsertOperation(currentHistory.action));
+            }
+            break;
         case 'InsertContentControl':
             for (let i: number = 0; i < this.modifiedActions.length; i++) {
                 const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];

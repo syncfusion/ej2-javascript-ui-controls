@@ -142,6 +142,7 @@ export class ViewSource {
                 if (isNOU(this.previewElement)) {
                     this.previewElement = this.getSourceCode() as HTMLElement;
                 }
+                this.parent.inputElement.innerHTML = this.replaceAmpersand(this.parent.inputElement.innerHTML);
                 this.parent.updateValueData();
                 let rteContent: HTMLElement;
                 if (isNOU(this.parent.element.querySelector('#' + this.parent.getID() + '_source-view'))) {
@@ -166,6 +167,7 @@ export class ViewSource {
                 this.wireEvent(this.previewElement);
                 this.unWireBaseKeyDown();
                 this.previewElement.focus();
+                this.parent.inputElement.innerHTML = this.replaceAmpersand(this.parent.inputElement.innerHTML);
                 this.parent.updateValue();
                 this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
                 this.parent.invokeChangeEvent();
@@ -195,6 +197,9 @@ export class ViewSource {
                     targetItem: 'Preview', updateItem: 'SourceCode',
                     baseToolbar: this.parent.getBaseToolbarObject()
                 });
+                if (!isNOU(editHTML)) {
+                    editHTML.value = this.replaceAmpersand(editHTML.value);
+                }
                 const serializeValue: string = this.parent.serializeValue(editHTML.value);
                 let value: string;
                 if (serializeValue === null || serializeValue === '') {
@@ -208,7 +213,7 @@ export class ViewSource {
                 } else {
                     value = serializeValue;
                 }
-                this.contentModule.getEditPanel().innerHTML = value;
+                this.contentModule.getEditPanel().innerHTML = this.replaceAmpersand(value);
                 this.parent.isBlur = false;
                 this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
                 if (this.parent.getToolbar()) {
@@ -226,6 +231,23 @@ export class ViewSource {
                 this.parent.notify(events.tableclass, {});
             }
         });
+    }
+
+    private replaceAmpersand(value: string): string {
+        if (this.parent.editorMode === 'HTML') {
+            const entities: string[] = ['times', 'divide', 'ne'];
+            entities.forEach((entity: string) => {
+                // eslint-disable-next-line security/detect-non-literal-regexp
+                const regex: RegExp = new RegExp(`&(amp;)*(${entity})`, 'g');
+                if (this.parent.enableHtmlSanitizer) {
+                    const ampEntity: string = this.parent.enableHtmlEncode ? `&amp;amp;amp;amp;${entity}` : `&amp;amp;${entity}`;
+                    value = value.replace(regex, ampEntity);
+                } else {
+                    value = value.replace(regex, `&amp;${entity}`);
+                }
+            });
+        }
+        return value;
     }
 
     private getTextAreaValue(): string {

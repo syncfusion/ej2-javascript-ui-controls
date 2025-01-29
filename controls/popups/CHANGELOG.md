@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I674340` - Fixed an issue where the Dialog primary button click event was triggered even when the button was disabled.
+
 ## 28.1.38 (2025-01-07)
 
 ### Tooltip

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 28.2.3 (2025-01-29)
+
+### Maps
+
+#### New features
+
+- `#I665480` - Now, the `location` property in `legendSettings` accepts percentage values for the `x` and `y` properties when the `position` property is set to **Float**, allowing the legend to be rendered relative to the Maps element.
+
 ## 28.1.38 (2025-01-07)
 
 ### Maps

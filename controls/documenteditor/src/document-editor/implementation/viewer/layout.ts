@@ -2176,6 +2176,7 @@ export class Layout {
                         && (element.reference.paragraph.lastChild as LineWidget).children[(element.reference.paragraph.lastChild as LineWidget).children.length - 1] !== element.reference) {
                             element.contentControlWidgetType = 'Inline';
                             element.reference.contentControlWidgetType = 'Inline';
+                            element.contentControlProperties.contentControlWidgetType = 'Inline';
                             let block: BlockWidget = element.paragraph;
                             if (block === element.reference.paragraph && element.reference.paragraph.contentControlProperties) {
                                 element.reference.paragraph.contentControlProperties = undefined;
@@ -6415,7 +6416,7 @@ export class Layout {
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(this.documentHelper.defaultTabWidth);
         if (tabs.length === 0 && (position > 0 && defaultTabWidth > Math.round(position) && isList ||
-            defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > Math.round(position))) {
+            defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > Math.round(position) && position > 0)) {
             return defaultTabWidth - position;
         } else {
             let breaked: boolean = false;
@@ -6448,6 +6449,9 @@ export class Layout {
             }
             if (!isCustomTab) {
                 let diff: number = parseFloat(((position * 100) % (defaultTabWidth * 100) / 100).toFixed(2));
+                if (diff < 0 && isList) {
+                    diff += defaultTabWidth;
+                }
                 let cnt: number = (position - diff) / defaultTabWidth;
                 fPosition = (cnt + 1) * defaultTabWidth;
             }
@@ -7335,7 +7339,7 @@ export class Layout {
             let cellWidget: TableCellWidget = tableRowWidget.childWidgets[i] as TableCellWidget;
             if (i === 0 && cellWidget.childWidgets.length > 0 && cellWidget.columnIndex === 0
                 && cellWidget.cellFormat.rowSpan === 1 && this.documentHelper.compatibilityMode === 'Word2013'
-                && !this.isVerticalMergedCellContinue(tableRowWidget) && this.documentHelper.splittedCellWidgets.length === 0) {
+                && this.documentHelper.splittedCellWidgets.length === 0) {
                 const firstBlock: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(cellWidget as TableCellWidget);
                 if (!isNullOrUndefined(firstBlock) && firstBlock.paragraphFormat.keepWithNext && !isNullOrUndefined(this.getPreviousBlock(tableRowWidget))) {
                     return tableRowWidget;

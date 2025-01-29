@@ -2065,7 +2065,7 @@ export class Gantt extends Component<HTMLElement>
             collapseRow: 'ctrl+shift+uparrow',
             expandRow: 'ctrl+shift+downarrow',
             saveRequest: '13', // enter
-            cancelRequest: '27', //Esc
+            escape: '27', //Esc
             addRow: 'insert', // insert key
             addRowDialog: 'ctrl+insert',
             editRowDialog: 'ctrl+f2',
@@ -2215,8 +2215,6 @@ export class Gantt extends Component<HTMLElement>
         createSpinner({ target: this.element }, this.createElement);
         this.trigger('load', {});
         this.element.classList.add(cls.root);
-        const height: number = (!isNullOrUndefined(document.body.className) && document.body.className.includes('e-bigger')) ? (this.rowHeight === 36) ? 46 : this.rowHeight : this.rowHeight;
-        this.rowHeight = isNullOrUndefined(this.rowHeight) ? 36 : height;
         if (this.isAdaptive) {
             this.element.classList.add(cls.adaptive);
         } else {
@@ -2766,6 +2764,8 @@ export class Gantt extends Component<HTMLElement>
             if (this.enableContextMenu) {
                 this.notify('initiate-contextMenu', {});
             }
+            const height: number = (!isNullOrUndefined(document.body.className) && document.body.className.includes('e-bigger')) ? (this.rowHeight === 36) ? 46 : this.rowHeight : this.rowHeight;
+            this.rowHeight = isNullOrUndefined(this.rowHeight) ? 36 : height;
             this.renderTreeGrid();
             this.wireEvents();
             this.notify('initPredessorDialog', {});
@@ -2863,7 +2863,9 @@ export class Gantt extends Component<HTMLElement>
                 (firstMenuItem).focus();
             }
         }
-        if (e.target && (e.action === 'downArrow' || e.action === 'upArrow') && e.target === this.element.querySelector('.e-rowcell')) {
+        if ((e.target && (e.action === 'downArrow' || e.action === 'upArrow') && e.target === this.element.querySelector('.e-rowcell')) ||
+            (e.target && e.action === 'escape' && this.treeGrid.grid.columnMenuModule &&
+                 this.treeGrid.grid.columnMenuModule['columnMenu'].element.style.display === 'block')) {
             this.treeGrid.grid.notify('key-pressed', e);
         }
         else {
@@ -4925,9 +4927,9 @@ export class Gantt extends Component<HTMLElement>
                 if (rowPosition === 'Bottom') {
                     this.selectedRowIndex = rowIndex;
                 }
-                if (rowPosition === 'Above' || rowPosition === 'Below' || rowPosition === 'Child') {
-                    this.currentSelection = !isNullOrUndefined(data) ? data : this.currentSelection;
-                }
+            }
+            if (rowPosition === 'Above' || rowPosition === 'Below' || rowPosition === 'Child') {
+                this.currentSelection = !isNullOrUndefined(data) ? data : this.currentSelection;
             }
         }
     }

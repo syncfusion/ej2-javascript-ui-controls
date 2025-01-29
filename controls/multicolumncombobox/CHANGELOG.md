@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.41 (2025-01-21)
+## 28.1.39 (2024-01-14)
+
+### MultiColumn ComboBox
+
+#### Bug Fixes
+
+- `#I667643` - Now the exception raised when updating empty value in the MultiColumn ComboBox with grid batch mode enabled has been resolved.
+
+## 28.1.37 (2024-12-31)
 
 ### MultiColumn ComboBox
 

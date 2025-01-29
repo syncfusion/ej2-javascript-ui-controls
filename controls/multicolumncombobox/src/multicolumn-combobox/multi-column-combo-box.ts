@@ -921,6 +921,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private isDataFiltered: boolean;
     private isInitialRender: boolean;
     private remoteDataLength: number;
+    private selectedRowIndex: number;
 
     /**
      * *Constructor for creating the component
@@ -1625,7 +1626,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         };
         this.trigger('select', eventArgs, (eventArgs: SelectEventArgs) => {
             if (!eventArgs.cancel && eventArgs.itemData) {
-                const selectedRecord: { [key: string]: Object } = eventArgs.itemData as { [key: string]: Object };
                 const event: KeyboardEvent = e as KeyboardEvent;
                 const isUpdateVal: boolean = event.key === 'Enter' || event.key === 'Tab' || event.shiftKey && event.key === 'Tab' || event.altKey && event.key === 'ArrowUp';
                 if (!isKeyNav || (isKeyNav && isUpdateVal)) {
@@ -1643,7 +1643,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.isProtectedOnChange = true;
         this.text = text || this.text;
         this.value = value || this.value;
-        this.index = !isNOU(index) ? index : this.index;
+        this.index = this.selectedRowIndex = !isNOU(index) ? index : this.index;
         this.isProtectedOnChange = prevOnChange;
         if (!isInitial) { this.triggerChangeEvent(eventArgs); }
     }
@@ -2129,16 +2129,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 attributes(this.inputEle, { 'aria-expanded': 'true', 'aria-owns': this.element.id + '_popup', 'aria-controls': this.element.id });
                 if (!isInputOpen) {
                     if ((this.value || this.text || this.index)) {
-                        const dataRows: Object[] = this.gridObj.getRowsObject();
-                        let groupIndex: number;
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        dataRows.forEach((data: any, index: number) => {
-                            if (this.fields.groupBy && isNOU(data.data.items)) {
-                                if (isNOU(groupIndex)) { groupIndex = 0; }
-                                else { groupIndex += 1; }
-                            }
-                            this.selectDataRow(data.data, !this.fields.groupBy ? index : groupIndex);
-                        });
+                        this.gridObj.selectRow(this.selectedRowIndex);
                     }
                     this.focusIn(e);
                 }

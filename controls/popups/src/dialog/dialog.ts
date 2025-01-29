@@ -1069,7 +1069,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 const buttonModel: { [key: string]: Object } = (data.buttonModel as { [key: string]: Object });
                 return !isNullOrUndefined(buttonModel) && buttonModel.isPrimary === true;
             });
-            if (firstPrimary && typeof (this.buttons[buttonIndex as number].click) === 'function') {
+            if (firstPrimary && typeof (this.buttons[buttonIndex as number].click) === 'function' && !(this.primaryButtonEle as HTMLButtonElement).disabled) {
                 setTimeout(() => {
                     this.buttons[buttonIndex as number].click.call(this, event);
                 });
@@ -2159,7 +2159,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 }
             });
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }

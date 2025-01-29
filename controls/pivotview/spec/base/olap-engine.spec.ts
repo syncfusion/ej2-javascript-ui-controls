@@ -665,6 +665,54 @@ describe('Pivot Olap Engine', () => {
                 done();
             }, 1000);
         });
+    });
+
+    describe('Static FieldList with DeferLayoutUpdate', () => {
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let pivotGridObj: PivotView;
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(FieldList, CalculatedField);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    catalog: 'Adventure Works DW Standard Edition',
+                    cube: 'Finance',
+                    providerType: 'SSAS',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
+                    localeIdentifier: 1033,
+                    enableSorting: true,
+                    columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },
+                    { name: '[Measures]', caption: 'Measures' }],
+                    rows: [{ name: '[Scenario].[Scenario]', caption: 'Customer Geography' }],
+                    values: [
+                        { name: '[Measures].[Amount]', caption: 'Amount' },
+                        { name: 'Calculated field 1', caption: 'Calculated field', isCalculatedField: true }
+                    ],
+                    calculatedFieldSettings: [
+                        {
+                            formula: '[Measures].[Amount]*[Measures].[Average Rate]',
+                            name: 'Calculated field 1',
+                            formatString: 'Standard'
+                        }
+                    ]
+                },
+                showFieldList: true,
+                allowCalculatedField: true,
+                allowDeferLayoutUpdate: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Cancel button', () => {
+            (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+        });
 
         it('memory leak', () => {
             profile.sample();

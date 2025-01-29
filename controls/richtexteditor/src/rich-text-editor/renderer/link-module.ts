@@ -177,7 +177,7 @@ export class Link {
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             let target: HTMLElement = args.target as HTMLElement;
-            target = this.getAnchorNode(target);
+            target = this.getAnchorNode([target]);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             const isPopupOpen: boolean = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'A' && (target.childNodes.length > 0 && target.childNodes[0].nodeName !== 'IMG') &&
@@ -285,9 +285,14 @@ export class Link {
             this.dialogObj.hide({ returnValue: true } as Event);
             return;
         }
-        if (this.parent.editorMode === 'HTML' && (e.selectParent.length > 0 &&
-            !isNullOrUndefined((e.selectParent[0] as HTMLElement).classList) &&
-            (e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor')) && isNullOrUndefined(inputDetails)) {
+        const selectText: string = (this.parent.editorMode === 'HTML') ?
+            e.selection.getRange (this.parent.contentModule.getDocument()).toString() : e.text;
+        if (!isNOU(inputDetails) && ((!isNOU(e.selectParent) && e.selectParent.length > 1) ||
+            (!isNOU(e.selectNode) && e.selectNode.length > 1))) {
+            inputDetails.text = selectText;
+        }
+        if (this.parent.editorMode === 'HTML' && (this.hasAnchorNodePresent(e.selectParent) || this.hasAnchorNodePresent(e.selectNode)) &&
+            isNOU(inputDetails)) {
             this.editLink(e); return;
         }
         const linkWebAddress: string = this.i10n.getConstant('linkWebUrl');
@@ -324,8 +329,6 @@ export class Link {
         this.checkBoxObj.isStringTemplate = true;
         this.checkBoxObj.createElement = this.parent.createElement;
         this.checkBoxObj.appendTo(linkTarget);
-        const selectText: string = (this.parent.editorMode === 'HTML') ?
-            e.selection.getRange (this.parent.contentModule.getDocument()).toString() : e.text;
         const linkInsert: string = this.i10n.getConstant('dialogInsert');
         const linkCancel: string = this.i10n.getConstant('dialogCancel');
         const selection: NodeSelection = e.selection;
@@ -396,6 +399,12 @@ export class Link {
         }
     }
 
+    private hasAnchorNodePresent(elements: Node[]): boolean {
+        return !isNOU(elements) && elements.length > 0 &&
+            elements.some((element: HTMLElement) => element && (element as HTMLElement).classList
+                && (element as HTMLElement).classList.contains('e-rte-anchor'));
+    }
+
     // eslint-disable-next-line
     private insertlink(e: MouseEvent | KeyboardEvent): void {
         const linkEle: HTMLElement = (this as NotifyArgs).selfLink.dialogObj.element as HTMLElement;
@@ -414,12 +423,12 @@ export class Link {
             (this as NotifyArgs).selfLink.checkUrl(true);
             return;
         }
+        if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown') {
+            linkText = (linkText.trim() !== '') ? linkText : '';
+        } else {
+            linkText = (linkText.trim() === '') ? linkUrl : linkText;
+        }
         if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
-            if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown') {
-                linkText = (linkText.trim() !== '') ? linkText : '';
-            } else {
-                linkText = (linkText.trim() === '') ? linkUrl : linkText;
-            }
             if (!(this as NotifyArgs).selfLink.parent.enableAutoUrl) {
                 linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
             } else {
@@ -503,7 +512,7 @@ export class Link {
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
-        const selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
+        const selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent);
         this.parent.formatter.process(
             this.parent, e.args, e.args,
             {
@@ -519,7 +528,7 @@ export class Link {
         this.hideLinkQuickToolbar();
     }
     private openLink(e: NotifyArgs): void {
-        const selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
+        const selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent);
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             const sanitizedHTML: string = this.parent.htmlEditorModule.sanitizeHelper(selectParentEle.outerHTML);
             const tempEle: HTMLElement = document.createElement('div');
@@ -534,13 +543,18 @@ export class Link {
             tempEle.remove();
         }
     }
-    private getAnchorNode(element: HTMLElement): HTMLElement {
-        const selectParent: HTMLElement = closest(element, 'a') as HTMLElement;
-        return <HTMLElement>(selectParent ? selectParent : element);
+    private getAnchorNode(elements: Node[]): HTMLElement {
+        for (const element of elements) {
+            const anchorElement: HTMLElement = closest(element, 'a') as HTMLElement;
+            if (anchorElement) {
+                return anchorElement;
+            }
+        }
+        return elements[0] as HTMLElement;
     }
     private editLink(e: NotifyArgs): void {
-        const selectedNode: HTMLElement = this.getAnchorNode(e.selectNode[0] as HTMLElement);
-        let selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
+        const selectedNode: HTMLElement = this.getAnchorNode(e.selectNode);
+        let selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent);
         selectParentEle = selectedNode.nodeName === 'A' ? selectedNode : selectParentEle;
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');

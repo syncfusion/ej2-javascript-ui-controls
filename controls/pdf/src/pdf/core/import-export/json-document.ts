@@ -664,45 +664,42 @@ export class _JsonDocument extends _ExportHelper {
             if (streamDictionary.has('Subtype') && streamDictionary.get('Subtype').name === 'Image') {
                 isImageStream = true;
             }
-            if (isNewReference) {
+            if (isNewReference && isImageStream) {
                 if (value.dictionary.has('Filter') && value.dictionary.get('Filter').name === 'DCTDecode') {
                     data = value.getString(true);
                 } else {
                     data = _compressStream(value, true);
                 }
-                if (!streamDictionary.has('Length') && data && data !== '') {
-                    streamDictionary.update('Length', baseStream.length);
-                }
-            } else {
-                if (isImageStream && baseStream.stream) {
-                    if (baseStream.stream instanceof _PdfStream) {
-                        if (typeof baseStream._initialized === 'boolean' && baseStream._cipher) {
-                            const streamLength: number = baseStream.stream.end - baseStream.stream.start;
-                            baseStream.getBytes(streamLength);
-                            const bytes: Uint8Array = baseStream.buffer.subarray(0, baseStream.bufferLength);
-                            data = baseStream.getString(true, bytes);
-                        } else {
-                            const stream: _PdfStream = baseStream.stream;
-                            data = baseStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
-                        }
-                    } else if (baseStream.stream.stream) {
-                        const flateStream: any = baseStream.stream; // eslint-disable-line
-                        if (flateStream.stream instanceof _PdfStream && typeof flateStream._initialized === 'boolean' && flateStream._cipher) {
-                            const streamLength: number = flateStream.stream.end - flateStream.stream.start;
-                            flateStream.getBytes(streamLength);
-                            const bytes: Uint8Array = flateStream.buffer.subarray(0, flateStream.bufferLength);
-                            data = flateStream.getString(true, bytes);
-                        } else if (flateStream.stream instanceof _PdfStream) {
-                            const stream: _PdfStream = flateStream.stream;
-                            data = flateStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
-                        }
+            } else if (isImageStream && baseStream.stream) {
+                if (baseStream.stream instanceof _PdfStream) {
+                    if (typeof baseStream._initialized === 'boolean' && baseStream._cipher) {
+                        const streamLength: number = baseStream.stream.end - baseStream.stream.start;
+                        baseStream.getBytes(streamLength);
+                        const bytes: Uint8Array = baseStream.buffer.subarray(0, baseStream.bufferLength);
+                        data = baseStream.getString(true, bytes);
+                    } else {
+                        const stream: _PdfStream = baseStream.stream;
+                        data = baseStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
+                    }
+                } else if (baseStream.stream.stream) {
+                    const flateStream: any = baseStream.stream; // eslint-disable-line
+                    if (flateStream.stream instanceof _PdfStream && typeof flateStream._initialized === 'boolean' && flateStream._cipher) {
+                        const streamLength: number = flateStream.stream.end - flateStream.stream.start;
+                        flateStream.getBytes(streamLength);
+                        const bytes: Uint8Array = flateStream.buffer.subarray(0, flateStream.bufferLength);
+                        data = flateStream.getString(true, bytes);
+                    } else if (flateStream.stream instanceof _PdfStream) {
+                        const stream: _PdfStream = flateStream.stream;
+                        data = flateStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
                     }
                 } else {
                     data = value.getString(true);
                 }
-                if (!streamDictionary.has('Length') && data && data !== '') {
-                    streamDictionary.update('Length', value.length);
-                }
+            } else {
+                data = value.getString(true);
+            }
+            if (!streamDictionary.has('Length') && data && data !== '') {
+                streamDictionary.update('Length', value.length);
             }
             this._writeAppearanceDictionary(streamTable, streamDictionary);
             let type: string;

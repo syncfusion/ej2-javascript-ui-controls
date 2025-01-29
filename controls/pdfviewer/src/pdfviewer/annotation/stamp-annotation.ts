@@ -128,111 +128,126 @@ export class StampAnnotation {
      * @param {boolean} isImport - It describes about the isImport
      * @param {boolean} isAnnotOrderAction - It describes about the isAnnotOrderAction
      * @private
-     * @returns {void}
+     * @returns {Promise<void>} - any
      */
     public renderStampAnnotations(stampAnnotations: any, pageNumber: number, canvass?: any,
-                                  isImport?: boolean,  isAnnotOrderAction?: boolean): void {
-        let isStampAdded: boolean = false;
-        if (!isImport) {
-            for (let p: number = 0; p < this.stampPageNumber.length; p++) {
-                if (this.stampPageNumber[parseInt(p.toString(), 10)] === pageNumber){
-                    isStampAdded = true;
-                    break;
+                                  isImport?: boolean,  isAnnotOrderAction?: boolean): Promise<void> {
+        return new Promise((resolve: any) => {
+            let isStampAdded: boolean = false;
+            if (!isImport) {
+                for (let p: number = 0; p < this.stampPageNumber.length; p++) {
+                    if (this.stampPageNumber[parseInt(p.toString(), 10)] === pageNumber){
+                        isStampAdded = true;
+                        break;
+                    }
                 }
             }
-        }
-        if (isImport) {
-            isStampAdded = false;
-        }
-        if (stampAnnotations && (!isStampAdded || isAnnotOrderAction)) {
-            this.stampPageNumber.push(pageNumber);
-            for (let s: number = 0; s < stampAnnotations.length; s++) {
-                const annotation: any = stampAnnotations[parseInt(s.toString(), 10)];
-                annotation.annotationAddMode =
-                 this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
-                const Apperance: any = annotation['Apperarance'];
-                const position: any = annotation['Rect'];
-                const opacity: any = annotation['Opacity'];
-                let pageIndex: any = parseFloat(stampAnnotations[parseInt(s.toString(), 10)]['pageNumber']);
-                if (isNaN(pageIndex)) {
-                    pageIndex = stampAnnotations[parseInt(s.toString(), 10)]['PageNumber'];
-                }
-                const stampName: any = annotation['IsDynamic'];
-                annotation.AnnotationSettings = annotation.AnnotationSettings ?
-                    annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
-                if (annotation.IsLocked) {
-                    annotation.AnnotationSettings.isLock = annotation.IsLocked;
-                }
-                const isImageStamp : boolean = this.stampImageData(annotation);
-                if (stampName && annotation['IconName'] && annotation['IconName'] !== 'Draft' && !isImageStamp && (isNullOrUndefined(annotation.template) || annotation.template === '')) {
-                    this.retrieveDynamicStampAnnotation(annotation['IconName']);
-                    this.isExistingStamp = true;
-                    const currentLocation: IRectCollection = this.calculateImagePosition(position, true);
-                    const rotation: number = annotation['RotateAngle'];
-                    for (let d: number = 0; d < Apperance.length; d++) {
-                        const stampShapes: any = Apperance[parseInt(d.toString(), 10)];
-                        const stampType: any = stampShapes['type'];
-                        if (stampType === 'string' && stampShapes['text'] !== undefined) {
-                            let text: any;
-                            if (!isImport && stampShapes['text'].split('(').length > 1) {
-                                text = stampShapes['text'].split('(')[1].split(')')[0];
-                            } else {
-                                text = stampShapes['text'];
-                            }
-                            if (text.split('(').length === 2) {
-                                if (text.split('(')[1].split(')')[0].toLowerCase() !== annotation['IconName'].toLowerCase()){
-                                    this.dynamicText += text.split('(')[1].split(')')[0];
+            if (isImport) {
+                isStampAdded = false;
+            }
+            if (stampAnnotations && (!isStampAdded || isAnnotOrderAction)) {
+                this.stampPageNumber.push(pageNumber);
+                for (let s: number = 0; s < stampAnnotations.length; s++) {
+                    const annotation: any = stampAnnotations[parseInt(s.toString(), 10)];
+                    annotation.annotationAddMode =
+                     this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
+                    const Apperance: any = annotation['Apperarance'];
+                    const position: any = annotation['Rect'];
+                    const opacity: any = annotation['Opacity'];
+                    let pageIndex: any = parseFloat(stampAnnotations[parseInt(s.toString(), 10)]['pageNumber']);
+                    if (isNaN(pageIndex)) {
+                        pageIndex = stampAnnotations[parseInt(s.toString(), 10)]['PageNumber'];
+                    }
+                    const stampName: any = annotation['IsDynamic'];
+                    annotation.AnnotationSettings = annotation.AnnotationSettings ?
+                        annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
+                    if (annotation.IsLocked) {
+                        annotation.AnnotationSettings.isLock = annotation.IsLocked;
+                    }
+                    const isImageStamp : boolean = this.stampImageData(annotation);
+                    if (stampName && annotation['IconName'] && annotation['IconName'] !== 'Draft' && !isImageStamp && (isNullOrUndefined(annotation.template) || annotation.template === '')) {
+                        this.retrieveDynamicStampAnnotation(annotation['IconName']);
+                        this.isExistingStamp = true;
+                        const currentLocation: IRectCollection = this.calculateImagePosition(position, true);
+                        const rotation: number = annotation['RotateAngle'];
+                        for (let d: number = 0; d < Apperance.length; d++) {
+                            const stampShapes: any = Apperance[parseInt(d.toString(), 10)];
+                            const stampType: any = stampShapes['type'];
+                            if (stampType === 'string' && stampShapes['text'] !== undefined) {
+                                let text: any;
+                                if (!isImport && stampShapes['text'].split('(').length > 1) {
+                                    text = stampShapes['text'].split('(')[1].split(')')[0];
+                                } else {
+                                    text = stampShapes['text'];
                                 }
-                            } else if (text.toLowerCase() !== annotation['IconName'].toLowerCase()) {
-                                this.dynamicText += text;
+                                if (text.split('(').length === 2) {
+                                    if (text.split('(')[1].split(')')[0].toLowerCase() !== annotation['IconName'].toLowerCase()){
+                                        this.dynamicText += text.split('(')[1].split(')')[0];
+                                    }
+                                } else if (text.toLowerCase() !== annotation['IconName'].toLowerCase()) {
+                                    this.dynamicText += text;
+                                }
+                            }
+                        }
+                        this.renderStamp(currentLocation.left, currentLocation.top, currentLocation.width,
+                                         currentLocation.height, pageIndex, opacity, rotation, canvass, annotation, true);
+                        resolve();
+                    }
+                    else if (annotation['IconName'] && !isImageStamp && (isNullOrUndefined(annotation.template) || annotation.template === '')) {
+                        this.retrievestampAnnotation(annotation['IconName']);
+                        this.isExistingStamp = true;
+                        const currentLocation: IRectCollection = this.calculateImagePosition(position, true);
+                        const rotation: number = annotation['RotateAngle'];
+                        this.renderStamp(currentLocation.left, currentLocation.top, currentLocation.width,
+                                         currentLocation.height, pageIndex, opacity, rotation, canvass, annotation);
+                        this.isExistingStamp = false;
+                        resolve();
+                    } else {
+                        if (Apperance) {
+                            for (let j: number = 0; j < Apperance.length; j++) {
+                                const stampShapes: any = Apperance[parseInt(j.toString(), 10)];
+                                const imageData: any = stampShapes['imagedata'];
+                                const currentDate: any = stampShapes['CreationDate'];
+                                const modifiedDate: any = stampShapes['ModifiedDate'];
+                                const rotationAngle: any = stampShapes['RotateAngle'];
+                                if (imageData) {
+                                    const image: HTMLImageElement = new Image();
+                                    // eslint-disable-next-line
+                                    const proxy: any = this;
+                                    image.onload = (): void => {
+                                        // This code is no more required.Since this issue have neen fixed in server side itself.
+                                        // refer https://syncfusion.atlassian.net/browse/EJ2-54035
+                                        // if (position) {
+                                        //     let y: number = parseFloat(position.y ? position.y : position.Y);
+                                        //     if (y < 0) {
+                                        //         position.Y = (proxy.pdfViewerBase.pageSize[pageIndex].height + y) * (72/96);
+                                        //     }
+                                        // }
+                                        const currentLocation: IRectCollection = proxy.calculateImagePosition(position, true);
+                                        annotation.AnnotationSettings = annotation.AnnotationSettings ?
+                                            annotation.AnnotationSettings : proxy.pdfViewer.customStampSettings.annotationSettings;
+                                        proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate,
+                                                                rotationAngle, opacity, canvass, true, annotation);
+                                        if (proxy.pdfViewer.annotationModule.annotationType === 'image') {
+                                            proxy.pdfViewer.annotation.selectAnnotationFromCodeBehind();
+                                            proxy.pdfViewer.annotationModule.annotationType = null;
+                                        }
+                                        resolve();
+                                    };
+                                    image.src = imageData;
+                                }
+                            }
+                            if (Apperance.length === 0) {
+                                resolve();
                             }
                         }
                     }
-                    this.renderStamp(currentLocation.left, currentLocation.top, currentLocation.width,
-                                     currentLocation.height, pageIndex, opacity, rotation, canvass, annotation, true);
                 }
-                else if (annotation['IconName'] && !isImageStamp && (isNullOrUndefined(annotation.template) || annotation.template === '')) {
-                    this.retrievestampAnnotation(annotation['IconName']);
-                    this.isExistingStamp = true;
-                    const currentLocation: IRectCollection = this.calculateImagePosition(position, true);
-                    const rotation: number = annotation['RotateAngle'];
-                    this.renderStamp(currentLocation.left, currentLocation.top, currentLocation.width,
-                                     currentLocation.height, pageIndex, opacity, rotation, canvass, annotation);
-                    this.isExistingStamp = false;
-                } else {
-                    if (Apperance) {
-                        for (let j: number = 0; j < Apperance.length; j++) {
-                            const stampShapes: any = Apperance[parseInt(j.toString(), 10)];
-                            const imageData: any = stampShapes['imagedata'];
-                            const currentDate: any = stampShapes['CreationDate'];
-                            const modifiedDate: any = stampShapes['ModifiedDate'];
-                            const rotationAngle: any = stampShapes['RotateAngle'];
-                            if (imageData) {
-                                const image: HTMLImageElement = new Image();
-                                // eslint-disable-next-line
-                                const proxy: any = this;
-                                image.onload = (): void => {
-                                    // This code is no more required.Since this issue have neen fixed in server side itself.
-                                    // refer https://syncfusion.atlassian.net/browse/EJ2-54035
-                                    // if (position) {
-                                    //     let y: number = parseFloat(position.y ? position.y : position.Y);
-                                    //     if (y < 0) {
-                                    //         position.Y = (proxy.pdfViewerBase.pageSize[pageIndex].height + y) * (72/96);
-                                    //     }
-                                    // }
-                                    const currentLocation: IRectCollection = proxy.calculateImagePosition(position, true);
-                                    annotation.AnnotationSettings = annotation.AnnotationSettings ?
-                                        annotation.AnnotationSettings : proxy.pdfViewer.customStampSettings.annotationSettings;
-                                    proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate,
-                                                            rotationAngle, opacity, canvass, true, annotation);
-                                };
-                                image.src = imageData;
-                            }
-                        }
-                    }
+                if (stampAnnotations.length === 0) {
+                    resolve();
                 }
             }
-        }
+        });
     }
 
     /**
@@ -808,6 +823,9 @@ export class StampAnnotation {
             annot.comments = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);
             annot.review = { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate };
             this.pdfViewer.add(annot as PdfAnnotationBase);
+            if (!isNullOrUndefined(orderNumber)) {
+                this.adjustZIndexOrder(annot, orderNumber);
+            }
             if (this.isAddAnnotationProgramatically) {
                 const settings: any = {
                     opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness,
@@ -831,6 +849,23 @@ export class StampAnnotation {
         }
         if (!Browser.isDevice) {
             this.pdfViewerBase.customStampCount += 1;
+        }
+    }
+
+    /**
+     * @param {any} annot  It describes about the annotation
+     * @param {any} orderNumber  It describes about the annotation order number
+     * @private
+     * @returns {void} - any
+     */
+    private adjustZIndexOrder(annot: any, orderNumber: number): void {
+        if (!isNullOrUndefined(this.pdfViewer.zIndexTable[annot.pageIndex])) {
+            const objects: any = this.pdfViewer.zIndexTable[annot.pageIndex].objects;
+            if (objects && objects.length > 0) {
+                const lastObj: any = objects[objects.length - 1];
+                objects.splice(objects.length - 1);
+                objects.splice(orderNumber, 0, lastObj);
+            }
         }
     }
 
@@ -1346,7 +1381,10 @@ export class StampAnnotation {
                 annotation.AnnotationSettings.isLock = annotation.IsLocked;
             }
             annotationObject = {
-                stampAnnotationType: 'image', author: annotation.Author, modifiedDate: annotation.ModifiedDate, allowedInteractions: annotation.allowedInteractions,
+                stampAnnotationType: 'image', author: annotation.Author,
+                bounds: { left: annotation.Rect.X, top: annotation.Rect.Y,
+                    width: annotation.Rect.Width, height: annotation.Rect.Height},
+                modifiedDate: annotation.ModifiedDate, allowedInteractions: annotation.allowedInteractions,
                 note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor,
                 opacity: annotation.Opacity, stampFillcolor: annotation.StampFillColor,
                 rotateAngle: annotation.RotateAngle, pageNumber: pageNumber, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,

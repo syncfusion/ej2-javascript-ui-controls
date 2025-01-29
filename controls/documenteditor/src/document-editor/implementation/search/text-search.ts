@@ -130,7 +130,7 @@ export class TextSearch {
                 && (inlineElement.textFrame as TextFrame).childWidgets.length > 0) {
                 this.findInlineText(inlineElement.textFrame, pattern, findOption, isFirstMatch, results, selectionEnd);
             }
-            if (!(inlineElement instanceof TextElementBox)) {
+            if (!(inlineElement instanceof TextElementBox) && !(inlineElement instanceof ListTextElementBox)) {
                 previousElementCount += inlineElement.length;
             }
             if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {

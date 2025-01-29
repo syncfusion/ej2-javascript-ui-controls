@@ -427,7 +427,7 @@ describe('PivotView spec', () => {
             });
             it('filter testing3 - 3', (done: Function) => {
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[7][2] as IDataSet).formattedText).toBe("70.21%");
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("70.21%");
                     (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
                     done();
                 }, 1000);
@@ -445,7 +445,7 @@ describe('PivotView spec', () => {
             });
             it('filter testing5', (done: Function) => {
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[6][2] as IDataSet).formattedText).toBe("70.21%");
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("70.21%");
                     (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
                     done();
                 }, 1000);

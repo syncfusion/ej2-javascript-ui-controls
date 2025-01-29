@@ -1,5 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageOrTableCursor } from '../common';
+import * as CONSTANT from './../editor-manager/base';
 
 /**
  * `Selection` module is used to handle RTE Selections.
@@ -198,7 +199,10 @@ export class NodeSelection {
             if ((nodeCollection.indexOf(nodeCollection[index as number].parentNode) !== -1)
                 || (nodeCollection[index as number].nodeType === 3 &&
                     range.startContainer !== range.endContainer &&
-                    range.startContainer.parentNode !== range.endContainer.parentNode)) {
+                    range.startContainer.parentNode !== range.endContainer.parentNode) &&
+                (range.startContainer.parentNode as HTMLElement).tagName && (range.endContainer.parentNode as HTMLElement).tagName &&
+                CONSTANT.BLOCK_TAGS.indexOf((range.startContainer.parentNode as HTMLElement).tagName.toLowerCase()) !== -1
+                && CONSTANT.BLOCK_TAGS.indexOf((range.endContainer.parentNode as HTMLElement).tagName.toLowerCase()) !== -1) {
                 nodeCollection.splice(index, 1);
                 index--;
             } else if (nodeCollection[index as number].nodeType === 3) {

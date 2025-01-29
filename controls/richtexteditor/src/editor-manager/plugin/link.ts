@@ -56,10 +56,11 @@ export class LinkCommand {
     }
 
     private createLink(e: IHtmlItem): void {
-        let closestAnchor: Element = (!isNOU(e.item.selectParent) && e.item.selectParent.length > 0) &&
+        let closestAnchor: Element = (!isNOU(e.item.selectParent) && e.item.selectParent.length === 1) &&
             closest(e.item.selectParent[0], 'a');
         closestAnchor = !isNOU(closestAnchor) ? closestAnchor :
-            (!isNOU(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) as Element : null;
+            (!isNOU(e.item.selectParent) && e.item.selectParent.length === 1) ?
+                (e.item.selectParent[0]) as Element : null;
         if (!isNOU(closestAnchor) && (closestAnchor as HTMLElement).tagName === 'A') {
             const anchorEle: HTMLElement = closestAnchor as HTMLElement;
             let linkText: string = '';
@@ -354,11 +355,23 @@ export class LinkCommand {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         const startContainer: Node = range.startContainer;
         const endContainer: Node = range.endContainer;
-        const startOffset: number = range.startOffset;
+        let startOffset: number = range.startOffset;
         const endOffset: number = range.endOffset;
+        this.parent.nodeSelection.save(range, this.parent.currentDocument);
+        const selection: Selection = this.parent.nodeSelection.get(this.parent.currentDocument);
         for (let i: number = 0; i < links.length; i++) {
             if (range.intersectsNode(links[i as number])) {
-                InsertMethods.unwrap(links[i as number]);
+                if (selection.containsNode(links[i as number] as Node, false)) {
+                    InsertMethods.unwrap(links[i as number]);
+                } else {
+                    const linkText: string = links[i as number] && links[i as number].textContent;
+                    if (linkText && range.startContainer.textContent &&
+                        linkText.indexOf(range.startContainer.textContent) !== -1) {
+                        startOffset = 0;
+                    }
+                    const splitNode: Node = this.getSplitNode(links[i as number] as Node, range);
+                    InsertMethods.unwrap(splitNode);
+                }
             }
         }
         range.setStart(startContainer, startOffset);

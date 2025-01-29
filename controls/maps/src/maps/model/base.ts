@@ -12,7 +12,7 @@ import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, Se
 import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSettingsModel, PolygonTooltipSettingsModel} from './base-model';
 import { InitialShapeSelectionSettingsModel, InitialMarkerSelectionSettingsModel, ZoomToolbarSettingsModel, ZoomToolbarButtonSettingsModel } from './base-model';
 import { Theme } from './theme';
-import { Point, GeoLocation, Coordinate, LegendLocation } from '../utils/helper';
+import { Point, GeoLocation, Coordinate, RelativePoint } from '../utils/helper';
 import { LegendArrangement, LegendShape, BubbleType, ToolbarItem } from '../utils/enum';
 import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
 
@@ -1571,7 +1571,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * Gets or sets the location of the legend in pixels when the legend position is set as `Float`.
      */
     @Property({ x: 0, y: 0 })
-    public location: LegendLocation | Point;
+    public location: RelativePoint | Point;
 
     /**
      * Gets or sets the color of the legend in maps.

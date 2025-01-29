@@ -190,6 +190,13 @@ export class RowDD {
                 this.dropRows(args, true); // method to update the data collections based on drop action
                 args.cancel = true;
             }
+            else {
+                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                    this.parent.hideMaskRow();
+                } else {
+                    this.parent.hideSpinner();
+                }
+            }
         }
     }
     private dropRows(args: RowDropEventArgs, isByMethod?: boolean): void {
@@ -392,7 +399,7 @@ export class RowDD {
                                     droppedRecord.ganttProperties.predecessor[count as number].from);
                                 const toRecord: IGanttData = this.parent.getRecordByID(
                                     droppedRecord.ganttProperties.predecessor[count as number].to);
-                                const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(
+                                const validPredecessor: boolean = this.parent.predecessorModule.validateParentPredecessor(
                                     fromRecord, toRecord);
                                 if (droppedRecord.ganttProperties.predecessor && (!validPredecessor ||
                                     !this.parent.allowParentDependency)) {
@@ -503,7 +510,7 @@ export class RowDD {
                                 const toRec: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
                                     return parseInt(data.ganttProperties.taskId, 10) === parseInt(name, 10);
                                 });
-                                isValidPredecessor = this.parent.connectorLineEditModule.validateParentPredecessor(
+                                isValidPredecessor = this.parent.predecessorModule.validateParentPredecessor(
                                     validateRecords[i as number], toRec[0]);
                                 if (!isValidPredecessor) {
                                     this.parent.dataOperation['resetDependency'](validateRecords[i as number]);

@@ -784,7 +784,19 @@ export class Edit implements IAction {
                 this.parent.renderTemplates();
             }
         }
-        cols = cols ? cols : this.parent.getCurrentVisibleColumns(this.parent.enableColumnVirtualization) as Column[];
+        if (this.parent.editSettings.mode === 'Dialog' && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            cols = [];
+            const allColumns: Column[] = this.parent.getColumns();
+            for (let i: number = 0; i < allColumns.length; i++) {
+                const column: Column = allColumns[parseInt(i.toString(), 10)];
+                if (column.visible || (this.parent.groupSettings.columns.indexOf(column.field) > -1)) {
+                    cols.push(column);
+                }
+            }
+        }
+        else {
+            cols = cols ? cols : this.parent.getCurrentVisibleColumns(this.parent.enableColumnVirtualization) as Column[];
+        }
         if (cols.some((column: Column) => !isNullOrUndefined(column.editTemplate))) {
             this.parent.destroyTemplate(['editTemplate']);
             if (this.parent.isReact) {
@@ -804,10 +816,11 @@ export class Edit implements IAction {
         }
         const elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>this.formObj.element).elements);
         for (let i: number = 0; i < elements.length; i++) {
-            if (elements[parseInt(i.toString(), 10)].hasAttribute('name')) {
-                const instanceElement: HTMLInputElement = elements[parseInt(i.toString(), 10)].parentElement.classList.contains('e-ddl') ?
-                    elements[parseInt(i.toString(), 10)].parentElement.querySelector('input') : elements[parseInt(i.toString(), 10)];
-                if ((<EJ2Intance>(instanceElement as Element)).ej2_instances &&
+            const element: HTMLInputElement = elements[parseInt(i.toString(), 10)];
+            if (element.hasAttribute('name')) {
+                const instanceElement: HTMLInputElement = isNullOrUndefined(element.parentElement) ? null :  element.parentElement.classList.contains('e-ddl') ?
+                    element.parentElement.querySelector('input') : element;
+                if (<EJ2Intance>(instanceElement as Element) && (<EJ2Intance>(instanceElement as Element)).ej2_instances &&
                     (<Object[]>(<EJ2Intance>(instanceElement as Element)).ej2_instances).length &&
                     !(<EJ2Intance>(instanceElement as Element)).ej2_instances[0].isDestroyed) {
                     (<EJ2Intance>(instanceElement as Element)).ej2_instances[0].destroy();

@@ -1,5 +1,5 @@
 import { addClass, Event, attributes, BaseEventArgs, compile, Component, EmitType, EventHandler, getUniqueID, INotifyPropertyChanged, select, Browser, append } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, KeyboardEventArgs, KeyboardEvents, MouseEventArgs, NotifyPropertyChanges, Property, remove, removeClass, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, KeyboardEventArgs, KeyboardEvents, MouseEventArgs, NotifyPropertyChanges, Property, remove, removeClass, initializeCSPTemplate, closest } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { RatingModel } from './rating-model';
 
@@ -432,13 +432,16 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         };
         this.tooltipOpen = false;
         this.isTouchSelected = false;
+        if (closest(this.element, 'form') && this.element.getAttribute('value')) {
+            this.setProperties({ value: this.element.getAttribute('value') }, true);
+        }
     }
 
     public render(): void {
         this.initialize();
         this.updateMinValue();
         this.updateTemplateFunction();
-        this.triggerChange(null, this.value, false);
+        this.triggerChange(null, this.value, false, true);
         this.renderItems();
         this.displayLabel();
     }
@@ -800,13 +803,19 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         this.updateLabel();
     }
 
-    private triggerChange(e: Event, val: number, isInteracted: boolean = true): void {
+    private triggerChange(e: Event, val: number, isInteracted: boolean = true, isInitial: boolean = false): void {
+        const ratingObj: any = null || this;
         val = this.validateValue(val);
         this.currentValue = val;
         if (this.currentValue === this.value) { return; }
         const eventArgs: RatingChangedEventArgs = { event: e, isInteracted: isInteracted, value: val, previousValue: this.value };
         this.setProperties({ value: val }, true);
-        this.trigger('valueChanged', eventArgs);
+        if (this.isAngular && !isInitial) {
+            ratingObj.localChange({ value: val });
+        }
+        if (!isInitial) {
+            this.trigger('valueChanged', eventArgs);
+        }
     }
 
     private mouseMoveHandler(index: number, e: Event): void {

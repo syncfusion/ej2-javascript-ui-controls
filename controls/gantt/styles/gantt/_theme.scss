@@ -543,7 +543,6 @@
       color: $gantt-context-menu-icon-color !important; /* stylelint-disable-line declaration-no-important */
     }
     @if $skin-name == 'fluent2'{
-      .e-rowcell.e-active,
       .e-menu-item.e-focused,
       .e-menu-item.e-selected {
         .e-icons:not(.e-stop):not(.e-check):not(.e-icon-left):not(.e-date-icon) {

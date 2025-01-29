@@ -1743,6 +1743,122 @@ describe('B900782-Taskbar render in incorrect postion after zoom to fit', () => 
         destroyGantt(ganttObj);
     });
 });
+describe('Issue fix for show case sample', () => {        
+    let ganttObj: Gantt;
+    let resource1 = [
+        {
+            TaskID: 5,
+            TaskName: 'Project estimation', StartDate: new Date('03/29/2024'), EndDate: new Date('04/21/2024'),
+            subtasks: [
+                {
+                    TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('03/29/2024'),
+                    Duration: 3, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 70 },4], Predecessor: '3FS+2', work: 30
+                },
+                {
+                    TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/08/2024'), Duration: 12,
+                    resources: [{ resourceId: 6, resourceUnit: 40 }], Progress: 30, work: 40
+                },
+                {
+                    TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/03/2024'),
+                    Duration: 10, resources: [{ resourceId: 5, resourceUnit: 75 }], Progress: 30, work: 60,
+                },
+                {
+                    TaskID: 9, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2024'),
+                    Duration: 4, Progress: 30, resources: [{ resourceId: 4, resourceUnit: 100 }], work: 32
+                },
+                {
+                    TaskID: 10, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2024'), Duration: 4,
+                    Progress: 30, Predecessor: '9SS', resources: [{ resourceId: 3, resourceUnit: 100 }], work: 32
+                },
+                {
+                    TaskID: 11, TaskName: 'Dig footer', StartDate: new Date('04/08/2024'),
+                    Duration: 3, resources: [{ resourceId: 2, resourceUnit: 100 }], work: 24
+                },
+                {
+                    TaskID: 12, TaskName: 'Electrical utilities', StartDate: new Date('04/03/2024'),
+                    Duration: 4, Progress: 30, resources: [{ resourceId: 3, resourceUnit: 100 }], work: 32
+                }
+            ]
+        },
+        {
+            TaskID: 13, TaskName: 'Sign contract', StartDate: new Date('04/04/2024'), Duration: 2,
+            Progress: 30,
+        }
+    ];
+    let resourceCollection1 = [   
+        { resourceId: 4, resourceName: 'Fuller King', resourceGroup: 'Development Team' },
+        { resourceId: 5, resourceName: 'Davolio Fuller', resourceGroup: 'Approval Team' },
+        { resourceId: 6, resourceName: 'Van Jack', resourceGroup: 'Development Team' }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: resource1,
+        resources: resourceCollection1,
+        viewType: 'ResourceView',
+        showOverAllocation: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            resourceInfo: 'resources',
+            work: 'work',
+            child: 'subtasks'
+        },
+        taskType: 'FixedWork',
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName',
+            unit: 'resourceUnit',
+            group: 'resourceGroup'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resourceGroup', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+            { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }],
+        labelSettings: {
+            rightLabel: 'resources',
+            taskLabel: 'Progress'
+        },
+        splitterSettings: {
+            columnIndex: 3
+        },
+        selectedRowIndex:1,
+        allowResizing: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        treeColumnIndex: 1,
+        height: '450px',
+        projectStartDate: new Date('03/28/2024'),
+        projectEndDate: new Date('05/18/2024')
+        }, done);
+    });
+    it('Delete Resource and check for select index', () => {
+        ganttObj.deleteRecord(ganttObj.selectionModule.getSelectedRecords()[0])
+        expect(ganttObj.selectedRowIndex).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
 describe('Gantt with set toolbar visible false ', () => {
     Gantt.Inject(Edit, Toolbar, Selection, Filter);
     let ganttObj: Gantt;

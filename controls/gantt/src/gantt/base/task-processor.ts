@@ -1911,8 +1911,13 @@ export class TaskProcessor extends DateProcessor {
             }
             this.parent.setRecordValue('resourceNames', resourcesName.join(','), ganttProp, true);
             if (this.isResourceString) {
-                ganttData.taskData[this.parent.taskFields.resourceInfo] =
-                ganttData.taskData[this.parent.taskFields.resourceInfo][0][resourceSettings.name];
+                if (
+                    ganttData.taskData[this.parent.taskFields.resourceInfo] &&
+                    ganttData.taskData[this.parent.taskFields.resourceInfo][0]
+                ) {
+                    ganttData.taskData[this.parent.taskFields.resourceInfo] =
+                        ganttData.taskData[this.parent.taskFields.resourceInfo][0][resourceSettings.name];
+                }
                 this.updateTaskDataResource(ganttData);
             } else {
                 this.updateTaskDataResource(ganttData);

@@ -246,11 +246,12 @@ export class DrillThroughDialog {
                             'addedData': [], 'removedData': [], 'updatedData': prevItems,
                             indexObject: dataIndex as ReturnType<typeof Object>
                         });
+                    } else {
+                        this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
+                        (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
+                        this.parent.pivotValues = this.engine.pivotValues;
+                        this.parent.gridSettings.allowResizing = gridResize;
                     }
-                    this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
-                    (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
-                    this.parent.pivotValues = this.engine.pivotValues;
-                    this.parent.gridSettings.allowResizing = gridResize;
                 }
             }
         });

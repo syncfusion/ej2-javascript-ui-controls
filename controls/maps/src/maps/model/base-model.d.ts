@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Alignment, LegendPosition, LegendType, LegendMode, Type, MarkerType, Orientation, MapAjax } from '../../index';import { SmartLabelMode, IntersectAction } from '../../index';import { Theme } from './theme';import { Point, GeoLocation, Coordinate, LegendLocation } from '../utils/helper';import { LegendArrangement, LegendShape, BubbleType, ToolbarItem } from '../utils/enum';import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Alignment, LegendPosition, LegendType, LegendMode, Type, MarkerType, Orientation, MapAjax } from '../../index';import { SmartLabelMode, IntersectAction } from '../../index';import { Theme } from './theme';import { Point, GeoLocation, Coordinate, RelativePoint } from '../utils/helper';import { LegendArrangement, LegendShape, BubbleType, ToolbarItem } from '../utils/enum';import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
 
 /**
  * Interface for a class Annotation
@@ -1498,7 +1498,7 @@ export interface LegendSettingsModel {
     /**
      * Gets or sets the location of the legend in pixels when the legend position is set as `Float`.
      */
-    location?: LegendLocation | Point;
+    location?: RelativePoint | Point;
 
     /**
      * Gets or sets the color of the legend in maps.

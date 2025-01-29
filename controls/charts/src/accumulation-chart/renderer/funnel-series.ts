@@ -4,7 +4,7 @@
 
 import { AccPoints, AccumulationSeries } from '../model/acc-base';
 import { Size, PathOption } from '@syncfusion/ej2-svg-base';
-import { ChartLocation, appendChildElement, removeElement } from '../../common/utils/helper';
+import { ChartLocation, ColorValue, appendChildElement, removeElement } from '../../common/utils/helper';
 import { AccumulationChart } from '../accumulation';
 import { TriangularBase } from './triangular-base';
 
@@ -140,7 +140,6 @@ export class FunnelSeries extends TriangularBase {
             chart.accBaseModule.explodePoints(point.index, chart, true);
         }
     }
-
 
     /**
      * To get the module name of the funnel series.

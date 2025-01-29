@@ -132,57 +132,21 @@ export class Timeline {
         if (this.parent.isReact) {
             this.parent['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
         }
-        this.isZoomToFit = false;
-        this.isZoomedToFit = false;
-        const action: string = isZoomIn ? 'ZoomIn' : 'ZoomOut';
-        if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent'](action)) {
-            if (this.parent.undoRedoModule['redoEnabled']) {
-                this.parent.undoRedoModule['disableRedo']();
-            }
-            this.parent.undoRedoModule['createUndoCollection']();
-            const previousTimeline: Object = {};
-            previousTimeline['action'] = action;
-            previousTimeline['previousZoomingLevel'] = extend({}, {}, this.parent.currentZoomingLevel, true);
-            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as Object) = previousTimeline;
-        }
+        this.isZoomToFit = this.isZoomedToFit = false;
+        this.updateUndoRedo(isZoomIn);
         if (!this.parent['isProjectDateUpdated']) {
             this.parent.dateValidationModule.calculateProjectDates();
         }
-        if (!isNullOrUndefined(this.parent.zoomingProjectStartDate)) {
+        if (this.parent.zoomingProjectStartDate) {
             this.parent.cloneProjectStartDate = this.parent.zoomingProjectStartDate;
             this.parent.cloneProjectEndDate = this.parent.zoomingProjectEndDate;
         }
-        this.parent.zoomingProjectStartDate = null;
-        this.parent.zoomingProjectEndDate = null;
+        this.parent.zoomingProjectStartDate = this.parent.zoomingProjectEndDate = null;
         const currentZoomingLevel: number = this.checkCurrentZoomingLevel();
         this.isZoomIn = isZoomIn;
         this.isZooming = true;
-        let currentLevel: number;
-        const level: number = isZoomIn ? currentZoomingLevel + 1 : currentZoomingLevel - 1;
-        const foundLevel: ZoomTimelineSettings = this.parent.zoomingLevels.find(
-            (tempLevel: ZoomTimelineSettings) => tempLevel.level === level);
-        if (foundLevel) {
-            currentLevel = level;
-        } else {
-            currentLevel = currentZoomingLevel;
-        }
-        if (this.parent.toolbarModule) {
-            if (isZoomIn) {
-                if (currentLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
-                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false); // disable toolbar items.
-                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true);
-                } else {
-                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true); // disable toolbar items.
-                }
-            } else {
-                if (currentLevel === this.parent.zoomingLevels[0].level) {
-                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], false); // disable toolbar items.
-                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true);
-                } else {
-                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true); // enable toolbar items.
-                }
-            }
-        }
+        let currentLevel: number = this.getZoomLevel(currentZoomingLevel, isZoomIn);
+        this.updateToolbar(currentLevel, isZoomIn);
         currentLevel = this.parent.zoomingLevels.findIndex((tempLevel: ZoomTimelineSettings) => {
             return tempLevel.level === currentLevel;
         });
@@ -203,6 +167,48 @@ export class Timeline {
             this.changeTimelineSettings(newTimeline);
         }
         this.isZooming = false;
+    }
+
+    private updateUndoRedo(isZoomIn: boolean): void {
+        const action: string = isZoomIn ? 'ZoomIn' : 'ZoomOut';
+        if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent'](action)) {
+            if (this.parent.undoRedoModule['redoEnabled']) {
+                this.parent.undoRedoModule['disableRedo']();
+            }
+            this.parent.undoRedoModule['createUndoCollection']();
+            const previousTimeline: Object = {
+                action,
+                previousZoomingLevel: extend({}, {}, this.parent.currentZoomingLevel, true)
+            };
+            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as Object) = previousTimeline;
+        }
+    }
+    private getZoomLevel(currentZoomingLevel: number, isZoomIn: boolean): number {
+        const levelChange: number = isZoomIn ? 1 : -1;
+        const level: number = currentZoomingLevel + levelChange;
+        const foundLevel: ZoomTimelineSettings = this.parent.zoomingLevels.find(
+            (tempLevel: ZoomTimelineSettings) => tempLevel.level === level);
+        return foundLevel ? level : currentZoomingLevel;
+    }
+
+    private updateToolbar(currentLevel: number, isZoomIn: boolean): void {
+        if (this.parent.toolbarModule) {
+            if (isZoomIn) {
+                if (currentLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false); // disable toolbar items.
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true);
+                } else {
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true); // disable toolbar items.
+                }
+            } else {
+                if (currentLevel === this.parent.zoomingLevels[0].level) {
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], false); // disable toolbar items.
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true);
+                } else {
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true); // enable toolbar items.
+                }
+            }
+        }
     }
 
     /**

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.41 (2025-01-21)
+## 28.2.3 (2025-01-29)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I678111` -  Handled the enableHtmlSanitizer property functionality for single level list items in the ListView component.
+
+## 28.1.37 (2024-12-31)
 
 ### ListBox
 

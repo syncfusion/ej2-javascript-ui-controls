@@ -3836,7 +3836,7 @@ describe('Drag drop taskbar outside the chart side', () => {
     it('Drag drop taskbar outside the chart side', () => {
         ganttObj.actionComplete = (args) => {
             if(args.requestType === 'save'){
-               //expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('04/08/2019 08:00');
+              // expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('04/08/2019 08:00');
             }
         };
         
@@ -5917,7 +5917,9 @@ describe('Split task left resize', () => {
         it('Checking for taskbar end date', (done:Function) => {
             ganttObj.actionComplete = function (args: any): void {
                 if (args.requestType === "save") {
-                    expect(ganttObj.getFormatedDate(ganttObj.flatData[5].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/8/2019')
+                    expect(ganttObj.getFormatedDate(ganttObj.flatData[5].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/8/2019');
+                    expect(ganttObj.editModule.taskbarEditModule.leftValue).toBe(0);
+                    expect(ganttObj.editModule.taskbarEditModule['previousLeftValue']).toBe(0);
                     done()
                 }
             };
@@ -8329,7 +8331,6 @@ describe('CR:929550-Console error occurred while taskbar drag with null duration
                     }
                 }
             },
-            
             queryCellInfo: function (args) {
                 if (
                     args.data.hasChildRecords &&
@@ -8344,7 +8345,6 @@ describe('CR:929550-Console error occurred while taskbar drag with null duration
                     }
                 }
             },
-            
             height: '550px',
             allowUnscheduledTasks: true,
             projectStartDate: new Date('03/25/2019'),

@@ -143,6 +143,81 @@ export class Dependency {
         return boolValue;
     }
 
+    // Get the root parent of the record
+    public getRootParent(rec: IGanttData): IGanttData {
+        let parentRec: IGanttData = rec;
+        if (rec.parentItem) {
+            parentRec = this.parent.flatData.filter((item: IGanttData) => {
+                return item.uniqueID === rec.parentUniqueID;
+            })[0];
+            if (parentRec.parentItem) {
+                parentRec = this.getRootParent(parentRec);
+            }
+            return parentRec;
+        }
+        return parentRec;
+    }
+    // To check whether the predecessor drawn is valid for parent task
+    public validateParentPredecessor(fromRecord: IGanttData, toRecord: IGanttData): boolean {
+        if (fromRecord && toRecord) {
+            if (toRecord.hasChildRecords && !fromRecord.hasChildRecords) {
+                if (fromRecord.parentUniqueID === toRecord.uniqueID) {
+                    return false;
+                }
+                else {
+                    do {
+                        if (fromRecord.parentItem) {
+                            fromRecord = this.parent.flatData[this.parent.ids.indexOf(fromRecord.parentItem.taskId)];
+                            if (fromRecord.uniqueID === toRecord.uniqueID) {
+                                return false;
+                            }
+                        }
+                    }
+                    while (fromRecord.parentItem);
+                }
+            }
+            else if (!toRecord.hasChildRecords && fromRecord.hasChildRecords) {
+                if (toRecord.parentUniqueID === fromRecord.uniqueID) {
+                    return false;
+                }
+                else {
+                    do {
+                        if (toRecord.parentItem) {
+                            toRecord = this.parent.flatData[this.parent.ids.indexOf(toRecord.parentItem.taskId)];
+                            if (toRecord.uniqueID === fromRecord.uniqueID) {
+                                return false;
+                            }
+                        }
+                    }
+                    while (toRecord.parentItem);
+                }
+            }
+            else if (toRecord.hasChildRecords && fromRecord.hasChildRecords) {
+                if (toRecord.parentItem && fromRecord.parentItem) {
+                    if (fromRecord.parentUniqueID === toRecord.uniqueID || fromRecord.uniqueID === toRecord.parentUniqueID) {
+                        return false;
+                    }
+
+                }
+                else {
+                    if (!toRecord.parentItem && fromRecord.parentItem) {
+                        const fromRootParent: IGanttData = this.getRootParent(fromRecord);
+                        if (fromRootParent.uniqueID === toRecord.uniqueID) {
+                            return false;
+                        }
+                    }
+                    else if (toRecord.parentItem && !fromRecord.parentItem) {
+                        const toRootParent: IGanttData = this.getRootParent(toRecord);
+                        if (toRootParent.uniqueID === fromRecord.uniqueID) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * Get predecessor collection object from predecessor string value
      *
@@ -313,12 +388,12 @@ export class Dependency {
                 const fromData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.to);
                 const toData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.from);
                 let isValid: boolean;
-                if (this.parent.connectorLineEditModule && toData && fromData) {
-                    isValid = this.parent.connectorLineEditModule.validateParentPredecessor(toData, fromData);
+                if (toData && fromData) {
+                    isValid = this.validateParentPredecessor(toData, fromData);
                     if (isValid) {
                         collection.push(obj);
-                        if (parentRecords.indexOf(toData) === -1 && toData.hasChildRecords && this.parent.editModule.cellEditModule &&
-                        this.parent.editModule.cellEditModule.isCellEdit) {
+                        if (parentRecords.indexOf(toData) === -1 && toData.hasChildRecords && this.parent.editModule &&
+                            this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit) {
                             parentRecords.push(extend([], [], [toData], true)[0]);
                         }
                     }
@@ -994,7 +1069,7 @@ export class Dependency {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                     if (this.parent.editModule['editedRecord'] && record) {
                         const rootParent: IGanttData = parentGanttRecord.parentItem ?
-                            this.parent.connectorLineEditModule.getRootParent(parentGanttRecord) : null;
+                            this.getRootParent(parentGanttRecord) : null;
                         if (record.hasChildRecords && (!this.parent.editModule['editedRecord'].hasChildRecords || (!record.parentItem &&
                             (!rootParent || (rootParent && rootParent.ganttProperties.taskId === this.parent.editModule['editedRecord'].ganttProperties.taskId)))) &&
                             this.isValidatedParentTaskID !== record.ganttProperties.taskId) {

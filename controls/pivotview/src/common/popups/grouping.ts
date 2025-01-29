@@ -13,6 +13,7 @@ import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
+import { DataSourceSettingsModel } from '../../model/datasourcesettings-model';
 
 /**
  * `Grouping` module to create grouping option for date, number and custom in popup.
@@ -320,7 +321,13 @@ export class Grouping implements IAction {
                 let caption: string;
                 let dataFields: IFieldOptions[] = dataSource.rows;
                 dataFields = dataFields.concat(dataSource.columns, dataSource.values, dataSource.filters);
-                const actualField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields) as IFieldOptions;
+                let actualField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields) as IFieldOptions;
+                if (isNullOrUndefined(actualField) && !isNullOrUndefined(this.parent.clonedReport)) {
+                    const clonedReport: DataSourceSettingsModel = this.parent.clonedReport;
+                    let clonedDataFields: IFieldOptions[] = clonedReport.rows;
+                    clonedDataFields = clonedDataFields.concat(clonedReport.columns, clonedReport.values, clonedReport.filters);
+                    actualField = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), clonedDataFields) as IFieldOptions;
+                }
                 const currentField: IFieldOptions = PivotUtil.getFieldByName(fieldName, dataFields) as IFieldOptions;
                 const nextField: IFieldOptions = PivotUtil.getFieldByName(fieldName + '_custom_group', dataFields) as IFieldOptions;
                 if (currentField) {

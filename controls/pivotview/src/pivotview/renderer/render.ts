@@ -1873,8 +1873,9 @@ export class Render {
         this.pivotColumns = [];
         if ((((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true :
             (this.parent.dataSourceSettings.values.length > 0 && this.parent.dataSourceSettings.dataSource
-             && this.parent.engineModule.data.length > 0)) || (this.parent.dataSourceSettings.mode === 'Server' &&
-                this.parent.dataSourceSettings.url !== '' && this.engine.pivotValues.length > 0)) && !this.engine.isEmptyData) {
+             && this.parent.engineModule.data.length > 0)) || (this.parent.dataSourceSettings.mode === 'Server'
+                && this.parent.dataSourceSettings.values.length > 0 && this.parent.dataSourceSettings.url !== '' &&
+                    this.engine.pivotValues.length > 0)) && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
             const headerSplit: Object[] = [];
             const splitPos: Object[] = [];

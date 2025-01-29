@@ -6511,7 +6511,8 @@ export class PdfViewerBase {
             }
         }
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.isAnnotationSelected &&
-             this.pdfViewer.annotationModule.annotationPageIndex === pageIndex) {
+             this.pdfViewer.annotationModule.annotationPageIndex === pageIndex &&
+             this.pdfViewer.annotationModule.annotationType !== 'image') {
             this.pdfViewer.annotationModule.selectAnnotationFromCodeBehind();
         }
         this.isLoadedFormFieldAdded = false;
@@ -6662,9 +6663,9 @@ export class PdfViewerBase {
      * @param {number} pageIndex - page index for rendering the annotation.
      * @param {any} annotationsCollection -It describes about the annotations collection
      * @param {boolean} isAddedProgrammatically - It describes about the whether the isAddedProgrammatically true or not
-     * @returns {void}
+     * @returns {Promise<void>} - any
      */
-    public renderAnnotations(pageIndex: number, annotationsCollection: any, isAddedProgrammatically?: boolean): void {
+    public async renderAnnotations(pageIndex: number, annotationsCollection: any, isAddedProgrammatically?: boolean): Promise<void> {
         const data: any = {};
         if (this.documentAnnotationCollections) {
             let isAnnotationAdded: boolean = false;
@@ -6734,7 +6735,8 @@ export class PdfViewerBase {
                     this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderStickyNotesAnnotations(annotData, pageIndex);
                     break;
                 case 'stamp':
-                    this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotations(annotData, pageIndex, null, null, true);
+                    await this.pdfViewer.annotationModule.stampAnnotationModule.
+                        renderStampAnnotations(annotData, pageIndex, null, null, true);
                     break;
                 case 'Ink':
                     if (!this.pdfViewer.isSignatureEditable) {
@@ -8589,7 +8591,9 @@ export class PdfViewerBase {
                                             }
                                             break;
                                         case 'renderThumbnail':
-                                            proxy.pdfViewer.thumbnailViewModule.thumbnailOnMessage(event);
+                                            if (proxy.clientSideRendering) {
+                                                proxy.pdfViewer.thumbnailViewModule.thumbnailOnMessage(event);
+                                            }
                                             break;
                                         case 'renderPreviewTileImage':
                                             proxy.pdfViewer.pageOrganizer.previewOnMessage(event);

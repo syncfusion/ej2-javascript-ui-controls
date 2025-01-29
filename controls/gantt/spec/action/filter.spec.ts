@@ -1631,3 +1631,59 @@ describe('Filtering duration Column With Parent Div element', () => {
         }
     });
 });
+describe('Gantt filter action', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowFiltering: true,
+                enableAdaptiveUI: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'ResourceId',
+                },
+                resourceNameMapping: 'ResourceName',
+                resourceIDMapping: 'ResourceId',
+                resources: projectResources,
+                splitterSettings: {
+                    columnIndex: 7,
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name' },
+                    { field: 'StartDate', headerText: 'Start Date' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                    { field: 'Progress', headerText: 'Progress' },
+                ],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('task name FilterMenu Click Function', () => {
+        let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[1] as HTMLElement;
+        triggerMouseEvent(filterMenuIcon, 'click');
+        expect(ganttObj.element.querySelectorAll('.e-headercell')[1].getElementsByClassName('e-headertext')[0].textContent).toBe('Task Name');
+        let ok: HTMLElement = document.getElementsByClassName('e-res-apply-btn')[0] as HTMLElement;
+        triggerMouseEvent(ok, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

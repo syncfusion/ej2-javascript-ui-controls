@@ -869,6 +869,22 @@ describe('Menu', () => {
             // rightEventArgs.target = menu.element.children[2];
             // menu.rightEnterKeyHandler(rightEventArgs);
         });
+        it('should handle ESC key to close the menu', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, showItemOnClick: true }, '#menu');
+            menu.navIdx = [1, 1];
+            const keyEventArgs: any = {
+                preventDefault: () => { /**/ },
+                stopImmediatePropagation: () => { /**/ },
+                action: 'escape',
+                key: 'Escape',
+                keyCode: 27,
+                target: document.activeElement,
+                type: 'keydown'
+            };
+            menu.domKeyHandler(keyEventArgs);
+            expect(menu.isMenuVisible()).toBe(true);
+        });
     });
 
     describe('CR issues', () => {

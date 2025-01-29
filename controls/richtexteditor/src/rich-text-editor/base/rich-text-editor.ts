@@ -1693,6 +1693,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             case 'insertHTML':
                 if (this.enableHtmlSanitizer) {
                     if (typeof value === 'string') {
+                        value = value.replace(/&(times|divide|ne)/g, '&amp;amp;$1');
                         value = this.htmlEditorModule.sanitizeHelper(value);
                     } else {
                         value = this.htmlEditorModule.sanitizeHelper((value as HTMLElement).outerHTML);
@@ -1821,6 +1822,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     protected render(): void {
+        this.setProperties({ value: this.replaceEntities(this.value) }, true);
         if (this.value && !this.valueTemplate) {
             this.setProperties({ value: this.serializeValue(this.value) }, true);
         }
@@ -2582,6 +2584,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 } else {
                     nVal = newProp[prop];
                 }
+                nVal = this.editorMode === 'HTML' ? this.replaceEntities(nVal) : nVal;
                 nVal = this.serializeValue(nVal);
                 const val: string = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
                 if ((!isNOU(nVal) && nVal !== '') || prop === 'enterKey') {
@@ -2718,7 +2721,33 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             detach(srcList[i as number]);
         }
     }
+
+    private replaceEntities(value: string): string {
+        if (this.editorMode !== 'HTML' || isNOU(value) || !/&(amp;)*((times)|(divide)|(ne))/.test(value)) {
+            return value;
+        }
+        const isEncodedOrSanitized: boolean = this.enableHtmlEncode || this.enableHtmlSanitizer;
+        const createReplacement: (entity: string) => [string, RegExp] = (entity: string): [string, RegExp] => {
+            const replacement: string = isEncodedOrSanitized ? `&amp;amp;${entity}` : `&amp;${entity}`;
+            const regexPattern: string = (!this.enableHtmlEncode && this.enableHtmlSanitizer)
+                ? `&(${entity})`
+                : `&(amp;)*(${entity})`;
+            const regExp: RegExpConstructor = RegExp;
+            const regex: RegExp = new regExp(regexPattern, 'g');
+            return [replacement, regex];
+        };
+        const entities: string[] = ['times', 'divide', 'ne'];
+        const replacementsAndRegexes: [string, RegExp][] = entities.map(createReplacement);
+        for (const [replacement, regex] of replacementsAndRegexes) {
+            if (regex.test(value)) {
+                value = value.replace(regex, replacement);
+            }
+        }
+        return value;
+    }
+
     private updatePanelValue(): void {
+        this.setProperties({ value: this.replaceEntities(this.value) }, true);
         let value: string = this.editorMode === 'HTML' ? this.listOrderCorrection(this.value) : this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         const getTextArea: HTMLInputElement = this.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA) ;
@@ -3425,8 +3454,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
             this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
                     this.encode(decode(this.removeResizeElement(this.inputElement.innerHTML))) : this.inputElement.innerHTML;
+            if (this.enableHtmlSanitizer && !isNOU(value) && /&(amp;)*((times)|(divide)|(ne))/.test(this.value)) {
+                value = value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2');
+            }
             if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
-                value = getTextArea.value;
+                value = /&(amp;)*((times)|(divide)|(ne))/.test(getTextArea.value) ? getTextArea.value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2') : getTextArea.value;
             }
         } else {
             value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :

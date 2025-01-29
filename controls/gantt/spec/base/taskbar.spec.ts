@@ -1496,6 +1496,15 @@ describe('Add dependency', () => {
             expect(updatedTask.ganttProperties.predecessorsName).toBe('1FS');
         }
     });
+    it('Add a predecessor to Task 3', () => {
+        ganttObj.allowParentDependency =false;
+        ganttObj.flatData[2].ganttProperties.predecessorsName = "";
+        ganttObj.addPredecessor(3, '1FS');
+        var updatedTask = ganttObj.getRecordByID('3');
+        if (updatedTask && updatedTask.ganttProperties) {
+            expect(updatedTask.ganttProperties.predecessorsName).toBe('1FS');
+        }
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);

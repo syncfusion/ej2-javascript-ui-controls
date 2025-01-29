@@ -25,7 +25,7 @@ import {
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection, CommentReviewPane, HistoryInfo, ActionInfo } from '../index';
-import { TextPosition } from '../selection/selection-helper';
+import { SelectionWidgetInfo, TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
 import { Dialog, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { ImageResizer } from '../editor/image-resizer';
@@ -2731,12 +2731,33 @@ export class DocumentHelper {
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !isNullOrUndefined(this.selection.caret)) {
                 this.selection.caret.style.display = 'none';
             }
-            if (!isNullOrUndefined(this.dragStartParaInfo) && !isNullOrUndefined(this.dragEndParaInfo) && this.dragEndParaInfo.paragraph.equals(this.dragStartParaInfo.paragraph)
-                && this.dragStartParaInfo.offset < this.dragEndParaInfo.offset) {
-                let index = 0;
-                let currentInline: ElementInfo = this.dragStartParaInfo.paragraph.getInline(this.dragEndParaInfo.offset, index);
-                if (!isNullOrUndefined(currentInline.element) && currentInline.element instanceof ImageElementBox && currentInline.element.textWrappingStyle !== "Inline") {
-                    this.isDragStarted = false;
+            if (this.isDragStarted) {
+                if (this.selection.selectedWidgets.length === 0 && !isNullOrUndefined(this.dragStartParaInfo) && !isNullOrUndefined(this.dragEndParaInfo) && this.dragEndParaInfo.paragraph.equals(this.dragStartParaInfo.paragraph)) {
+                    let currentInline: ElementInfo = this.dragStartParaInfo.paragraph.getInline(this.dragEndParaInfo.offset, 0);
+                    if (!isNullOrUndefined(currentInline.element) && currentInline.element instanceof ImageElementBox && currentInline.element.textWrappingStyle !== "Inline") {
+                        this.isDragStarted = false;
+                    }
+                }
+                else if (this.selection.selectedWidgets.length > 0) {
+                    for (let i = 0; i < this.selection.selectedWidgets.values.length; i++) {
+                        let selectedWidgetInfo: SelectionWidgetInfo = this.selection.selectedWidgets.values[i] as SelectionWidgetInfo;
+                        if (selectedWidgetInfo.floatingItems.length > 0) {
+                            for (let j = 0; j < selectedWidgetInfo.floatingItems.length; j++) {
+                                if (selectedWidgetInfo.floatingItems[j] instanceof ImageElementBox && selectedWidgetInfo.floatingItems[j].textWrappingStyle !== "Inline") {
+                                    this.isDragStarted = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!this.isDragStarted) {
+                            break;
+                        }
+                    }
+                }
+                if (!this.isDragStarted) {
+                    this.dragStartParaInfo = undefined;
+                    this.dragEndParaInfo = undefined;
+                    this.selection.caret.classList.add("e-de-cursor-animation");
                 }
             }
             if (this.isDragStarted) {

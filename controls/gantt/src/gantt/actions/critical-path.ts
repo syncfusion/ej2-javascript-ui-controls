@@ -284,7 +284,7 @@ export class CriticalPath {
                     offsetInMillSec = parseFloat(fromDateArray1[1]);
                 }
             }
-            if (fromIdFlatData) {
+            if (fromIdFlatData && fromTaskIdIndex !== -1) {
                 // calculate slack value for the task contains predecessor connection in "finish to start".
                 if (fromDataPredecessor[i as number] === 'FS') {
                     if (fromIdFlatData.endDate > toIdFlatData.startDate) {
@@ -578,19 +578,13 @@ export class CriticalPath {
                     }
                 }
                 if (collection[fromTaskIdIndex as number]['from']) {
-                    fromDataObject.push({
+                    const data: Object[] = [];
+                    data.push({
                         fromdata: collection[fromTaskIdIndex as number]['from'], todateID: collection[fromTaskIdIndex as number]['taskid'],
                         fromDataPredecessor: collection[fromTaskIdIndex as number]['fromPredecessor']
                     });
+                    this.slackCalculation(data, collection, collectionTaskId, checkEndDate, flatRecords, modelRecordIds);
                 }
-            }
-        }
-        if (fromDataObject) {
-            fromDataObject.splice(0, 1);
-            if (fromDataObject.length > 0) {
-                fromDataObject.forEach((item: any) => {
-                    this.slackCalculation([item], collection, collectionTaskId, checkEndDate, flatRecords, modelRecordIds);
-                });
             }
         }
     }
@@ -617,7 +611,7 @@ export class CriticalPath {
                 fromRecord = this.parent.flatData[resourceIndex as number];
             }
             let durationDiff: number;
-            if (record.ganttProperties.endDate.getTime() >= this.maxEndDate.getTime()) {
+            if (record.ganttProperties.endDate && record.ganttProperties.endDate.getTime() >= this.maxEndDate.getTime()) {
                 record.ganttProperties.slack = record.slack = 0 + ' ' + record.ganttProperties.durationUnit;
                 if (record.ganttProperties.progress < 100) {
                     record.isCritical = true;

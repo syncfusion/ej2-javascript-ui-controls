@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 28.2.3 (2025-01-29)
+
+### Grid
+
+#### Bug fixes
+
+- `#I665951` - A blank space that appeared on the initial render when using frozen columns with `columnVirtualization` has been fixed.
+- `#I676688` - A script error that occurred during Excel export for image columns when grid column widths were not defined has been resolved.
+- `#I681573` - A script error that occurred when clicking the Cancel or Save button in dialog editing with grouping has been resolved.
+- `#I657081` - Duplicate `API` requests triggered during `virtual scrolling` in the grid have been resolved.
+- `#I678648` - The issue with the invalid attribute name `aria-grouped` detected in the Grid component with grouping has been fixed.
+- `#I679153` - A script error that occurred when destroying the grid with `virtualization` and `persistence` enabled has been fixed.
+
 ## 28.1.41 (2025-01-21)
 
 ### Grid

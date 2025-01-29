@@ -4819,6 +4819,37 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
     });
 
+    describe('921860 - Nested list created after performing copy and pasting content from outlook', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    keepFormat: true
+                },
+                value:`<ul><li>Rich text Editor 1</li><li style="margin-top: 0px; margin-right: 0px; margin-bottom: 10px;">Rich text Editor 2</li><li style="margin-top: 0px; margin-right: 0px; margin-bottom: 10px;">Rich text Editor 3</li></ul>`
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Paste the content at the end of the <li> element.', (done: DoneFn) => {
+            editor.focusIn();
+            var element: Node = editor.inputElement.querySelector("UL li").firstChild;
+            setCursorPoint(element as Element, (element as Text).length as number);
+            const clipBoardData: string = `<meta charset=\"UTF-8\"><ul type=\"disc\" style=\"font-style: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: none; caret-color: rgb(36, 36, 36); color: rgb(36, 36, 36); font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 15px; margin-bottom: 0px;\"><li class=\"ulelement\" style=\"font-size: 11pt; font-family: Calibri, sans-serif; margin: 0px 0px 7.5pt; line-height: 18pt; color: black !important;\"><span data-olk-copy-source=\"MessageBody\" style=\"border: 0px; font-style: inherit; font-variant-caps: inherit; font-weight: inherit; font-stretch: inherit; font-size: 10.5pt; line-height: inherit; font-family: &quot;Segoe UI&quot;, sans-serif; font-size-adjust: inherit; font-kerning: inherit; font-variant-alternates: inherit; font-variant-ligatures: inherit; font-variant-numeric: inherit; font-variant-east-asian: inherit; font-variant-position: inherit; font-feature-settings: inherit; font-optical-sizing: inherit; font-variation-settings: inherit; margin: 0px; padding: 0px; vertical-align: baseline; color: inherit; letter-spacing: 0.25pt;\">Pressing enter key at the end of the line with P as enterKey API. -&nbsp;</span><span style=\"border: 0px; font-style: inherit; font-variant-caps: inherit; font-weight: inherit; font-stretch: inherit; font-size: 10.5pt; line-height: inherit; font-family: Inter; font-size-adjust: inherit; font-kerning: inherit; font-variant-alternates: inherit; font-variant-ligatures: inherit; font-variant-numeric: inherit; font-variant-east-asian: inherit; font-variant-position: inherit; font-feature-settings: inherit; font-optical-sizing: inherit; font-variation-settings: inherit; margin: 0px; padding: 0px; vertical-align: baseline; color: inherit; letter-spacing: 0.25pt;\">P, div, and Br tags</span></li></ul>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                var pastedElm = editor.inputElement.querySelector(".ulelement").parentElement.nodeName == 'UL';
+                expect(pastedElm).toBe(true);
+                done();
+            }, 100);
+        });
+    });
     describe('931044 - After Pasting an Image, the afterPasteCleanup Event Does Not Get Triggered.', () => {
         let editor: RichTextEditor;
         beforeEach((done: DoneFn) => {

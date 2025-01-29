@@ -1,0 +1,53 @@
+@mixin badge-size($border-radius, $height, $line-height, $min-width, $padding, $width) {
+  border-radius: $border-radius;
+  height: $height;
+  line-height: $line-height;
+  min-width: $min-width;
+  padding: $padding;
+  width: $width;
+}
+
+@include export-module('badge-bigger') {
+  .e-bigger .e-badge,
+  .e-badge.e-bigger {
+    @if ($badge-theme == 'tailwind' or $badge-theme == 'FluentUI' or $badge-theme == 'tailwind-dark' or $badge-theme == 'bootstrap5' or $badge-theme == 'Material3' or $badge-theme == 'fluent2' or $badge-theme == 'tailwind3') {
+      font-size: $badge-touch-base-font-size;
+      font-weight: $badge-touch-base-font-weight;
+      @include badge-size($badge-touch-base-border-radius, $badge-touch-base-height, $badge-touch-base-line-height, null, $badge-touch-padding, null);
+
+      &.e-badge-pill {
+        border-radius: $badge-pill-border-radius;
+        padding: $badge-touch-pill-padding;
+      }
+
+      &.e-badge-ghost {
+        padding: $badge-touch-ghost-padding;
+
+        &.e-badge-circle {
+          padding: $badge-touch-ghost-circle-padding;
+        }
+
+        &.e-badge-notification {
+          padding: $badge-touch-ghost-notification-padding;
+        }
+      }
+
+      &.e-badge-notification {
+        @include badge-size($badge-pill-border-radius, null, null, $badge-touch-notification-min-width, $badge-touch-pill-padding, null);
+      }
+
+      &.e-badge-circle {
+        @include badge-size($badge-circle-border-radius, null, null, $badge-circle-min-width, $badge-touch-circle-padding, $badge-touch-circle-width);
+        @if ($badge-theme == 'tailwind3') {
+          height: $badge-touch-circle-height;
+          font-size: 12px;
+          padding: 4px 3px;
+        }
+      }
+
+      &.e-badge-dot {
+        @include badge-size($badge-dot-border-radius, $badge-touch-dot-height, null, null, null, $badge-touch-dot-width);
+      }
+    }
+  }
+}

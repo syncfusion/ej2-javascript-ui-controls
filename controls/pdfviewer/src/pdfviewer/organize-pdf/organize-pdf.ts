@@ -797,6 +797,7 @@ export class PageOrganizer {
                 const pageId: number = i;
                 this.dataDetails.push({ pageId: pageId, image: thumbnailImage });
             }
+            this.dataDetails.sort((a: { pageId: number }, b: { pageId: number }) => a.pageId - b.pageId);
         }
         if (this.dataDetails.length === this.pdfViewer.pageCount) {
             if (!isNullOrUndefined(this.pdfViewerBase.navigationPane)) {

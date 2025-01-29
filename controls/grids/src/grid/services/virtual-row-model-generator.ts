@@ -260,9 +260,11 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 keys.splice((keys.length - 1) -  rightCol, rightCol);
             }
         }
+        const frozenLeftCount: number = this.parent.getVisibleFrozenLeftCount();
         keys.some((offset: string) => {
             const iOffset: number = Number(offset); const offsetVal: number = this.cOffsets[`${offset}`];
-            const border: boolean = (diffWidth + frzLeftWidth) <= offsetVal && (left + calWidth) >= offsetVal;
+            const border: boolean = (diffWidth < 0 && iOffset < frozenLeftCount) || ((diffWidth + frzLeftWidth) <= offsetVal &&
+                (left + calWidth) >= offsetVal);
             if (border) {
                 indexes.push(iOffset);
             }

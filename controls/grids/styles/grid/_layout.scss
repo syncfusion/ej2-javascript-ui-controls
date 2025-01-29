@@ -1885,7 +1885,12 @@
 
     &.e-wrap .e-columnmenu,
     &.e-wrap &.e-rtl .e-columnmenu {
-      line-height: $grid-wrap-line-height;
+      @if $grid-skin == 'material' or $grid-skin == 'material3' {
+        line-height: 3px;
+      }
+      @else {
+        line-height: $grid-wrap-line-height;
+      }
     }
 
     &.e-rtl .e-columnmenu {
@@ -2040,6 +2045,9 @@
     }
 
     .e-filterbarcell input {
+      &.e-checkbox{
+        height: 1px;
+      }
       border-radius: $grid-filterbar-border-radius;
       @include grid-border-style-width-font-size-weight(solid, $grid-filterbar-input-border-width, $grid-font-size, normal);
       height: $grid-filterbarcell-text-input;

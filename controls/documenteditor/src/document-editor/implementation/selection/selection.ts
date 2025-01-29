@@ -3959,16 +3959,17 @@ export class Selection {
      * @private
      * @returns {boolean}
      */
-    public isParagraphMarkSelected (): boolean {
-        let line: LineWidget = this.end.currentWidget;
+    public isParagraphMarkSelected(): boolean {
+        let end: TextPosition = this.isForward ? this.end : this.start;
+        let line: LineWidget = end.currentWidget;
         let paraElement: ParagraphWidget;
-        if(line instanceof LineWidget){
+        if (line instanceof LineWidget) {
             paraElement = line.paragraph;
         }
         let paraLength: number = this.getParagraphLength(paraElement);
-        let endIndices: any = this.endOffset.split(';');
+        let endIndices: any = this.getHierarchicalIndexByPosition(end).split(';');
         let endIndex: number = parseInt(endIndices[endIndices.length - 1]);
-        if(endIndex > paraLength){
+        if (endIndex > paraLength) {
             return true;
         }
         return false;

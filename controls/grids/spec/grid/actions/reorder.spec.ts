@@ -1200,5 +1200,4 @@ describe('Reorder module', () => {
             destroy(gridObj);
         });
     });
-
 });

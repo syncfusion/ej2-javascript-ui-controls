@@ -231,6 +231,9 @@ export class DialogRenderer {
             (this.parent as PivotFieldList).pivotChange = false;
         }
         this.parent.isDeferUpdateApplied = true;
+        if (!this.parent.isPopupView && this.parent.dataSourceSettings.mode === 'Server') {
+            this.parent.isRequiredUpdate = true;
+        }
         this.parent.updateDataSource(false);
         const parent: PivotFieldList = this.parent;
         parent.axisFieldModule.render();
@@ -436,6 +439,9 @@ export class DialogRenderer {
         }
     }
     private onDeferUpdateClick(): void {
+        if (this.parent.isPopupView && this.parent.dataSourceSettings.mode === 'Server') {
+            this.parent.isRequiredUpdate = true;
+        }
         this.parent.updateDataSource();
         this.parent.dialogRenderer.fieldListDialog.hide();
     }

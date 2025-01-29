@@ -683,7 +683,7 @@ export class TableResizer {
         this.owner.editorModule.isSkipOperationsBuild = false;
         if (dragValue) {
             this.startingPoint.x += HelperMethods.convertPointToPixel(dragValue);
-            this.resizerPosition = this.getCellReSizerPosition(this.startingPoint);
+            // this.resizerPosition = this.getCellReSizerPosition(this.startingPoint);
         }
     }
     private getColumnCells(table: TableWidget, columnIndex: number, isLeftSideCollection: boolean): TableCellWidget[] {

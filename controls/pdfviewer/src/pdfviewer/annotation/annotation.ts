@@ -160,6 +160,11 @@ export class Annotation {
     private removedDocumentAnnotationCollection: any = [];
     /**
      * @private
+     * It is used to store the non render page selected annotation.
+     */
+    private nonRenderSelectedAnnotation: any = {};
+    /**
+     * @private
      */
     public isShapeCopied: boolean = false;
     /**
@@ -195,6 +200,10 @@ export class Annotation {
      */
     public annotationPageIndex: number = null;
     private previousIndex: number = null;
+    /**
+     * @private
+     */
+    public annotationType: string = null;
     private overlappedAnnotations: any = [];
     /**
      * @private
@@ -528,6 +537,17 @@ export class Annotation {
                     this.pdfViewer.textSelectionModule.enableTextSelectionMode();
                 }
             }
+        }
+        else if (this.nonRenderSelectedAnnotation && this.isAnnotDeletionApiCall) {
+            const annotationId: string = this.nonRenderSelectedAnnotation.annotationId;
+            const pageIndex: number = this.nonRenderSelectedAnnotation.pageNumber;
+            const collections: any = this.updateCollectionForNonRenderedPages(this.nonRenderSelectedAnnotation, annotationId, pageIndex);
+            collections.pageIndex = pageIndex;
+            this.pdfViewer.annotation.addAction(pageIndex, null, collections, 'Delete', '', collections, collections);
+            this.undoCommentsElement.push(collections);
+            const removeDiv: HTMLElement = document.getElementById(annotationId);
+            this.removeCommentPanelDiv(removeDiv);
+            this.nonRenderSelectedAnnotation = null;
         }
         this.updateToolbar(true);
         if (this.pdfViewer.toolbarModule) {
@@ -984,9 +1004,15 @@ export class Annotation {
                     } else if (annotation.shapeAnnotationType === 'sticky' || annotation.ShapeAnnotationType === 'sticky') {
                         this.pdfViewer.select([annotation.annotationId], currentSelector);
                         this.pdfViewer.annotation.onAnnotationMouseDown();
-                    } else {
+                    } else if (annotation.uniqueKey) {
                         this.pdfViewer.select([annotation.uniqueKey], currentSelector);
                         this.pdfViewer.annotation.onAnnotationMouseDown();
+                    }
+                    else {
+                        this.selectAnnotationId = id;
+                        this.isAnnotationSelected = true;
+                        this.annotationPageIndex = pageIndex;
+                        this.annotationType = annotation.stampAnnotationType;
                     }
                     const commentElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
                     if (commentElement && commentElement.style.display === 'block') {
@@ -1002,20 +1028,18 @@ export class Annotation {
                         }
                     }
                 }
-                else if (annotation.uniqueKey || (annotation.shapeAnnotationType === 'textMarkup' && annotation.annotationAddMode === 'Imported Annotation')) {
+                else if (annotation.uniqueKey || (annotation.shapeAnnotationType === 'textMarkup' && annotation.annotationAddMode === 'Imported Annotation') || !this.isAnnotDeletionApiCall) {
                     this.selectAnnotationId = id;
                     this.isAnnotationSelected = true;
                     this.annotationPageIndex = pageIndex;
-                    this.selectAnnotationFromCodeBehind();
+                    this.annotationType = annotation.stampAnnotationType;
+                    if (annotation.uniqueKey || (annotation.shapeAnnotationType === 'textMarkup' && annotation.annotationAddMode === 'Imported Annotation')) {
+                        this.selectAnnotationFromCodeBehind();
+                    }
                 }
-            }
-            if (!isRender && !annotation.uniqueKey) {
-                const collections: any = this.updateCollectionForNonRenderedPages(annotation, id, pageIndex);
-                collections.pageIndex = pageIndex;
-                this.pdfViewer.annotation.addAction(pageIndex, null, collections, 'Delete', '', collections, collections);
-                this.undoCommentsElement.push(collections);
-                const removeDiv: HTMLElement = document.getElementById(annotation.annotationId);
-                this.removeCommentPanelDiv(removeDiv);
+                else if (!isRender && !annotation.uniqueKey && this.isAnnotDeletionApiCall) {
+                    this.nonRenderSelectedAnnotation = annotation;
+                }
             }
         }
     }

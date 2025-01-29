@@ -293,5 +293,4 @@ export class EditTooltip {
             return tooltipString;
         }
     }
-
 }

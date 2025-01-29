@@ -1,4 +1,4 @@
-import { Ajax, Fetch, createElement, select, extend, Internationalization } from '@syncfusion/ej2-base';
+import { Ajax, Fetch, createElement, select, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, setValue, getValue } from '@syncfusion/ej2-base';
 import { IFileManager, ReadArgs, BeforeSendEventArgs, BeforeDownloadEventArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -6,7 +6,7 @@ import { createDialog, createExtDialog } from '../pop-up/dialog';
 import { FileDetails, FileDragEventArgs, FailureEventArgs, SuccessEventArgs, FolderCreateEventArgs, DeleteEventArgs, RenameEventArgs, MoveEventArgs, SearchEventArgs } from '../../index';
 import { fileType, setNodeId, getLocaleText, setDateObject, doPasteUpdate, getPathObject } from '../common/utility';
 import { generatePath, getAccessDetails, getTargetPath } from '../common/utility';
-import { ColumnModel, getUid } from '@syncfusion/ej2-grids';
+import { getUid } from '@syncfusion/ej2-grids';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
@@ -141,27 +141,6 @@ export function Delete(parent: IFileManager, items: string[], path: string, oper
 export function GetDetails(parent: IFileManager, names: string[], path: string, operation: string): void {
     const data: Object = { action: operation, path: path, names: names, data: parent.itemData };
     createAjax(parent, data, detailsSuccess, path, operation);
-}
-/**
- * Function for getDateFormat in File Manager.
- *
- * @param {IFileManager} parent - specifies the parent element.
- * @returns {void}
- * @private
- */
-function getDateFormat(parent: IFileManager): string {
-    const columns: ColumnModel[] = parent.detailsViewSettings.columns as ColumnModel[];
-    let dateFormat: string;
-    if (!columns) { return null; }
-    for (let i: number = 0; i < columns.length; i++) {
-        if (columns[i as number].field === '_fm_modified') {
-            if (!isNOU(columns[i as number].format)) {
-                dateFormat = columns[i as number].format.toString();
-            }
-            break;
-        }
-    }
-    return dateFormat;
 }
 
 /**
@@ -770,9 +749,8 @@ function performReadOperation(
             }
         }
     }
-    const intl: Internationalization = new Internationalization(parent.locale);
     if (!isNOU(result.files)) {
-        setDateObject(result.files, intl, getDateFormat(parent));
+        setDateObject(result.files);
         for (let i: number = 0, len: number = result.files.length; i < len; i++) {
             const item: Object = result.files[i as number];
             setValue('_fm_iconClass', fileType(item), item);

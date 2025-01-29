@@ -525,7 +525,8 @@ export class Selection {
             }
         } else if (this.parent.selectionSettings.type === 'Multiple' && this.parent.isAdaptive) {
             const $tr: Element = closest(target, '.e-rowcell');
-            if ($tr && this.selectedRowIndexes.length === 0) {
+            if ($tr && ((this.selectedRowIndexes.length === 0 && this.parent.selectionSettings.mode === 'Row') ||
+                        (this.getCellSelectedRecords().length === 0 && this.parent.selectionSettings.mode === 'Cell'))) {
                 this.hidePopUp();
             }
         }

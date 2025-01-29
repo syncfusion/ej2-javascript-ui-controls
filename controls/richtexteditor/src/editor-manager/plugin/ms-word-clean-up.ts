@@ -109,6 +109,7 @@ export class MsWordPaste {
             if (source === PASTE_SOURCE[2]) {
                 this.handleOneNoteContent(elm);
             }
+            this.removeEmptyMetaTags(elm);
             e.callBack(elm.innerHTML, null, source);
         }
     }
@@ -495,6 +496,15 @@ export class MsWordPaste {
         }
     }
 
+    private removeEmptyMetaTags(element: HTMLElement): void {
+        const metaTags: NodeListOf<HTMLMetaElement> = element.querySelectorAll('meta:empty');
+        for (let i: number = metaTags.length - 1; i >= 0; i--) {
+            const metaTag: Element = metaTags[i as number] as Element;
+            if (metaTag.textContent === '') {
+                detach(metaTag);
+            }
+        }
+    }
     private styleCorrection(elm: HTMLElement, wordPasteStyleConfig: string[]): void {
         const styleElement: NodeListOf<HTMLStyleElement> = elm.querySelectorAll('style');
         let styles: string[] = [];

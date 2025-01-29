@@ -4,7 +4,7 @@
 import { Chart } from '../chart';
 import { Axis } from '../axis/axis';
 import { FontModel } from '../../common/model/base-model';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { textWrap, appendClipElement, appendChildElement } from '../../common/utils/helper';
 import { valueToCoefficient, textTrim, textElement, withInBounds } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -148,8 +148,9 @@ export class MultiLevelLabel {
                 pathRect = '';
                 start = typeof categoryLabel.start === 'string' ? Number(new Date(categoryLabel.start)) : categoryLabel.start;
                 end = typeof categoryLabel.end === 'string' ? Number(new Date(categoryLabel.end)) : categoryLabel.end;
+                const labelFontStyle: FontModel = <FontModel>(extend({}, getValue('properties', multiLevel.textStyle), null, true));
                 argsData = this.triggerMultiLabelRender(
-                    axis, categoryLabel.text, axis.multiLevelLabels[level as number].textStyle,
+                    axis, categoryLabel.text, labelFontStyle,
                     axis.multiLevelLabels[level as number].alignment, categoryLabel.customAttributes);
                 if (!argsData.cancel) {
                     startX = valueToCoefficient(<number>start, axis) * axisRect.width;
@@ -385,8 +386,9 @@ export class MultiLevelLabel {
                 startY = valueToCoefficient(<number>(start), axis) * (rect.height);
                 endY = valueToCoefficient(<number>(end), axis) * (rect.height);
                 endY = isInversed ? [startY, startY = endY][0] : endY;
+                const labelFontStyle: FontModel = <FontModel>(extend({}, getValue('properties', multiLevel.textStyle), null, true));
                 argsData = this.triggerMultiLabelRender(
-                    axis, categoryLabel.text, multiLevel.textStyle, multiLevel.alignment, categoryLabel.customAttributes);
+                    axis, categoryLabel.text, labelFontStyle, multiLevel.alignment, categoryLabel.customAttributes);
                 if (!argsData.cancel) {
                     const maximumWidth: number = ((categoryLabel.maximumTextWidth === null ?
                         (this.yAxisMultiLabelHeight[level as number] / 2) : categoryLabel.maximumTextWidth / 2));

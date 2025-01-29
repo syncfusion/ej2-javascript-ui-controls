@@ -177,6 +177,7 @@ export class Resize {
         if (!isNullOrUndefined(this.iframeElement)) {
             this.iframeElement.forEach((iframe: HTMLIFrameElement) => {
                 this.removeMouseUpEventListener(iframe);
+                EventHandler.remove(iframe, 'load', this.onIFrameLoad);
             });
         }
         if (this.resizer) {

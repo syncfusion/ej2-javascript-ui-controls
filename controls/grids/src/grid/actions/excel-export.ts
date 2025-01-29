@@ -1272,9 +1272,13 @@ export class ExcelExport {
             (<{name?: string}>style).name = gObj.element.id + 'column' + index;
             this.styles.push(style);
         }
-        if (!isNullOrUndefined(col.width) && col.width !== 'auto' && !(<{childGridLevel?: number}>gObj).childGridLevel) {
-            this.columns.push({ index: index + (<{childGridLevel?: number}>gObj).childGridLevel, width: typeof col.width === 'number' ?
-                col.width : this.helper.getConvertedWidth(col.width) });
+        if (!(<{childGridLevel?: number}>gObj).childGridLevel) {
+            if (!isNullOrUndefined(col.width) && col.width !== 'auto') {
+                this.columns.push({ index: index + (<{childGridLevel?: number}>gObj).childGridLevel, width: typeof col.width === 'number' ?
+                    col.width : this.helper.getConvertedWidth(col.width) });
+            } else {
+                this.columns.push({ index: index + (<{childGridLevel?: number}>gObj).childGridLevel, width: null });
+            }
         }
     }
 

@@ -13956,7 +13956,7 @@ describe('Dialog editing - With task name has -', () => {
         }
     });
  });
- describe('CR:931222-When virtualization is enabled, the resource collection does not display properly in the resource tab', () => {
+describe('CR:931222-When virtualization is enabled, the resource collection does not display properly in the resource tab', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt({

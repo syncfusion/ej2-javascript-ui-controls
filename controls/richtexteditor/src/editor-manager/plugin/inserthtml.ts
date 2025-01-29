@@ -31,7 +31,7 @@ export class InsertHtml {
         let node: Node;
         if (typeof insertNode === 'string') {
             const divNode: HTMLElement = document.createElement('div');
-            divNode.innerHTML = insertNode;
+            divNode.innerHTML = insertNode.replace(/&(times|divide|ne)(;?)/g, '&amp;$1$2');
             node = isExternal ? divNode : divNode.firstChild;
         } else {
             if (isExternal && !(!isNOU(insertNode) && !isNOU((insertNode as HTMLElement).classList) &&

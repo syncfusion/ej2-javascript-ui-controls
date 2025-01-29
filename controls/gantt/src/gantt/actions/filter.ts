@@ -217,7 +217,7 @@ export class Filter {
             const ganttElement: Element = closest(element, '#' + this.parent.element.id)
                 || element.querySelector('#' + this.parent.element.id);
             if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) ||
-            (!(this.filterMenuElement.contains(element)) && (isNullOrUndefined(datePickerElement)) &&
+            ((!(this.filterMenuElement.contains(element)) && !this.parent.enableAdaptiveUI) && (isNullOrUndefined(datePickerElement)) &&
             (isNullOrUndefined(dateTimePickerElement)) && ((element.nodeName === 'DIV') || (element.nodeName === 'HTML') ||
             (element.nodeName === 'SPAN') || (element.nodeName === 'BUTTON'))) && !element.classList.contains('e-dropdownbase')) {
                 remove(this.filterMenuElement);
@@ -356,12 +356,14 @@ export class Filter {
         let targetElement: HTMLElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
-            element.style.zIndex = targetElement.parentElement.style.zIndex;
-            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
-                this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
-            }
-            else {
-                this.setPosition(targetElement, getValue('filterModel.dialogObj.element', args));
+            if (targetElement) {
+                element.style.zIndex = targetElement.parentElement.style.zIndex;
+                if (this.parent.treeGrid.filterSettings.type === 'Menu') {
+                    this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
+                }
+                else {
+                    this.setPosition(targetElement, getValue('filterModel.dialogObj.element', args));
+                }
             }
         } else {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');

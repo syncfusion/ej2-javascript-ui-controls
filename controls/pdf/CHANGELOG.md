@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 28.1.41 (2025-01-21)
+## 28.2.3 (2025-01-29)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with preserving the custom stamp while exporting the stamp annotation template from a PDF document.
+- Resolved an issue with font details not being parsed from loaded PDF combo box fields.
+
+## 28.1.39 (2024-01-14)
 
 ### PDF Parser
 

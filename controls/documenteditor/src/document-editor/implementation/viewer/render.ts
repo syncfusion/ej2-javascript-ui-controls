@@ -1798,7 +1798,7 @@ private calculatePathBounds(data: string): Rect {
                         elementBox.canTrigger = true;
                         }
                         elementBox.isVisible = false;
-                        if ((!elementBox.isSpellChecked && !elementBox.isSpellCheckTriggred) || elementBox.line.paragraph.isChangeDetected) {
+                        if ((!elementBox.isSpellChecked && !elementBox.isSpellCheckTriggered) || elementBox.line.paragraph.isChangeDetected) {
                             elementBox.ischangeDetected = true;
                         }
                     }
@@ -2370,7 +2370,7 @@ private calculatePathBounds(data: string): Rect {
                 } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
                     elementBox.ischangeDetected = false;
                     this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
-                    elementBox.isSpellCheckTriggred = true;
+                    elementBox.isSpellCheckTriggered = true;
                 }
             }
         }

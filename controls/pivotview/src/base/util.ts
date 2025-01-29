@@ -1036,16 +1036,28 @@ export class PivotUtil {
         hasMembersOrder?: boolean, isOlap?: boolean
     ): IAxisSet[] {
         let grandTotal: IAxisSet;
-        let order: string[] | number[] = [];
+        let order: (string | number)[] = [];
         if (sortDetails.IsOrderChanged) {
             order = sortDetails.members;
         }
         else {
             order = (sortDetails.sortOrder === 'Ascending' || sortDetails.sortOrder === 'None' || sortDetails.sortOrder === undefined) ? [].concat(sortDetails.members) : [].concat(sortDetails.members).reverse();
         }
+        if (order.length > sortMembersOrder.length) {
+            order = order.filter((item: string | number) =>
+                sortMembersOrder.some((member: { formattedText: string, actualText: string, dateText: string }) => {
+                    const sortText: string | number = isOlap
+                        ? member.formattedText
+                        : type === 'string' || type === 'number'
+                            ? member.actualText
+                            : member.dateText;
+                    return (typeof item === typeof sortText) && (sortText === item);
+                })
+            );
+        }
         const updatedMembers: string[] | number[] = [];
         const isNormalType: boolean = type === undefined || type === 'string' || type === 'number';
-        if (sortMembersOrder[0].actualText === 'Grand Total') {
+        if (sortMembersOrder.length > 0 && sortMembersOrder[0].actualText === 'Grand Total') {
             grandTotal = sortMembersOrder[0];
             sortMembersOrder.shift();
         }

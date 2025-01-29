@@ -45,7 +45,7 @@ import { ICalendarExport } from '../exports/calendar-export';
 import { ICalendarImport } from '../exports/calendar-import';
 import { ExcelExport } from '../exports/excel-export';
 import { Print } from '../exports/print';
-import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields } from '../base/interface';
+import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields, BeforePasteEventArgs } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
 import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction } from '../base/interface';
@@ -1114,7 +1114,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @event 'beforePaste'
      */
     @Event()
-    public beforePaste : EmitType<ReturnType>;
+    public beforePaste : EmitType<BeforePasteEventArgs>;
 
     /**
      * Constructor for creating the Schedule widget

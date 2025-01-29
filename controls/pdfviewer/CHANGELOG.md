@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.3 (2025-01-29)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I679527` - Now, the annotations no longer disappear when programmatically selecting annotations on a non-rendered page.
+- `#I678021` - Now, the order of annotations is properly preserved if the document contains stamp annotations.
+
 ## 28.1.41 (2025-01-21)
 
 ### PDF Viewer

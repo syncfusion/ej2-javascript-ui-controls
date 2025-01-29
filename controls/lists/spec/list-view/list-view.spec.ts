@@ -4,6 +4,7 @@
 import { createElement, isVisible, extend } from '@syncfusion/ej2-base';
 import { ListView, Virtualization, SelectEventArgs, SelectedItem, ScrolledEventArgs } from '../../src/list-view/index';
 import { DataManager, ODataV4Adaptor, Query, JsonAdaptor } from '@syncfusion/ej2-data';
+import { ListBase, ListBaseOptions } from '../../src/common/index';
 import '../../node_modules/es6-promise/dist/es6-promise';
 ListView.Inject(Virtualization);
 
@@ -64,7 +65,7 @@ let UrldataSource: { [key: string]: Object }[] = [
     { id: '05', text: 'text5' },
 ]
 
-let XSSData: any = [
+let XSSData: { [key: string]: Object }[] = [
     { id: 1, text: 'text1<style>body{background:rgb(0, 0, 255)}</style>' },
     { id: 2, text: 'text2' },
 ]
@@ -4055,5 +4056,44 @@ describe('ListView select event cancellation test cases', () => {
 
     afterEach(() => {
         ele.remove();
+    });
+});
+
+describe('ListBase - createList with enableHtmlSanitizer', () => {
+    let listObj: ListView;
+    let ele: HTMLElement;
+
+    beforeEach(() => {
+        ele = createElement('div', { id: 'ListView' });
+        document.body.appendChild(ele);
+        listObj = new ListView({ dataSource: XSSData, enableHtmlSanitizer: true });
+        listObj.appendTo(ele);
+    });
+
+    afterEach(() => {
+        if (listObj) {
+            listObj.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+
+    it('enableHtmlSanitizer testing in singleLevel list', () => {
+        const singleliOptions: ListBaseOptions = {
+            fields: {
+              text: 'text', id: 'id'
+            },
+            enableHtmlSanitizer: true
+          };
+        const list = ListBase.createList(
+            listObj.createElement,
+            listObj.dataSource as { [key: string]: Object }[],
+            singleliOptions,
+            true,
+            listObj
+        );
+        expect(list.tagName).toBe('UL');
+        const liElements = list.querySelectorAll('li');
+        expect(liElements.length).toBe(2);
+        expect(liElements[0].innerText).toEqual('text1');
     });
 });

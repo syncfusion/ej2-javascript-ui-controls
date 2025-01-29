@@ -3,7 +3,7 @@
  */
 import { Gantt, Edit, CriticalPath, ContextMenu, ContextMenuClickEventArgs, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport, ITaskbarEditedEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2, unscheduleCriticalTask,cr918186 } from '../base/data-source.spec';
+import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2, unscheduleCriticalTask,cr918186,CR933826 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 Gantt.Inject(Edit, CriticalPath, ContextMenu, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport);
@@ -2566,6 +2566,393 @@ describe('Invalid critical tasks', () => {
         expect(ganttObj.flatData[0].ganttProperties.isCritical).toBe(true);
         expect(ganttObj.flatData[1].ganttProperties.isCritical).toBe(false);
         expect(ganttObj.flatData[2].ganttProperties.isCritical).toBe(true);
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Console error for redo deleted parent tasks', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                    ]
+                },
+                { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8", Progress: 30 },
+                { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+                { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        enableUndoRedo: true,
+        enableCriticalPath: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Undo', 'Redo', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowSelection: true,    
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('redo action for deleted parent', () => {
+        ganttObj.actionComplete = (args) => {
+            if (args.requestType == 'add') {
+                expect(ganttObj.flatData.length).toBe(7);
+                ganttObj.redo();
+            }
+        };
+        ganttObj.deleteRecord(7);
+        ganttObj.undo();
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Delay issue occurs when the sample is loaded with the critical path', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: CR933826,
+            allowPdfExport: true,
+            height:'400px',
+            dateFormat: "dd/MM/yyyy HH:mm",
+            timezone: "Asia/Shanghai",
+            includeWeekend: true,
+            dayWorkingTime: [{
+            from: 0.01,
+            to: 24
+            }],
+            renderBaseline: true,
+            taskFields: {
+            id: "taskID",
+            name: "taskName",
+            startDate: "startDate",
+            endDate: "endDate",
+            duration: "duration",
+            progress: "progress",
+            dependency: "dependency",
+            notes: "notes",
+            child: "subtasks",
+            expandState: "expandState",
+            cssClass: "cssClass",
+            baselineStartDate: "baselineStartDate",
+            baselineEndDate: "baselineEndDate",
+            },
+            labelSettings: {
+            // rightLabel: "taskName",
+            // leftLabel: "taskID",
+            },
+            eventMarkers: [{
+            day: new Date(),
+            label: "Today"
+            }],
+            enableCriticalPath: true,
+            highlightWeekends: true,
+            // queryTaskbarInfo: queryTaskbarInfo,
+            columns: [{
+                field: "taskID",
+                width: '100px'
+            },
+            {
+                field: "taskName",
+                width: '300px'
+            },
+            ],
+     }, done);
+    });
+    it('Delay issue occurs when the sample is loaded with the critical path', () => {
+        expect(ganttObj.criticalPathModule.criticalTasks.length).toBe(46);
+    });
+    afterAll(() => {
+        if(ganttObj){
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Critical path rendering', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            'TaskID': "a1",
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('05/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': "b2", 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('07/03/2017'), 'Progress': '40' },
+                { 'TaskID': "c3", 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('07/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': "d4", 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('07/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                allowSorting: true,
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search'],
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName' },
+                    { field: 'isManual' }
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName'
+                },
+                splitterSettings: {
+                    position: '35%'
+                },
+                projectStartDate: new Date('02/20/2017'),
+                projectEndDate: new Date('03/30/2017'),
+                enableCriticalPath: true
+            }, done);
+    });
+    it('Critical path rendering ', () => {
+        expect(ganttObj.criticalPathModule.criticalTasks.length).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Critical path rendering 1', () => {
+    let ganttObj: Gantt;
+    let data : any = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            "Predecessor": "2SS+0.10 days",
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40',"Predecessor": "3SS+0.10 days,5SF+0.10 days",  },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40',"Predecessor": "5SF+0.10 days" }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('03/09/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40',"Predecessor": "3SF+0.10 days, 1SF",  },
+                { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', },
+                { 'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017'),
+                    'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true,"Predecessor":"1SF+0.10 days" }
+            ]
+        },
+        {
+            'TaskID': 10,
+            'TaskName': 'Parent Task 3',
+            'StartDate': new Date('03/13/2017'),
+            'EndDate': new Date('03/17/2017'),
+            'Progress': '40',
+            'Children': [
+                { 'TaskID': 11, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/13/2017'),
+                    'EndDate': new Date('03/17/2017'), 'Progress': '40' },
+                { 'TaskID': 12, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/13/2017'),
+                    'EndDate': new Date('03/17/2017'), 'Progress': '40', },
+                { 'TaskID': 13, 'TaskName': 'Child Task 3', 'StartDate': new Date('03/13/2017'),
+                    'EndDate': new Date('03/17/2017'), 'Progress': '40', },
+                { 'TaskID': 14, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/12/2017'),
+                    'EndDate': new Date('03/17/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 15, 'TaskName': 'Child Task 5', 'StartDate': new Date('03/13/2017'),
+                    'EndDate': new Date('03/17/2017'), 'Progress': '40' }
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+          dataSource: data,
+          allowSorting: true,
+          enableCriticalPath: true,
+          enableContextMenu: true,
+          height: "450px",
+          allowSelection: true,
+          highlightWeekends: true,
+          taskFields: {
+            id: "TaskID",
+            name: "TaskName",
+            startDate: "StartDate",
+            duration: "Duration",
+            progress: "Progress",
+            endDate: "EndDate",
+            dependency: "Predecessor",
+            child: "Children",
+            manual: "isManual",
+          },
+          taskMode: "Custom",
+          sortSettings: {
+            columns: [
+              { field: "TaskID", direction: "Ascending" },
+              { field: "TaskName", direction: "Ascending" },
+            ],
+          },
+          allowExcelExport: true,
+          allowPdfExport: true,
+          allowRowDragAndDrop: true,
+          splitterSettings: {
+            position: "50%",
+          },
+          selectionSettings: {
+            mode: "Row",
+            type: "Single",
+            enableToggle: false,
+          },
+          tooltipSettings: {
+            showTooltip: true,
+          },
+          allowFiltering: true,
+          columns: [
+            { field: "TaskID", visible: true },
+            { field: "TaskName" },
+            { field: "isManual" },
+            { field: "StartDate" },
+            { field: "Duration" },
+            { field: "Progress" },
+          ],
+          validateManualTasksOnLinking: true,
+          treeColumnIndex: 1,
+          allowReordering: true,
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true,
+          },
+          timelineSettings: {
+            showTooltip: true,
+            topTier: {
+              unit: "Week",
+              format: "dd/MM/yyyy",
+            },
+            bottomTier: {
+              unit: "Day",
+              count: 1,
+            },
+          },
+          gridLines: "Both",
+          showColumnMenu: true,
+          allowResizing: true,
+          readOnly: false,
+          taskbarHeight: 20,
+          rowHeight: 40,
+          labelSettings: {
+            leftLabel: "TaskName",
+            taskLabel: "${Progress}%",
+          },
+          projectStartDate: new Date("02/20/2017"),
+          projectEndDate: new Date("03/30/2017"),
+        },
+        done
+      );
+    });
+    it('Critical path rendering ', () => {
+        expect(ganttObj.criticalPathModule.criticalTasks.length).toBe(6);
     });
     afterAll(() => {
         if(ganttObj){

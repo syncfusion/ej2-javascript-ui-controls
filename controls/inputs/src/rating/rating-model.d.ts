@@ -1,4 +1,4 @@
-import { addClass, Event, attributes, BaseEventArgs, compile, Component, EmitType, EventHandler, getUniqueID, INotifyPropertyChanged, select, Browser, append } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEventArgs, KeyboardEvents, MouseEventArgs, NotifyPropertyChanges, Property, remove, removeClass, initializeCSPTemplate } from '@syncfusion/ej2-base';import { Tooltip } from '@syncfusion/ej2-popups';
+import { addClass, Event, attributes, BaseEventArgs, compile, Component, EmitType, EventHandler, getUniqueID, INotifyPropertyChanged, select, Browser, append } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEventArgs, KeyboardEvents, MouseEventArgs, NotifyPropertyChanges, Property, remove, removeClass, initializeCSPTemplate, closest } from '@syncfusion/ej2-base';import { Tooltip } from '@syncfusion/ej2-popups';
 import {LabelPosition,PrecisionType,RatingItemEventArgs,RatingHoverEventArgs,RatingChangedEventArgs} from "./rating";
 import {ComponentModel} from '@syncfusion/ej2-base';
 

@@ -1295,10 +1295,6 @@ export class Group implements IAction {
                 }
             }
         }
-        for (let i: number = 0, len: number = gCols.length; i < len; i++) {
-            if (fieldNames.indexOf(gCols[parseInt(i.toString(), 10)]) === -1) { continue; }
-            gObj.getColumnHeaderByField(gCols[parseInt(i.toString(), 10)]).setAttribute('aria-grouped', 'true');
-        }
     }
 
     private getGHeaderCell(field: string): Element {

@@ -412,20 +412,26 @@ export class CanvasRenderer {
 
     // text utility
     private loadImage(
-        ctx: CanvasRenderingContext2D, obj: ImageAttributes, canvas: HTMLCanvasElement, pivotX: number, pivotY: number, annotationCallback?:(annotationID: string) => boolean):
+        ctx: CanvasRenderingContext2D, obj: ImageAttributes, canvas: HTMLCanvasElement, pivotX: number, pivotY: number, annotationCallback?:(annotationID: string) => boolean, annotationType?: string):
         void {
         this.rotateContext(canvas, obj.angle, pivotX, pivotY);
         let image: HTMLImageElement;
         if ((<any>window).customStampCollection && (<any>window).customStampCollection.get(obj.printID)) {
             image = (<any>window).customStampCollection.get(obj.printID);
         } else {
-            image = new Image();
-            image.src = obj.source;
+            // Check if it is a sticky note type annotation
+            if (window && (<any>window).stickyNote && (<any>window).stickyNote.src && annotationType && annotationType == 'StickyNotes') {
+                image = (<any>window).stickyNote;
+            } else {
+                // Create a new Image and set the source
+                image = new Image();
+                image.src = obj.source;
+            }
         }
         this.image(ctx, image, obj.x, obj.y, obj.width, obj.height, obj, annotationCallback);
     }
     /**   @private  */
-    public drawImage(canvas: HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean, annotationCallback?:(annotationID: string) => boolean): void {
+    public drawImage(canvas: HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean, annotationCallback?:(annotationID: string) => boolean, annotationType?: string): void {
 
         if (obj.visible) {
             let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
@@ -447,7 +453,7 @@ export class CanvasRenderer {
              * }
              */
             if (!fromPalette) {
-                this.loadImage(ctx, obj, canvas, pivotX, pivotY, annotationCallback);
+                this.loadImage(ctx, obj, canvas, pivotX, pivotY, annotationCallback, annotationType);
             } else {
                 imageObj.onload = () => {
                     this.loadImage(ctx, obj, canvas, pivotX, pivotY);
@@ -484,8 +490,8 @@ export class CanvasRenderer {
 }
 
 export function refreshDiagramElements(
-    canvas: HTMLCanvasElement, drawingObjects: DrawingElement[], renderer: DrawingRenderer, annotationCallback?:(annotationID: string) => boolean): void {
+    canvas: HTMLCanvasElement, drawingObjects: DrawingElement[], renderer: DrawingRenderer, annotationCallback?:(annotationID: string) => boolean, annotationType?: string): void {
     for (let i: number = 0; i < drawingObjects.length; i++) {
-        renderer.renderElement(drawingObjects[parseInt(i.toString(), 10)], canvas, undefined, undefined, undefined, undefined, undefined, undefined, annotationCallback);
+        renderer.renderElement(drawingObjects[parseInt(i.toString(), 10)], canvas, undefined, undefined, undefined, undefined, undefined, undefined, annotationCallback, annotationType);
     }
 }

@@ -1128,7 +1128,7 @@ describe('PivotView spec', () => {
             it('filter testing03', (done: Function) => {
                 setTimeout(() => {
                     expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 17 && pivotGridObj.engineModule.pivotValues[2].length === 7).toBeTruthy();
+                    expect(pivotGridObj.engineModule.pivotValues.length === 14 && pivotGridObj.engineModule.pivotValues[2].length === 7).toBeTruthy();
                     done();
                 }, 500);
             });
@@ -1145,7 +1145,7 @@ describe('PivotView spec', () => {
                 setTimeout(() => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("balance");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 17 && pivotGridObj.engineModule.pivotValues[3].length === 7).toBeTruthy();
+                    expect(pivotGridObj.engineModule.pivotValues.length === 14 && pivotGridObj.engineModule.pivotValues[3].length === 7).toBeTruthy();
                     done();
                 }, 1000);
             });

@@ -1614,8 +1614,12 @@ export abstract class PdfField {
         if (this._dictionary.has('Kids')) {
             const widgetDictionary: _PdfDictionary[] = this._dictionary.getArray('Kids');
             for (let i: number = 0; i < widgetDictionary.length; i++) {
+                const widget: PdfWidgetAnnotation = this.itemAt(i);
                 const dictionary: _PdfDictionary = widgetDictionary[Number.parseInt(i.toString(), 10)];
                 dictionary.update('DA', defaultAppearance.toString());
+                if (widget) {
+                    widget._da = defaultAppearance;
+                }
             }
         } else if (this._dictionary.has('Subtype') && this._dictionary.get('Subtype').name === 'Widget') {
             this._dictionary.update('DA', defaultAppearance.toString());

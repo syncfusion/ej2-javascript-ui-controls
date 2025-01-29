@@ -20,7 +20,7 @@ interface EJ2Instance extends HTMLElement {
     return data[field];
 }
 
-describe('Gantt editing action', () => {
+describe('Gantt editing actions', () => {
     let ganttObj: Gantt;
     let interval: number;
     let preventDefault: Function = new Function();

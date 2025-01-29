@@ -2476,11 +2476,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNullOrUndefined(firstUl)) {
             firstUl.setAttribute('role', treeAriaAttr.treeRole);
             this.setMultiSelect(this.allowMultiSelection);
-            const firstNode: Element = select('.' + LISTITEM, this.element);
-            if (firstNode) {
-                firstNode.setAttribute('tabindex', '0');
-                this.updateIdAttr(null, firstNode);
-            }
+            this.setNodeFocusable();
             if (this.allowTextWrap) {
                 this.updateWrap();
             }
@@ -6268,6 +6264,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
+        this.setNodeFocusable();
         this.updateCheckedStateFromDS();
         if (this.showCheckBox && dropLi) {
             this.ensureParentCheckState(dropLi);
@@ -6665,6 +6662,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public uncheckAll(nodes?: string[] | Element[]): void {
         if (this.showCheckBox) {
             this.doCheckBoxAction(nodes, false);
+        }
+    }
+
+    private setNodeFocusable(): void {
+        const firstNode: Element = select('.' + LISTITEM, this.element);
+        if (firstNode) {
+            firstNode.setAttribute('tabindex', '0');
+            this.updateIdAttr(null, firstNode);
         }
     }
 }

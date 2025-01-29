@@ -1,6 +1,6 @@
 @mixin hover-color-styles($grid-skin, $material, $bootstrap) {
   @if $grid-skin == 'material3' {
-    background-color: $material;
+    background: $material;
   }
   @if $grid-skin == 'bootstrap4' {
     background-color: $bootstrap;
@@ -84,7 +84,7 @@
         .e-rowcell.e-unfreeze,
         .e-rowcell.e-fixedfreeze {
           &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+            @include hover-color-styles($grid-skin, $grid-hover-bg-color, rgb(236 233 233));
           }
         }
       }
@@ -99,7 +99,7 @@
         .e-rowdragdrop.e-unfreeze,
         .e-rowdragdrop.e-fixedfreeze {
           &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+            @include hover-color-styles($grid-skin, $grid-hover-bg-color, rgb(236 233 233));
           }
         }
       }
@@ -110,7 +110,7 @@
         .e-rowdragdrop.e-unfreeze,
         .e-rowdragdrop.e-fixedfreeze {
           &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
-            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+            @include hover-color-styles($grid-skin, $grid-hover-bg-color, rgb(236 233 233));
           }
         }
       }
@@ -118,7 +118,7 @@
       &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
         &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
           @if $grid-skin != 'material3' {
-            @include hover-color-styles($grid-skin, rgb(250 244 244), rgb(236 233 233));
+            @include hover-color-styles($grid-skin, $grid-hover-bg-color, rgb(236 233 233));
           }
         }
       }
@@ -598,6 +598,9 @@
     }
 
     .e-filterbarcell input {
+      &.e-checkbox{
+        height: 1px;
+      }
       height: $grid-bigger-filterbarcell-text-input;
     }
 

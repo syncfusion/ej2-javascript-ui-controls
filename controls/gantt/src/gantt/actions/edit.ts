@@ -2097,7 +2097,9 @@ export class Edit {
                     return (data.ganttProperties.taskId === selectedRecords[i as number].ganttProperties.taskId &&
                     data.hasChildRecords);
                 })[0];
-                deleteRecords.push(resourceParent);
+                if (!isNullOrUndefined(resourceParent)) {
+                    deleteRecords.push(resourceParent);
+                }
             }
         }
         this.deleteRow(deleteRecords);
@@ -2215,6 +2217,16 @@ export class Edit {
         if (rowItems.length) {
             this.parent.isOnDelete = true;
             rowItems.forEach((item: IGanttData): void => {
+                if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                    let rec: IGanttData;
+                    if (this.parent.viewType === 'ProjectView') {
+                        rec = this.parent.getRecordByID(item.ganttProperties.taskId);
+                    }
+                    else {
+                        rec = this.parent.flatData[this.parent.taskIds.indexOf((item.hasChildRecords ? 'R' : 'T') + item.ganttProperties.taskId)];
+                    }
+                    rec.isDelete = true;
+                }
                 item.isDelete = true;
             });
             if (this.parent.viewType === 'ResourceView' && !tasks.length) {
@@ -3069,7 +3081,7 @@ export class Edit {
         for (let count: number = 0; count < len; count++) {
             const fromRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[count as number].from);
             const toRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[count as number].to);
-            validPredecessor = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
+            validPredecessor = this.parent.predecessorModule.validateParentPredecessor(fromRecord, toRecord);
             if (!validPredecessor || !this.parent.allowParentDependency) {
                 if (predecessorCollection[count as number].to === parentRecordTaskData.rowUniqueID.toString()) {
                     childRecord = this.parent.getRecordByID(predecessorCollection[count as number].from);
@@ -4157,6 +4169,11 @@ export class Edit {
                 if (!actionArg.cancel) {
                     this.reArrangeRows(args, isByMethod);
                 } else {
+                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                        this.parent.hideMaskRow();
+                    } else {
+                        this.parent.hideSpinner();
+                    }
                     return;
                 }
             });
@@ -4270,7 +4287,7 @@ export class Edit {
                                 droppedRec.ganttProperties.predecessor[count as number].from);
                             const toRecord: IGanttData = this.parent.getRecordByID(
                                 droppedRec.ganttProperties.predecessor[count as number].to);
-                            const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(
+                            const validPredecessor: boolean = this.parent.predecessorModule.validateParentPredecessor(
                                 fromRecord, toRecord);
                             if (droppedRec.ganttProperties.predecessor && (!validPredecessor || !this.parent.allowParentDependency)) {
                                 this.parent.editModule.removePredecessorOnDelete(droppedRec);

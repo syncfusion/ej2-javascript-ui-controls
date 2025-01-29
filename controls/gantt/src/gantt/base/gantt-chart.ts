@@ -526,7 +526,7 @@ export class GanttChart {
                 const target: EventTarget = e.target;
                 const isOnTaskbarElement: boolean | Element = (e.target as HTMLElement).classList.contains(cls.taskBarMainContainer)
                     || closest(e.target as Element, '.' + cls.taskBarMainContainer);
-                if (closest((<HTMLElement>target), '.e-gantt-parent-taskbar') && !this.parent.editSettings.allowEditing) {
+                if (closest((<HTMLElement>target), '.e-gantt-parent-taskbar') && !this.parent.editSettings.allowEditing && !this.parent.isAdaptive) {
                     this.chartExpandCollapseRequest(e);
                 } else if (!isOnTaskbarElement && this.parent.autoFocusTasks) {
                     this.scrollToTarget(e); /** Scroll to task */

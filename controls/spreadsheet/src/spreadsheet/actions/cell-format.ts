@@ -1,6 +1,6 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, completeAction } from '../common/index';
-import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
+import { setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
@@ -28,7 +28,7 @@ export class CellFormat {
         }
         const keys: string[] = Object.keys(args.style);
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (args.lastCell && getMaxHgt(sheet, args.rowIdx) <= 20 && !keys.length) {
+        if (args.lastCell && !keys.length && (getMaxHgt(sheet, args.rowIdx) <= (sheet.standardHeight || 20))) {
             return;
         }
         const cell: HTMLElement = args.td || this.parent.getCell(args.rowIdx, args.colIdx);
@@ -98,10 +98,9 @@ export class CellFormat {
                         }
                         if (args.lastCell) {
                             const height: number = getMaxHgt(sheet, args.rowIdx);
-                            const defaultHeight: number = sheet && sheet.standardHeight ? sheet.standardHeight : 20;
+                            const defaultHeight: number = sheet.standardHeight || 20;
                             if (height > defaultHeight && height > getRowHeight(sheet, args.rowIdx)) {
-                                setRowEleHeight(
-                                    this.parent, sheet, height, args.rowIdx, args.row, args.hRow, this.parent.scrollSettings.isFinite);
+                                setRowEleHeight(this.parent, sheet, height, args.rowIdx, args.row, args.hRow);
                             }
                         }
                     } else {
@@ -288,8 +287,7 @@ export class CellFormat {
                 const height: number = Math.ceil(this.parent.calculateHeight(
                     this.parent.getCellStyleValue(['fontFamily', 'fontSize'], [rowIdx, colIdx]), 1, 3));
                 if (height > prevHeight) {
-                    setRowEleHeight(this.parent, sheet, height, rowIdx, row, hRow, false);
-                    this.parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - 20 });
+                    setRowEleHeight(this.parent, sheet, height, rowIdx, row, hRow);
                 }
             }
         }
@@ -301,8 +299,7 @@ export class CellFormat {
     }
     private getBorderSize(border: string): number {
         const size: string = border.split(' ')[0];
-        return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 :
-            (parseInt(size, 10) ? parseInt(size, 10) : 1)));
+        return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 : (parseInt(size, 10) || 1)));
     }
 
     private clearObj(args: { options: ClearOptions, isAction?: boolean, isFromUpdateAction?: boolean }): void {

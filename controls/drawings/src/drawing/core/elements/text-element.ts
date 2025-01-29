@@ -97,11 +97,32 @@ export class TextElement extends DrawingElement {
     /**
      * Measures the minimum size that is required for the text element
      * @param availableSize
+     * @private
+     */
+    public measureFreeText(availableSize: Size, pageHeight: number): Size {
+        let size: Size;
+        if (this.isDirt && this.canMeasure) {
+            size = measureText(this, this.style, this.content, this.width || availableSize.width, availableSize.height, pageHeight);
+        } else {
+            size = this.desiredSize;
+        }
+        if (this.width === undefined || this.height === undefined) {
+            this.desiredSize = new Size(size.width, size.height);
+        } else {
+            this.desiredSize = new Size(this.width, this.height);
+        }
+        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        return this.desiredSize;
+    }
+
+    /**
+     * Measures the minimum size that is required for the text element
+     * @param availableSize
      */
     public measure(availableSize: Size): Size {
         let size: Size;
         if (this.isDirt && this.canMeasure) {
-            size = measureText(this, this.style, this.content, this.width || availableSize.width);
+            size = measureText(this, this.style, this.content, this.width || availableSize.width, availableSize.height);
         } else {
             size = this.desiredSize;
         }
