@@ -122,7 +122,7 @@ export class TextElement extends DrawingElement {
     public measure(availableSize: Size): Size {
         let size: Size;
         if (this.isDirt && this.canMeasure) {
-            size = measureText(this, this.style, this.content, this.width || availableSize.width, availableSize.height);
+            size = measureText(this, this.style, this.content, this.width || availableSize.width);
         } else {
             size = this.desiredSize;
         }

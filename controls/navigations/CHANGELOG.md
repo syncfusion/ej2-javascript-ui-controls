@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I681955` - Resolved an issue where the `aria-activedescendant` attribute was incorrectly updated when the TreeView component was empty.
+  
 ## 28.2.3 (2025-01-29)
 
 ### TreeView

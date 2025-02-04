@@ -1050,7 +1050,7 @@ describe('Column chooser module', () => {
                             { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
                             { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
                         ],
-                }, done);
+            }, done);
         });
 
         it('check All columns', (done: Function) => {
@@ -1072,7 +1072,7 @@ describe('Column chooser module', () => {
         });
 
         it('check the visible columns length', function () {
-            expect(gridObj.getVisibleColumns().length).toBe(2);
+            expect(gridObj.getVisibleColumns().length).toBe(4);
         });
 
         afterAll(() => {

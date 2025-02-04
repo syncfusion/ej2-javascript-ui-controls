@@ -243,6 +243,7 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
     let freeTextHeight: number = txt.y;
     let height: number = 0;
     txtValue += content[0];
+    let isFreeTextHeightAllowed: boolean; 
     for (k = 0; k < content.length; k++) {
         bounds1 = bBoxText(txtValue, txt);
         if (bounds1 >= txt.width && txtValue.length > 0) {
@@ -256,14 +257,17 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
                 height = height +  bBoxTextHeight(txtValue, txt);
                 freeTextHeight += height;
                 width = bBoxText(txtValue, txt);
-                if (height <= maxHeight && (pageHeight === undefined || pageHeight === null || freeTextHeight <= pageHeight)) {
+                isFreeTextHeightAllowed = ((maxHeight === undefined || maxHeight === null || height <= maxHeight) &&
+                                          (pageHeight === undefined || pageHeight === null || freeTextHeight <= pageHeight));
+                if (isFreeTextHeightAllowed) {
                     childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
                 }                
                 txtValue = content[k + 1] || '';
                 freeTextHeight+=height;
             }
-            if (k === content.length - 1 && txtValue.length > 0 && height <= maxHeight &&
-                (pageHeight === undefined || pageHeight === null || freeTextHeight <= pageHeight)) {
+            isFreeTextHeightAllowed = ((maxHeight === undefined || maxHeight === null || height <= maxHeight) &&
+                                      (pageHeight === undefined || pageHeight === null || freeTextHeight <= pageHeight));
+            if (k === content.length - 1 && txtValue.length > 0 && isFreeTextHeightAllowed) {
                 childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
                 txtValue = '';
             }            

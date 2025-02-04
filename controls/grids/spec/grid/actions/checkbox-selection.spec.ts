@@ -167,6 +167,7 @@ describe('Grid checkbox selection functionality', () => {
                     expect(chkAll.classList.contains('e-uncheck')).toBeTruthy();
                     done();
                 }
+                gridObj.selectionModule.clearSelection();
                 gridObj.checkBoxChange = checkStateAll2;
                 (gridObj.selectionModule as any).applySpaceSelection((gridObj.element.querySelector('.e-checkselectall') as HTMLElement));
             }

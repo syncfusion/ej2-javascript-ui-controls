@@ -4163,3 +4163,72 @@ describe("Bug 916448: Issues related to cell editing with virtualization.", () =
     destroy(gridObj);
   });
 });
+
+describe("Adding record in sorted column", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: virtualData.slice(0, 500),
+        enableVirtualization: true,
+        enableVirtualMaskRow: false,
+        childMapping: "Crew",
+        allowSelection:true,
+        allowSorting : true,
+        treeColumnIndex: 1,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+        },
+        height: 400,
+        columns: [
+          
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+  it("Sorts the column, adds a record, and verifies the selected record", (done: Function) => {
+    actionComplete = (args?: any): void => {};
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.sortByColumn("FIELD1", "Descending", true);
+    gridObj.selectRow(0);
+    gridObj.addRecord(
+            {
+              TaskID : 10001,
+              FIELD1: "abramjo01",
+              FIELD2: 1999,
+              FIELD3: 30,
+            },
+            410
+          );
+          const selectedRow: any = gridObj.getSelectedRecords()[0];
+          expect(selectedRow.FIELD1).toBe("abramjo01"); 
+          done();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

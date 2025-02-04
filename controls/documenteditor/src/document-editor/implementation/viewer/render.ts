@@ -2541,7 +2541,7 @@ private calculatePathBounds(data: string): Rect {
                                     let jsonObject: any = JSON.parse(data);
                                     if (!isNullOrUndefined(this.spellChecker)) {
                                         let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-                                        this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                                        this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate, checkText);
                                     }
                                 });
                             }

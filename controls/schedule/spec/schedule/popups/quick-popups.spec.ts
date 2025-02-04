@@ -14,6 +14,7 @@ import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
+import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews);
 
@@ -2914,6 +2915,314 @@ describe('Quick Popups', () => {
             (morePopup.querySelector('.e-more-event-close') as HTMLElement).click();
         });
 
+    });
+
+    describe('Quick popup and more popup behavior in Schedule rendered inside Dialog', () => {
+        let schObj: Schedule;
+        let dialogObj: Dialog;
+
+        beforeAll((done: DoneFn) => {
+            const dialogElement = createElement('div', { id: 'defaultDialog' });
+            document.body.appendChild(dialogElement);
+
+            const dialogModel: DialogModel = {
+                header: 'Dialog with Schedule',
+                target: document.body,
+                showCloseIcon: true,
+                width: '700px',
+                height: '800px',
+                open: () => {
+                    if (schObj) {
+                        util.destroy(schObj);
+                    }
+                    const scheduleContainer = createElement('div', { id: 'scheduleContainer' });
+                    dialogObj.element.appendChild(scheduleContainer);
+                    const data = [{
+                        Id: 1,
+                        Subject: 'Meeting',
+                        StartTime: new Date(2023, 1, 10, 0, 0),
+                        EndTime: new Date(2023, 1, 10, 1, 0),
+                    },
+                    {
+                        Id: 2,
+                        Subject: 'Scrum Meeting',
+                        StartTime: new Date(2023, 1, 10, 1, 0),
+                        EndTime: new Date(2023, 1, 10, 2, 0),
+                    },
+                    {
+                        Id: 3,
+                        Subject: 'New Meeting',
+                        StartTime: new Date(2023, 1, 10, 1, 0),
+                        EndTime: new Date(2023, 1, 10, 2, 0),
+                    }];
+                    const scheduleModel: ScheduleModel = {
+                        height: '300px',
+                        views: ['Week', 'Year', 'Month'],
+                        selectedDate: new Date(2023, 1, 10),
+                        eventSettings: { dataSource: data },
+                        allowInline: false
+                    };
+                    schObj = util.createSchedule(scheduleModel, [], () => {
+                        if (schObj) {
+                            scheduleContainer.appendChild(schObj.element);
+                            done();
+                        }
+                    });
+                },
+            };
+            dialogObj = new Dialog(dialogModel);
+            dialogObj.appendTo(dialogElement);
+            dialogObj.show();
+        });
+
+        afterAll(() => {
+            if (schObj) {
+                util.destroy(schObj);
+            }
+            if (dialogObj) {
+                dialogObj.destroy();
+            }
+        });
+
+        it('should open and close the quick popup while navigating views', () => {
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-open');
+            const viewElement: HTMLElement = schObj.element.querySelector('.e-month') as HTMLElement;
+            if (viewElement) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                viewElement.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                viewElement.dispatchEvent(mouseclickEvent);
+            }
+            expect(schObj.quickPopup.quickPopup.element.classList).not.toContain('e-popup-open');
+        });
+        it('should open and close the quick popup while navigating date', () => {
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-open');
+            const dateElement: HTMLElement = schObj.element.querySelector('.e-date-range') as HTMLElement;
+            if (dateElement) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                dateElement.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                dateElement.dispatchEvent(mouseclickEvent);
+            }
+            expect(schObj.quickPopup.quickPopup.element.classList).not.toContain('e-popup-open');
+            (schObj.element.querySelector('.e-date-range') as HTMLElement).click();
+        });
+        it('should open and close the quick popup on outside schedule click', () => {
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-open');
+            const ele: HTMLElement = document.querySelector('.e-dlg-header-content') as HTMLElement;
+            if (ele) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mouseclickEvent);
+            }
+            expect(schObj.quickPopup.quickPopup.element.classList).not.toContain('e-popup-open');
+        });
+        it('should open and close the event quick popup while navigating views', () => {
+            const event: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
+            event.click();
+            expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-open');
+            const viewElement: HTMLElement = schObj.element.querySelector('.e-month') as HTMLElement;
+            if (viewElement) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                viewElement.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                viewElement.dispatchEvent(mouseclickEvent);
+            }
+            expect(schObj.quickPopup.quickPopup.element.classList).not.toContain('e-popup-open');
+        });
+        it('should open and close the event quick popup while navigating date', () => {
+            const event: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
+            event.click();
+            expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-open');
+            const dateElement: HTMLElement = schObj.element.querySelector('.e-date-range') as HTMLElement;
+            if (dateElement) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                dateElement.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                dateElement.dispatchEvent(mouseclickEvent);
+            }
+            expect(schObj.quickPopup.quickPopup.element.classList).not.toContain('e-popup-open');
+            (schObj.element.querySelector('.e-date-range') as HTMLElement).click();
+        });
+        it('should open and close the event quick popup on outside schedule click', () => {
+            const event: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
+            event.click();
+            expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-open');
+            const ele: HTMLElement = document.querySelector('.e-dlg-header-content') as HTMLElement;
+            if (ele) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mouseclickEvent);
+            }
+            expect(schObj.quickPopup.quickPopup.element.classList).not.toContain('e-popup-open');
+        });
+        it('should open and close the more popup while navigating views', () => {
+            (schObj.element.querySelector('.e-year') as HTMLElement).click();
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(morePopup.classList).toContain('e-popup-open');
+            const viewElement: HTMLElement = schObj.element.querySelector('.e-month') as HTMLElement;
+            if (viewElement) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                viewElement.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                viewElement.dispatchEvent(mouseclickEvent);
+            }
+            morePopup = schObj.element.querySelector('.e-more-popup-wrapper');
+            expect(morePopup).not.toContain('e-popup-open');
+        });
+        it('should open and close the more popup while navigating date', () => {
+            (schObj.element.querySelector('.e-year') as HTMLElement).click();
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(morePopup.classList).toContain('e-popup-open');
+            const dateElement: HTMLElement = schObj.element.querySelector('.e-date-range') as HTMLElement;
+            if (dateElement) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                dateElement.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                dateElement.dispatchEvent(mouseclickEvent);
+            }
+            morePopup = schObj.element.querySelector('.e-more-popup-wrapper');
+            expect(morePopup.classList).not.toContain('e-popup-open');
+            (schObj.element.querySelector('.e-date-range') as HTMLElement).click();
+        });
+        it('should open and close the more popup on outside schedule click', () => {
+            (schObj.element.querySelector('.e-year') as HTMLElement).click();
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(morePopup.classList).toContain('e-popup-open');
+            const ele: HTMLElement = document.querySelector('.e-dlg-header-content') as HTMLElement;
+            if (ele) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mouseclickEvent);
+            }
+            morePopup = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(morePopup.classList).not.toContain('e-popup-open');
+        });
+        it('should open and close the editor window', () => {
+            (schObj.element.querySelector('.e-month') as HTMLElement).click();
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            const dblClickEvent = new MouseEvent('dblclick', {
+                bubbles: true,
+                cancelable: true,
+            });
+            workCell.dispatchEvent(dblClickEvent);
+            let schDialog: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup') as HTMLElement;
+            expect(schDialog.classList).toContain('e-popup-open');
+            const ele: HTMLElement = document.querySelector('.e-event-cancel') as HTMLElement;
+            if (ele) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mouseclickEvent);
+            }
+            schDialog = document.querySelector('.e-schedule-dialog.e-popup') as HTMLElement;
+            expect(schDialog.classList).not.toContain('e-popup-open');
+        });
+        it('should open and close the quick popup on more indicator', () => {
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-open');
+            const ele: HTMLElement = document.querySelector('.e-more-indicator') as HTMLElement;
+            if (ele) {
+                const mousedownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mousedownEvent);
+                const mouseclickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                ele.dispatchEvent(mouseclickEvent);
+            }
+            expect(schObj.quickPopup.quickPopup.element.classList).not.toContain('e-popup-open');
+        });
+        it('Ensure inline event', () => {
+            (schObj.element.querySelector('.e-month') as HTMLElement).click();
+            schObj.allowInline = true;
+            schObj.dataBind();
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toBe(false);
+            const inlineElement: HTMLElement = document.querySelector('.e-appointment.e-inline-appointment') as HTMLElement;
+            expect(inlineElement).not.toBeNull();
+            expect(inlineElement.classList.contains('e-popup-open')).toBe(false);
+        });
     });
 
     it('memory leak', () => {

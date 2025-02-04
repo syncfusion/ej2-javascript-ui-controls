@@ -688,7 +688,10 @@ export class BaseHistoryInfo {
                     this.owner.selectionModule.select(this.selectionEnd, this.selectionEnd);
                     this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1] as string);
                 }
-                this.removedNodes.push(deletedNodes[deletedNodes.length - 1] as string);
+                let id: string = deletedNodes[deletedNodes.length - 1] as string;
+                if (this.removedNodes.indexOf(id) === -1) {
+                    this.removedNodes.push(id);
+                }
                 deletedNodes = [];
             }
             if (this.action === 'Uppercase') {
@@ -1136,6 +1139,9 @@ export class BaseHistoryInfo {
                     if (!isNullOrUndefined(this.isAcceptOrReject)) {
                         skipinsert = true;
                         if (!isNullOrUndefined(this.owner.selectionModule.start.paragraph.nextRenderedWidget) && this.owner.selectionModule.start.paragraph.nextRenderedWidget instanceof TableWidget) {
+                            skipinsert = false;
+                        } else if (this.action === 'BackSpace' && deletedNodes.length == 2 && lastNode instanceof ParagraphWidget && lastNode.isEmpty() && deletedNodes[1] instanceof ParagraphWidget && (deletedNodes[1] as ParagraphWidget).isEmpty()) {
+                            //When selecting the paramark and give backspace then adding two paragraph. So skipping it.
                             skipinsert = false;
                         }
                     }

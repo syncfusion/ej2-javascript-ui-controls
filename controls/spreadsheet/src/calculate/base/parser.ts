@@ -607,7 +607,9 @@ export class Parser {
                                 isLeftBool = true;
                             } else {
                                 j = j - 1;
-                                while (j > -1 && (this.parent.isUpperChar(text[j as number]) || this.parent.isDigit(text[j as number]))) {
+                                while (j > -1 && (this.parent.isUpperChar(text[j as number]) || // Check if character is uppercase alphabets.
+                                    this.parent.isDigit(text[j as number]) || // Check if character is a digit.
+                                    text[j as number] === '_')) { // Check if character is an underscore ('_'), for defined names cases.
                                     j = j - 1;
                                 }
                                 if (j > -1 && text[j as number] === this.sheetToken) {

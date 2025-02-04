@@ -610,7 +610,7 @@ describe('MultiSelect', () => {
             listObj.value = ['JAVA', 'C#', 'C++'];
             listObj.dataBind();
             listObj.showPopup();
-            expect((listObj as any).popupObj.element.querySelector('.e-nodata')).not.toBeNull();
+            expect((listObj as any).popupObj.element.querySelector('.e-nodata')).toBeNull();
             Browser.userAgent = temp;
         });
     });

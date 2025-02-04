@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs,ExcelExport ,PdfExport ,Reorder, Resize, CriticalPath, VirtualScroll} from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998,treeData,invalidPrdcessor, dataSource2, dataSource1, cR893051, undoDataSource, editingData3,editingResources3, exportData1} from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998,treeData,invalidPrdcessor, dataSource2, dataSource1, cR893051, undoDataSource, editingData3,editingResources3, exportData1,resourceCollection10,projectNewDatas1} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -5600,6 +5600,177 @@ describe('Gantt chart-scroll action after zooming', () => {
         ganttObj.timelineModule.processZooming(true);
         ganttObj.ganttChartModule.scrollObject.setScrollLeft(500);
         expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt chart update value by updateRecordByID in fixedwork ', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewDatas1,
+                viewType: 'ResourceView',
+                resources: resourceCollection10,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                allowSorting: true,
+                taskFields: {
+                           id: 'TaskID',
+                            name: 'TaskName',
+                            startDate: 'StartDate',
+                            endDate: 'EndDate',
+                            duration: 'Duration',
+                            progress: 'Progress',
+                            dependency: 'Predecessor',
+                            resourceInfo: 'resources',
+                            work: 'work',
+                            child: 'subtasks'
+                },
+                columns: [
+                    { field: 'TaskID',  },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/28/2024'),
+                projectEndDate: new Date('05/18/2024'),
+            }, done);
+    });
+    it('update value by updateRecordByID methods', () => {
+        var data = {
+            TaskID: 13, 
+            TaskName: 'Sign contract', 
+            StartDate: new Date('04/04/2024'), 
+            Duration: 2,
+            Progress: 30,
+            resources: [{ resourceId: 1, resourceUnit: 50}]
+        };
+        ganttObj.updateRecordByID(data);
+        expect(ganttObj.currentViewData[3].ganttProperties.duration).toBe(2);
+    });
+    it('update value by updateRecordByID methods', () => {
+        var data: any = {
+            TaskID: 13, 
+            TaskName: 'Sign contract', 
+            StartDate: new Date('04/04/2024'), 
+            Duration: 2,
+            Progress: 30,
+            resources: null,
+        };
+        ganttObj.updateRecordByID(data);
+        expect(ganttObj.currentViewData[17].ganttProperties.duration).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt chart update value by updateRecordByID in fixedduration ', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewDatas1,
+                viewType: 'ResourceView',
+                resources: resourceCollection10,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                allowSorting: true,
+                taskFields: {
+                           id: 'TaskID',
+                            name: 'TaskName',
+                            startDate: 'StartDate',
+                            endDate: 'EndDate',
+                            duration: 'Duration',
+                            progress: 'Progress',
+                            dependency: 'Predecessor',
+                            resourceInfo: 'resources',
+                            work: 'work',
+                            child: 'subtasks'
+                },
+                columns: [
+                    { field: 'TaskID',  },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/28/2024'),
+                projectEndDate: new Date('05/18/2024'),
+            }, done);
+    });
+    it('update value by updateRecordByID methods', () => {
+        var data = {
+                TaskID: 13,
+                TaskName: 'Sign contract',
+                StartDate: new Date('04/04/2024'),
+                work:32,
+                Progress: 30,
+                resources: [{ resourceId: 1, resourceUnit: 100 }, { resourceId: 2, resourceUnit: 100 }]
+        };
+        ganttObj.updateRecordByID(data);
+        expect(ganttObj.currentViewData[3].ganttProperties.work).toBe(32);
+        expect(ganttObj.currentViewData[3].ganttProperties.duration).toBe(2);
     });
     afterAll(() => {
         if (ganttObj) {

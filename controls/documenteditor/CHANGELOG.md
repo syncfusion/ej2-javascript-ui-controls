@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I680965` - Fixed document corruption when opening a client-side exported DOCX in Microsoft Word.
+- `#I681505` - Fixed issues with programmatically added comment replies and text range selection in the Document Editor.
+- `#I684705` - Fixed wavy underline rendering issue for non-misspelled words when pressing backspace.
+- `#I680849` - Fixed missing split cell content when a row spans multiple pages.
+- `#I667699` - Fixed missing content in shapes after copying and pasting the entire content, followed by server-side DOCX export.
+- `#I678996`, `#I678997`, `#I678999` - Fixed script errors when accepting track changes in list paragraphs and table paragraphs.
+
 ## 28.1.39 (2024-01-14)
 
 ### DocumentEditor

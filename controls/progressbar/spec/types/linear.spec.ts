@@ -674,5 +674,16 @@ describe('linear progress bar databind', () => {
         progress.loaded = loaded;
         progress.refresh();
     });
+    it('checking the custom decimal label', () => {
+        loaded = (args: Object): void => {
+            let label: string = document.getElementById('container_linearLabel').innerHTML;
+            expect(label).toBe('89.5%');
+        };
+        progress.theme = 'Fluent2Dark';
+        progress.value = 89.5;
+        progress.showProgressValue = true;
+        progress.loaded = loaded;
+        progress.refresh();
+    });
 });
 });

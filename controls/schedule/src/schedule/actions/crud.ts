@@ -374,7 +374,7 @@ export class Crud {
                             editParams.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
                         }
                         if (childEvent[fields.id] !== parentEvent[fields.id]) {
-                            editParams.deletedRecords.push(childEvent);
+                            editParams.deletedRecords.push(this.parent.eventBase.processTimezone(childEvent, true));
                             isDeletedRecords = true;
                         }
                         break;
@@ -524,7 +524,9 @@ export class Crud {
                         this.parent.uiStateValues.isIgnoreOccurrence = false;
                         break;
                     case 'DeleteSeries':
-                        editParams.deletedRecords = editParams.deletedRecords.concat(deletedEvents.concat(parentEvent));
+                        editParams.deletedRecords = editParams.deletedRecords.concat(deletedEvents.concat(
+                            this.parent.eventBase.processTimezone(parentEvent, true)
+                        ));
                         isDeletedRecords = true;
                         break;
                     }
@@ -581,11 +583,17 @@ export class Crud {
                         isDelete = deleteArgs.deletedRecords[parseInt(a.toString(), 10)][fields.id] !== parentEvent[fields.id];
                     }
                     if (isDelete) {
+                        if (deleteArgs.deletedRecords instanceof Array) {
+                            for (const event of deleteArgs.deletedRecords) {
+                                this.parent.eventBase.processTimezone(event, true);
+                            }
+                        }
                         editParams.deletedRecords.push(deleteArgs.deletedRecords[parseInt(a.toString(), 10)]);
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
-                this.parent.eventBase.selectWorkCellByTime(deleteArgs.deletedRecords);
+                const cloneEvent: Record<string, any> = extend({}, deleteArgs.deletedRecords[deleteArgs.deletedRecords.length - 1], null, true) as Record<string, any>;
+                this.parent.eventBase.selectWorkCellByTime([this.parent.eventBase.processTimezone(cloneEvent)]);
                 const crudArgs: CrudArgs = {
                     requestType: 'eventRemoved', cancel: false, data: deleteArgs.deletedRecords, promise: promise, editParams: editParams
                 };

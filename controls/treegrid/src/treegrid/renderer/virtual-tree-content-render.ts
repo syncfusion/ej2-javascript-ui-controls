@@ -240,8 +240,16 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         if (isNullOrUndefined(this.observer[`${containerRect}`])) {
             this.observer[`${containerRect}`] = this.observers[`${containerRect}`];
         }
-        if (isNullOrUndefined (this.parent.clipboardModule['treeGridParent'].editModule) || args.selectedIndex !== 0 ||
-        isNullOrUndefined(this.parent.clipboardModule['treeGridParent'].editModule['addRowIndex'])) {
+        const treeGridParent: any = this.parent.clipboardModule['treeGridParent'];
+        if (isNullOrUndefined(treeGridParent.editModule) ||
+            isNullOrUndefined(treeGridParent.editModule['addRowIndex']) || args.selectedIndex !== 0) {
+            if (!isNullOrUndefined(treeGridParent.grid.sortModule) && treeGridParent.grid.sortModule['sortedColumns'].length > 0) {
+                const sortedData : any = treeGridParent.dataModule['sortedData'];
+                if (!isNullOrUndefined(sortedData) && sortedData.length > 0) {
+                    const targetIndex : number = sortedData.findIndex((record: { index: number }) => record.index === args.selectedIndex);
+                    args.selectedIndex = targetIndex;
+                }
+            }
             super[`${selectVirtualRow}`](args);
         }
     }

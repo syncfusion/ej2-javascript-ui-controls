@@ -281,9 +281,9 @@ describe('Gantt editing action', () => {
             //checking work values for task after adding resource
             expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe('Resource 1');
             expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/12/2019');
-            expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
+            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/16/2019');
+            expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
         }
     });
     afterAll(() => {

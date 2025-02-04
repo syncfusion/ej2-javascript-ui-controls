@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.2.3 (2025-01-29)
+## 28.2.4 (2025-02-04)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `I679426` - Resolved a selection issue when adding a record after sorting the records
+
+## 28.1.39 (2024-01-14)
 
 ### Tree Grid
 

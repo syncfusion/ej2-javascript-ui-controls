@@ -2101,6 +2101,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
+    private onKeyDown(e: KeyboardEvent): void {
+        if (e.metaKey && e.key === 'Backspace' && this.autoSaveOnIdle) {
+            this.keyUp(e);
+        }
+    }
+
     private keyUp(e: KeyboardEvent): void {
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
@@ -2238,6 +2244,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notifyMouseUp(e);
         this.setPlaceHolder();
         this.autoResize();
+        if (this.formatter.getUndoRedoStack().length === 0) {
+            this.formatter.saveData();
+        }
     }
 
     /**
@@ -3454,7 +3463,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
             this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
                     this.encode(decode(this.removeResizeElement(this.inputElement.innerHTML))) : this.inputElement.innerHTML;
-            if (this.enableHtmlSanitizer && !isNOU(value) && /&(amp;)*((times)|(divide)|(ne))/.test(this.value)) {
+            if (this.enableHtmlSanitizer && !isNOU(value) && /&(amp;)*((times)|(divide)|(ne))/.test(value)) {
                 value = value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2');
             }
             if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
@@ -3816,6 +3825,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (formElement) {
             EventHandler.add(formElement, 'reset', this.resetHandler, this);
         }
+        // Cmd + Backspace triggers only the keydown event; the keyup event is not triggered.
+        if (navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+            EventHandler.add(this.inputElement, 'keydown', this.onKeyDown, this);
+        }
         EventHandler.add(this.inputElement, 'keyup', this.keyUp, this);
         EventHandler.add(this.inputElement, 'paste', this.onPaste, this);
         EventHandler.add(this.inputElement, 'content-changed', this.contentChanged, this);
@@ -3898,6 +3911,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const formElement: Element = closest(this.valueContainer, 'form');
         if (formElement) {
             EventHandler.remove(formElement, 'reset', this.resetHandler);
+        }
+        if (navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+            EventHandler.remove(this.inputElement, 'keydown', this.onKeyDown);
         }
         EventHandler.remove(this.inputElement, 'keyup', this.keyUp);
         EventHandler.remove(this.inputElement, 'paste', this.onPaste);

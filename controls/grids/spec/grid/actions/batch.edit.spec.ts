@@ -5317,15 +5317,26 @@ describe('EJ2-909241: Delete Icon is disabled in Toolbar when the Grid dataSourc
         }, done);
     });
 
-    it('add the record', () => {
+    it('add the record', (done: Function) => {
+        let batchAdd = (args?: any): void => {
+            expect((<any>gridObj.editModule.getBatchChanges()).addedRecords.length).toBe(1);
+            gridObj.batchAdd = null;
+            done();
+        };
+        gridObj.batchAdd = batchAdd;
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
-        expect((<any>gridObj.editModule.getBatchChanges()).addedRecords.length).toBe(1);
+        
     });
 
-    it('delete the record', function () {
+    it('delete the record', function (done: Function) {
+        let batchDelete = (args?: any): void => {
+            expect((<any>gridObj.editModule.getBatchChanges()).addedRecords.length).toBe(0);
+            expect(gridObj.currentViewData.length).toBe(0);
+            gridObj.batchDelete = null;
+            done();
+        };
+        gridObj.batchDelete = batchDelete;
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
-        expect((<any>gridObj.editModule.getBatchChanges()).addedRecords.length).toBe(0);
-        expect(gridObj.currentViewData.length).toBe(0);
     });
 
     afterAll(() => {

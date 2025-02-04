@@ -209,7 +209,7 @@ describe('Chart - ', () => {
         it('chart type changed to stackingarea100 1', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'StackingArea100';
             setTimeout(() => {
-                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_1')[0].textContent).toBe('$50.00');
+                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_1')[0].textContent).toBe('50%');
                 done();
             }, 1000);
         });

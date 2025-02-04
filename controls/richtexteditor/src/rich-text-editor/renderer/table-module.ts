@@ -771,7 +771,7 @@ export class Table {
         }
         this.previousTableElement = ele;
         const insideList: boolean = this.insideList(selection.range);
-        if ((event.keyCode === 37 || event.keyCode === 39) && selection.range.startContainer.nodeType === 3 ||
+        if ((event.keyCode === 37 || event.keyCode === 39) ||
             insideList) {
             return;
         }

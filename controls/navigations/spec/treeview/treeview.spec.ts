@@ -126,18 +126,22 @@ describe('TreeView control', () => {
             it('with null fields', () => {
                 treeObj = new TreeView({ fields: null },'#tree1');
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
+		expect(treeObj.element.getAttribute('aria-activedescendant')).toBe(null);
             });
             it('with empty fields', () => {
                 treeObj = new TreeView({ fields: {} },'#tree1');
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
+		expect(treeObj.element.getAttribute('aria-activedescendant')).toBe(null);
             });
             it('with null datasource', () => {
                 treeObj = new TreeView({ fields: { dataSource: null } },'#tree1');
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
+	        expect(treeObj.element.getAttribute('aria-activedescendant')).toBe(null);
             });
             it('with empty datasource', () => {
                 treeObj = new TreeView({ fields: { dataSource: [] } },'#tree1');
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
+		expect(treeObj.element.getAttribute('aria-activedescendant')).toBe(null);
             });
             it('selectedNodes property testing', (done: Function) => {
                 treeObj = new TreeView({ 
@@ -147,6 +151,7 @@ describe('TreeView control', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+		    expect(treeObj.element.getAttribute('aria-activedescendant')).toBe("tree1_active");
                     expect(li.length).toBe(10);
                     expect(li[0].classList.contains('e-active')).toBe(false);
                     expect(li[9].classList.contains('e-active')).toBe(true);
@@ -5740,18 +5745,22 @@ describe('TreeView control', () => {
             it('with null fields', () => {
                 treeObj = new TreeView({ fields: null },'#tree1');
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
+		expect(treeObj.element.getAttribute('aria-activedescendant')).toBe(null);
             });
             it('with empty fields', () => {
                 treeObj = new TreeView({ fields: {} },'#tree1');
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
+		expect(treeObj.element.getAttribute('aria-activedescendant')).toBe(null);
             });
             it('with null datasource', () => {
                 treeObj = new TreeView({ fields: { dataSource: null } },'#tree1');
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
+		expect(treeObj.element.getAttribute('aria-activedescendant')).toBe(null);
             });
             it('with empty datasource', () => {
                 treeObj = new TreeView({ fields: { dataSource: [] } },'#tree1');
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
+		expect(treeObj.element.getAttribute('aria-activedescendant')).toBe(null);
             });
             it('selectedNodes property testing', (done: Function) => {
                 treeObj = new TreeView({ 
@@ -5761,6 +5770,7 @@ describe('TreeView control', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+		    expect(treeObj.element.getAttribute('aria-activedescendant')).toBe("tree1_active");
                     expect(li.length).toBe(10);
                     expect(li[0].classList.contains('e-active')).toBe(false);
                     expect(li[9].classList.contains('e-active')).toBe(true);

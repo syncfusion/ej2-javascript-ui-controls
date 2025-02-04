@@ -329,6 +329,9 @@ describe('Schedule base module', () => {
             var selectedDate = schObj.selectedDate;
             var afterPreviousClick = new Date(selectedDate);
             afterPreviousClick.setMonth(selectedDate.getMonth() + 1);
+            if (afterPreviousClick.getDate() !== selectedDate.getDate()) {
+                afterPreviousClick.setDate(0);
+            }
             expect(schObj.activeView.getNextPreviousDate('Next')).toEqual(afterPreviousClick);
             var dateCollection = schObj.getViewDates('Next');
             schObj.element.focus();

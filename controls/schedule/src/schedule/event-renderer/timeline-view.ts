@@ -491,8 +491,8 @@ export class TimelineEvent extends MonthEvent {
         if (day === 0) {
             return slotTd;
         } else {
-            const daySlot: number = Math.round((((util.getUniversalTime(schedule.endHour) - util.getUniversalTime(schedule.startHour)) /
-                util.MS_PER_MINUTE) / this.getIntervalInMinutes(startTime)) * this.slotCount);
+            const daySlot: number = Math.round(((util.getUniversalTime(schedule.endHour) - util.getUniversalTime(schedule.startHour)) /
+                this.interval / util.MS_PER_MINUTE) * this.slotCount);
             return (daySlot * day) + slotTd;
         }
     }

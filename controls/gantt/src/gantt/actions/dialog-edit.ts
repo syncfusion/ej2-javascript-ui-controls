@@ -3398,6 +3398,11 @@ export class DialogEdit {
             treeGridObj.grid.endEdit();
         }
         const selectedItems: CObject[] = <CObject[]>this.ganttResources;
+        selectedItems.forEach((item: CObject) => {
+            if (item[this.parent.resourceFields.unit] === null) {
+                item[this.parent.resourceFields.unit] = 0;
+            }
+        });
         if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(this.rowData.ganttProperties)) {
             if (JSON.stringify(this.ganttResources) !== JSON.stringify(this.rowData.ganttProperties.resourceInfo)) {
                 this.isResourceUpdate = true;

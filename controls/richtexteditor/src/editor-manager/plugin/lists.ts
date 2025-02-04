@@ -10,6 +10,7 @@ import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
 import { IAdvanceListItem } from '../../common';
+import { InsertHtml } from './inserthtml';
 
 /**
  * Lists internal component
@@ -25,6 +26,7 @@ export class Lists {
     private domNode: DOMNode;
     private currentAction: string;
     private commonLIParent: Element
+    private listTabIndentation: boolean = false;
     /**
      * Constructor for creating the Lists plugin
      *
@@ -240,7 +242,7 @@ export class Lists {
     private removeList(range: Range, e: IHtmlKeyboardEvent): void{
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = (!isNOU(range.endContainer.parentElement.closest('li')) && range.endContainer.parentElement.closest('li').childElementCount > 1 && range.endContainer.nodeName === '#text') ? range.endContainer as Element :  this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
-        const parentList: Element = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
+        let parentList: Element = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
         let fullContent: string = '';
         if (!isNOU(parentList) && !isNOU(parentList.firstChild)) {
             parentList.childNodes.forEach((e: ChildNode) => {
@@ -264,21 +266,23 @@ export class Lists {
                 detach(range.commonAncestorContainer);
             }
             e.event.preventDefault();
+            parentList = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
         }
-        else if (!isNOU(parentList) && !range.collapsed && parentList.textContent === fullContent ){
+        if (!isNOU(parentList) && (!range.collapsed || (parentList.textContent.trim() === '' && isNOU(parentList.previousElementSibling) && isNOU(parentList.nextElementSibling))) && parentList.textContent === fullContent ){
             range.deleteContents();
-            this.parent.editableElement.querySelectorAll('li').forEach((li: HTMLLIElement) => {
-                if (!isNOU(li.childNodes)){
-                    li.childNodes.forEach((child: Element) => {
+            const listItems: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('li');
+            for (let i: number = 0; i < listItems.length; i++) {
+                if (!isNOU((listItems[i as number] as HTMLElement).childNodes)) {
+                    listItems[i as number].childNodes.forEach((child: Element) => {
                         if (child.nodeName === 'A' && child.textContent === '') {
-                            li.removeChild(child);
+                            listItems[i as number].removeChild(child);
                         }
                     });
                 }
-                if (!li.firstChild || li.textContent.trim() === '') {
-                    li.parentNode.removeChild(li);
+                if ((!listItems[i as number].firstChild || listItems[i as number].textContent.trim() === '') && (listItems[i as number] === startNode || listItems[i as number] === endNode)) {
+                    listItems[i as number].parentNode.removeChild(listItems[i as number]);
                 }
-            });
+            }
             this.parent.editableElement.querySelectorAll('ol').forEach((ol: HTMLOListElement) => {
                 if (!ol.firstChild || ol.textContent.trim() === '') {
                     ol.parentNode.removeChild(ol);
@@ -361,6 +365,9 @@ export class Lists {
             if (!(e.event.action && e.event.action === 'indent')) {
                 this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
             }
+            if (e.enableTabKey) {
+                this.handleListIndentation();
+            }
             let blockNodes: Element[];
             const startOffset: number = range.startOffset;
             const endOffset: number = range.endOffset;
@@ -370,7 +377,7 @@ export class Lists {
                 CONSTANT.IGNORE_BLOCK_TAGS.indexOf((startNode.parentNode as Element).tagName.toLocaleLowerCase()) >= 0)) {
                 return;
             } else {
-                if (!(e.event.action && e.event.action === 'indent')) {
+                if (!(e.event.action && (e.event.action === 'indent' || this.listTabIndentation))) {
                     this.domNode.setMarker(this.saveSelection);
                 }
                 blockNodes = <Element[]>this.domNode.blockNodes();
@@ -380,7 +387,10 @@ export class Lists {
             for (let i: number = 0; i < blockNodes.length; i++) {
                 if ((blockNodes[i as number].parentNode as Element).tagName === 'LI') {
                     nodes.push(blockNodes[i as number].parentNode as Element);
-                } else if (blockNodes[i as number].tagName === 'LI' && (blockNodes[i as number].childNodes[0] as Element).tagName !== 'P' &&
+                } else if (!closest(blockNodes[i as number], 'OL') && !closest(blockNodes[i as number], 'UL') && closest(blockNodes[i as number], 'LI')) {
+                    nodes.push(closest(blockNodes[i as number], 'LI'));
+                }
+                else if (blockNodes[i as number].tagName === 'LI' && (blockNodes[i as number].childNodes[0] as Element).tagName !== 'P' &&
                     ((blockNodes[i as number].childNodes[0] as Element).tagName !== 'OL' &&
                         (blockNodes[i as number].childNodes[0] as Element).tagName !== 'UL')) {
                     nodes.push(blockNodes[i as number]);
@@ -393,14 +403,14 @@ export class Lists {
                 if (e.event.shiftKey) {
                     this.revertList(nodes as HTMLElement[], e);
                     this.revertClean();
-                } else {
+                } else if (!e.enableTabKey || (e.enableTabKey && !this.listTabIndentation)) {
                     isNested = this.nestedList(nodes);
                 }
                 if (isNested) {
                     this.cleanNode();
                     (this.parent.editableElement as HTMLElement).focus({ preventScroll: true });
                 }
-                if (!(e.event.action && e.event.action === 'indent')) {
+                if (!(e.event.action && (e.event.action === 'indent' || this.listTabIndentation))) {
                     this.saveSelection = this.domNode.saveMarker(this.saveSelection);
                     this.saveSelection.restore();
                     if (e.callBack) {
@@ -414,7 +424,7 @@ export class Lists {
                     }
                 }
             } else {
-                if (!(e.event.action && e.event.action === 'indent')) {
+                if (!(e.event.action && (e.event.action === 'indent' || this.listTabIndentation))) {
                     if (e.event && e.event.shiftKey && e.event.key === 'Tab') {
                         e.event.action = 'tab';
                     }
@@ -422,6 +432,7 @@ export class Lists {
                     this.saveSelection.restore();
                 }
             }
+            this.listTabIndentation = false;
         } else {
             switch ((e.event as KeyboardEventArgs).action) {
             case 'ordered-list':
@@ -434,6 +445,78 @@ export class Lists {
                 break;
             }
         }
+    }
+
+    private handleListIndentation(): void {
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const parentNodeList: Node[] = this.saveSelection.getParentNodeCollection(range);
+        if ((parentNodeList[0].nodeName === 'LI' || closest(parentNodeList[0] as HTMLElement, 'li'))
+            && !this.isCursorAtStartOfLI(range)) {
+            const startParentNode: Element = parentNodeList[parentNodeList.length - 1] as Element;
+            const endParentNode: Element = parentNodeList[0] as Element;
+            const startElementTextNode: Node = range.startContainer;
+            if (startParentNode && endParentNode) {
+                range.deleteContents();
+                if (startParentNode !== endParentNode) {
+                    let currentBlockNode: Element = startElementTextNode as Element;
+                    while (currentBlockNode.parentElement) {
+                        if (this.parent.domNode.isBlockNode(currentBlockNode.parentElement)) {
+                            currentBlockNode = currentBlockNode.parentElement;
+                            break;
+                        }
+                        currentBlockNode = currentBlockNode.parentElement;
+                    }
+                    let cursorPosition: number;
+                    const tabSpaceHTML: string = '&nbsp;&nbsp;&nbsp;&nbsp;<span class="rte-tab-space"></span>';
+                    if (this.parent.domNode.isBlockNode(startParentNode.lastChild as Element)) {
+                        startElementTextNode.nodeValue += '\u00A0\u00A0\u00A0\u00A0';
+                        cursorPosition = startElementTextNode.nodeValue.length;
+                    } else {
+                        startParentNode.innerHTML += tabSpaceHTML;
+                    }
+                    const listItemFirstChild: Node = endParentNode.firstChild;
+                    if (listItemFirstChild && this.parent.domNode.isBlockNode(listItemFirstChild as Element)) {
+                        while (listItemFirstChild.firstChild) {
+                            currentBlockNode.appendChild(listItemFirstChild.firstChild);
+                        }
+                        (listItemFirstChild as Element).remove();
+                    }
+                    while (endParentNode.firstChild) {
+                        if (this.parent.domNode.isBlockNode(endParentNode.firstChild as Element)) {
+                            this.parent.domNode.insertAfter(endParentNode.firstChild as Element, currentBlockNode);
+                        } else {
+                            startParentNode.appendChild(endParentNode.firstChild);
+                        }
+                    }
+                    endParentNode.remove();
+                    const tabSpanElement: Element = startParentNode.querySelector('.rte-tab-space');
+                    if (tabSpanElement && tabSpanElement.previousSibling) {
+                        this.saveSelection.setCursorPoint(this.parent.currentDocument, tabSpanElement.previousSibling as Element,
+                                                          tabSpanElement.previousSibling.textContent.length);
+                        tabSpanElement.parentNode.removeChild(tabSpanElement);
+                    } else {
+                        this.saveSelection.setCursorPoint(this.parent.currentDocument, startElementTextNode as Element, cursorPosition);
+                    }
+                } else {
+                    InsertHtml.Insert(this.parent.currentDocument, '&nbsp;&nbsp;&nbsp;&nbsp;');
+                }
+                this.listTabIndentation = true;
+            }
+        }
+    }
+
+    private isCursorAtStartOfLI(range: Range): boolean {
+        let node: Node = range.startContainer;
+        while (node && node.nodeName !== 'LI') {
+            node = node.parentNode;
+        }
+        if (!node) {
+            return false;
+        }
+        const tempRange: Range = range.cloneRange();
+        tempRange.selectNodeContents(node);
+        tempRange.setEnd(range.startContainer, range.startOffset);
+        return tempRange.toString().trim() === '';
     }
 
     private spaceKeyAction(e: IHtmlKeyboardEvent): void {

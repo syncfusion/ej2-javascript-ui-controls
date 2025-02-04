@@ -149,6 +149,68 @@ describe('RTE CR issues ', () => {
             document.body.innerHTML = "";
         });
     });
+    describe('930848: Formatting, Shift+Enter, and zero-width space removal', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs: any;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                height: '200px',
+                value: '<p>testing\u200B</p>',
+                toolbarSettings: {
+                    items: ['Bold', 'Italic', 'Underline']
+                }
+            });
+            keyboardEventArgs = {
+                preventDefault: () => {},
+                stopPropagation: () => {},
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: true,
+                char: '',
+                key: 'Enter',
+                charCode: 13,
+                keyCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'enter',
+                type: 'keydown'
+            };
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should remove zero-width spaces, apply formatting, and handle Shift+Enter without errors', (done) => {
+            rteObj.focusIn();
+            const editPanel = rteObj.contentModule.getEditPanel() as HTMLElement;
+            const textNode: Element = editPanel.querySelector('p').firstChild as Element;
+            new NodeSelection().setCursorPoint(document, textNode, textNode.textContent.length);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(
+                rteObj.contentModule.getDocument(),
+                textNode,
+                textNode,
+                textNode.textContent.length,
+                textNode.textContent.length
+            );
+            const boldButton = rteObj.element.querySelector('[aria-label="Bold (Ctrl+B)"]') as HTMLElement;
+            boldButton.click();
+            spyOn(console, 'error');
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            keyboardEventArgs.keyCode = 16;
+            keyboardEventArgs.charCode = 16;
+            keyboardEventArgs.which = 16;
+            keyboardEventArgs.shiftKey = false;
+            (<any>rteObj).keyUp(keyboardEventArgs);
+            setTimeout(() => {
+                expect(console.error).not.toHaveBeenCalled();
+                expect(editPanel.innerHTML).not.toContain('\u200B');
+                expect(editPanel.innerHTML).toContain('<strong>');
+                expect(editPanel.innerHTML).toContain('<br>');
+                expect(rteObj.getRange().startContainer.nodeName.toLowerCase()).toBe('br');
+                done();
+            }, 100);
+        });
+    });
     describe('877787 - InsertHtml executeCommand deletes the entire content when we insert html by selection in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -228,6 +290,45 @@ describe('RTE CR issues ', () => {
                 expect(editor.element.querySelector('.e-rte-dropdown-btn-text').textContent).not.toBe('');
                 done();
             }, 100);
+        });
+    });
+
+    describe('Bug 934949: Cmd-Delete (macOS) does not trigger change function in Text Editor', () => {
+        let rteObj: RichTextEditor;
+        let changeSpy: jasmine.Spy = jasmine.createSpy("change");
+        let defaultUA: string = navigator.userAgent;
+        let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
+        beforeEach((done: Function) => {
+            Object.defineProperty(navigator, 'userAgent', {
+                value: safari,
+                configurable: true
+            });
+            rteObj = renderRTE({
+                value: `<p style="margin-left: 20px;" class="rte">RichTextEditor</p>`,
+                autoSaveOnIdle: true,
+                saveInterval: 0,
+                change: changeSpy
+            });
+            rteObj.dataBind();
+            done();
+        });
+        it(' change event trigger while cmd+backspace in mac ', (done) => {
+            rteObj.focusIn();
+            let selectNode: Element = rteObj.element.querySelector('.rte');
+            setCursorPoint(selectNode as Element, 0);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            setTimeout(() => {
+                expect(changeSpy).toHaveBeenCalled();
+                done();
+            }, 400);
+        });
+        afterEach((done: DoneFn) => {
+            Browser.userAgent = defaultUA;
+            destroy(rteObj);
+            done();
         });
     });
 
@@ -590,7 +691,7 @@ describe('RTE CR issues ', () => {
         (rteObj as any).keyDown(keyBoardEvent);
         setTimeout(() => {
             let value=rteObj.inputElement.querySelector('#ol');
-            expect(value.innerHTML===`<li><p>Provide\n        the tool bar support, it’s also customizable.</p><ol><li><p id="one">Options\n        to get the HTML elements with styles.</p></li><li><p>Support\n        to insert image from a defined path.</p></li><li id="two"><p>Footer\n        elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol></li>`).toBe(true);
+            expect(value.innerHTML===`<li><p>Provide\n        the tool bar support, it’s also customizable.</p></li><li><p id="one">Option&nbsp;&nbsp;&nbsp;&nbsp;</p></li>`).toBe(true);
             rteObj.value=`<p id='one'><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li><p id='two'>Options to get the HTML elements with styles.</p></li></ol>`;
             rteObj.dataBind();
             startElement = rteObj.inputElement.querySelector('#one');
@@ -602,6 +703,48 @@ describe('RTE CR issues ', () => {
                 done();
             }, 100);
         }, 100);
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
+    describe('929190 - Tab key not working properly inside list in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        let ShiftTab: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        let domSelection: NodeSelection = new NodeSelection();
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({
+                value: `<p>hello world this is me</p>`,
+                enableTabKey: true,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                undoRedoTimer: 0
+            });
+            done();
+        });
+        it('Apply tab key in list', (done: DoneFn) => {
+            rteObj.value=`<ul id='ul'><li id='one'>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li><li id='two'>The toolbar has multi-row, expandable, and scrollable modes.</li><li>The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li></ul>`;
+            rteObj.dataBind();
+            let divElement: HTMLElement = rteObj.inputElement.querySelector('#one');
+            setCursorPoint(divElement.firstChild as Element, 5);
+            (rteObj as any).keyDown(keyBoardEvent);
+            let value = rteObj.inputElement.querySelector('#ul');
+            expect(value.innerHTML=== `<li id="one">Basic&nbsp;&nbsp;&nbsp;&nbsp; features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li><li id="two">The toolbar has multi-row, expandable, and scrollable modes.</li><li>The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>`).toBe(true);
+            divElement= rteObj.inputElement.querySelector('#two');
+            setCursorPoint(divElement.firstChild as Element, 5);
+            (rteObj as any).keyDown(keyBoardEvent);
+            value = rteObj.inputElement.querySelector('#ul');
+            expect(value.innerHTML=== `<li id="one">Basic&nbsp;&nbsp;&nbsp;&nbsp; features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li><li id="two">The t&nbsp;&nbsp;&nbsp;&nbsp;oolbar has multi-row, expandable, and scrollable modes.</li><li>The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>`).toBe(true);
+            divElement= rteObj.inputElement.querySelector('#one');
+            setCursorPoint(divElement.firstChild as Element, 0);
+            (rteObj as any).keyDown(keyBoardEvent);
+            value = rteObj.inputElement.querySelector('#ul');
+            expect(value.innerHTML=== `<li style="list-style-type: none;"><ul><li id="one">Basic&nbsp;&nbsp;&nbsp;&nbsp; features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li></ul></li><li id="two">The t&nbsp;&nbsp;&nbsp;&nbsp;oolbar has multi-row, expandable, and scrollable modes.</li><li>The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>`).toBe(true);
+            done();
         });
         afterEach((done) => {
             destroy(rteObj);

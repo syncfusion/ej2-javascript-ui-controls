@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I681520` - The percentage symbol is now included in the axis labels for the StackingBar100, StackingColumn100, StackingArea100, and StackingLine100 chart types.
+
 ## 28.1.41 (2025-01-21)
 
 ### Pivot Table

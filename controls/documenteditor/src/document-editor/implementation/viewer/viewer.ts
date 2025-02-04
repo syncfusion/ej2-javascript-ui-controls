@@ -2000,6 +2000,7 @@ export class DocumentHelper {
             this.owner.selectionModule.isViewPasteOptions = false;
             this.owner.selectionModule.showHidePasteOptions(undefined, undefined);
         }
+        this.layout.isInitialLoad = false;
         this.owner.fireDocumentChange();
         this.owner.showHideRulers();
         setTimeout((): void => {

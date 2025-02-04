@@ -20,7 +20,7 @@ import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProp
 import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportDetailTemplateEventArgs } from './interface';
 import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';
 import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs, AdaptiveDialogEventArgs } from './interface';
-import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';
+import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr, ReorderEventArgs } from './interface';
 import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';
 import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel } from './interface';
 import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';
@@ -2045,7 +2045,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @event actionBegin
      */
     @Event()
-    public actionBegin: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs | NotifyArgs>;
+    public actionBegin: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs | NotifyArgs | ReorderEventArgs>;
 
     /**
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.
@@ -2053,7 +2053,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @event actionComplete
      */
     @Event()
-    public actionComplete: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs | NotifyArgs>;
+    public actionComplete: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs | NotifyArgs | ReorderEventArgs>;
     /* eslint-enable */
 
     /**

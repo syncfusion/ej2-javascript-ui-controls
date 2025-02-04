@@ -1168,7 +1168,7 @@ export class Edit implements IAction {
         let rows: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         if (this.parent.editSettings.mode === 'Batch') {
             rows = [].slice.call(this.parent.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)'));
-            if (viewPortRowCount >= 1 && rows.length >= viewPortRowCount
+            if (viewPortRowCount > 1 && rows.length > viewPortRowCount
                 && rows[rows.length - 1].getAttribute(literals.dataRowIndex) === row.getAttribute(literals.dataRowIndex)) {
                 isBatchModeLastRow = true;
             }

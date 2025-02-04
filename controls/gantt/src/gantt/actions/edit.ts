@@ -715,6 +715,7 @@ export class Edit {
      */
     public updateResourceRelatedFields(currentData: IGanttData, column: string): void {
         const ganttProp: ITaskData = currentData.ganttProperties;
+        const previousdata: object  = this.parent.previousRecords;
         const taskType: string = ganttProp.taskType ? ganttProp.taskType : this.parent.taskType;
         let isEffectDriven: boolean;
         const isAutoSchedule: boolean = ganttProp.isAutoSchedule;
@@ -724,6 +725,13 @@ export class Edit {
         if (!isNullOrUndefined(resources)) {
             switch (taskType) {
             case 'FixedUnit':
+                if (!isNullOrUndefined(previousdata[ganttProp.uniqueID]) &&
+                                                            !isNullOrUndefined(previousdata[ganttProp.uniqueID].ganttProperties) &&
+                                                                           ( previousdata[ganttProp.uniqueID].ganttProperties.resourceNames
+                                                                            === null ||
+                                                                            previousdata[ganttProp.uniqueID].ganttProperties.resourceNames === '')) {
+                    this.parent.dataOperation.updateWorkWithDuration(currentData);
+                }
                 if (resources.length === 0) {
                     return;
                 } else if (isAutoSchedule && resources.length) {
@@ -1650,14 +1658,16 @@ export class Edit {
             if (resourceID === 'NaN') {
                 resourceID = currentResource[index as number][this.parent.resourceFields.id];
             }
-            for (let i: number = 0; i < prevResource.length; i++) {
-                let prevResourceID: string | number = parseInt(prevResource[i as number][this.parent.resourceFields.id], 10).toString();
-                if (prevResourceID === 'NaN') {
-                    prevResourceID = prevResource[i as number][this.parent.resourceFields.id];
-                }
-                if (prevResourceID === resourceID) {
-                    recordIndex.push(i);
-                    break;
+            if (!isNullOrUndefined(prevResource)) {
+                for (let i: number = 0; i < prevResource.length; i++) {
+                    let prevResourceID: string | number = parseInt(prevResource[i as number][this.parent.resourceFields.id], 10).toString();
+                    if (prevResourceID === 'NaN') {
+                        prevResourceID = prevResource[i as number][this.parent.resourceFields.id];
+                    }
+                    if (prevResourceID === resourceID) {
+                        recordIndex.push(i);
+                        break;
+                    }
                 }
             }
             if (recordIndex.length === 0) {
@@ -3958,14 +3968,6 @@ export class Edit {
         }
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
-        if (this.dialogModule.isAddNewResource && !this.parent.isEdit && this.parent.taskFields.work) {
-            if (this.parent.taskType === 'FixedDuration') {
-                this.parent.dataOperation.updateWorkWithDuration(cAddedRecord[0]);
-            }
-            if (this.parent.taskType === 'FixedUnit') {
-                this.parent.dataOperation.updateDurationWithWork(cAddedRecord[0]);
-            }
-        }
         this.updateRowIndex();
         this.parent.trigger('actionComplete', args);
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {

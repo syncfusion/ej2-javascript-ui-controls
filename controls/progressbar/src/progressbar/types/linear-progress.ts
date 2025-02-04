@@ -293,7 +293,7 @@ export class Linear {
             document.getElementById(linearLabelGroup.id).remove();
         }
         const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        const linearValue: number = (progress.value < progress.minimum) ? 0 : Math.round(labelValue);
+        const linearValue: number = (progress.value < progress.minimum) ? 0 : +labelValue.toFixed(2);
         const argsData: ITextRenderEventArgs = {
             cancel: false, text: labelText ? labelText : String(linearValue) + '%', color: progress.labelStyle.color || this.progress.themeStyle.linearLabelFont.color
         };

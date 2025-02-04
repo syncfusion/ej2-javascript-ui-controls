@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I681285` - Chart performance has been optimized when using the data label template.
+
 ## 28.2.3 (2025-01-29)
 
 ### Chart

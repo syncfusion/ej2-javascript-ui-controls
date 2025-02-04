@@ -1320,7 +1320,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private initialize(): void {
         this.element.setAttribute('role', 'tree');
-        this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
+        if (!isNOU(this.fields.dataSource) && Array.isArray(this.fields.dataSource) && this.fields.dataSource.length !== 0) {
+            this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
+        }
         this.setCssClass(null, this.cssClass);
         this.setEnableRtl();
         this.setFullRow(this.fullRowSelect);

@@ -259,7 +259,7 @@ export class HtmlEditor {
             if (range.startContainer.textContent.charCodeAt(0) === 8203) {
                 const previousLength: number = range.startContainer.textContent.length;
                 const previousRange: number = range.startOffset;
-                range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
+                this.removeZeroWidthSpaces(range.startContainer, regEx);
                 pointer = previousRange === 0 ? previousRange : previousRange - (previousLength - range.startContainer.textContent.length);
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                     this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
@@ -280,7 +280,7 @@ export class HtmlEditor {
                         continue;
                     }
                     if (currentChild.textContent.replace(regEx, '').trim().length > 0 && currentChild.textContent.includes('\u200B')) {
-                        currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');
+                        this.removeZeroWidthSpaces(currentChild, regEx);
                     }
                     currentChild = currentChild.nextElementSibling;
                 }
@@ -292,7 +292,8 @@ export class HtmlEditor {
                     parentElement.removeChild(tempSpanToRemove);
                     tempSpanToRemove = null;
                 }
-                const currentChildNode : NodeListOf<ChildNode> = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
+                const currentElement: Element | null = this.parent.inputElement.querySelector('.currentStartMark');
+                const currentChildNode: NodeListOf<ChildNode> | [] = currentElement ? currentElement.childNodes : [];
                 if (currentChildNode.length > 1) {
                     for (let i: number = 0; i < currentChildNode.length; i++) {
                         if (currentChildNode[i as number].nodeName === '#text' && currentChildNode[i as number].textContent.length === 0) {
@@ -339,7 +340,17 @@ export class HtmlEditor {
             }
         }
     }
-
+    private removeZeroWidthSpaces(node: Node, regex: RegExp): void {
+        if (node.nodeType === Node.TEXT_NODE) {
+            if (node.textContent !== null) {
+                node.textContent = node.textContent.replace(regex, '');
+            }
+            return;
+        }
+        node.childNodes.forEach((child: ChildNode) => {
+            this.removeZeroWidthSpaces(child, regex);
+        });
+    }
     private onKeyDown(e: NotifyArgs): void {
         if ((e.args as KeyboardEventArgs).ctrlKey && (e.args as KeyboardEventArgs).keyCode === 65) {
             this.isCopyAll = true;
@@ -571,7 +582,7 @@ export class HtmlEditor {
             if (!isNOU(findBlockElement[0]) && currentRange.collapsed && currentRange.startOffset === 0 && currentRange.endOffset === 0 && (findBlockElement[0] as HTMLElement).style.marginLeft !== '') {
                 (findBlockElement[0] as HTMLElement).style.marginLeft = (parseInt((findBlockElement[0] as HTMLElement).style.marginLeft, 10) <= 20) ? '' : (parseInt((findBlockElement[0] as HTMLElement).style.marginLeft, 10) - 20 + 'px');
             }
-            if (isNOU(this.oldRangeElement)) {
+            if (isNOU(this.oldRangeElement) && isNOU(findBlockElement[0].previousSibling)) {
                 return;
             } else if (findBlockElement[0].previousSibling) {
                 const prevSibling: HTMLElement = findBlockElement[0].previousSibling as HTMLElement;
@@ -592,6 +603,7 @@ export class HtmlEditor {
                         cursorpointer
                     );
                     currentElement.parentNode.removeChild(currentElement);
+                    (e.args as KeyboardEventArgs).preventDefault();
                 } else {
                     prevSibling.parentNode.removeChild(prevSibling);
                 }

@@ -1049,7 +1049,7 @@ export class ConditionalFormatting {
                     cf.value = dateEventArgs.updatedVal.toString();
                     return cf.type === 'GreaterThan' ? Number(value) > Number(dateEventArgs.updatedVal) :
                         Number(value) < Number(dateEventArgs.updatedVal);
-                } else {
+                } else if (input) {
                     return cf.type === 'GreaterThan' ? value.toLowerCase() > input.toLowerCase() : value.toLowerCase() < input.toLowerCase();
                 }
             }

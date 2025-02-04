@@ -3182,3 +3182,39 @@ describe('EJ2-920968: The browser automatically scrolls to the grid when perform
         gridObj = actionBegin = actionComplete = null;
     });
 });
+
+describe('EJ2-934107: Group caption text not displayed properly when grouping with frozen columns. => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowGrouping: true,
+                width: '100%',
+                columns: [
+                    { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID", isFrozen: true },
+                    { field: 'CustomerID', width: 120, headerText: "Customer ID" },
+                    { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    { field: 'ShipCountry', width: 120, headerText: "ShipCountry" },
+                    { field: 'ShipName', width: 120, headerText: "ShipName" },
+                ],
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('Group the column', (done: Function) => {
+        actionComplete = (): void => {
+            let content = gridObj.getContent().querySelectorAll('tr');
+            expect(content[0].querySelectorAll('.e-groupcaption')[0].getAttribute('colspan')).toBe('4');
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.groupColumn('CustomerID');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

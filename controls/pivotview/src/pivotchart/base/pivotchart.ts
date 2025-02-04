@@ -1692,7 +1692,10 @@ export class PivotChart {
                 args.text = '';
             }
         }
-        if (args.axis.name !== 'primaryXAxis') {
+        if (args.axis.name !== 'primaryXAxis' && !(this.parent.chartSettings.chartSeries.type === 'StackingColumn100' ||
+            this.parent.chartSettings.chartSeries.type === 'StackingBar100' ||
+            this.parent.chartSettings.chartSeries.type === 'StackingArea100' ||
+            this.parent.chartSettings.chartSeries.type === 'StackingLine100')) {
             const formatField: IField = this.engineModule.formatFields[(this.chartSettings.enableMultipleAxis &&
                 this.chartSettings.multipleAxisMode === 'Combined') ? this.currentMeasure : args.axis.name];
             const valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.value, (this.chartSettings.enableMultipleAxis &&

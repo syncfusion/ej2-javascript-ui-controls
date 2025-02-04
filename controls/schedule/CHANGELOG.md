@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I680887` - An issue where the Scheduler year view popup does not close when navigating to other views has been resolved.
+
+- `#F195634` - An issue with scheduler event misalignment in timeline Day View with custom `timeScale` and `interval` settings has been resolved.
+
+- `#F195703` - An issue with the Schedule `actionCompleteArgs` to ensure `deletedRecords` contain the correct edited timezone start and end time for deleted appointments has been resolved.
+
 ## 28.2.3 (2025-01-29)
 
 ### Schedule

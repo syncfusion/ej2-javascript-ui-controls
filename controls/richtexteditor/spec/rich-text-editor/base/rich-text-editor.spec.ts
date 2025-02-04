@@ -163,6 +163,30 @@ describe('831600: When using the mention with the Rich Text Editor, the backspac
     });
 });
 
+    describe('Bug 935992: Backspace Behavior in Vue RichTextEditor Removes Enclosing <div> Tags in Chrome and Edge (Not Firefox)', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        it(' Pressing backspace in second line starting', (done: Function) => {
+            rteObj = renderRTE({
+                value: `<div><div><p>line 1</p><p class="focusNode">line 2</p></div></div>`,
+            });
+            let node: any = rteObj.inputElement.querySelector('.focusNode');
+            setCursorPoint(document, node, 0);
+            (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.innerHTML).toBe(`<div><div><p>line 1line 2</p></div></div>`);
+                done();
+            }, 100);
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
 describe('832431: Entire line gets removed while pressing enter key after pressing backspace issue', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
@@ -8768,6 +8792,71 @@ describe('923382: Apply background color to the table in iframe', () => {
             });
             expect(tdElement.style.backgroundColor != '' ).toBe(true);
             done();
+    });
+});
+
+describe('921865 - undo not tirggerd, after performing copy and pasting content from outlook', () => {
+    let rteObject: RichTextEditor;
+    let innerHTML: string = `<span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</span>`;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: 'keydown',
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 86,
+        key: '',
+        keyCode: 13
+    };
+    beforeEach(() => {
+        rteObject = renderRTE({
+            pasteCleanupSettings: {
+                prompt: false
+            },
+            value: '',
+            toolbarSettings: {
+                items: ['Undo', 'Redo']
+            }
+        });
+    });
+    afterEach((done: DoneFn) => {
+        destroy(rteObject);
+        done();
+    });
+    it('Pasting content to test if Undo is enabled on the toolbar.', (done: Function) => {
+        rteObject.dataBind();
+        keyBoardEvent.clipboardData = {
+            getData: () => {
+                return innerHTML;
+            },
+            items: []
+        };
+        setCursorPoint(document, (rteObject as any).inputElement.firstElementChild, 0);
+        (rteObject as any).keyDown(keyBoardEvent);
+        rteObject.onPaste(keyBoardEvent);
+        setTimeout(function () {
+            let element = rteObject.element.querySelectorAll("#" + rteObject.getID() + "_toolbar.e-toolbar .e-toolbar-item");
+            expect(element[0].classList.contains("e-overlay")).toBe(false);
+            expect(element[1].classList.contains("e-overlay")).toBe(true);
+            done();
+        }, 100);
+    });
+    it('Save the data during the mouseup event to ensure that the Undo action is enabled after pasting', (done: Function) => {
+        rteObject.dataBind();
+        keyBoardEvent.clipboardData = {
+            getData: function () {
+                return innerHTML;
+            },
+            items: []
+        };
+        setCursorPoint(document, rteObject.inputElement.firstElementChild, 0);
+        (rteObject as any).mouseUp({ target: rteObject.inputElement });
+        setTimeout(function () {
+            let stack = rteObject.formatter.editorManager.undoRedoManager.undoRedoStack.length;
+            expect(stack === 1).toBe(true);
+            done();
+        }, 100);
     });
 });
 

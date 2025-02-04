@@ -2204,9 +2204,9 @@ describe('Gantt Edit support', () => {
               //checking work values for task after adding resource
               expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo.length).toBe(1);
               expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-              expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
-              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/02/2019');
-              expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
+              expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/04/2019');
+              expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
           }
       });
     });

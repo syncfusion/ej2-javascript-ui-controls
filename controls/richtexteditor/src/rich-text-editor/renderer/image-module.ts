@@ -1550,7 +1550,7 @@ export class Image {
 
     private cancelDialog(): void {
         this.parent.isBlur = false;
-        if (this.uploadObj.filesData.length > 0) {
+        if (!isNOU(this.uploadObj) && this.uploadObj.filesData.length > 0) {
             this.uploadObj.remove();
         }
         this.dialogObj.hide({ returnValue: true } as Event);

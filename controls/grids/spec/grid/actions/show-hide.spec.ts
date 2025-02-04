@@ -500,82 +500,107 @@ describe('ShowHide module testing', () => {
             col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('none');
         });
-        it('Show Column using headerText', () => {
+        it('Show Column using headerText', (done: Function) => {
+            let dataBound: Function = () => {
+                rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+                expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
+                rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+                expect(rows.cells[0].style.display).toBe('');
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
+                expect(col.style.display).toBe('');
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
+                expect(col.style.display).toBe('');
+                done();
+            }
+            (gridObj as any).dataBound = dataBound;
             gridObj.showColumns('Order ID');
-            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
-            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].style.display).toBe('');
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
-            expect(col.style.display).toBe('');
-            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
-            expect(col.style.display).toBe('');
         });
-        it('Hide Column using headerText', () => {
+        it('Hide Column using headerText', (done: Function) => {
+            let dataBound: Function = () => {
+                rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+                expect(rows.cells[0].classList.contains('e-hide')).toBeTruthy();
+                rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+                expect(rows.cells[0].classList.contains('e-hide')).toBeTruthy();
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
+                expect(col.style.display).toBe('none');
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
+                expect(col.style.display).toBe('none');
+                done();
+            }
+            (gridObj as any).dataBound = dataBound;
             gridObj.hideColumns('Order ID');
-            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].classList.contains('e-hide')).toBeTruthy();
-            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].style.display).toBe('none');
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
-            expect(col.style.display).toBe('none');
-            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
-            expect(col.style.display).toBe('none');
+            
         });
-        it('Show Column using field', () => {
+        it('Show Column using field', (done: Function) => {
+            let dataBound: Function = () => {
+                rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+                expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
+                rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+                expect(rows.cells[0].style.display).toBe('');
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
+                expect(col.style.display).toBe('');
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
+                expect(col.style.display).toBe('');
+                done();
+            }
+            (gridObj as any).dataBound = dataBound;
             gridObj.showColumns(['OrderID'], 'field');
-            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
-            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].style.display).toBe('');
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
-            expect(col.style.display).toBe('');
-            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
-            expect(col.style.display).toBe('');
         });
-        it('Hide Column using field', () => {
+        it('Hide Column using field', (done: Function) => {
+            let dataBound: Function = () => {
+                rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+                expect(rows.cells[2].classList.contains('e-hide')).toBeTruthy();
+                rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+                expect(rows.cells[2].classList.contains('e-hide')).toBeTruthy();
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
+                expect(col.style.display).toBe('none');
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
+                expect(col.style.display).toBe('none');
+                done();
+            }
+            (gridObj as any).dataBound = dataBound;
             gridObj.hideColumns(['Freight'], 'field');
-            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[2].classList.contains('e-hide')).toBeTruthy();
-            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
-            expect(rows.cells[2].style.display).toBe('none');
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
-            expect(col.style.display).toBe('none');
-            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
-            expect(col.style.display).toBe('none');
         });
-        it('Show Column using UID', () => {
+        it('Show Column using UID', (done: Function) => {
+            let dataBound: Function = () => {
+                rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+                expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
+                rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+                expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
+                expect(col.style.display).toBe('');
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
+                expect(col.style.display).toBe('');
+                done();
+            }
+            (gridObj as any).dataBound = dataBound;
             gridObj.showColumns((<Column>gridObj.getColumns()[2]).uid, 'uid');
-            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
-            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
-            expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
-            expect(col.style.display).toBe('');
-            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
-            expect(col.style.display).toBe('');
         });
-        it('SetVisible function', () => {
+        it('SetVisible function', (done: Function) => {
             let cols: Column[] = <Column[]>(gridObj.getColumns());
             cols[2].visible = true;
             cols[1].visible = false;
+            let dataBound: Function = () => {
+                rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+                expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
+                rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+                expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
+                rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+                expect(rows.cells[1].classList.contains('e-hide')).toBeTruthy();
+                rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[1] as HTMLTableRowElement;
+                expect(rows.cells[1].classList.contains('e-hide')).toBeTruthy();
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
+                expect(col.style.display).toBe('');
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
+                expect(col.style.display).toBe('');
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[1];
+                expect(col.style.display).toBe('none');
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[1];
+                expect(col.style.display).toBe('none');
+                done();
+            }
+            (gridObj as any).dataBound = dataBound;
             gridObj.showHider.setVisible();
-            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
-            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
-            expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
-            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[1].classList.contains('e-hide')).toBeTruthy();
-            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[1] as HTMLTableRowElement;
-            expect(rows.cells[1].style.display).toBe('none');
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
-            expect(col.style.display).toBe('');
-            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
-            expect(col.style.display).toBe('');
-            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[1];
-            expect(col.style.display).toBe('none');
-            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[1];
-            expect(col.style.display).toBe('none');
         });
         afterAll(() => {
             destroy(gridObj);

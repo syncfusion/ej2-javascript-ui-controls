@@ -73,6 +73,13 @@
               }
               @if $skin-name == 'fluent2' {
                 border-radius: 4px;
+                &:focus-visible {
+                  color: $content-text-color;
+                  & .e-caret,
+                  & .e-menu-icon {
+                    color: $icon-color;
+                  }
+                }
               }
             }
           }
@@ -123,9 +130,11 @@
 
           &:focus-visible {
             @if $skin-name == 'fluent2' {
-              border-radius: 4px;
-              background-color: $content-bg-color;
-              box-shadow: $shadow-focus-ring1;
+              &:not(.e-selected) {
+                border-radius: 4px;
+                background-color: $content-bg-color;
+                box-shadow: $shadow-focus-ring1;
+              }
             }
             @if $skin-name == 'tailwind3' {
               box-shadow: $shadow-focus-ring2;
@@ -216,7 +225,7 @@
 
           &:focus-visible {
             @if $skin-name == 'fluent2' {
-              background-color: $content-bg-color;
+              background-color: $flyout-bg-color-focus;
               box-shadow: $shadow-focus-ring1;
               border-radius: 4px;
             }

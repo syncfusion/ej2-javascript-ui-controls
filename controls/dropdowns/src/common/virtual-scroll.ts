@@ -167,7 +167,7 @@ export class VirtualScroll {
                 endIndex = this.parent.viewPortInfo.endIndex - this.parent.value.length;
                 if (this.parent.viewPortInfo.startIndex === 0){
                     this.parent.updateVirtualReOrderList(true);
-                    if (this.parent.value.length < this.parent.itemCount) {
+                    if (this.parent.value.length < this.parent.itemCount && this.parent.value.length !== this.parent.totalItemCount) {
                         const oldUlElement: Element = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
                         if (oldUlElement) {
                             this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
@@ -231,6 +231,12 @@ export class VirtualScroll {
         if (isListUpdated) {
             for (let i: number = this.parent.viewPortInfo.startIndex; i < endIndex; i++) {
                 const index: number = i;
+                if (this.component === 'multiselect' && this.parent.mode === 'CheckBox') {
+                    const oldUlElement: HTMLElement = this.parent.list.querySelector('.e-list-parent' + '.e-reorder');
+                    if (oldUlElement) {
+                        this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
+                    }
+                }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const alreadyAddedData: any = this.parent.generatedDataObject[index as number];
                 if (this.component === 'multiselect' && this.parent.hideSelectedItem) {

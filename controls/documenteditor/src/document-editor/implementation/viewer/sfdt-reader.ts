@@ -1757,9 +1757,8 @@ export class SfdtReader {
                     textFrame.marginRight = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]]);
                     textFrame.marginTop = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][topMarginProperty[this.keywordIndex]]);
                     textFrame.marginBottom = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]]);
-                    if (inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]].length == 0)
-                    {
-                        let block: any = {i:[]};
+                    if (inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]].length === 0 && shape.autoShapeType === "DownArrow") {
+                        let block: any = this.keywordIndex === 1 ? { i: [] } : { inlines: [] };
                         inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]].push(block);
                     }
                     this.parseBody(inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]], textFrame.childWidgets as BlockWidget[], textFrame);

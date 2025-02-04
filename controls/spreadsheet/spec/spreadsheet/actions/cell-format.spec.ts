@@ -720,6 +720,91 @@ describe('Cell Format ->', () => {
                 });
             });
         });		
+
+        describe('EJ2-935705 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Cell formatting is updated incorrectly when a custom negative number format is applied', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                spreadsheet.cellFormat({ color: 'green' }, 'F4:F11');
+                spreadsheet.numberFormat('#,##0_);[Red](#,##0)', 'F4:F11');
+                expect(spreadsheet.sheets[0].rows[3].cells[5].style.color).toBe('green');
+                expect(spreadsheet.sheets[0].rows[4].cells[5].style.color).toBe('green');
+                expect(spreadsheet.sheets[0].rows[5].cells[5].style.color).toBe('green');
+                expect(spreadsheet.sheets[0].rows[6].cells[5].style.color).toBe('green');
+                expect(helper.invoke('getCell', [3, 5]).style.color).toBe('green');
+                expect(helper.invoke('getCell', [4, 5]).style.color).toBe('green');
+                expect(helper.invoke('getCell', [5, 5]).style.color).toBe('green');
+                expect(helper.invoke('getCell', [6, 5]).style.color).toBe('green');
+                helper.edit('F4', '-10');
+                helper.edit('F5', '-20');
+                helper.edit('F6', '-30');
+                helper.edit('F7', '-40');
+                expect(spreadsheet.sheets[0].rows[3].cells[5].style.color).toBe('green');
+                expect(helper.invoke('getCell', [3, 5]).style.color).toBe('red');
+                expect(spreadsheet.sheets[0].rows[3].cells[5].value).toBe(-10);
+                expect(spreadsheet.sheets[0].rows[3].cells[5].formattedText).toBe('(10)');
+                expect(spreadsheet.sheets[0].rows[4].cells[5].style.color).toBe('green');
+                expect(helper.invoke('getCell', [4, 5]).style.color).toBe('red');
+                expect(spreadsheet.sheets[0].rows[4].cells[5].value).toBe(-20);
+                expect(spreadsheet.sheets[0].rows[4].cells[5].formattedText).toBe('(20)');
+                expect(spreadsheet.sheets[0].rows[5].cells[5].style.color).toBe('green');
+                expect(helper.invoke('getCell', [5, 5]).style.color).toBe('red');
+                expect(spreadsheet.sheets[0].rows[5].cells[5].value).toBe(-30);
+                expect(spreadsheet.sheets[0].rows[5].cells[5].formattedText).toBe('(30)');
+                expect(spreadsheet.sheets[0].rows[6].cells[5].style.color).toBe('green');
+                expect(helper.invoke('getCell', [6, 5]).style.color).toBe('red');
+                expect(spreadsheet.sheets[0].rows[6].cells[5].value).toBe(-40);
+                expect(spreadsheet.sheets[0].rows[6].cells[5].formattedText).toBe('(40)');
+                helper.invoke('goTo', ['Sheet2!A1']);
+                setTimeout(() => {
+                    helper.invoke('goTo', ['Sheet1!A1']);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[3].cells[5].style.color).toBe('green');
+                        expect(helper.invoke('getCell', [3, 5]).style.color).toBe('red');
+                        expect(spreadsheet.sheets[0].rows[3].cells[5].value).toBe(-10);
+                        expect(spreadsheet.sheets[0].rows[3].cells[5].formattedText).toBe('(10)');
+                        expect(spreadsheet.sheets[0].rows[4].cells[5].style.color).toBe('green');
+                        expect(helper.invoke('getCell', [4, 5]).style.color).toBe('red');
+                        expect(spreadsheet.sheets[0].rows[4].cells[5].value).toBe(-20);
+                        expect(spreadsheet.sheets[0].rows[4].cells[5].formattedText).toBe('(20)');
+                        expect(spreadsheet.sheets[0].rows[5].cells[5].style.color).toBe('green');
+                        expect(helper.invoke('getCell', [5, 5]).style.color).toBe('red');
+                        expect(spreadsheet.sheets[0].rows[5].cells[5].value).toBe(-30);
+                        expect(spreadsheet.sheets[0].rows[5].cells[5].formattedText).toBe('(30)');
+                        expect(spreadsheet.sheets[0].rows[6].cells[5].style.color).toBe('green');
+                        expect(helper.invoke('getCell', [6, 5]).style.color).toBe('red');
+                        expect(spreadsheet.sheets[0].rows[6].cells[5].value).toBe(-40);
+                        expect(spreadsheet.sheets[0].rows[6].cells[5].formattedText).toBe('(40)');
+                        helper.edit('F4', '10');
+                        helper.edit('F5', '20');
+                        helper.edit('F6', '30');
+                        helper.edit('F7', '40');
+                        expect(spreadsheet.sheets[0].rows[3].cells[5].style.color).toBe('green');
+                        expect(helper.invoke('getCell', [3, 5]).style.color).toBe('green');
+                        expect(spreadsheet.sheets[0].rows[3].cells[5].value).toBe(10);
+                        expect(spreadsheet.sheets[0].rows[3].cells[5].formattedText).toBe('10 ');
+                        expect(spreadsheet.sheets[0].rows[4].cells[5].style.color).toBe('green');
+                        expect(helper.invoke('getCell', [4, 5]).style.color).toBe('green');
+                        expect(spreadsheet.sheets[0].rows[4].cells[5].value).toBe(20);
+                        expect(spreadsheet.sheets[0].rows[4].cells[5].formattedText).toBe('20 ');
+                        expect(spreadsheet.sheets[0].rows[5].cells[5].style.color).toBe('green');
+                        expect(helper.invoke('getCell', [5, 5]).style.color).toBe('green');
+                        expect(spreadsheet.sheets[0].rows[5].cells[5].value).toBe(30);
+                        expect(spreadsheet.sheets[0].rows[5].cells[5].formattedText).toBe('30 ');
+                        expect(spreadsheet.sheets[0].rows[6].cells[5].style.color).toBe('green');
+                        expect(helper.invoke('getCell', [6, 5]).style.color).toBe('green');
+                        expect(spreadsheet.sheets[0].rows[6].cells[5].value).toBe(40);
+                        expect(spreadsheet.sheets[0].rows[6].cells[5].formattedText).toBe('40 ');
+                        done();
+                    });
+                });
+            });
+        });
     });
     describe('EJ2-58338, EJ2-840548 ->', () => {
         beforeEach((done: Function) => {

@@ -323,6 +323,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected preventDefActionFilter: boolean;
     protected isDynamicData: boolean = false;
     protected isPrimitiveData: boolean = false;
+    protected isCustomFiltering: boolean = false;
     protected virtualListInfo: VirtualInfo = {
         currentPageNumber: null,
         direction: null,
@@ -1140,7 +1141,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                                 newQuery.queries[queryElements as number].e.nos = (e as any).count;
                                             }
-                                            if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.operator === 'equal')) {
+                                            if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.operator === 'equal') && !this.isCustomFiltering) {
                                                 isReOrder = false;
                                             }
                                         }
@@ -1164,6 +1165,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             this.trigger('actionComplete', e, (e: Object) => {
                                 if (!(e as { [key: string]: object }).cancel) {
                                     this.isRequesting = false;
+                                    this.isCustomFiltering = false;
                                     const listItems: { [key: string]: Object }[] = (e as ResultData).result;
                                     if (this.isIncrementalRequest){
                                         ulElement = this.renderItems(listItems, fields);
@@ -1201,6 +1203,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     }
                                     if (this.isVirtualizationEnabled) {
                                         this.getFilteringSkeletonCount();
+                                        this.updatePopupPosition();
                                     }
                                     if (this.virtualSelectAll && this.virtualSelectAllData) {
                                         this.virtualSelectionAll(this.virtualSelectAllState, this.liCollections, this.CurrentEvent);
@@ -1242,7 +1245,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                             newQuery.queries[queryElements as number].e.nos = (listItems as any).count;
                                             listItems = <{ [key: string]: Object }[]>(newQuery).executeLocal(dataManager);
                                         }
-                                        if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.operator === 'equal')) {
+                                        if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.operator === 'equal') && !this.isCustomFiltering) {
                                             isReOrder = false;
                                         }
                                     }
@@ -1275,6 +1278,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         const localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
                         this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                         this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
+                            this.isCustomFiltering = false;
                             if (this.isIncrementalRequest){
                                 ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);
                                 return;
@@ -1307,6 +1311,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         // Used this method in component side.
     }
     protected updatePopupState(): void {
+        // Used this method in component side.
+    }
+    protected updatePopupPosition(): void {
         // Used this method in component side.
     }
     protected virtualSelectionAll(state: boolean, li: NodeListOf<HTMLElement>| HTMLElement[], event: MouseEvent | KeyboardEventArgs): void {

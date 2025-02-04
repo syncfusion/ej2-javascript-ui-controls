@@ -118,7 +118,8 @@ export class Formatter {
                         event: event,
                         callBack: this.onSuccess.bind(this, self),
                         value: value,
-                        enterAction: self.enterKey
+                        enterAction: self.enterKey,
+                        enableTabKey: self.enableTabKey
                     });
                 }
             }
@@ -207,8 +208,13 @@ export class Formatter {
     public onSuccess(self: IRichTextEditor, events: IMarkdownFormatterCallBack | IHtmlFormatterCallBack): void {
         self.notify(CONSTANT.contentChanged, {});
         if (events && (isNOU(events.event) || (events.event as KeyboardEventArgs).action !== 'copy')) {
-            this.enableUndo(self);
-            self.notify(CONSTANT.execCommandCallBack, events);
+            if (events.requestType === 'Paste') {
+                self.notify(CONSTANT.execCommandCallBack, events);
+                this.enableUndo(self);
+            } else {
+                this.enableUndo(self);
+                self.notify(CONSTANT.execCommandCallBack, events);
+            }
         }
         self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
             self.setPlaceHolder();

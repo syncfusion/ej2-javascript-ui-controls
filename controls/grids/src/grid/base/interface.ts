@@ -1173,6 +1173,15 @@ export interface InfiniteScrollArgs {
     parentUid?: string;
 }
 
+export interface ReorderEventArgs extends GridActionEventArgs {
+    /** Defines the index of the column being dragged. */
+    fromIndex?: number;
+    /** Defines the index of the column where the dragged column is dropped. */
+    toIndex?: number;
+    /** Defines the Uid of the column where the dragged column is dropped. */
+    toColumnUid?: string;
+}
+
 /**
  * @hidden
  */
@@ -1317,6 +1326,10 @@ export interface PageEventArgs extends GridActionEventArgs {
     previousPage?: string;
     /** Defines the current page number. */
     currentPage?: string;
+    /** Defines the number of records displayed per page. */
+    pageSize?: string;
+    /** Defines the row information of the current page. */
+    rows?: Row<Column>[];
 }
 
 export interface SortEventArgs extends GridActionEventArgs {

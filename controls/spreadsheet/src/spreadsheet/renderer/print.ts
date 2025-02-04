@@ -1,9 +1,9 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { RangeModel, SheetModel, RowModel, getSheetIndex, ChartModel } from '../../workbook/index';
+import { RangeModel, SheetModel, RowModel, getSheetIndex, ChartModel, CellStyleModel } from '../../workbook/index';
 import { CellModel, checkIsFormula, ColumnModel, NumberFormatArgs, PrintOptions, workbookFormulaOperation } from '../../workbook/index';
 import { getColumnHeaderText, getIndexesFromAddress, updateSheetFromDataSource, getCellAddress } from '../../workbook/index';
-import { getColIdxFromClientX, getRowIdxFromClientY } from '../common/index';
+import { getColIdxFromClientX, getExcludedColumnWidth, getRowIdxFromClientY, getTextWidth } from '../common/index';
 
 /**
  * This class supports the printing functionality in Spreadsheet.
@@ -427,8 +427,10 @@ export class Print {
                                     const textHeight: number = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;                                        
                                     if (cell.wrap) {
                                         const cellLineHeight: number = this.defaultCellHeight < cellHeight ? ((parseInt(textSize.replace('pt', ''), 10) / 72) * 96) : cellHeight;
+                                        const endColIdx: number = cell.colSpan > 1 ? k + cell.colSpan - 1 : k;
+                                        const contentWidth: number = getExcludedColumnWidth(sheet, j, k, endColIdx);
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        const textLines: any = printInstance.wrapText(context, cellText, cellWidth);
+                                        const textLines: any = printInstance.wrapText(cellText, cellWidth, contentWidth, cell.style);
                                         const space: number = (textLines.length === 1) ? cellHeight :
                                             (textLines.length * cellLineHeight === cellHeight) ? cellLineHeight :
                                                 (textLines.length * cellLineHeight < cellHeight) ?
@@ -447,9 +449,15 @@ export class Print {
                                             textMetrics = context.measureText(line);
                                             textWidth = textMetrics.width;
                                             const locationX: number = printInstance.calculateTextPosition(textWidth, cellWidth,
-                                                                                                          currentX, position);
-                                            context.fillText(line, locationX, startY + index * cellLineHeight);
-                                            printInstance.textDecoration(cell, context, locationX, (startY + index * cellLineHeight),
+                                                                                                          currentX, position, true);
+                                            const locationY: number = startY + index * cellLineHeight;
+                                            if (position.toLowerCase() === 'right') {
+                                                context.textAlign = 'right';
+                                                context.fillText(line.trimEnd(), locationX, locationY);
+                                            } else {
+                                                context.fillText(line, locationX, locationY);
+                                            }
+                                            printInstance.textDecoration(cell, context, locationX, locationY,
                                                                          color, textMetrics, cellText, cellWidth);
                                         });
                                         context.restore();
@@ -1068,7 +1076,7 @@ export class Print {
         context.lineTo(endX2, endY2);
     }
 
-    private calculateTextPosition(textWidth: number, totalWidth: number, currentX: number, position: string): number {
+    private calculateTextPosition(textWidth: number, totalWidth: number, currentX: number, position: string, isWrap?: boolean): number {
         let x: number;
         const space: number = 3;
         const availableSpace: number = totalWidth;
@@ -1081,7 +1089,11 @@ export class Print {
                 x = currentX + (availableSpace - textWidth) / 2;
                 break;
             case 'right':
-                x = currentX + availableSpace - textWidth;
+                if (isWrap) {
+                    x = currentX + availableSpace;
+                } else {
+                    x = currentX + availableSpace - textWidth;
+                }
                 break;
             }
         } else if (textWidth < totalWidth) {
@@ -1118,24 +1130,23 @@ export class Print {
         }
         return pageCount;
     }
-    private wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+    private wrapText(text: string, maxWidth: number, contentWidth: number, style: CellStyleModel): string[] {
         if (isNullOrUndefined(text)) {
             return [''];
         }
         text = typeof text === 'number' ? text + '' : text;
-        const words: string[] = text.split(' ');
         const lines: string[] = [];
+        const bpWidth: number = maxWidth - contentWidth;  // border and padding width of the cell
         let line: string = '';
-        for (let i: number = 0; i < words.length; i++) {
-            const testLine: string = line + words[i as number] + ' ';
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const metrics: any = context.measureText(testLine);
-            const testWidth: number = metrics.width;
-            if (testWidth > maxWidth && i > 0) {
+        for (let i: number = 0; i < text.length; i++) {
+            const char: string = text[i as number];
+            const textLine: string = (line + char);
+            const textWidth: number = getTextWidth(textLine, style, this.parent.cellStyle) + bpWidth;
+            if (textWidth > maxWidth) {
                 lines.push(line);
-                line = words[i as number] + ' ';
+                line = char;
             } else {
-                line = testLine;
+                line = textLine;
             }
         }
         lines.push(line);

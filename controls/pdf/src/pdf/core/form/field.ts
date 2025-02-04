@@ -2,8 +2,8 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfForm } from './form';
 import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
-import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont } from './../utils';
-import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode } from './../enumerator';
+import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRTLCharacters } from './../utils';
+import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfDocument } from './../pdf-document';
 import { _PdfBaseStream } from './../base-stream';
@@ -2919,13 +2919,16 @@ export class PdfTextBoxField extends PdfField {
         const parameter: _PaintParameter = new _PaintParameter();
         parameter.bounds = [0, 0, bounds.width, bounds.height];
         const backcolor: number[] = widget.backColor;
-        if (isFlatten && backcolor) {
+        if (backcolor) {
             parameter.backBrush = new PdfBrush(backcolor);
         }
         parameter.foreBrush = new PdfBrush(widget.color);
         const border: PdfInteractiveBorder = widget.border;
         if (widget.borderColor) {
-            parameter.borderPen = new PdfPen(widget.borderColor, border.width);
+            if (border.width === 0) {
+                widget.borderColor = [255, 255, 255];
+            }
+            parameter.borderPen = new PdfPen(widget.borderColor,  border.width);
         }
         parameter.borderWidth = border.width;
         parameter.borderStyle = border.style;
@@ -2981,6 +2984,9 @@ export class PdfTextBoxField extends PdfField {
                 this._stringFormat = new PdfStringFormat(PdfTextAlignment.left, PdfVerticalAlignment.middle);
             }
         }
+        if (_isRTLCharacters(text)) {
+            this._stringFormat.textDirection = PdfTextDirection.rightToLeft;
+        }
         if (enableGrouping) {
             this._drawTextBox(graphics, parameter, text, pdfFont, stringFormat, this.multiLine, this.scrollable, this.maxLength);
         } else {
@@ -3020,7 +3026,7 @@ export class PdfTextBoxField extends PdfField {
                             }
                         } else {
                             if (format.alignment === PdfTextAlignment.center && current.length < maxLength) {
-                                const startlocation: number = maxLength / 2 - (Math.ceil(current.length / 2));
+                                const startlocation: number = Math.floor(maxLength / 2 - Math.ceil(current.length / 2));
                                 if (i >= startlocation && i < startlocation + current.length) {
                                     text = current[i - startlocation];
                                 } else {

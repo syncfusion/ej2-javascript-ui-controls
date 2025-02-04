@@ -13,8 +13,9 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { rowsAdded } from '../../../src';
 import { Edit } from '../../../src/grid/actions/edit';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 
-Grid.Inject(Page, Sort, Edit);
+Grid.Inject(Page, Sort, Edit, Toolbar);
 
 describe('Paging module', () => {
     describe('Paging functionalities', () => {
@@ -31,7 +32,7 @@ describe('Paging module', () => {
             }
             gridObj = createGrid(
                 {
-                    dataSource: data,
+                    dataSource: data.slice(0, 15),
                     columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
                     { field: 'ShipCity' }],
                     allowPaging: true,
@@ -961,7 +962,7 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: data,
+                    dataSource: data.slice(0,15),
                     pageSettings: {pageSizes: true, pageSize: 5},
                     allowFiltering: true,
                     allowPaging: true,
@@ -984,7 +985,12 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
 
         it('clear Filtering testing', function (done: Function) {
             gridObj.clearFiltering();
-            done();
+            gridObj.actionComplete = (args?: any): void => {
+                if (args.requestType === "paging") {
+                    gridObj.actionComplete = null;
+                    done();
+                }  
+            };
         });
 
         it ('check pagesize after clearing', () => {
@@ -1095,6 +1101,41 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         afterAll(function () {
             destroy(gridObj);
             gridObj = null;
+        });
+    });
+
+    describe('EJ2-935128: Script Error Occurs When Accessing pageSize in the actionComplete Event', function () {
+        let gridObj: Grid;
+        let actionBegin: (e: PageEventArgs) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 24),
+                    allowPaging: true,
+                    pageSettings: { pageSize: 12, pageSizes: [5, 10, 12, 'All'] },
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'OrderDate', headerText: 'Order Date', format: 'yMd', width: 170 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    ],
+                    actionBegin: actionBegin
+                }, done);
+        });
+
+        it('change page size action', function (done: Function) {
+            actionBegin = (args: PageEventArgs): void => {
+                expect(args.pageSize).toBeDefined();
+                done();
+            };
+            gridObj.actionBegin = actionBegin;
+            gridObj.pageSettings.pageSize = 5;
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
         });
     });
 });

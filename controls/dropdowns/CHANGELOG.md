@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I681861` - Fixed an issue where the popup would detach from the control when virtualization was enabled during filtering.
+
 ## 28.2.3 (2025-01-29)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I933368` - Issue with "Filter input loss focus if the last letter is removed using backspace in listbox" has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I679387` - Fixed an issue where no records were found in the popup after selecting all items.
+
+## 28.1.41 (2025-01-21)
 
 ### ComboBox
 

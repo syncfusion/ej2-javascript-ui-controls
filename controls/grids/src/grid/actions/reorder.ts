@@ -2,7 +2,7 @@ import { extend, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-ba
 import { closest as closestElement, removeClass, classList, remove } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { getElementIndex, inArray, parentsUntil, getPosition, isActionPrevent } from '../base/util';
-import { IGrid, IAction, NotifyArgs, FrozenReorderArgs } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, FrozenReorderArgs, ReorderEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as literals from '../base/string-literals';
 
@@ -223,14 +223,17 @@ export class Reorder implements IAction {
                 }
             }
         }
+        if (preventRefresh !== false) {
+            const reorderArgs: ReorderEventArgs = { type: events.actionBegin, requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid, cancel: false };
+            gObj.notify(events.modelChanged, reorderArgs);
+            if (reorderArgs.cancel) {
+                (cols as Column[]).splice(srcIdx, 0, (cols as Column[]).splice(destIndex, 1)[0] as Column);
+                return;
+            }
+        }
         gObj.getColumns(true);
         gObj.preventAutoFit = true;
         gObj.notify(events.columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
-        if (preventRefresh !== false) {
-            gObj.notify(events.modelChanged, {
-                type: events.actionBegin, requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid
-            });
-        }
         if (this.parent.isFrozenGrid()) {
             const cols: Column[] = this.parent.columns as Column[];
             this.idx = 0;

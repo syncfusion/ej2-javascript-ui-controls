@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception encountered while adding a textbox field when the insert spaces property is enabled.
+- Resolved an issue with form field value position changed after saving the document.
+
 ## 28.2.3 (2025-01-29)
 
 ### PDF Parser

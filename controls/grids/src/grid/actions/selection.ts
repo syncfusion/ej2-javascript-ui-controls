@@ -506,6 +506,28 @@ export class Selection implements IAction {
             } else {
                 selectRowFn(rowIndex);
             }
+            if (this.checkVirtualCheckBox() && !this.parent.isPersistSelection) {
+                if (selectableRowIndex.length === this.totalRecordsCount) {
+                    this.virtualSelectedData = this.virtualCheckBoxData().slice();
+                    this.selectedRowIndexes = Object.keys(this.virtualSelectedData).map((key: string) => parseInt(key, 10));
+                    this.setCheckAllState();
+                }
+                else {
+                    const selectionData: number[] = selectableRowIndex.filter((index: number) =>
+                        this.selectedRowIndexes.indexOf(index) === -1);
+                    if (selectionData.length > 0) {
+                        const allData: Object[] = this.virtualCheckBoxData().slice();
+                        for (let i: number = 0; i < selectionData.length; i++){
+                            const record: Object = allData[selectionData[i as number]];
+                            if (!isNullOrUndefined(record)) {
+                                this.virtualSelectedData.push(record);
+                                this.selectedRowIndexes.push(selectionData[i as number]);
+                            }
+                        }
+                        this.setCheckAllState();
+                    }
+                }
+            }
             args = {
                 rowIndexes: selectableRowIndex, row: selectedRows, rowIndex: rowIndex, target: this.actualTarget,
                 prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,

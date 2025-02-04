@@ -1212,4 +1212,46 @@ describe('Adaptive renderer', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-934150-Update and Cancel Buttons Not Visible in Normal Edit Mode in Adaptive Layout', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    enableAdaptiveUI: true,
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search'],
+                    editSettings: {allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Normal' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right', isPrimaryKey: true },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                        { field: 'ShipCity', visible: false, headerText: 'Ship City', width: 150 }
+                    ]
+                }, done );
+        });
+    
+        it('Edit start', (done: Function) => {
+            const actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(document.querySelector('.e-toolbar-item[title=Update]').classList.contains('e-hidden')).toBeFalsy();
+                    expect(document.querySelector('.e-toolbar-item[title=Cancel]').classList.contains('e-hidden')).toBeFalsy();
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(1, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -521,21 +521,7 @@ export class ColumnChooser implements IAction {
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
         const columns: Column[] = this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns();
-        const isCheckALL: Element = (this.infiniteRenderMode ? this.mainDiv : this.ulElement).querySelector('.e-selectall.e-check');
-        if (this.searchValue && this.filterColumns.length && isCheckALL) {
-            this.changedColumns = this.filterColumns.map((column: Column) => { return column.uid; });
-            this.showColumn = [];
-            this.hideColumn = [];
-            (columns as Column[]).map((column: Column) => {
-                if (this.changedColumns.indexOf(column.uid) !== -1) {
-                    this.showColumn.push(column.uid);
-                } else if (column.showInColumnChooser) {
-                    this.hideColumn.push(column.uid);
-                }
-            });
-        } else {
-            this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
-        }
+        this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
         this.changedColumnState(this.changedColumns);
         const uncheckedLength: number = this.infiniteRenderMode ? this.infiniteLoadedElement.filter(
             (arr: HTMLElement) => arr.querySelector('.e-uncheck')).length : this.ulElement.querySelector('.e-uncheck') &&

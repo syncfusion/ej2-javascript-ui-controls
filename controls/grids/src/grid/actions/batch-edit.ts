@@ -687,9 +687,7 @@ export class BatchEdit {
         this.field = field;
         this.isAdd = isAdd;
         let visibleRows: Element[] = gObj.getDataRows();
-        if (gObj.allowGrouping && gObj.groupSettings.columns.length && !gObj.groupSettings.enableLazyLoading) {
-            visibleRows = visibleRows.filter((row: HTMLElement) => row.style.display !== 'none');
-        }
+        visibleRows = visibleRows.filter((row: HTMLElement) => row.style.display !== 'none' && !row.classList.contains('e-childrow-hidden'));
         const lastRowIndex: number = parseInt(visibleRows[visibleRows.length - 1].getAttribute('data-rowindex'), 10);
         const checkEdit: boolean = gObj.isEdit && !(this.cellDetails.column.field === field
             && (this.cellDetails.rowIndex === index && lastRowIndex !== index && this.prevEditedBatchCell));

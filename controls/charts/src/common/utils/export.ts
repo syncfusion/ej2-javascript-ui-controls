@@ -331,8 +331,9 @@ export class ExportUtils {
             document.pageSettings.orientation = orientation;
             const exactWidth: number = (pdfDefaultWidth < width[i as number]) ? (width[i as number] + margin.left + margin.right) :
                 pdfDefaultWidth;
-            const exactHeight: number = orientation === 0 ? (width[i as number] + margin.left + margin.right) :
-                (pdfDefaultHeight < height[i as number]) ? (height[i as number] + margin.top + margin.bottom) : pdfDefaultHeight;
+            const exactHeight: number = (orientation === 0 && pdfDefaultHeight > height[i as number]) ?
+                (width[i as number] + margin.left + margin.right) : (pdfDefaultHeight < height[i as number]) ?
+                    (height[i as number] + margin.top + margin.bottom) : pdfDefaultHeight;
             if (header !== undefined) {
                 const font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
                 const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 30);

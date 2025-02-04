@@ -160,7 +160,41 @@ describe('Link Module', () => {
             expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
         });
     });
-    
+
+    describe('927520 - The link is not applied to the entire selected text in the Rich Text Editor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: '<p>Example <a class="e-rte-anchor" href="https://www.existing-link.com">link</a> text is here.</p>',
+                toolbarSettings: {
+                    items: ['CreateLink']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('The link is not applied to the entire selected text in the Rich Text Editor', (done) => {
+            const editPanel: any = rteObj.contentModule.getEditPanel();
+            editPanel.focus();
+            const selObj = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), editPanel.firstChild.firstChild, editPanel.firstChild.childNodes[1].childNodes[0], 2, editPanel.firstChild.childNodes[1].childNodes[0].length);
+            const linkButton: any = rteObj.element.querySelector('.e-toolbar-item button');
+            linkButton.click();
+            const input = (rteObj.linkModule as any).dialogObj.contentEle.querySelector('.e-rte-linkurl');
+            expect(input.value).toBe("https://www.existing-link.com");
+            const primaryButton = (rteObj.linkModule as any).dialogObj.primaryButtonEle;
+            primaryButton.click();
+            setTimeout(() => {
+                const expectedContent = '<p>Ex<a class="e-rte-anchor" href="https://www.existing-link.com" title="https://www.existing-link.com">ample link</a> text is here.</p>';
+                expect(editPanel.innerHTML).toBe(expectedContent);
+                done();
+            }, 100);
+        });
+    });
+
     describe('div content-rte testing', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {

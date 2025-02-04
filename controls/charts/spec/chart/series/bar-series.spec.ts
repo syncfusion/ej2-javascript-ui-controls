@@ -759,7 +759,7 @@ describe('Chart Control', () => {
                 let element: HTMLElement = document.getElementById('container_Series_0_DataLabel_5');
                 expect(element.children[0].innerHTML).toBe('6000 : -40');
                 expect(element.style.backgroundColor).toBe('red');
-                expect(element.style.color).toBe('white');
+                expect(element.style.color).toBe('');
                 done();
             };
             chartObj.series[0].marker.dataLabel.template = '<div>${point.x} : ${point.y}</div>';
@@ -771,7 +771,7 @@ describe('Chart Control', () => {
                 let element: HTMLElement = document.getElementById('container_Series_0_DataLabel_5');
                 expect(element.children[0].innerHTML).toBe('80');
                 expect(element.style.backgroundColor).toBe('red');
-                expect(element.style.color).toBe('white');
+                expect(element.style.color).toBe('');
                 done();
             };
             chartObj.series[0].marker.dataLabel.template = '#template';

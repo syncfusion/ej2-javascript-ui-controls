@@ -1326,7 +1326,7 @@ export class QuickPopups {
     private documentClick(e: { event: Event }): void {
         const target: Element = e.event.target as Element;
         const classNames: string = '.' + cls.POPUP_WRAPPER_CLASS + ',.' + cls.HEADER_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS +
-            ',.' + cls.WORK_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS + ',.e-popup';
+            ',.' + cls.WORK_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS;
         const popupWrap: Element = this.parent.element.querySelector('.' + cls.POPUP_WRAPPER_CLASS);
         if ((popupWrap && popupWrap.childElementCount > 0 && !closest(target, classNames)) || !closest(target, classNames)) {
             this.quickPopupHide();
@@ -1341,7 +1341,8 @@ export class QuickPopups {
         }
         if (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS) && (target.classList &&
             !target.classList.contains(cls.MORE_INDICATOR_CLASS))
-            && (!closest(target, '.' + cls.POPUP_OPEN)) && !closest(target, '.' + cls.WORK_CELLS_CLASS)) {
+            && (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS + '.' + cls.POPUP_OPEN))
+            && !closest(target, '.' + cls.WORK_CELLS_CLASS)) {
             this.morePopup.hide();
         }
     }

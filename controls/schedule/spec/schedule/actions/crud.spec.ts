@@ -859,6 +859,104 @@ describe('Schedule CRUD', () => {
         });
     });
 
+    describe('Action Complete args check for edit the appointment timezone and delete the appointment', () => {
+        let schObj: Schedule;
+        const events: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Testing',
+                StartTime: new Date(2017, 9, 1, 9, 30),
+                EndTime: new Date(2017, 9, 1, 11, 45),
+                IsAllDay: false
+            }
+        ];
+        let actionArgs: any;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px',
+                timezone: 'UTC',
+                selectedDate: new Date(2018, 1, 13),
+                eventSettings: { query: new Query() }
+            };
+            schObj = util.createSchedule(schOptions, events, done);
+            schObj.actionComplete = (args: any) => {
+                actionArgs = args;
+            };
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('should save the event and verify start and end time', (done: DoneFn) => {
+            const editedEvent = {
+                ...events[0],
+                StartTime: new Date(2017, 9, 1, 10, 30), // Modify the start time
+                EndTime: new Date(2017, 9, 1, 12, 45) // Modify the end time
+            };
+            schObj.saveEvent(editedEvent);
+            setTimeout(() => {
+                expect(actionArgs.requestType).toBe('eventChanged');
+                expect(actionArgs.changedRecords[0].StartTime).toEqual(editedEvent.StartTime);
+                expect(actionArgs.changedRecords[0].EndTime).toEqual(editedEvent.EndTime);
+                schObj.deleteEvent(editedEvent);
+                expect(actionArgs.requestType).toBe('eventRemoved');
+                expect(actionArgs.deletedRecords[0].StartTime).toEqual(editedEvent.StartTime);
+                expect(actionArgs.deletedRecords[0].EndTime).toEqual(editedEvent.EndTime);
+                done();
+            }, 600);
+        });
+    });
+
+    describe('Action Complete args check for edit the appointment timezone and delete the appointment for Recurrence event', () => {
+        let schObj: Schedule;
+        const recurrenceEvents: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Recurring Meeting',
+                StartTime: new Date(2017, 9, 1, 9, 30),
+                EndTime: new Date(2017, 9, 1, 11, 30),
+                IsAllDay: false,
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            }
+        ];
+        let actionArgs: any;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px',
+                timezone: 'UTC',
+                selectedDate: new Date(2018, 1, 13),
+                eventSettings: { query: new Query() }
+            };
+            schObj = util.createSchedule(schOptions, recurrenceEvents, done);
+            schObj.actionComplete = (args: any) => {
+                actionArgs = args;
+            };
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('should edit and delete the recurrence event and verify start and end time', (done: DoneFn) => {
+            const editedEvent = {
+                ...recurrenceEvents[0],
+                StartTime: new Date(2017, 9, 1, 10, 30),
+                EndTime: new Date(2017, 9, 1, 12, 30)
+            };
+            schObj.saveEvent(editedEvent);
+            setTimeout(() => {
+                expect(actionArgs.requestType).toBe('eventChanged');
+                expect(actionArgs.changedRecords[0].StartTime).toEqual(editedEvent.StartTime);
+                expect(actionArgs.changedRecords[0].EndTime).toEqual(editedEvent.EndTime);
+    
+                schObj.deleteEvent(editedEvent);
+                setTimeout(() => {
+                    expect(actionArgs.requestType).toBe('eventRemoved');
+                    expect(actionArgs.deletedRecords[0].StartTime).toEqual(editedEvent.StartTime);
+                    expect(actionArgs.deletedRecords[0].EndTime).toEqual(editedEvent.EndTime);
+                    done();
+                }, 600);
+            }, 600);
+        });
+    });
+
     describe('Timezone Events', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

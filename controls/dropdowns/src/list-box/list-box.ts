@@ -139,6 +139,7 @@ export class ListBox extends DropDownBase {
     private popupWrapper: Element;
     private targetInputElement: HTMLInputElement | string;
     private isValidKey: boolean = false;
+    private isBackSpace: boolean = false;
     private isFiltered: boolean;
     private clearFilterIconElem: Element;
     private remoteFilterAction: boolean;
@@ -748,8 +749,9 @@ export class ListBox extends DropDownBase {
                 if (isNullOrUndefined(filterElem)) { return; }
                 filterElem.selectionStart = txtLength;
                 filterElem.selectionEnd = txtLength;
-                if (filterElem.value !== '') {
+                if (filterElem.value !== '' || (filterElem.value === '' && this.isBackSpace)) {
                     filterElem.focus();
+                    setTimeout(() => { this.isBackSpace = false; });
                 }
             }
         }
@@ -2277,7 +2279,7 @@ export class ListBox extends DropDownBase {
     }
 
     private KeyUp(e: KeyboardEvent): void {
-        if (this.allowFiltering && ((e.ctrlKey && e.keyCode === 65) || (e.keyCode === 8 && !this.filterInput.value))) {
+        if (this.allowFiltering && e.ctrlKey && e.keyCode === 65) {
             e.preventDefault(); return;
         }
         const char: string = String.fromCharCode(e.keyCode);
@@ -2285,6 +2287,7 @@ export class ListBox extends DropDownBase {
         if (!isNullOrUndefined(isWordCharacter)) {
             this.isValidKey = true;
         }
+        this.isBackSpace = e.keyCode === 8;
         this.isValidKey = (e.keyCode === 8) || (e.keyCode === 46) || this.isValidKey;
         if (this.isValidKey) {
             this.isValidKey = false;

@@ -1200,4 +1200,41 @@ describe('Reorder module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-932688 - Issue with cancelling column reordering in the actionBegin event', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowReordering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID' },
+                        { field: 'EmployeeID', textAlign: 'Right', headerText: 'Employee ID' },
+                        { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd' },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                    ]
+                }, done);
+        });
+
+        it('Reorder the Column', (done: Function) => {
+            let actionBegin: any = (args: any): void => {
+                args.cancel = true;
+                done();
+            };
+            gridObj.actionBegin = actionBegin;
+            gridObj.reorderColumns('OrderDate', 'Freight');
+        });
+        it('Cancel the column reorder', (done: Function) => {
+            expect(gridObj.getColumns()[3].field).toBe('OrderDate');
+            expect(gridObj.getColumns()[4].field).toBe('Freight');
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

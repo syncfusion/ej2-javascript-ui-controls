@@ -9097,6 +9097,47 @@ describe('MultiSelect', () => {
             expect(listObj.value.length).toBe(0);
         });
     });
+    describe('Coverage imrpovements', () => {
+        let element: HTMLInputElement;
+        let listObj: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multiSelect' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+            if (element) {
+                element.remove();
+            }
+        });
+        it('focusout', () => {
+            listObj = new MultiSelect({
+                mode: 'Box',
+                popupHeight: 200,
+                value: ['list3', 'list6', 'list2'],
+                changeOnBlur:true,
+                allowCustomValue:true,
+                cssClass:'e-outline',
+            });
+            listObj.appendTo(element);
+            (listObj as any).focusOut();
+            listObj.destroy();
+        });
+        it('hideOverAllClear', () => {
+            listObj = new MultiSelect({
+                mode: 'Box',
+                popupHeight: 200,
+                value: ['list3', 'list6', 'list2'],
+                changeOnBlur:true,
+                allowCustomValue:true,
+                cssClass:'e-outline',
+            });
+            listObj.appendTo(element);
+            expect(listObj.value.length).toBe(3);
+            (<any>listObj).value = ["abcd"];
+            (<any>listObj).hideOverAllClear();
+        });
+    });
     describe('EJ2-36414 - Provide support to maintain the typed value as chip when control gets out of focus on Box mode', () => {
         let element: HTMLInputElement;
         let gameList: { [key: string]: Object }[] = [
@@ -11820,6 +11861,14 @@ describe('MultiSelect', () => {
                 dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
             listObj.appendTo(element);
             listObj.updateOldPropCssClass('e-custom-class');
+        });
+        it('- initialValueUpdate ', () => {
+            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:false,
+                enableGroupCheckBox:true,
+                dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
+            listObj.appendTo(element);
+            (listObj as any).list = null;
+            listObj.initialValueUpdate (null,null);
         });
     });
 });

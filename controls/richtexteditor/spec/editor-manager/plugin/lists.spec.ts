@@ -2390,7 +2390,36 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
-    
+    describe('934046: Nested list content is not cleaned up when backspace is pressed', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let elem: HTMLElement;
+        let keyBoardEvent: any = {
+            callBack: function () { }, 
+            event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: null }
+        };
+        beforeEach(() => {
+            elem = createElement('div', { id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p><br></p></div>` });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById('content-edit') });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+        it('should handle nested list creation and cleanup correctly', () => {
+            editNode.innerHTML = '<ol><li style="list-style-type: none;"><ol><li class="focusNode"> </li></ol></li></ol>';
+            startNode = editNode.querySelector('.focusNode');
+            setCursorPoint(startNode, 0);
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.event.key = "Backspace";
+            keyBoardEvent.event.which = 8;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(editNode.querySelector('ol')).toBeNull();
+        });
+    });
     describe('EJ2-58466 - list with font size Backspace key press testing', () => {
         let elem: HTMLElement;
         let editorObj: EditorManager;
@@ -2695,6 +2724,38 @@ describe ('left indent testing', () => {
             };
             (editorObj as any).keyUp(keyboardEventArgs);
             expect(listElement.parentElement.nodeName === 'LI').toBe(true);
+            done();
+        });
+    });
+
+    describe('935455 - Empty List Deletion When Selecting Text and Pressing Delete Key', () => {
+        let editorObj: RichTextEditor;
+        beforeEach((done) => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<p><br></p><ol>
+                  <li>test 2</li>
+                  <li>test 3</li>
+                  <li>test 4</li><li><br></li>
+                </ol>`
+            });
+            done();
+        });
+        afterEach((done) => {
+            destroy(editorObj);
+            done();
+        });
+        it('Press the Backspace key on the list and check that the empty <li> element is not removed.', (done) => {
+            let startNode = editorObj.inputElement.querySelector('ol');
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstElementChild.firstChild, startNode.firstElementChild.firstChild, 3, 5);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(editorObj.inputElement.querySelector("ol").lastElementChild.nodeName === 'LI').toBe(true);
+            expect(editorObj.inputElement.querySelector("ol").lastElementChild.textContent === '').toBe(true);
             done();
         });
     });

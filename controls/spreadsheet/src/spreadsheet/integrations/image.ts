@@ -37,10 +37,12 @@ export class SpreadsheetImage {
      * @returns {void} - Rendering upload component for importing images.
      */
     private renderImageUpload(): void {
-        const uploadBox: HTMLElement = this.parent.element.appendChild(this.parent.createElement('input', {
-            id: this.parent.element.id + '_imageUpload', styles: 'display: none;',
+        const uploadBox: HTMLElement = this.parent.createElement('input', {
+            id: this.parent.element.id + '_imageUpload',
             attrs: { type: 'file', accept: '.image, .jpg, .png, .gif ,jpeg', name: 'fileUpload' }
-        }));
+        });
+        uploadBox.style.display = 'none';
+        this.parent.element.appendChild(uploadBox);
         uploadBox.onchange = this.imageSelect.bind(this);
     }
     /**

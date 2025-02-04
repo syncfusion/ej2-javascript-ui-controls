@@ -380,12 +380,8 @@ export class DataLabel {
         }
         childElement.style.left = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.x) + rect.x - clipWidth) + 'px';
         childElement.style.top = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.y) + rect.y + clipHeight) + 'px';
-        const backgroundColor: string = this.fontBackground === 'transparent' ? (this.chart.theme.indexOf('Dark') > -1 ? 'black' : 'white') : this.fontBackground;
-        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
         const vAxis: Axis = series.chart.requireInvertedAxis ? series.xAxis : series.yAxis;
         const hAxis: Axis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
-        childElement.style.color = dataLabel.font.color || (this.chart.theme === 'Bootstrap5' ? '#212529' : this.chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' :
-            ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white'));
         if (childElement.childElementCount && !isOverlap && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
             dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
                 withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('Stacking') > -1) ||

@@ -191,6 +191,7 @@ export class CellRenderer implements ICellRenderer {
                 } else { style = args.cell.style; }
             }
             if (formatArgs.color !== undefined) {
+                style = Object.assign({}, style);
                 style.color = formatArgs.color;
             }
             this.createImageAndChart(args);

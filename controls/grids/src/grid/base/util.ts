@@ -1340,8 +1340,8 @@ export function resetColspanGroupCaption(gObj: IGrid, idx: number): number {
     }
     colspan += (gObj.groupSettings.columns.length - idx);
     width += (30 * (gObj.groupSettings.columns.length - idx));
-    const gridWidth: number = (gObj.width === 'auto' ? gObj.element.offsetWidth : parseInt(gObj.width.toString(), 10)) -
-        getScrollWidth(gObj);
+    const gridWidth: number = (gObj.width === 'auto' ? gObj.element.offsetWidth : gObj.width.toString().indexOf('%') !== -1 ?
+        gObj.element.getBoundingClientRect().width : parseInt(gObj.width.toString(), 10)) - getScrollWidth(gObj);
     for (let i: number = 0; i < cols.length; i++) {
         if (cols[parseInt(i.toString(), 10)].visible) {
             width += parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10);

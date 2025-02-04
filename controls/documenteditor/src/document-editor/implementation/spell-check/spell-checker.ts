@@ -715,16 +715,20 @@ export class SpellChecker {
      * @private
      */
 
-    public handleWordByWordSpellCheck(jsonObject: any, elementBox: TextElementBox, left: number, top: number, underlineY: number, baselineAlignment: BaselineAlignment, isSamePage: boolean): void {
+    public handleWordByWordSpellCheck(jsonObject: any, elementBox: TextElementBox, left: number, top: number, underlineY: number, baselineAlignment: BaselineAlignment, isSamePage: boolean, currentText?: string): void {
+        if (isNullOrUndefined(currentText))
+        {
+            currentText = elementBox.text;
+        }
         if (jsonObject.HasSpellingError && isSamePage) {
-            this.addErrorCollection(elementBox.text, elementBox, jsonObject.Suggestions);
+            this.addErrorCollection(currentText, elementBox, jsonObject.Suggestions);
 
             const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
             this.documentHelper.render.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
             elementBox.isSpellChecked = true;
             elementBox.isWrongWord = true;
         } else {
-            this.addCorrectWordCollection(elementBox.text);
+            this.addCorrectWordCollection(currentText);
             elementBox.isSpellChecked = true;
             elementBox.isWrongWord = false;
         }

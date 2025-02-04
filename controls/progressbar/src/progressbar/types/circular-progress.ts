@@ -269,7 +269,7 @@ export class Circular {
             document.getElementById(circularLabelGroup.id).remove();
         }
         const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        const circularValue: number = (progress.value < progress.minimum) ? 0 : Math.round(labelValue);
+        const circularValue: number = (progress.value < progress.minimum) ? 0 : +labelValue.toFixed(2);
         const argsData: ITextRenderEventArgs = {
             cancel: false, text: labelText ? labelText : String(circularValue) + '%', color: progress.labelStyle.color || progress.themeStyle.circularLabelFont.color
         };

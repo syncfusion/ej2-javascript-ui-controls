@@ -739,10 +739,11 @@ export class SpreadsheetHyperlink {
             ]
         });
         this.headerTabs.appendTo(dialogElem);
+        const indicator: HTMLElement = dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator');
         if (isWeb) {
-            dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator').setAttribute('style', 'left: 0; right: 136px');
+            indicator.style.cssText = 'left: 0; right: 136px';
         } else {
-            dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator').setAttribute('style', 'left: 136px; right: 0');
+            indicator.style.cssText = 'left: 136px; right: 0';
         }
         const textCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         const urlCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });

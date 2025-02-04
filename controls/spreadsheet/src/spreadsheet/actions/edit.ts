@@ -916,7 +916,7 @@ export class Edit {
                 }
             });
             const editorElem: HTMLElement = this.getEditElement(sheet, true);
-            editorElem.setAttribute('style', inlineStyles);
+            editorElem.style.cssText = inlineStyles;
             if (getTextWidth(editorElem.textContent, cell.style, this.parent.cellStyle) > editWidth) {
                 editorElem.style.height = 'auto';
             }

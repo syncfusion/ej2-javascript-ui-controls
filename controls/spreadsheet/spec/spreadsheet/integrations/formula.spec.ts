@@ -16503,7 +16503,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-885263, EJ2-888011, EJ2-888038, EJ2-890143 ->', () => {
+        describe('EJ2-885263, EJ2-888011, EJ2-888038, EJ2-890143, EJ2-935939 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
@@ -16579,6 +16579,13 @@ describe('Spreadsheet formula module ->', () => {
                     expect(helper.getInstance().sheets[0].rows[8].cells[8].value).toBe('Loafers31');
                     done();
                 });
+            });
+            it('Checking #NAME error issue if the formula contains the defined name with underscore(_) cases', (done: Function) => {
+                helper.getInstance().addDefinedName({ name: 'net_Income', refersTo: 'H2' });
+                helper.edit('J2', '=net_Income+SUM(H3:H5)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].formula).toEqual('=net_Income+SUM(H3:H5)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toEqual('154');
+                done();
             });
         });
         describe('EJ2-921559 -> Incorrect expression results when comparing negative values precedes with operators->', () => {

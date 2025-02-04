@@ -121,6 +121,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isUpdateFooterHeight: boolean = false;
     private isBlurDispatching: boolean = false;
     private isFilterPrevented: boolean = false;
+    private isFilteringAction: boolean = false;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -1240,7 +1241,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.totalItemCount = (e as any).count;
         }
-        if (this.value && list && list.length > 0 && this.allowFiltering && this.mode !== 'CheckBox' && !this.enableVirtualization && !this.isFilterPrevented && !this.allowCustomValue) {
+        if (this.value && list && list.length > 0 && this.allowFiltering && this.mode !== 'CheckBox' && !this.enableVirtualization && !this.isFilterPrevented && !this.allowCustomValue && this.isFilteringAction) {
             const allItemsInValue: boolean = list.every((item: { [key: string]: Object } | string | number | boolean) => {
                 const itemValue: any = getValue((this.fields.value) ? this.fields.value : '', item);
                 return this.value.some((val: string | number | boolean | object) => {
@@ -2296,6 +2297,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             break;
         }
+    }
+
+    protected updatePopupPosition(): void {
+        this.refreshPopup();
     }
 
     private updateAriaAttribute(): void {
@@ -3944,6 +3949,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.totalItemCount = this.value && this.value.length ? this.totalItemCount - this.value.length : this.totalItemCount;
         }
         this.getSkeletonCount();
+        this.skeletonCount = this.totalItemCount !== 0 && this.totalItemCount < this.itemCount * 2 &&
+            ((!(this.dataSource instanceof DataManager)) || ((this.dataSource instanceof DataManager) &&
+            (this.totalItemCount <= this.itemCount))) ? 0 : this.skeletonCount;
         this.UpdateSkeleton();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (this.list.getElementsByClassName('e-virtual-ddl')[0] as any) {
@@ -4162,6 +4170,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.isFiltered = true;
                         this.customFilterQuery = query;
                         this.remoteFilterAction = true;
+                        this.isCustomFiltering = true;
                         this.dataUpdater(dataSource, query, fields);
                     },
                     event: e,
@@ -4172,10 +4181,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if (!eventArgs.cancel) {
                         if (!this.isFiltered && !eventArgs.preventDefaultAction) {
                             this.filterAction = true;
+                            this.isFilteringAction = true;
                             if (this.dataSource instanceof DataManager && this.allowCustomValue ) {
                                 this.isCustomRendered = false;
                             }
                             this.dataUpdater(this.dataSource, null, this.fields);
+                            this.isFilteringAction = false;
                         }
                     }
                 });

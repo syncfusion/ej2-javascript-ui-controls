@@ -44,7 +44,8 @@ export class ToolbarStatus {
         for (let index: number = 0; index < nodes.length; index++) {
             while (nodes[index as number].nodeType === 3 && range.startContainer.nodeType === 3 && nodes[index as number].parentNode &&
                 nodes[index as number].parentNode.lastElementChild && nodes[index as number].parentNode.lastElementChild.nodeName !== 'BR' &&
-                (this.getImmediateBlockNode(nodes[index as number].parentNode as Node)).textContent.replace(/\u200B/g, '').length === 0 &&
+                this.getImmediateBlockNode(nodes[index as number].parentNode as Node) &&
+                this.getImmediateBlockNode(nodes[index as number].parentNode as Node).textContent.replace(/\u200B/g, '').length === 0 &&
                 range.startContainer.textContent.replace(/\u200B/g, '').length === 0 &&
                 nodeSelection.get(docElement).toString().replace(/\u200B/g, '').length === 0) {
                 nodes[index as number] = nodes[index as number].parentNode.lastElementChild.firstChild;

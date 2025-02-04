@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### Grid
+
+#### Bug fixes
+
+- `#I691051` - Fixed a script error thrown when accessing the `pageSize` property within the `actionComplete` event of the Grid.
+- `#I681001` - Resolved the issue where the Update and Cancel buttons were not displayed in normal edit mode on an adaptive layout.
+- `#I665236` - Fixed the issue where the header checkbox displayed an indeterminate state when all rows were selected with `virtualization` enabled.
+-`#I677222` - Resolved an issue where the group caption text was not displayed properly when grouping with frozen columns.
+- `#I679448` - Fixed an issue where the validation error message was hidden under the Grid column header when the grid had only two rows for a custom tooltip.
+- `#I681556` - Resolved an issue where the Grid was displaying only the searched column in the `ColumnChooser`.
+- `#FB64702` - Fixed a script error that occurred on expand or collapse when `InfiniteScrolling` with frozen columns and grouping.
+- `#I683071` - Resolved an issue where data misalignment with the frozen column in the Material 3 theme.
+- `#I660627` - Resolved an issue where column reordering cancellation in the `actionBegin` event did not work as expected when only the header column was reordered.
+
 ## 28.2.3 (2025-01-29)
 
 ### Grid

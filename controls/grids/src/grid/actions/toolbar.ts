@@ -329,7 +329,7 @@ export class Toolbar {
                             toolbarEle.parentElement.classList.add('e-hidden');
                         }
                     } else {
-                        if (excludingItems.indexOf(item.id) === -1) {
+                        if (excludingItems.indexOf(item.id) === -1 || (excludingItems.indexOf(item.id) > 0 && this.parent.isEdit)) {
                             toolbarEle.parentElement.classList.remove('e-hidden');
                         } else {
                             toolbarEle.parentElement.classList.add('e-hidden');

@@ -4229,6 +4229,17 @@ export function _compressStream(stream: _PdfBaseStream, isExport: boolean = fals
     return value;
 }
 /**
+ * Check whether the input string contains any right-to-left (RTL) characters.
+ *
+ * @param {string} input The input string.
+ * @returns {boolean} Returns true if the string contains any RTL characters; otherwise, returns false.
+ */
+export function _isRTLCharacters(input: string): boolean {
+    // Unicode range for RTL characters
+    const rtlRegex: RegExp = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
+    return rtlRegex.test(input);
+}
+/**
  * Base64 encoded string representing an empty PDF document.
  */
 export const _emptyPdfData: string = 'JVBERi0xLjQNCiWDkvr+DQoxIDAgb2JqDQo8PA0KL1R5cGUgL0NhdGFsb2cNCi9QYWdlcyAyIDAgUg0KL0Fjcm9Gb3JtIDMgMCBSDQo+Pg0KZW5kb2JqDQoyIDAgb2JqDQo8PA0KL1R5cGUgL1BhZ2VzDQovS2lkcyBbNCAwIFJdDQovQ291bnQgMQ0KL1Jlc291cmNlcyA8PD4+DQoNCi9NZWRpYUJveCBbLjAwIC4wMCA1OTUuMDAgODQyLjAwXQ0KL1JvdGF0ZSAwDQo+Pg0KZW5kb2JqDQozIDAgb2JqDQo8PA0KL0ZpZWxkcyBbXQ0KPj4NCmVuZG9iag0KNCAwIG9iag0KPDwNCi9Db3VudCAxDQovVHlwZSAvUGFnZXMNCi9LaWRzIFs1IDAgUl0NCi9QYXJlbnQgMiAwIFINCj4+DQplbmRvYmoNCjUgMCBvYmoNCjw8DQovVHlwZSAvUGFnZQ0KL1BhcmVudCA0IDAgUg0KPj4NCmVuZG9iag0KeHJlZg0KMCA2DQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAwMTcgMDAwMDAgbg0KMDAwMDAwMDA4OSAwMDAwMCBuDQowMDAwMDAwMjE4IDAwMDAwIG4NCjAwMDAwMDAyNTUgMDAwMDAgbg0KMDAwMDAwMDMzNCAwMDAwMCBuDQp0cmFpbGVyDQo8PA0KL1Jvb3QgMSAwIFINCi9TaXplIDYNCj4+DQoNCnN0YXJ0eHJlZg0KMzg3DQolJUVPRg0K';

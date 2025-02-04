@@ -621,4 +621,48 @@ describe('Link testing', ()=>{
             }, 100);
         });
     });
+    describe('924343 - Link Selection not restored properly after removing the link', ()=>{
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: '<p>The Rich Text Editor (RTE) control is an easy to render in client side</p>'
+            })
+        });
+        afterAll(()=> {
+            destroy(editor)
+        });
+        it ('Selection has restored properly after removing the link using Quick Toolbar.', (done: DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            let range = new Range();
+            let textNode: Text = editor.inputElement.querySelector('p').firstChild as Text;
+            range.setStart(textNode , 0);
+            range.setStart(textNode , textNode.textContent.length);
+            editor.inputElement.ownerDocument.getSelection().removeAllRanges();
+            editor.inputElement.ownerDocument.getSelection().addRange(range);
+            const insertLinkKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', INSRT_LINK_EVENT_INIT);
+            editor.inputElement.dispatchEvent(insertLinkKeyDownEvent);
+            const insertLinkKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', INSRT_LINK_EVENT_INIT);
+            editor.inputElement.dispatchEvent(insertLinkKeyUpEvent);
+            const urlInput: HTMLInputElement = editor.element.querySelector('.e-rte-link-dialog .e-rte-linkurl');
+            urlInput.value = 'https://www.google.com/';
+            const insertBtn: HTMLElement = editor.element.querySelector('.e-rte-link-dialog .e-insertLink');
+            insertBtn.click();
+            range = new Range();
+            textNode = editor.inputElement.querySelector('p').firstChild as Text;
+            range.setStart(textNode , 10);
+            range.setEnd(textNode, 30);
+            editor.inputElement.ownerDocument.getSelection().removeAllRanges();
+            editor.inputElement.ownerDocument.getSelection().addRange(range);
+            const linkQuikToolbar: HTMLElement = document.querySelectorAll('.e-rte-quick-toolbar')[0] as HTMLElement;
+            const removeBtn: HTMLButtonElement = linkQuikToolbar.querySelector('.e-remove-link');
+            removeBtn.click();
+            const currentRange = document.getSelection().getRangeAt(0);
+            expect(currentRange.startContainer.nodeName === '#text').toBe(true);
+            expect(currentRange.endContainer.nodeName === '#text').toBe(true);
+            expect(currentRange.startOffset).toBe(10);
+            expect(currentRange.endOffset).toBe(30);
+            done();
+        });
+    });
 });

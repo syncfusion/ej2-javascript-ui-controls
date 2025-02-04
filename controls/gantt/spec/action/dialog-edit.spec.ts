@@ -975,7 +975,7 @@ describe('Gantt dialog module', () => {
                    // without unit and work mapping
                    expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
                    //expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
-                   expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
+                   expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
                    expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
                    expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
                }
@@ -994,8 +994,8 @@ describe('Gantt dialog module', () => {
            expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 1");
            expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
            //expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
-           expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
-           expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/02/2019');
+           expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+           expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/04/2019');
            ganttObj.actionBegin = function (args: any): void {
                if (args.requestType === "beforeOpenEditDialog") {
                    args.dialogModel.animationSettings = { 'effect': 'none' };
@@ -1035,7 +1035,7 @@ describe('Gantt dialog module', () => {
            ganttObj.actionComplete = (args: any): void => {
                if (args.requestType === 'save') {
                   
-                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
+                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
                }
            };
            let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
@@ -1124,7 +1124,7 @@ describe('Gantt dialog module', () => {
                    expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe("Resource 2[80%]");
                    // with unit and without work mapping
                    expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['resourceUnit']).toBe(80);
-                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
+                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(19.2);
                    expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
                    expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
                }
@@ -14143,6 +14143,244 @@ describe('CR:933235-Decimal work value is updating, when record adding with dayW
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Resource unit editing with unit value as null', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    taskType: 'FixedDuration',
+                    Duration: 1,
+                    resources: [{ resourceId: 1, resourceUnit: 100 }]
+                }
+            ],
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks',
+                type: 'type',
+            },
+            taskType: 'FixedDuration',
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            resources: [
+                { resourceId: 1, resourceName: 'Rose Fuller' },
+                { resourceId: 2, resourceName: 'Fuller King' },
+                { resourceId: 3, resourceName: 'Tamer Vinet' },
+                { resourceId: 4, resourceName: 'Van Jack' },
+                { resourceId: 5, resourceName: 'Bergs Anton' }
+            ],
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'unit',
+            },
+            workUnit: 'Hour',
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            dayWorkingTime: [
+                { from: 8, to: 12 },
+                { from: 13, to: 17 },
+            ],
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'resources', headerText: 'Resources', width: '190' },
+                { field: 'work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'type', headerText: 'Task Type', width: '110' },
+            ],
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: '${Progress}%',
+            },
+            splitterSettings: {
+                columnIndex: 2,
+            },
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);
+        ganttObj.openEditDialog(1);
+        let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+        tab.selectedItem = 1;
+    });
+    it('Resource unit editing with unit value as null', () => {
+        ganttObj.actionBegin = function (args: any): void {
+            if (args.requestType === "beforeOpenEditDialog") {
+                args.dialogModel.animationSettings = { 'effect': 'none' };
+            }
+        };
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save') {
+                expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo[0]['unit']).toBe(0);
+            }
+        };
+        let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        triggerMouseEvent(checkbox, 'click');
+        let unit: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
+        if (unit) {
+            triggerMouseEvent(unit, 'dblclick');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'ResourcesTabContainer_gridcontrolunit')).ej2_instances[0];
+            input.value = null;
+            input.dataBind();
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        }
+    });
+});
+describe('update work with 2 resource', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    taskType: 'FixedDuration',
+                    Duration: 1,
+                    resources: [{ resourceId: 1, resourceUnit: 0 }]
+                }
+            ],
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks',
+                type: 'type',
+            },
+            taskType: 'FixedDuration',
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            resources: [
+                { resourceId: 1, resourceName: 'Rose Fuller' },
+                { resourceId: 2, resourceName: 'Fuller King' },
+                { resourceId: 3, resourceName: 'Tamer Vinet' },
+                { resourceId: 4, resourceName: 'Van Jack' },
+                { resourceId: 5, resourceName: 'Bergs Anton' }
+            ],
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'unit',
+            },
+            workUnit: 'Hour',
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            dayWorkingTime: [
+                { from: 8, to: 12 },
+                { from: 13, to: 17 },
+            ],
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'resources', headerText: 'Resources', width: '190' },
+                { field: 'work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'type', headerText: 'Task Type', width: '110' },
+            ],
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: '${Progress}%',
+            },
+            splitterSettings: {
+                columnIndex: 2,
+            },
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);
+        ganttObj.openEditDialog(1);
+        let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+        tab.selectedItem = 1;
+    });
+    it('update work with 2 resource', () => {
+        ganttObj.actionBegin = function (args: any): void {
+            if (args.requestType === "beforeOpenEditDialog") {
+                args.dialogModel.animationSettings = { 'effect': 'none' };
+            }
+        };
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save') {
+                expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(8);
+            }
+        };
+        let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        triggerMouseEvent(checkbox, 'click');
+        let checkbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        triggerMouseEvent(checkbox1, 'click');
+        let unit: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
+        if (unit) {
+            triggerMouseEvent(unit, 'dblclick');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'ResourcesTabContainer_gridcontrolunit')).ej2_instances[0];
+            input.value = 0;
+            input.dataBind();
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
         }
     });
 });

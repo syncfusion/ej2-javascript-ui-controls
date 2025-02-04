@@ -8196,7 +8196,7 @@ export class Layout {
                     continue;
                 }
                 // Bug 871725: Empty cell widget must be inserted if the table split into next page.
-                if (tableCollection.length == 1) {
+                if (tableCollection.length === 1 && this.documentHelper.splittedCellWidgets.length === 0) {
                     break;
                 }
                 const length: number = rowWidget.childWidgets.length;
@@ -8311,6 +8311,9 @@ export class Layout {
                 let rowSpan: number = 1;
                 const cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
                 const cellspace = !isNullOrUndefined(cellWidget.ownerTable) && !isNullOrUndefined(cellWidget.ownerTable.tableFormat) ? HelperMethods.convertPointToPixel(cellWidget.ownerTable.tableFormat.cellSpacing) : 0;
+                if (Math.round(previousLeft) !== Math.round(cellWidget.x - cellWidget.margin.left - cellspace)) {
+                    previousLeft = (cellWidget.x - cellWidget.margin.left - cellspace);
+                }
                 if (Math.round(left) === Math.round(previousLeft)) {
                     rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan :
                         cellWidget.cellFormat.rowSpan;
@@ -8337,9 +8340,6 @@ export class Layout {
                         //}
                         //}
                     }
-                }
-                if (Math.round(previousLeft) !== Math.round(cellWidget.x - cellWidget.margin.left - cellspace)) {
-                    previousLeft = (cellWidget.x - cellWidget.margin.left - cellspace);
                 }
                 previousLeft += cellWidget.margin.left + cellWidget.width + cellWidget.margin.right;
             }
@@ -8989,7 +8989,7 @@ export class Layout {
         const cellContentHeight: number = this.getCellContentHeight(cellWidget, true);
         //Displacement field holds the value which has reduced from rowHeight and cellContentHeight
         let displacement: number = 0;
-        if (rowHeight > cellContentHeight && rowHeight <= this.viewer.clientArea.height) {
+        if (rowHeight > cellContentHeight && rowHeight <= this.viewer.clientArea.height && !cellWidget.isSplittedCell) {
             displacement = rowHeight - cellContentHeight;
             if (cellWidget.cellFormat.verticalAlignment === 'Center') {
                 displacement = displacement / 2;

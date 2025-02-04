@@ -6632,6 +6632,16 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
             gridLayOut.addPanel({ row: 0, col: 1, sizeX: 1, sizeY: 1 });
         });
+        it('Helper element height and width', () => {
+            let movingElemnt: HTMLElement = document.getElementById('7');
+            let targetElemnt: HTMLElement = document.getElementById('8');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 0, 0);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 110, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            expect(((<HTMLElement>gridLayOut.element.querySelectorAll('.e-holder')[0]).style.width)).toBe('58.45px');
+            expect(((<HTMLElement>gridLayOut.element.querySelectorAll('.e-holder')[0]).style.height)).toBe('185.35px');
+        });
         it('testing args.cancel in dragStart event', () => {
             gridLayOut.dragStart = function (args: DragStartArgs) {
                 args.cancel = true;

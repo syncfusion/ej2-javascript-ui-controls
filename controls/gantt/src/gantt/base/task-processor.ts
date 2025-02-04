@@ -836,7 +836,7 @@ export class TaskProcessor extends DateProcessor {
             for (index = 0; index < resourcesLength; index++) {
                 // const resource: any = ganttData.ganttProperties.resourceInfo ? ganttData.ganttProperties.resourceInfo : resources;
                 resourceUnit = resources[index as number][this.parent.resourceFields.unit]; //in percentage
-                resourceOneDayWork = (resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : (ganttData.ganttProperties.taskType !== 'FixedUnit' ? actualOneDayWork : 0));
+                resourceOneDayWork = (resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : 0);
                 work += (resourceOneDayWork * durationInDay);
             }
             //Update work as per defined unit.
@@ -1090,13 +1090,17 @@ export class TaskProcessor extends DateProcessor {
                 case 'FixedDuration':
                     // To validate the work column as well,when initial dataset have 0 duration
                     if ((!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
-                        ganttData.ganttProperties.resourceInfo.length !== 0) || ganttProperties.duration === 0) {
+                                            !isNullOrUndefined(ganttData.ganttProperties.resourceInfo) &&
+                                                               ganttData.ganttProperties.resourceInfo.length !== 0) ||
+                                                                    ganttProperties.duration === 0) {
                         this.updateWorkWithDuration(ganttData);
                     }
                     break;
                 case 'FixedWork':
                     if ((!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
-                                           ganttData.ganttProperties.resourceInfo.length !== 0) || (ganttProperties.work === 0)) {
+                                            !isNullOrUndefined(ganttData.ganttProperties.resourceInfo) &&
+                                                               ganttData.ganttProperties.resourceInfo.length !== 0) ||
+                                                                    ganttProperties.work === 0) {
                         this.updateDurationWithWork(ganttData);
                     }
                     break;

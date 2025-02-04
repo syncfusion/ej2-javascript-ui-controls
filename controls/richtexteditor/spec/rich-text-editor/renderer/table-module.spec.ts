@@ -1001,12 +1001,6 @@ describe('Table Module', () => {
             (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
             (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
             expect(table.querySelectorAll('td')[10] === selObj.getRange(rteObj.contentModule.getDocument()).startContainer).toBe(true);
-            keyboardEventArgs.keyCode = 37;
-            (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
-            expect(table.querySelectorAll('td')[9] === selObj.getRange(rteObj.contentModule.getDocument()).startContainer).toBe(true);
-            keyboardEventArgs.keyCode = 39;
-            (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
-            expect(table.querySelectorAll('td')[10] === selObj.getRange(rteObj.contentModule.getDocument()).startContainer).toBe(true);
             keyboardEventArgs.keyCode = 38;
             (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
             expect(table.querySelectorAll('td')[7] === selObj.getRange(rteObj.contentModule.getDocument()).startContainer).toBe(true);
@@ -7193,6 +7187,33 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 nextElement.dispatchEvent(clickEvent);
             }
             expect(document.querySelector('td').style.height === 'inherit').toBe(true);
+        });
+    });
+
+    describe('935060 - Cursor Does Not Navigate to the Previous Line in a Table Cell When Pressing the Left Arrow Key.', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;">Rich Text Editor 1</td><td style="width: 50%;" class="">Rich Text Editor 1</td></tr><tr><td style="width: 50%;" class="">Rich Text Editor 1</td><td style="width: 50%;" class="e-cell-select">Rich Text Editor 1<p class="tdElement"><br></p></td></tr></tbody></table><p><br></p>`
+            }
+            );
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Place the cursor at the end of the <td> element and press the left arrow key.', (done) => {
+            editor.focusIn();
+            var tbElement = editor.contentModule.getEditPanel().querySelector(".tdElement")
+            setCursorPoint(tbElement, 0);
+            var keyBoardEvent = { type: 'keydown', preventDefault: function () { }, key: 'ArrowLeft', keyCode: 37, stopPropagation: function () { }, shiftKey: false, which: 37 };
+            (editor as any).keyDown(keyBoardEvent);
+            expect(tbElement.parentElement.contains(window.getSelection().getRangeAt(0).startContainer)).toBe(true);
+            done();
         });
     });
 

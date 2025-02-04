@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.4 (2025-02-04)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I682906` - The progress bar label now renders correctly with the exact number of digits.
+
 ## 25.1.35 (2024-03-15)
 
 ### ProgressBar

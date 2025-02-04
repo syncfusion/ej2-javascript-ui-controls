@@ -3,7 +3,7 @@
  */
 import { ComboBox, CustomValueSpecifierEventArgs } from '../../src/combo-box/combo-box';
 import { ChangeEventArgs } from '../../src/drop-down-list/drop-down-list';
-import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor, Predicate } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n } from '@syncfusion/ej2-base';
 import { DropDownBase, FilteringEventArgs, dropDownBaseClasses, PopupEventArgs, SelectEventArgs } from '../../src/drop-down-base/drop-down-base';
@@ -501,6 +501,52 @@ describe('MultiSelect_Virtualization', () => {
                 //expect((multiObj as any).value.length == (multiObj as any).maximumSelectionLength).toBe(true);
                 multiObj.hidePopup();
                 multiObj.destroy();
+            });
+        });
+        describe('virtualization custom filtering actions', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+            let multiObj: any;
+            let ele: HTMLElement;
+            let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+            beforeAll(() => {
+                ele = createElement('input', { id: 'Multiselect' });
+                document.body.appendChild(ele);
+                multiObj = new MultiSelect({
+                    dataSource: datasource, mode: 'Box', enableVirtualization: true, popupHeight: '200px',
+                    allowFiltering: true, showDropDownIcon:true, hideSelectedItem: true, closePopupOnSelect: true,
+                    fields: { text: 'text', value: 'id' }, placeholder: 'e.g. Item 1', 
+                    filtering: function(args) {
+                        args.preventDefaultAction=true
+                        var query = new Query();
+                        const namePredicate: Predicate = new Predicate('id', 'contains', args.text, true);
+                        const emailPredicate: Predicate = new Predicate('text', 'contains', args.text, true);
+                        const combinedPredicate = namePredicate.or(emailPredicate);
+                        query = (args.text != "") ? query.where(combinedPredicate) : query;
+                        args.updateData(datasource, query);
+                    }
+                });
+                multiObj.appendTo(ele);
+            });
+            afterAll(() => {
+                ele.remove();
+                multiObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it('filtering with li count', () => {
+                multiObj.showPopup();
+                //expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
+                expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
+                (<any>multiObj).inputElement.value  = "150";
+                //open action validation
+                keyEventArgs.keyCode = 113;
+                (<any>multiObj).keyDownStatus = true;
+                (<any>multiObj).onInput();
+                (<any>multiObj).keyUp(keyEventArgs);
+                let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
+                expect(li.length).toBe(1); 
+                li = multiObj.list.querySelectorAll('.e-virtual-list');
+                expect(li.length).toBe(0);
             });
         });
         describe('Virtualization Template support', () => {
@@ -1034,6 +1080,143 @@ describe('MultiSelect_Virtualization', () => {
                 else
                     expect(true).toBe(false);            
             });
+        });
+    });
+
+    describe('EJ2-933634 - No records found showing in popup after we select all the item', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] =  [
+                { id: 'list1', text: 'JAVA' },
+                { id: 'list2', text: 'C#' },
+                { id: 'list3', text: 'C++' },
+                { id: 'list4', text: '.NET' },
+                { id: 'list5', text: 'Oracle' },
+                { id: 'list6', text: 'GO' },];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Check list count', (done) => {
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                popupHeight: 50,
+                hideSelectedItem: false,
+                value: ['list4'],
+                enableVirtualization: true,
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+            listObj.showPopup();
+            setTimeout(function () {
+                (<any>listObj).updateSelectionList();
+                let mouseEventArgs: any = { preventDefault: function () { }, target: null };                       
+                setTimeout(function () {
+                    (<any>listObj).clearAll(mouseEventArgs);
+                    listObj.showPopup();
+                    var li = (<any>listObj).list.querySelectorAll('.e-virtual-list');
+                    expect(li.length).toBe(0);
+                    done();
+                }, 300);
+            }, 200);
+            
+        });
+    });
+
+    describe('EJ2-932891', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let originalTimeout: number;
+        let count: number = 0;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let datasource: { [key: string]: Object }[] = [
+            { Name: 'User 1', Category: 'User 1' },
+            { Name: 'User 2', Category: 'User 2' },
+            { Name: 'User 3', Category: 'User 3' },
+            { Name: 'User 4', Category: 'User 4' },
+            { Name: 'User 5', Category: 'User 5' },
+            { Name: 'Group 1', Category: 'Group 1' },
+            { Name: 'Group 2', Category: 'Group 2' },
+            { Name: 'Group 3', Category: 'Group 3' },
+            { Name: 'Group 4', Category: 'Group 4' },
+            { Name: 'Group 5', Category: 'Group 5' },
+          ];
+          let data: { [key: string]: Object }[] = [
+            { Name: 'User 1', Category: 'User 1' },
+            { Name: 'User 2', Category: 'User 2' },
+          ];
+        beforeEach(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (ele) {
+                ele.remove();
+            }
+        });
+        it('Empty popup is shown after filtering', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: datasource,
+                placeholder: 'Select an Item ',
+                //set enableVirtualization property to true
+                enableVirtualization: true,
+                allowFiltering: true,
+                hideSelectedItem: false,
+                closePopupOnSelect: false,
+                mode: 'Default',
+                //set the height of the popup element
+                popupHeight: '200px',
+                showClearButton: true,
+                fields:{ value: 'Name', text: 'Name' },
+            });
+            listObj.appendTo('#multi');
+            let keyboardEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+            (<any>listObj).wrapperClick(mouseEventArgs);
+            listObj.showPopup();
+            (<any>listObj).inputElement.value = "User 1";
+            keyboardEventArgs.keyCode = 113;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect((<any>listObj).liCollections.length).toBe(1);
+            mouseEventArgs.target = (<any>listObj).overAllClear;
+            (<any>listObj).clearAll(mouseEventArgs);
+            expect((<any>listObj).list.querySelectorAll('.e-virtual-list').length).toBe(0);
+            mouseEventArgs.target = (<any>listObj).liCollections[0];
+         });
+        it('933634 - "No records found" showing in popup after we select all the item', (done) => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: data,
+                placeholder: 'Select an Item ',
+                //set enableVirtualization property to true
+                enableVirtualization: true,
+                allowFiltering: true,
+                mode: 'CheckBox',
+                //set the height of the popup element
+                popupHeight: '200px',
+                showClearButton: true,
+                fields:{ value: 'Name', text: 'Name' },
+                value: ['User 1', 'User 2'],
+            });
+            listObj.appendTo('#multi');
+            (<any>listObj).wrapperClick(mouseEventArgs);
+            listObj.showPopup();
+            setTimeout(() => {
+                expect((<any>listObj).list.querySelectorAll('.e-list-item').length).toBe(2);
+                done();
+            }, 800);
         });
     });
 

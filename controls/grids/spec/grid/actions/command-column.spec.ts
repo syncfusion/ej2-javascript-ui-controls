@@ -992,8 +992,13 @@ describe('Command Column ', () => {
         });
 
         it('Delete the cell', (done : Function) => {
-            (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[1].click();  
-            done();         
+            gridObj.actionComplete = (args?: any): void => {
+                if (args.requestType === "delete") {
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[1].click();       
         });
         
         it('Check focus first cell', () => {

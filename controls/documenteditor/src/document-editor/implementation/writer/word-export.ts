@@ -4289,7 +4289,10 @@ export class WordExport {
 
         this.serializeCells(writer, row[cellsProperty[this.keywordIndex]], mVerticalMerge);
 
-        writer.writeEndElement(); //end od table row 'tr'
+        if (!this.isBookmarkAtRowEnd) {
+            writer.writeEndElement(); //end od table row 'tr'
+        }
+        this.isBookmarkAtRowEnd = false;
         this.row = owner;
     }
     // Serialize the row format
@@ -4413,7 +4416,9 @@ export class WordExport {
             writer.writeEndElement(); //end of pPr
             writer.writeEndElement(); //end of P
         }
-        writer.writeEndElement(); //end of table cell 'tc' 
+        if (!this.isBookmarkAtRowEnd) {
+            writer.writeEndElement(); //end of table cell 'tc' 
+        }
         let increment: number = 1;
         // let count: number = 0;
         if (mVerticalMerge.containsKey((cell[columnIndexProperty[this.keywordIndex]] + cell[cellFormatProperty[this.keywordIndex]][columnSpanProperty[this.keywordIndex]] - 1) + increment) && this.row[cellsProperty[this.keywordIndex]].length === 1) {

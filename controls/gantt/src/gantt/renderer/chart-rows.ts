@@ -2397,6 +2397,15 @@ export class ChartRows extends DateProcessor {
                 }
                 else {
                     tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
+                    if (this.parent.enableMultiTaskbar && data.parentItem) {
+                        const parentID: string = data.parentItem.taskId;
+                        const parentData: IGanttData = this.parent.getRecordByID(parentID);
+                        if (!parentData.expanded) {
+                            const parentTr: Element = this.parent.getRowByID(parentID);
+                            parentTr.replaceChild(this.getGanttChartRow(Number(parentID), parentData).childNodes[0],
+                                                  parentTr.childNodes[0]);
+                        }
+                    }
                 }
             }
             this.parent.renderTemplates();

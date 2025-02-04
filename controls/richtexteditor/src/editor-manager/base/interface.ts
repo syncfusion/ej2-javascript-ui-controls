@@ -149,6 +149,10 @@ export interface IHtmlKeyboardEvent {
      */
     enterAction?: string
     /**
+     * Specifies the tab key action in the Rich Text Editor content..
+     */
+    enableTabKey?: string
+    /**
      * Defines tag to be used when enter key is pressed.
      */
     enterKey?: string

@@ -199,8 +199,9 @@ export class ShowHide {
             } else {
                 if (this.parent.isFrozenGrid() && columns.length) {
                     this.parent.notify(events.refreshFrozenPosition, { isModeChg: true });
+                } else {
+                    this.parent.notify(events.columnVisibilityChanged, columns);
                 }
-                this.parent.notify(events.columnVisibilityChanged, columns);
             }
             const params: Object = {
                 requestType: 'columnstate',
