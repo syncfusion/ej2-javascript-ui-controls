@@ -6,40 +6,39 @@ import { Property, ChildProperty, Complex, Event, EmitType } from '@syncfusion/e
 export interface ToolbarSettingsModel {
 
     /**
-     * Specifies whether to render toolbar in RichTextEditor.
+     * Specifies whether to render the toolbar in the RichTextEditor.
      *
      * @default true
      */
     enable?: boolean;
 
     /**
-     * Specifies whether to enable/disable floating toolbar.
+     * Specifies whether to enable or disable the floating toolbar.
      *
      * @default true
      */
     enableFloating?: boolean;
 
     /**
-     * Specifies the Toolbar display types.
-     * The possible types are:
-     * - Expand: Toolbar items placed within the available space and rest of the items are placed to the extended menu section.
-     * - MultiRow: Toolbar which placed at top of Rich Text Editor editing area.
-     * - Scrollable: All the toolbar items are displayed in a single line with horizontal scrolling enabled.
+     * Specifies the display types of the toolbar.
+     * The available types are:
+     * - Expand: Toolbar items fit within available space, and the rest are placed in the extended menu.
+     * - MultiRow: Toolbar placed at the top of the RichTextEditor editing area.
+     * - Scrollable: Toolbar items displayed in a single line with horizontal scrolling enabled.
      *
      * @default Expand
      */
     type?: ToolbarType;
 
     /**
-     * An array of string or object that is used to configure items.
+     * An array of strings or objects used to configure the toolbar items.
      *
-     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote' 'OrderedList',
-     * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
+     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote', 'OrderedList', 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
      */
-    items?: (string |ToolbarConfigItems | IToolbarItems)[];
+    items?: (string | ToolbarConfigItems | IToolbarItems)[];
 
     /**
-     * Using this property, Modify the default toolbar item configuration like icon class.
+     * Allows modification of the default toolbar item configuration, such as the icon class.
      *
      * @default {}
      */
@@ -53,9 +52,9 @@ export interface ToolbarSettingsModel {
 export interface ImportWordModel {
 
     /**
-     * Specifies the URL that will receive and handle file uploads on the server.
+     * Specifies the URL to receive and handle file uploads on the server.
      *
-     * @default 'null'
+     * @default null
      */
     serviceUrl?: string;
 
@@ -67,14 +66,14 @@ export interface ImportWordModel {
 export interface ExportWordModel {
 
     /**
-     * Specifies the URL used to export Rich Text Editor content into Word files.
+     * Specifies the URL used to export RichTextEditor content into Word files.
      *
-     * @default 'null'
+     * @default null
      */
     serviceUrl?: string;
 
     /**
-     * Specifies the file name of the exported word file.
+     * Specifies the file name for the exported Word file.
      *
      * @default 'Sample.docx'
      */
@@ -83,7 +82,7 @@ export interface ExportWordModel {
     /**
      * Specifies the stylesheet to be applied to the exported file.
      *
-     * @default 'null'
+     * @default null
      */
     stylesheet?: string;
 
@@ -95,14 +94,14 @@ export interface ExportWordModel {
 export interface ExportPdfModel {
 
     /**
-     * Specifies the URL used to export Rich Text Editor content into PDF files.
+     * Specifies the URL used to export RichTextEditor content into PDF files.
      *
-     * @default 'null'
+     * @default null
      */
     serviceUrl?: string;
 
     /**
-     * Specifies the file name of the exported pdf file.
+     * Specifies the file name for the exported PDF file.
      *
      * @default 'Sample.pdf'
      */
@@ -111,7 +110,7 @@ export interface ExportPdfModel {
     /**
      * Specifies the stylesheet to be applied to the exported file.
      *
-     * @default 'null'
+     * @default null
      */
     stylesheet?: string;
 
@@ -123,110 +122,106 @@ export interface ExportPdfModel {
 export interface ImageSettingsModel {
 
     /**
-     * Specifies whether to allowType based file select.
+     * Specifies the allowed file types for selection.
      *
      * @default ['.jpeg', '.jpg', '.png']
      */
     allowedTypes?: string[];
 
     /**
-     * Specifies whether insert image inline or break.
+     * Specifies whether the image is inserted inline or with a break.
      *
      * @default 'inline'
      */
     display?: string;
 
     /**
-     * Specifies whether the inserted image is saved as blob or base64.
+     * Specifies whether the inserted image is saved as a blob or base64.
      *
      * @default 'Blob'
      */
     saveFormat?: SaveFormat;
 
     /**
-     * Specifies whether image width.
+     * Specifies the width of the image.
      *
      * @default 'auto'
      */
     width?: string;
 
     /**
-     * Specifies whether image height.
+     * Specifies the height of the image.
      *
      * @default 'auto'
      */
     height?: string;
 
     /**
-     * Specifies the URL of save action that will receive the uploaded image and save it on the server.
+     * Specifies the URL for the save action that handles uploaded images on the server.
      *
+     * This URL should handle a `POST` request, with an argument named `UploadFiles`.
      *
-     * The URL of the save action for uploading and saving images on the server.
-     * The save action should handle a `POST` request and define an argument with the name `UploadFiles`.
-     *
-     * Trigger the event when inserting the image via Insert image dialog, pasting the image, replacing the existing image, and dragging and dropping from the file browser.
+     * The event is triggered when inserting an image via the Insert Image dialog, pasting an image, replacing an existing image, or dragging and dropping from the file browser.
      *
      * @default null
      */
     saveUrl?: string;
 
     /**
-     * Specifies the path of the location to store the images and refer it to display the images.
+     * Specifies the path for storing and displaying images.
      *
      * @default null
      */
     path?: string;
 
     /**
-     * To enable resizing for image element.
+     * Enables resizing for the image element.
      *
-     * @default 'true'
+     * @default true
      */
     resize?: boolean;
 
     /**
-     * Specifies the URL of remove action that receives the image information and handles the remove operation on the server.
+     * Specifies the URL for the remove action that handles image removal on the server.
      *
-     * The URL of the remove action for removing the image on the server.
+     * This URL should handle a `POST` request, with an argument named `UploadFiles`.
      *
-     * The remove action should handle a `POST` request and define an argument with the name `UploadFiles`.
-     *
-     * Trigger the event when uploading and canceling or removing an image in the insert image dialog, pasting and removing an image in Paste cleanup popup.
+     * The event is triggered when uploading and canceling or removing an image in the insert image dialog, pasting, and removing an image in the Paste cleanup popup.
      *
      * @default null
      */
     removeUrl?: string;
 
     /**
-     * Defines the minimum Width of the image.
+     * Defines the minimum width of the image.
      *
-     * @default '0'
+     * @default 0
      */
     minWidth?: string | number;
 
     /**
-     * Defines the maximum Width of the image.
+     * Defines the maximum width of the image.
      *
      * @default null
      */
     maxWidth?: string | number;
 
     /**
-     * Defines the minimum Height of the image.
+     * Defines the minimum height of the image.
      *
-     * @default '0'
+     * @default 0
      */
     minHeight?: string | number;
 
     /**
-     * Defines the maximum Height of the image.
+     * Defines the maximum height of the image.
      *
      * @default null
      */
     maxHeight?: string | number;
 
     /**
-     * image resizing should be done by percentage calculation.
+     * Enables image resizing by percentage calculation.
      *
      * @default false
      */
@@ -240,44 +235,44 @@ export interface ImageSettingsModel {
 export interface AudioSettingsModel {
 
     /**
-     * Specifies whether to allowType based file select.
+     * Specifies the allowed file types for audio selection.
      *
-     * @default ['.wav', '.mp3', '.m4a','.wma']
+     * @default ['.wav', '.mp3', '.m4a', '.wma']
      */
     allowedTypes?: string[];
 
     /**
-     * Specifies whether insert audio inline or break.
+     * Specifies whether the audio is inserted inline or with a break.
      *
      * @default 'Inline'
      */
     layoutOption?: DisplayLayoutOptions;
 
     /**
-     * Specifies whether the inserted audio is saved as blob or base64.
+     * Specifies whether the inserted audio is saved as a blob or base64.
      *
      * @default 'Blob'
      */
     saveFormat?: SaveFormat;
 
     /**
-     * Specifies the URL of save action that will receive the upload files and save in the server.
+     * Specifies the URL for the save action that handles uploaded audio files on the server.
      *
-     * @default 'null'
+     * @default null
      */
     saveUrl?: string;
 
     /**
-     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     * Specifies the URL for the remove action that handles audio removal on the server.
      *
-     * @default 'null'
+     * @default null
      */
     removeUrl?: string;
 
     /**
-     * Specifies the path of the location to store the audio and refer it to display the audio.
+     * Specifies the path for storing and displaying audio files.
      *
-     * @default 'null'
+     * @default null
      */
     path?: string;
 
@@ -289,98 +284,98 @@ export interface AudioSettingsModel {
 export interface VideoSettingsModel {
 
     /**
-     * Specifies whether to allowType based file select.
+     * Specifies the allowed file types for video selection.
      *
-     * @default ['.mp4', '.mov', '.wmv','.avi']
+     * @default ['.mp4', '.mov', '.wmv', '.avi']
      */
     allowedTypes?: string[];
 
     /**
-     * Specifies whether insert video inline or break.
+     * Specifies whether the video is inserted inline or with a break.
      *
      * @default 'Inline'
      */
     layoutOption?: DisplayLayoutOptions;
 
     /**
-     * Specifies whether the inserted video is saved as blob or base64.
+     * Specifies whether the inserted video is saved as a blob or base64.
      *
      * @default 'Blob'
      */
     saveFormat?: SaveFormat;
 
     /**
-     * Specifies whether video width.
+     * Specifies the width of the video.
      *
      * @default 'auto'
      */
     width?: string;
 
     /**
-     * Specifies whether video height.
+     * Specifies the height of the video.
      *
      * @default 'auto'
      */
     height?: string;
 
     /**
-     * Specifies the URL of save action that will receive the upload files and save in the server.
+     * Specifies the URL for the save action that handles uploaded video files on the server.
      *
-     * @default 'null'
+     * @default null
      */
     saveUrl?: string;
 
     /**
-     * Specifies the path of the location to store the images and refer it to display the images.
+     * Specifies the path for storing and displaying video files.
      *
-     * @default 'null'
+     * @default null
      */
     path?: string;
 
     /**
-     * To enable resizing for video element.
+     * Enables resizing for the video element.
      *
-     * @default 'true'
+     * @default true
      */
     resize?: boolean;
 
     /**
-     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     * Specifies the URL for the remove action that handles video removal on the server.
      *
-     * @default 'null'
+     * @default null
      */
     removeUrl?: string;
 
     /**
-     * Defines the minimum Width of the video.
+     * Defines the minimum width of the video.
      *
-     * @default '0'
+     * @default 0
      */
     minWidth?: string | number;
 
     /**
-     * Defines the maximum Width of the video.
+     * Defines the maximum width of the video.
      *
      * @default null
      */
     maxWidth?: string | number;
 
     /**
-     * Defines the minimum Height of the video.
+     * Defines the minimum height of the video.
      *
-     * @default '0'
+     * @default 0
      */
     minHeight?: string | number;
 
     /**
-     * Defines the maximum Height of the video.
+     * Defines the maximum height of the video.
      *
      * @default null
      */
     maxHeight?: string | number;
 
     /**
-     * Video resizing should be done by percentage calculation.
+     * Enables video resizing by percentage calculation.
      *
      * @default false
      */
@@ -394,139 +389,136 @@ export interface VideoSettingsModel {
 export interface FileManagerSettingsModel {
 
     /**
-     * Event triggers before sending the AJAX request to the server.
-     * Set the cancel argument to true to cancel the request.
+     * Event triggered before sending an AJAX request to the server.
+     * Set the cancel argument to true to prevent the request.
      *
-     * @event 'beforeSend'
+     * @event beforeSend
      */
-
     beforeSend?: EmitType<BeforeSendEventArgs>;
 
     /**
-     * Specifies the AJAX settings of the file manager.
+     * Specifies the AJAX settings for the file manager.
      *
      * @default {
-     * getImageUrl: null;
-     * url: null;
-     * uploadUrl: null;
-     * downloadUrl: null;
+     *   getImageUrl: null,
+     *   url: null,
+     *   uploadUrl: null
      * }
      */
     ajaxSettings?: AjaxSettingsModel;
 
     /**
-     * Enables or disables drag-and-drop of files.
+     * Enables or disables drag-and-drop functionality for files.
      *
      * @default false
      */
     allowDragAndDrop?: boolean;
 
     /**
-     * Specifies the context menu settings of the file manager.
+     * Specifies the context menu settings for the file manager.
      *
      * @default {
-     *  file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
-     *  folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
-     *  layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'],
-     *  visible: true
+     *   file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
+     *   folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
+     *   layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'],
+     *   visible: true
      * }
      */
     contextMenuSettings?: ContextMenuSettingsModel;
 
     /**
-     * Specifies the root CSS class of the file manager that allows you to customize the appearance by overriding the styles.
+     * Specifies the root CSS class of the file manager, allowing customization by overriding styles.
      *
      * @default ''
      */
     cssClass?: string;
 
     /**
-     * Specifies the details view settings of the file manager.
+     * Specifies the details view settings for the file manager.
      *
      * @default {
-     *  columns: [{
-     *    field: 'name', headerText: 'Name', minWidth: 120, template: '<span class="e-fe-text">${name}</span>',
-     *    customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified', type: 'dateTime',
-     *    format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
-     *    template: '<span class="e-fe-size">${size}</span>'
-     *  }]
+     *   columns: [{
+     *     field: 'name', headerText: 'Name', minWidth: 120, template: '<span class="e-fe-text">${name}</span>',
+     *     customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified', type: 'dateTime',
+     *     format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
+     *     template: '<span class="e-fe-size">${size}</span>' }
+     *   ]
      * }
      */
     detailsViewSettings?: DetailsViewSettingsModel;
 
     /**
-     * Specifies whether to enable the file manager in RichTextEditor.
+     * Specifies whether to enable the file manager in the RichTextEditor.
      *
      * @default false
      */
     enable?: boolean;
 
     /**
-     * Specifies the navigation pane settings of the file manager.
+     * Specifies the navigation pane settings for the file manager.
      *
      * @default { maxWidth: '650px', minWidth: '240px', visible: true }
      */
     navigationPaneSettings?: NavigationPaneSettingsModel;
 
     /**
-     * Specifies the current path of the file manager.
+     * Specifies the current path in the file manager.
      *
      * @default '/'
      */
     path?: string;
 
     /**
-     * Specifies the root folder alias name in file manager
+     * Specifies the alias name for the root folder in the file manager.
      *
      * @default null
      */
     rootAliasName?: string;
 
     /**
-     * Specifies the search settings of the file manager.
+     * Specifies the search settings for the file manager.
      *
      * @default {
-     *  allowSearchOnTyping: true,
-     *  filterType: 'contains',
-     *  ignoreCase: true
+     *   allowSearchOnTyping: true,
+     *   filterType: 'contains',
+     *   ignoreCase: true
      * }
      */
     searchSettings?: SearchSettingsModel;
 
     /**
-     * Shows or hides the file extension in file manager.
+     * Determines whether to show or hide file extensions in the file manager.
      *
      * @default true
      */
     showFileExtension?: boolean;
 
     /**
-     * Shows or hides the files and folders that are marked as hidden.
+     * Determines whether to show or hide files and folders marked as hidden.
      *
      * @default false
      */
     showHiddenItems?: boolean;
 
     /**
-     * Shows or hides the thumbnail images in large icons view.
+     * Determines whether to show or hide thumbnail images in the large icons view.
      *
      * @default true
      */
     showThumbnail?: boolean;
 
     /**
-     * Specifies a value that indicates whether the folders and files are sorted in the ascending or descending order,
-     * or they are not sorted at all. The available types of sort orders are,
-     * `None` - Indicates that the folders and files are not sorted.
-     * `Ascending` - Indicates that the folders and files are sorted in the ascending order.
-     * `Descending` - Indicates that the folders and files are sorted in the descending order.
+     * Specifies the sort order for folders and files. Options are:
+     * - `None`: Folders and files are not sorted.
+     * - `Ascending`: Folders and files are sorted in ascending order.
+     * - `Descending`: Folders and files are sorted in descending order.
      *
      * @default 'Ascending'
      */
     sortOrder?: SortOrder;
 
     /**
-     * Specifies the group of items aligned horizontally in the toolbar.
+     * Specifies groups of items aligned horizontally in the toolbar.
      *
      * @default { visible: true, items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'] }
      */
@@ -542,9 +534,9 @@ export interface FileManagerSettingsModel {
     /**
      * Specifies the initial view of the file manager.
      *
-     * With the help of this property, initial view can be changed to details or largeicons view. The available views are:
-     * * `LargeIcons`
-     * * `Details`
+     * This property allows setting the initial view to either 'Details' or 'LargeIcons'. The available views are:
+     * - `LargeIcons`
+     * - `Details`
      *
      * @default 'LargeIcons'
      */
@@ -558,36 +550,40 @@ export interface FileManagerSettingsModel {
 export interface TableSettingsModel {
 
     /**
-     * To specify the width of table
+     * Specifies the width of the table.
      *
      * @default '100%'
      */
     width?: string | number;
 
     /**
-     * Class name should be appended by default in table element.
-     * It helps to design the table in specific CSS styles always when inserting in editor.
+     * Class names appended by default to the table element.
+     * Assists in styling the table in specific CSS styles when inserted in the editor.
      *
-     * @default TableStyleItems;
+     * Available styles:
+     * - `Dashed Borders`: Adds dashed borders around the table using the `e-dashed-borders` CSS class.
+     * - `Alternate Rows`: Applies alternating row colors for better readability using the `e-alternate-rows` CSS class.
+     *
+     * @default TableStyleItems
      */
     styles?: IDropDownItemModel[];
 
     /**
-     * To enable resizing for table element.
+     * Enables resizing for the table element.
      *
-     * @default 'true'
+     * @default true
      */
     resize?: boolean;
 
     /**
-     * Defines the minimum Width of the table.
+     * Defines the minimum width of the table.
      *
-     * @default '0'
+     * @default 0
      */
     minWidth?: string | number;
 
     /**
-     * Defines the maximum Width of the table.
+     * Defines the maximum width of the table.
      *
      * @default null
      */
@@ -601,63 +597,63 @@ export interface TableSettingsModel {
 export interface QuickToolbarSettingsModel {
 
     /**
-     * Specifies whether to enable quick toolbar in RichTextEditor.
+     * Specifies whether to enable the quick toolbar in the RichTextEditor.
      *
      * @default true
      */
     enable?: boolean;
 
     /**
-     * Specifies whether to opens a quick toolbar on the right click.
+     * Specifies whether the quick toolbar opens on right-click.
      *
      * @default false
      */
     showOnRightClick?: boolean;
 
     /**
-     * Specifies the action that should happen when scroll the target-parent container.
+     * Specifies the action to perform when scrolling the target-parent container.
      *
      * @default 'hide'
      */
     actionOnScroll?: ActionOnScroll;
 
     /**
-     * Specifies the items to render in quick toolbar, when link selected.
+     * Specifies the items to render in the quick toolbar when a link is selected.
      *
      * @default ['Open', 'Edit', 'UnLink']
      */
     link?: (string | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when image selected.
+     * Specifies the items to render in the quick toolbar when an image is selected.
      *
-     * @default ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink','OpenImageLink', 'EditImageLink', 'RemoveImageLink', 'Display', 'AltText', 'Dimension']
+     * @default ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'OpenImageLink', 'EditImageLink', 'RemoveImageLink', 'Display', 'AltText', 'Dimension']
      */
     image?: (string | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when audio selected.
+     * Specifies the items to render in the quick toolbar when audio is selected.
      *
      * @default ['AudioReplace', 'Remove', 'AudioLayoutOption']
      */
     audio?: (string | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when video selected.
+     * Specifies the items to render in the quick toolbar when a video is selected.
      *
      * @default ['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension']
      */
     video?: (string | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when text selected.
+     * Specifies the items to render in the quick toolbar when text is selected.
      *
      * @default null
      */
     text?: (string | ToolbarConfigItems | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when table selected.
+     * Specifies the items to render in the quick toolbar when a table is selected.
      *
      * @default ['TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles']
      */
@@ -671,14 +667,14 @@ export interface QuickToolbarSettingsModel {
 export interface FormatPainterSettingsModel {
 
     /**
-     * Defines the tag name selectors for obtaining the formats from the elements.
+     * Defines the tag name selectors to obtain formats from elements.
      *
      * @default 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; ol; ul; li; pre;'
      */
     allowedFormats?: string;
 
     /**
-     * Defines selectors for the elements from which fetching formats is expressly prohibited.
+     * Defines selectors for elements from which fetching formats is expressly prohibited.
      *
      * @default null
      */
@@ -692,7 +688,7 @@ export interface FormatPainterSettingsModel {
 export interface EmojiSettingsModel {
 
     /**
-     * Specify an array of items representing emoji icons.
+     * Specifies an array of items representing emoji icons.
      *
      * @default [{
         name: 'Smilies & People', code: '1F600', iconCss: 'e-emoji', icons: [{ code: '1F600', desc: 'Grinning face' },
@@ -879,7 +875,7 @@ export interface EmojiSettingsModel {
     iconsSet?: EmojiIconsSet[];
 
     /**
-     * Enables or disables the search box in an emoji picker.
+     * Enables or disables the search box in the emoji picker.
      *
      * @default true
      */
@@ -893,42 +889,42 @@ export interface EmojiSettingsModel {
 export interface PasteCleanupSettingsModel {
 
     /**
-     * Specifies whether to enable the prompt for paste in RichTextEditor.
+     * Specifies whether to enable the prompt for paste in the RichTextEditor.
      *
      * @default false
      */
     prompt?: boolean;
 
     /**
-     * Specifies the attributes to restrict when pasting in RichTextEditor.
+     * Specifies the attributes to restrict when pasting in the RichTextEditor.
      *
      * @default null
      */
     deniedAttrs?: string[];
 
     /**
-     * Specifies the allowed style properties when pasting in RichTextEditor.
+     * Specifies the allowed style properties when pasting in the RichTextEditor.
      *
-     * @default ['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius', 'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor', 'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style', 'height', 'left', 'line-height', 'list-style-type', 'margin', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width', 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right', 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-transform', 'text-indent', 'top', 'vertical-align', 'visibility', 'white-space', 'width']
+     * @default ['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius', 'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor', 'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style', 'height', 'left', 'line-height', 'list-style-type', 'margin', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width', 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right', 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-transform', 'text-indent', 'top', 'vertical-align', 'visibility', 'white-space', 'width', 'flex-direction']
      */
     allowedStyleProps?: string[];
 
     /**
-     * Specifies the tags to restrict when pasting in RichTextEditor.
+     * Specifies the tags to restrict when pasting in the RichTextEditor.
      *
      * @default null
      */
     deniedTags?: string[];
 
     /**
-     * Specifies whether to keep or remove the format when pasting in RichTextEditor.
+     * Specifies whether to keep or remove formatting when pasting in the RichTextEditor.
      *
      * @default true
      */
     keepFormat?: boolean;
 
     /**
-     * Specifies whether to paste as plain text or not in RichTextEditor.
+     * Specifies whether to paste as plain text or not in the RichTextEditor.
      *
      * @default false
      */
@@ -942,21 +938,21 @@ export interface PasteCleanupSettingsModel {
 export interface FontFamilyModel {
 
     /**
-     * Specifies default font family selection
+     * Specifies the default font family selection.
      *
-     * @default 'null'
+     * @default null
      */
     default?: string;
 
     /**
-     * Specifies content width
+     * Specifies the width of the content area.
      *
      * @default '72px'
      */
     width?: string;
 
     /**
-     * Specifies default font family items
+     * Specifies the default font family items.
      *
      * @default fontFamily
      */
@@ -970,21 +966,21 @@ export interface FontFamilyModel {
 export interface FontSizeModel {
 
     /**
-     * Specifies default font size selection
+     * Specifies the default font size selection.
      *
-     * @default 'null'
+     * @default null
      */
     default?: string;
 
     /**
-     * Specifies content width
+     * Specifies the width of the content area.
      *
      * @default '60px'
      */
     width?: string;
 
     /**
-     * Specifies default font size items
+     * Specifies the default font size items.
      *
      * @default fontSize
      */
@@ -998,21 +994,22 @@ export interface FontSizeModel {
 export interface FormatModel {
 
     /**
-     * Specifies default format
+     * Specifies the default format.
      *
-     * @default 'null'
+     * @default null
      */
     default?: string;
 
     /**
-     * Specifies content width
+     * Specifies the width of the content area.
      *
      * @default '65px'
      */
     width?: string;
 
     /**
-     * Specifies default font size items
+     * Specifies the collection of default font size items for the format dropdown.
+     * These items define the available options for users to select.
      *
      * @default formatItems
      */
@@ -1026,35 +1023,35 @@ export interface FormatModel {
 export interface FontColorModel {
 
     /**
-     * Specifies default font color
+     * Specifies the default font color.
      *
      * @default '#ff0000'
      */
     default?: string;
 
     /**
-     * Specifies mode
+     * Specifies the color mode.
      *
      * @default 'Palette'
      */
     mode?: ColorModeType;
 
     /**
-     * Specifies columns
+     * Specifies the number of columns in the color palette.
      *
      * @default 10
      */
     columns?: number;
 
     /**
-     * Specifies color code customization
+     * Specifies custom color codes.
      *
      * @default fontColor
      */
     colorCode?: { [key: string]: string[] };
 
     /**
-     * Specifies modeSwitcher button
+     * Enables or disables the mode switcher button.
      *
      * @default false
      */
@@ -1068,35 +1065,35 @@ export interface FontColorModel {
 export interface BackgroundColorModel {
 
     /**
-     * Specifies default font color
+     * Specifies the default background color.
      *
      * @default '#ffff00'
      */
     default?: string;
 
     /**
-     * Specifies mode
+     * Specifies the color mode.
      *
      * @default 'Palette'
      */
     mode?: ColorModeType;
 
     /**
-     * Specifies columns
+     * Specifies the number of columns in the color palette.
      *
      * @default 10
      */
     columns?: number;
 
     /**
-     * Specifies color code customization
+     * Specifies custom color codes.
      *
      * @default backgroundColor
      */
     colorCode?: { [key: string]: string[] };
 
     /**
-     * Specifies a modeSwitcher button
+     * Enables or disables the mode switcher button.
      *
      * @default false
      */
@@ -1110,7 +1107,7 @@ export interface BackgroundColorModel {
 export interface NumberFormatListModel {
 
     /**
-     * Specifies default numberFormatList items
+     * Specifies the default options for the number format list items.
      *
      * @default numberFormatList
      */
@@ -1124,7 +1121,7 @@ export interface NumberFormatListModel {
 export interface BulletFormatListModel {
 
     /**
-     * Specifies default numberFormatList items
+     * Specifies the default options for the bullet format list items.
      *
      * @default bulletFormatList
      */

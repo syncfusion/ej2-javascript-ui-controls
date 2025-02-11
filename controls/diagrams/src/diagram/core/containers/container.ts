@@ -3,7 +3,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { DiagramElement } from '../elements/diagram-element';
-import { ElementAction } from '../../enum/enum';
+import { ElementAction, FlipDirection } from '../../enum/enum';
 import { Thickness } from '../appearance';
 import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
@@ -142,7 +142,7 @@ export class Container extends DiagramElement {
                         child.offsetX = this.offsetX;
                         child.parentTransform = this.parentTransform + this.rotateAngle;
                         if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
-                            child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
+                            child.parentTransform = (this.flip === FlipDirection.Horizontal || this.flip === FlipDirection.Vertical) ?
                                 -child.parentTransform : child.parentTransform;
                         }
                         arrange = true;

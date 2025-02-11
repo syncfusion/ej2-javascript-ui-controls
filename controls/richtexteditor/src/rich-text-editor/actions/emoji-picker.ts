@@ -8,6 +8,7 @@ import { ClickEventArgs, Toolbar } from '@syncfusion/ej2-navigations';
 import { ItemModel } from '@syncfusion/ej2-navigations/src/toolbar/toolbar-model';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { NodeSelection } from '../../selection';
+import { isSafari } from '../../common/util';
 
 export class EmojiPicker {
     protected parent: IRichTextEditor;
@@ -180,6 +181,8 @@ export class EmojiPicker {
                 this.childDestroy();
                 detach(this.popupObj.element);
                 this.popupObj = null;
+                const activeElement: HTMLElement = this.divElement.firstChild as HTMLElement;
+                activeElement.focus();
             }
         });
         this.isPopupDestroyed = false;
@@ -561,6 +564,9 @@ export class EmojiPicker {
             if (isNOU(firstFocusEle)) {
                 const focusEle: HTMLElement = emojiButtons[0] as HTMLElement | null;
                 addClass([focusEle], 'e-focus');
+                if (isSafari()) {
+                    this.parent.notify(events.selectionSave, {});
+                }
                 emojiButtons[0].focus();
             }
         }
@@ -572,6 +578,9 @@ export class EmojiPicker {
         if (isNOU(firstFocusEle) && e.keyCode === 40) {
             const focusEle: HTMLElement = emojiButtons[0] as HTMLElement | null;
             addClass([focusEle], 'e-focus');
+            if (isSafari()) {
+                this.parent.notify(events.selectionSave, {});
+            }
             emojiButtons[0].focus();
         } else {
             for (let i: number = 0; i < emojiButtons.length; i++) {
@@ -757,6 +766,9 @@ export class EmojiPicker {
         if (this.popupObj) {
             removeClass([this.divElement], 'e-active');
             this.popupObj.hide();
+        }
+        if (isSafari() && e.type === 'keydown') {
+            this.parent.notify(events.selectionRestore, {});
         }
         const originalEvent: MouseEvent | KeyboardEvent | PointerEvent = e as MouseEvent | KeyboardEvent | PointerEvent;
         this.parent.formatter.process(

@@ -1504,14 +1504,13 @@ export function updateAction(
             spreadsheet.notify(
                 cellValidation, { rules: { type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1, value2:
                     eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown },
-                range: eventArgs.range });
+                range: eventArgs.range, isAction: true });
         }
         break;
     case 'removeHighlight':
     case 'addHighlight':
         spreadsheet.notify(
-            invalidData, { isRemoveHighlight: options.action === 'removeHighlight' ? isRedo !== false : isRedo === false,
-                range: eventArgs.range, isPublic: true });
+            invalidData, { isRemoveHighlight: options.action === 'removeHighlight', isPublic: true });
         break;
     case 'merge':
         options.eventArgs.isAction = false;

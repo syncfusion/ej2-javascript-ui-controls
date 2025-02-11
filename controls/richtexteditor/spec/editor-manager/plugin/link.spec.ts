@@ -621,6 +621,7 @@ describe('Link testing', ()=>{
             }, 100);
         });
     });
+
     describe('924343 - Link Selection not restored properly after removing the link', ()=>{
         let editor: RichTextEditor;
         beforeAll(()=> {

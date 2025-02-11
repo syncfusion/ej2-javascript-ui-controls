@@ -475,6 +475,34 @@ describe('FileManager control Grid view', () => {
             }, 400);
         });
 
+        it('for detailsviewsettings search and clear', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                fileSystemData: flatData,
+                searchSettings: { allowSearchOnTyping: false }
+            });
+            feObj.appendTo('#file');
+            setTimeout(function () {
+                let searchEle: any = feObj.element.querySelector("#file_search");
+                let searchObj: any = searchEle.ej2_instances[0];
+                searchEle.value = 'ZundefinedText';
+                searchObj.value = 'ZundefinedText';
+                let eventArgs: any = { value: 'ZundefinedText', container: searchEle };
+                searchObj.change(eventArgs);
+                setTimeout(function () {
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(0);
+                    searchEle.value = '';
+                    searchObj.value = '';
+                    let eventArguments: any = { value: '', container: searchEle };
+                    searchObj.change(eventArguments);
+                    setTimeout(function () {
+                        expect(document.getElementById('file_grid').querySelectorAll('.e-empty').length).toEqual(0);
+                    }, 400);
+                    done();
+                }, 400);
+            }, 400);
+        });
+
         it('for sorting - Default value', (done) => {
             feObj = new FileManager({
                 view: 'Details',

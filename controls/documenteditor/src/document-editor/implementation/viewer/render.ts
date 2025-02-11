@@ -2358,7 +2358,6 @@ private calculatePathBounds(data: string): Rect {
                             } else {
                                 this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                             }
-                            elementBox.isWrongWord = true;
                             if (errors.containsKey(exactText)) {
                                 const errorElements = errors.get(exactText);
                                 if (errorElements.indexOf(currentElement) === -1) {
@@ -2368,7 +2367,6 @@ private calculatePathBounds(data: string): Rect {
                         }
                     }
                 } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
-                    elementBox.ischangeDetected = false;
                     this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
                     elementBox.isSpellCheckTriggered = true;
                 }
@@ -2460,7 +2458,6 @@ private calculatePathBounds(data: string): Rect {
                 return ch;
         }
     }
-
     private getBackgroundColorHeirachy(element: ElementBox): string {
         let bgColor: string;
         // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
@@ -2511,7 +2508,6 @@ private calculatePathBounds(data: string): Rect {
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
                     let retrievedText: string = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);
-
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
                         this.handleUnorderedElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1, beforeIndex);
                         markindex += currentText.length + spaceValue;
@@ -2534,7 +2530,7 @@ private calculatePathBounds(data: string): Rect {
                                 let hasSpellingError: boolean = this.spellChecker.isErrorWord(retrievedText) ? true : false;
                                 let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                                 this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
-                            } else if ((!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) && (this.documentHelper.triggerSpellCheck || elementBox.isWrongWord)) {
+                            } else if ((!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) && this.documentHelper.triggerSpellCheck) {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
                                 this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                                     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -2544,6 +2540,7 @@ private calculatePathBounds(data: string): Rect {
                                         this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate, checkText);
                                     }
                                 });
+                                elementBox.ischangeDetected = false;
                             }
                         }
                     }
@@ -2567,7 +2564,7 @@ private calculatePathBounds(data: string): Rect {
                     let hasSpellingError: boolean = this.spellChecker.isErrorWord(currentText) ? true : false;
                     let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                     this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
-                } else if ((!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) && (this.documentHelper.triggerSpellCheck || elementBox.isWrongWord)) {
+                } else if ((!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) && this.documentHelper.triggerSpellCheck) {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                         /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -2576,6 +2573,7 @@ private calculatePathBounds(data: string): Rect {
                             this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
                         }
                     });
+                    elementBox.ischangeDetected = false;
                 }
             }
         }

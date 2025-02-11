@@ -1148,6 +1148,68 @@ describe('Table Module', () => {
         });
     });
 
+    describe('936419 - Unwanted P Tag Created When Navigating Table Cell by Pressing Tab Key on Mac', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs: any;
+
+        beforeAll(() => {
+          rteObj = renderRTE({
+            height: 400,
+            toolbarSettings: {
+              items: ['Bold', 'CreateTable']
+            },
+            value: `<table border="1">
+              <tr>
+                <td>Cell 1,1</td>
+                <td><span>engineer</span><br></td>
+                <td>Cell 1,3</td>
+              </tr>
+              <tr>
+                <td>Cell 2,1</td>
+                <td>Cell 2,2</td>
+                <td>Cell 2,3</td>
+              </tr>
+            </table>`
+          });
+          rteEle = rteObj.element;
+        });
+
+        afterAll(() => {
+          destroy(rteObj);
+        });
+
+        it('Should not create extra p tag when pressing tab key twice', () => {
+          const table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+          const cells = table.querySelectorAll('td');
+          const firstCell = cells[0];
+          const secondCell = cells[1];
+          const thirdCell = cells[2];
+          // Set selection to the start of the first cell
+          let selObj: NodeSelection = new NodeSelection();
+          selObj.setSelectionText(rteObj.contentModule.getDocument(), firstCell, firstCell, 0, 0);
+          // Simulate first tab key press
+          keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 9,
+            shiftKey: false
+          };
+          (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+          // Check if the selection moved to the second cell
+          let selection = rteObj.contentModule.getDocument().getSelection();
+          expect(selection.anchorNode).toBe(secondCell);
+          expect(selection.anchorOffset).toBe(0);
+          // Simulate second tab key press
+          (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+          // Check if the selection moved to the third cell
+          selection = rteObj.contentModule.getDocument().getSelection();
+          expect(selection.anchorNode).toBe(thirdCell);
+          expect(selection.anchorOffset).toBe(0);
+          // Check if no extra p tag was created in the second cell
+          expect(secondCell.innerHTML).toBe('<span>engineer</span><br>');
+        });
+    });
+
     describe('Table tabKey pressed with header being selected for new rows', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -6885,7 +6947,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
     describe("908652 - Table Width Shrinks When Pasting a Table from Outlook and Adding a Column", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
-        beforeEach(() => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     table: ['TableColumns']
@@ -7008,7 +7070,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
             rteEle = rteObj.element;
         });
-        afterEach(() => {
+        afterAll(() => {
             destroy(rteObj);
         });
         it('Table Width Shrinks When Pasting a Table from Outlook and Adding a Column', (done: Function) => {
@@ -7026,14 +7088,14 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[1] as HTMLElement).click();
                 expect(table.style.width != '').toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
     });
 
     describe("904465 - Cell is not properly visible and cursor is not at correct position in cell after merging the all the cells in single row", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
-        beforeEach(() => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     table: ['TableCell']
@@ -7042,7 +7104,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
             rteEle = rteObj.element;
         });
-        afterEach(() => {
+        afterAll(() => {
             destroy(rteObj);
         });
         it('Merge two columns in single row', (done: Function) => {
@@ -7063,7 +7125,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect((rteObj as any).inputElement.querySelector('table td').offsetHeight).toBe(22);
                 expect(height + 2 ).toEqual((rteObj as any).inputElement.querySelector('table td').offsetHeight);
                 done();
-            }, 400);
+            }, 100);
         });
     });
 
@@ -7162,20 +7224,17 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
     });
     describe('916978: After resizing the image with a percentage in the toolbar, the image does not display according to the adjusted height and weight inside the table', () => {
         let editor: RichTextEditor;
-        beforeEach((done: DoneFn) => {
+        beforeAll(() => {
             editor = renderRTE({toolbarSettings: {
                 items: ['CreateTable'],
             },
             value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr style="height: 33.7662%;"><td class="e-cell-select" style="width: 33.3333%;"><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" class="e-rte-image e-imginline" alt="RTE-Overview" width="342" height="193" style="min-width: 0px; max-width: 342px; min-height: 0px; width: 30%; height: 50%;"> </td><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td></tr><tr style="height: 33.7662%;"><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr style="height: 33.7662%;"><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
-        }
-        );
-            done();
+            });
         });
-        afterEach((done: DoneFn) => {
+        afterAll(() => {
             destroy(editor);
-            done();
         });
-        it ('select the table to check the image when height is setted to percentage', () => {
+        it ('select the table to check the image when height is setted to percentage', (done: DoneFn) => {
             editor.focusIn();
             const nextElement = document.querySelector('td').nextElementSibling;
             if (nextElement) {
@@ -7186,7 +7245,10 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 });
                 nextElement.dispatchEvent(clickEvent);
             }
-            expect(document.querySelector('td').style.height === 'inherit').toBe(true);
+            setTimeout(() => {
+                expect(document.querySelector('td').style.height === 'inherit').toBe(true);
+                done();
+            }, 100);
         });
     });
 
@@ -7222,7 +7284,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         let controlId: string;
         let rteEle: HTMLElement;
         let div: HTMLElement;
-        beforeEach(function () {
+        beforeAll(function () {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
@@ -7240,9 +7302,8 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             rteEle = rteObj.element;
             controlId = rteEle.id;
         });
-        afterEach(function (done: DoneFn) {
+        afterAll(function () {
             destroy(rteObj);
-            done();
         });
         it('Alternate rows', function (done) {
             rteObj.focusIn()
@@ -7258,13 +7319,73 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             setCursorPoint(tbElement, 0);
             (rteObj as any).mouseDownHandler(eventsArg);
             (rteObj as any).mouseUp(eventsArg);
-            div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
-            (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
-            let tar: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
-            let secondRow: HTMLElement = tar.querySelectorAll('tr')[1] as HTMLElement;
-            expect(window.getComputedStyle(secondRow).backgroundColor).toBe("rgb(245, 245, 245)");
-            detach(div);
+            setTimeout(() => {
+                div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
+                (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
+                let tar: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                let secondRow: HTMLElement = tar.querySelectorAll('tr')[1] as HTMLElement;
+                expect(window.getComputedStyle(secondRow).backgroundColor).toBe("rgb(245, 245, 245)");
+                detach(div);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('936577 - Cursor Moves to Last Cell Instead of Staying in First Cell When Pressing Shift + Tab in Table 1st cell', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th><br></th></tr></thead><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            }
+            );
             done();
         });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should keep the cursor in the first cell of the table header when Shift+Tab is pressed', (done) => {
+            editor.focusIn();
+            var tbElement = editor.contentModule.getEditPanel().querySelectorAll("table th")[0];
+            setCursorPoint(tbElement, 0);
+            var keyBoardEvent = { type: 'keydown', preventDefault: function () { }, key: 'Tab', keyCode: 9, stopPropagation: function () { }, shiftKey: true, which: 9 };
+            (editor as any).keyDown(keyBoardEvent);
+            expect(tbElement === window.getSelection().getRangeAt(0).startContainer).toBe(true);
+            editor.value = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p></td><td style="width: 50%;" class="tdElement"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`;
+            editor.dataBind();
+            tbElement = editor.contentModule.getEditPanel().querySelector(".tdElement");
+            setCursorPoint(tbElement, 0);
+            (editor as any).keyDown(keyBoardEvent);
+            expect(window.getSelection().getRangeAt(0).startContainer === editor.contentModule.getEditPanel().querySelectorAll("table tr td table td")[0]).toBe(true);
+            done();
+        });
+    });
+
+    describe('938242: MAC - The quick toolbar for the MAC opens upon selecting text.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor= renderRTE({
+                value: `<table><tr><td>Text Content</td><td>Text Content</td><td>Text Content</td></tr></table>`
+            });
+        })
+        afterAll(()=> {
+            destroy(editor);
+        })
+        it('Should not open the Quick toolbar on right click when range collapsed is false.', (done: DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            const range = new Range();
+            range.setStart(editor.inputElement.querySelector('td').firstChild, 0);
+            range.setEnd(editor.inputElement.querySelector('td').firstChild, 4);
+            editor.selectRange(range);
+            editor.inputElement.dispatchEvent(new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT));
+            setTimeout(() => {
+                expect(editor.quickToolbarModule.tableQTBar.popupObj.element.classList.contains('e-popup-open')).toBe(false);
+                done();
+            }, 100);
+        })
     });
 });

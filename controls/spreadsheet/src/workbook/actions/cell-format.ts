@@ -4,6 +4,7 @@ import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activ
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, updateCFModel, getColumn, ColumnModel, RowModel } from '../index';
 import { getRow, ExtendedRowModel, updateCell, CellUpdateArgs, isHeightCheckNeeded, workbookFormulaOperation } from '../index';
 import { ExtendedWorkbook, ConditionalFormat, ConditionalFormatModel, applyCF, ApplyCFArgs, getColorCode } from '../index';
+import { checkColumnValidation, updateHighlight, ValidationModel } from '../index';
 
 /**
  * Workbook Cell format.
@@ -123,14 +124,18 @@ export class WorkbookCellFormat {
             }
             delete eventArgs.style.borderRight;
         }
-        let border: string; let isFullBorder: boolean; let cell: CellModel;
-        if (Object.keys(eventArgs.style).length) {
+        let border: string; let isFullBorder: boolean;
+        const styleKeys: string[] = Object.keys(eventArgs.style);
+        if (styleKeys.length) {
+            let cell: CellModel; let validation: ValidationModel; let col: ColumnModel;
             const parent: ExtendedWorkbook = this.parent as ExtendedWorkbook;
             const activeSheet: boolean = parent.viewport && this.parent.getActiveSheet().id === sheet.id;
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             const viewport: number[] = [frozenRow + parent.viewport.topIndex, frozenCol + parent.viewport.leftIndex,
                 parent.viewport.bottomIndex, parent.viewport.rightIndex];
             let uiRefresh: boolean; let row: ExtendedRowModel; let checkHeight: boolean; let formatColor: string;
+            const isFontColorApplied: boolean = styleKeys.indexOf('color') > -1;
+            const isColorApplied: boolean = isFontColorApplied || styleKeys.indexOf('backgroundColor') > -1;
             for (i = indexes[0]; i <= indexes[2]; i++) {
                 row = getRow(sheet, i) || {};
                 if (row.isFiltered) {
@@ -150,10 +155,9 @@ export class WorkbookCellFormat {
                         }
                     }
                     cell = getCell(i, j, sheet, false, true);
-                    const readonlyColumn: ColumnModel = getColumn(sheet, j);
+                    col = sheet.columns[j as number];
                     const readOnlyRow: RowModel = getRow(sheet, i);
-                    if ((cell && cell.isReadOnly) || (readonlyColumn && readonlyColumn.isReadOnly) ||
-                        (readOnlyRow && readOnlyRow.isReadOnly)) {
+                    if (cell.isReadOnly || (col && col.isReadOnly) || (readOnlyRow && readOnlyRow.isReadOnly)) {
                         continue;
                     }
                     if (cell.rowSpan > 1 || cell.colSpan > 1) {
@@ -176,7 +180,7 @@ export class WorkbookCellFormat {
                     }
                     if (uiRefresh && ((j >= viewport[1] && j <= viewport[3]) || j < frozenCol)) {
                         formatColor = null;
-                        if (eventArgs.style.color && cell.format && cell.format.includes('[')) {
+                        if (isFontColorApplied  && cell.format && cell.format.includes('[')) {
                             const colorCode: string = getColorCode(cell.format);
                             if (colorCode) {
                                 formatColor = colorCode.toLowerCase();
@@ -185,6 +189,12 @@ export class WorkbookCellFormat {
                         this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: eventArgs.style, rowIdx: i, colIdx: j,
                             lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: args.onActionUpdate,
                             formatColor: formatColor });
+                        if (isColorApplied) {
+                            validation = cell.validation || (checkColumnValidation(col, i, j) && col.validation);
+                            if (validation && validation.isHighlighted) {
+                                this.parent.notify(updateHighlight, { rowIdx: i, colIdx: j, cell: cell, validation: validation });
+                            }
+                        }
                     } else if (!row.customHeight) {
                         checkHeight = checkHeight || isHeightCheckNeeded(eventArgs.style, args.onActionUpdate);
                         if (checkHeight) {

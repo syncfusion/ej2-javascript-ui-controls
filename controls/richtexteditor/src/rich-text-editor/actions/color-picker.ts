@@ -17,8 +17,14 @@ export class ColorPickerInput {
     private defaultColorPicker: string;
     private fontColorPicker: ColorPicker;
     private backgroundColorPicker: ColorPicker;
-    private fontColorDropDown: DropDownButton;
-    private backgroundColorDropDown: DropDownButton;
+    /**
+     * @hidden
+     */
+    public fontColorDropDown: DropDownButton;
+    /**
+     * @hidden
+     */
+    public backgroundColorDropDown: DropDownButton;
     protected parent: IRichTextEditor;
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;

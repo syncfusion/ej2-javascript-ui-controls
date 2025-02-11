@@ -3,7 +3,7 @@ import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, co
 import { setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
-import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
+import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, cellValidation } from '../../workbook/index';
 import { CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded, CFArgs } from '../../workbook/index';
 import { getSwapRange, skipHiddenIdx, isHiddenCol, isImported } from '../../workbook/index';
 import { removeClass } from '@syncfusion/ej2-base';
@@ -358,7 +358,7 @@ export class CellFormat {
                 this.parent.notify(clearCFRule, clearCFArgs);
                 (args as { cfClearActionArgs?: object }).cfClearActionArgs = clearCFArgs.cfClearActionArgs;
                 if (isClearAll) {
-                    this.parent.notify(cellValidation, { range: range, isRemoveValidation: true, viewport: this.parent.viewport });
+                    this.parent.notify(cellValidation, { range: range, isRemoveValidation: true });
                     if (sRIdx === 0 && rangeIdx[1] === 0 && eRIdx >= sheet.usedRange.rowIndex  && rangeIdx[3] >= sheet.usedRange.colIndex) {
                         this.parent.setUsedRange(sRIdx, rangeIdx[1], sheet, false, true);
                     }
@@ -394,7 +394,6 @@ export class CellFormat {
             this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
                 getSwapRange(getRangeIndexes(range)), false, false, false, false, isImported(this.parent), !isClearAll);
-            this.parent.notify(addHighlight, { range: range, isclearFormat: true });
             if (!args.isFromUpdateAction) {
                 this.parent.notify(selectRange, { address: range });
             }

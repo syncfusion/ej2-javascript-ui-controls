@@ -495,7 +495,6 @@ export class MsWordPaste {
             }
         }
     }
-
     private removeEmptyMetaTags(element: HTMLElement): void {
         const metaTags: NodeListOf<HTMLMetaElement> = element.querySelectorAll('meta:empty');
         for (let i: number = metaTags.length - 1; i >= 0; i--) {

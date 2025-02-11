@@ -292,7 +292,7 @@ export interface IRenderer {
 }
 
 /**
- * Provides information about a Notify.
+ * Provides information about a notification event in the rich text editor.
  */
 export interface NotifyArgs {
     module?: string
@@ -312,11 +312,11 @@ export interface NotifyArgs {
     title?: string
     target?: string
     member?: string
-    /** Defines the notifier name. */
+    /** Specifies the name of the notifier handling the event. */
     name?: string
-    /** Defines the selection range. */
+    /** Represents the range of text selection involved in the notification. */
     range?: Range
-    /** Defines the action. */
+    /** Describes the action associated with the notification event. */
     action?: string
     callBack?(args?: string | IImageCommandsArgs, cropImageData?:
     { [key: string]: string | boolean | number }[], pasteTableSource?: string): void
@@ -324,6 +324,7 @@ export interface NotifyArgs {
     insertElement?: Element
     touchData?: ITouchData
     allowedStylePropertiesArray?: string[]
+    isPlainPaste?: boolean
     formatPainterSettings?: FormatPainterSettingsModel
     emojiPickerSettings?: EmojiSettingsModel
     ariaLabel?: string
@@ -465,64 +466,64 @@ export interface IImageNotifyArgs {
 }
 
 /**
- * Provides information about a Image added in the Rich Text Editor.
+ * Represents the details of an image integrated into the Rich Text Editor.
  */
 export interface IImageCommandsArgs {
-    /** Defines the src attribute of the image */
+    /** Specifies the `src` attribute of the image. */
     url?: string
-    /** Defines the instance of the current selection */
+    /** Represents the current selection instance. */
     selection?: NodeSelection
-    /** Defines the minWidth, maxWidth and width of the image */
+    /** Specifies the minimum, maximum, and actual width of the image. */
     width?: { minWidth?: string | number; maxWidth?: string | number; width?: string | number }
-    /** Defines the minHeight, maxHeight and height of the image */
+    /** Specifies the minimum, maximum, and actual height of the image. */
     height?: { minHeight?: string | number; maxHeight?: string | number; height?: string | number }
-    /** Defines the alternate text attribute of the image */
+    /** Describes the alternate text attribute for the image. */
     altText?: string
-    /** Defines the class name to be added to the image */
+    /** Defines the CSS class names to be applied to the image. */
     cssClass?: string
-    /** Defines the image element to be edited */
+    /** Refers to the image element that is to be edited. */
     selectParent?: Node[]
 }
 
 /**
- * Provides information about a Audio added in the Rich Text Editor.
+ * Provides details about an audio element added to the Rich Text Editor.
  */
 export interface IAudioCommandsArgs {
-    /** Defines the src attribute of the audio */
+    /** Specifies the source URL of the audio. */
     url?: string
-    /** Defines the instance of the current selection */
+    /** Represents the instance of the current selection within the editor. */
     selection?: NodeSelection
-    /** Defines the fileName of the audio */
+    /** Specifies the file name of the audio. */
     fileName?: string
-    /** Defines the class name to be added to the audio */
+    /** Specifies the CSS class to be applied to the audio element. */
     cssClass?: string
-    /** Defines the audio element to be edited */
+    /** Represents the selected parent node of the audio element to be edited. */
     selectParent?: Node[]
-    /** Defines the title of the audio */
+    /** Specifies the title attribute for the audio element. */
     title?: string
 }
 
 /**
- * Provides information about a Video added in the Rich Text Editor.
+ * Provides details about a video element added to the Rich Text Editor.
  */
 export interface IVideoCommandsArgs {
-    /** Defines the src attribute of the video */
+    /** Specifies the source URL of the video. */
     url?: string
-    /** Defines the instance of the current selection */
+    /** Represents the instance of the current selection within the editor. */
     selection?: NodeSelection
-    /** Defines the minWidth, maxWidth and width of the video */
+    /** Defines the minimum, maximum, and current width of the video. */
     width?: { minWidth?: string | number; maxWidth?: string | number; width?: string | number }
-    /** Defines the minHeight, maxHeight and height of the video */
+    /** Defines the minimum, maximum, and current height of the video. */
     height?: { minHeight?: string | number; maxHeight?: string | number; height?: string | number }
-    /** Defines the fileName of the video */
+    /** Specifies the file name of the video, which can be a string or a DocumentFragment. */
     fileName?: string | DocumentFragment
-    /** Defines the type of video link added */
+    /** Indicates whether the video link is an embedded URL. */
     isEmbedUrl?: boolean
-    /** Defines the class name to be added to the video */
+    /** Specifies the CSS class to be applied to the video element. */
     cssClass?: string
-    /** Defines the video element to be edited */
+    /** Represents the selected parent node of the video element to be edited. */
     selectParent?: Node[]
-    /** Defines the title of the video */
+    /** Specifies the title attribute for the video element. */
     title?: string
 }
 
@@ -535,37 +536,37 @@ export interface ImageDragEvent extends DragEvent {
 }
 
 /**
- * Provides information about imageDrop event.
+ * Provides information about the image drop event in a rich text editor.
  */
 export interface ImageDropEventArgs extends DragEvent {
-    /** Defines the prevent action. */
+    /** Determines whether the action should be prevented. */
     cancel: boolean
-    /** Defines the parent of drop range. */
+    /** Refers to the parent element of the drop range. */
     rangeParent?: Element
-    /** Defines the offset value of drop range. */
+    /** Specifies the offset value for the drop range. */
     rangeOffset?: number
 }
 
 /**
- * Provides information about a Link added to the Rich Text Editor.
+ * Provides details about a link added to the Rich Text Editor.
  */
 export interface ILinkCommandsArgs {
-    /** Defines the url attribute of the link */
+    /** Specifies the URL attribute of the link. */
     url?: string
-    /** Defines the instance of the current selection */
+    /** Represents the instance of the current selection. */
     selection?: NodeSelection
-    /** Defines the title of the link to be inserted */
+    /** Indicates the title for the link to be inserted. */
     title?: string
-    /** Defines the text of the link to be inserted */
+    /** Specifies the text for the link to be inserted. */
     text?: string
-    /** Defines the target attribute of the link */
+    /** Indicates the target attribute of the link. */
     target?: string
-    /** Defines the link element to be edited */
+    /** Identifies the link element to be edited. */
     selectParent?: Node[]
 }
 
 /**
- * Provides information about a Table added to the Rich Text Editor.
+ * Provides details about a table added to the Rich Text Editor.
  */
 export interface ITableCommandsArgs {
     /**
@@ -573,13 +574,13 @@ export interface ITableCommandsArgs {
      * This argument deprecated. Use `rows` argument.
      */
     row?: number
-    /** Defines the number of rows to be inserted in the table */
+    /** Specifies the number of rows to be inserted in the table. */
     rows?: number
-    /** Defines the number of columns to be inserted in the table */
+    /** Specifies the number of columns to be inserted in the table. */
     columns?: number
-    /** Defines the minWidth, maxWidth and width of the table */
+    /** Defines the minimum width, maximum width, and width of the table. */
     width?: { minWidth?: string | number; maxWidth?: string | number; width?: string | number }
-    /** Defines the instance of the current selection */
+    /** Represents the instance of the current selection. */
     selection?: NodeSelection
 }
 
@@ -595,20 +596,20 @@ export interface IFormatPainterArgs {
 }
 
 export interface IEmojiIcons {
-    /** Defines the description of emoji icon. */
+    /** Specifies the description of the emoji icon. */
     desc: string
-    /** Defines the Unicode of emoji icon. */
+    /** Specifies the Unicode representation of the emoji icon. */
     code: string
 }
 
-export interface EmojiIconsSet{
-    /** Defines the name for category the Unicode. */
+export interface EmojiIconsSet {
+    /** Specifies the name of the category for the Unicode. */
     name: string
-    /** Defines the icon Unicode which is showing in emoji picker toolbar item. */
+    /** Specifies the Unicode representation of the icon displayed in the emoji picker toolbar item. */
     code: string
-    /** Defines the css class for emoji icon. */
+    /** Specifies the CSS class for styling the emoji icon. */
     iconCss?: string
-    /** Defines the icons collection. */
+    /** Specifies the collection of emoji icons. */
     icons: IEmojiIcons[]
 }
 /**
@@ -776,23 +777,23 @@ export interface IDropDownItemModel extends DropDownItemModel {
 }
 
 /**
- * Provides information about a ActionComplete event.
+ * Provides detailed information about an ActionComplete event.
  */
 export interface ActionCompleteEventArgs {
-    /** Defines the current action. */
+    /** Specifies the type of the current action. */
     requestType?: string
-    /** Defines the event name. */
+    /** Specifies the name of the event. */
     name?: string
-    /** Defines the editor mode. */
+    /** Specifies the current mode of the editor. */
     editorMode?: string
     /**
      * Defines the selected elements.
      *
      * @deprecated
      */
-    elements?: Node[]
-    /** Defines the event item. */
-    event?: MouseEvent | KeyboardEvent
+    elements?: Node[];
+    /** Specifies the event associated with the action, such as a mouse or keyboard event. */
+    event?: MouseEvent | KeyboardEvent;
     /**
      * Defines the selected range.
      *
@@ -802,27 +803,27 @@ export interface ActionCompleteEventArgs {
 }
 
 /**
- * Provides information about a ActionBegin event.
+ * Provides detailed information about an actionBegin event.
  */
 export interface ActionBeginEventArgs {
-    /** Defines the current action. */
+    /** Specifies the type of the current action. */
     requestType?: string
-    /** Cancel the current action */
+    /** Indicates whether to cancel the current action. */
     cancel?: boolean
     /**
-     * Defines the current item.
+     * Specifies the current toolbar or dropdown item involved in the action.
      *
      * @deprecated
      */
     item?: IToolbarItemModel | IDropDownItemModel
-    /** Defines the event orignated the action. */
+    /** Specifies the event that initiated the action, such as mouse, keyboard, or drag events. */
     originalEvent?: MouseEvent | KeyboardEvent | DragEvent
-    /** Defines the event name. */
+    /** Specifies the name of the event. */
     name?: string
-    /** Defines the selection type is dropdown. */
+    /** Specifies whether the selection type is a dropdown. */
     selectType?: string
     /**
-     * Defines the url action details.
+     * Provides details about URL actions.
      *
      * @deprecated
      */
@@ -847,10 +848,10 @@ export interface IEmojiPickerArgs{
 }
 
 /**
- * Provides information about a Print event.
+ * Provides detailed information about a Print event in the Rich Text Editor (RTE).
  */
 export interface PrintEventArgs extends ActionBeginEventArgs {
-    /** Defines the RTE element. */
+    /** Defines the Rich Text Editor (RTE) element associated with the Print event. */
     element?: Element
 }
 
@@ -923,7 +924,7 @@ export interface IQuickToolbarOptions {
 }
 
 /**
- * Provides information about a BeforeQuickToolbarOpen event.
+ * Provides detailed information about the beforeQuickToolbarOpen event in the editor.
  */
 export interface BeforeQuickToolbarOpenArgs {
     /**
@@ -932,38 +933,38 @@ export interface BeforeQuickToolbarOpenArgs {
      * @deprecated
      */
     popup?: Popup
-    /** Determine whether the quick toolbar is open */
+    /** Determine whether the quick toolbar should be prevented from opening. */
     cancel?: boolean
-    /** Defines the target element of the quick toolbar */
+    /** Defines the target element on which the quick toolbar is triggered. */
     targetElement?: Element
-    /** Defines the X position of the quick toolbar */
+    /** Defines the X-coordinate position where the quick toolbar will appear. */
     positionX?: number
-    /** Defines the Y position of the quick toolbar */
+    /** Defines the Y-coordinate position where the quick toolbar will appear. */
     positionY?: number
 }
 
 /**
- * Provides information about a AfterImageDeleteEvent event.
+ * Provides detailed information about the AfterImageDeleteEvent event in the editor.
  */
 export interface AfterImageDeleteEventArgs {
-    /** Defined the image element deleted */
+    /** Defines the image DOM element that was deleted. */
     element: Node
-    /** Defines the src attribute of the image element deleted */
+    /** Defines the 'src' attribute of the deleted image element. */
     src: string
 }
 
 /**
- * Provides information about a AfterMediaDeleteEvent event.
+ * Provides detailed information about the AfterMediaDeleteEvent event in the editor.
  */
 export interface AfterMediaDeleteEventArgs {
-    /** Defines the audio/video element deleted */
+    /** Defines the audio/video DOM element that was deleted. */
     element: Node
-    /** Defines the src attribute of the audio/video element deleted */
+    /** Defines the 'src' attribute of the deleted audio/video element. */
     src: string
 }
 
 /**
- * Provides information about a QuickToolbar event.
+ * Provides detailed information about the QuickToolbar event in the editor.
  */
 export interface QuickToolbarEventArgs {
     /**
@@ -973,11 +974,11 @@ export interface QuickToolbarEventArgs {
      */
     popup?: Popup
     /**
-     * Returns the element of the dialog.
+     * Returns the HTMLElement associated with the dialog in the quick toolbar.
      */
     element: HTMLElement
     /**
-     * Specify the name of the event.
+     * Specify the name identifier of the event within the quick toolbar.
      */
     name?: string
 }
@@ -995,22 +996,22 @@ export interface IAdapterProcess {
  * Provides information about a Formatter.
  */
 export interface IFormatter {
-    /** Configure the format tags. */
+    /** Configure the format tags, mapping tag names to their respective format. */
     formatTags?: { [key: string]: string }
-    /** Configure the list tags. */
+    /** Configure the list tags, mapping tag names to their respective list format. */
     listTags?: { [key: string]: string }
-    /** Configure the key settings. */
+    /** Configure the key settings with specific shortcut key configurations. */
     keyConfig?: { [key: string]: string }
     process?: Function
     onKeyHandler?: Function
     editorManager?: IEditorModel
-    /** Retrieves the undo and redo stack arrays */
+    /** Retrieves the undo and redo stack arrays for tracking changes. */
     getUndoRedoStack?: Function
     onSuccess?: Function
-    /** Saves the current state for undo and redo actions */
+    /** Saves the current state for undo and redo actions within the editor. */
     saveData?: Function
     disableToolbarItem?(items: string | string[]): void
-    /** Enables the undo functionality */
+    /** Enables the undo functionality to revert changes. */
     enableUndo?: Function
     setDocument?: Function
     getDocument?: Function
@@ -1088,11 +1089,11 @@ export interface OffsetPosition {
  * Provides information about a Resize event.
  */
 export interface ResizeArgs {
-    /** Defines the resize event args. */
+    /** Specifies the resize event arguments. */
     event?: MouseEvent | TouchEvent
-    /** Defines the request type. */
+    /** Describes the type of request. */
     requestType?: string
-    /** Defines the prevent action. */
+    /** Indicates whether the action should be canceled. */
     cancel?: boolean
 }
 
@@ -1100,28 +1101,28 @@ export interface ResizeArgs {
  * Provides information about a BeforeSanitizeHtml event.
  */
 export interface BeforeSanitizeHtmlArgs {
-    /** Illustrates whether the current action needs to be prevented or not. */
+    /** Indicates whether the current action needs to be prevented. */
     cancel?: boolean
-    /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string
+    /** A callback function executed before the inbuilt action, which should return HTML as a string.
      *
      * @function
-     * @param {string} value - Returns the value.
-     * @returns {string}
+     * @param {string} value - The input value.
+     * @returns {string} - The HTML string.
      */
     helper?: Function
-    /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
-     * Also possible to modify the block list in this event.
+    /** Returns the selectors object containing both tags and attribute selectors to block cross-site scripting attacks.
+     * It is also possible to modify the block list within this event.
      */
     selectors?: SanitizeSelectors
 }
 
 /**
- * Provides information about a SanitizeSelectors.
+ * Provides information about SanitizeSelectors.
  */
 export interface SanitizeSelectors {
-    /** Returns the tags. */
+    /** Returns the list of tags. */
     tags?: string[]
-    /** Returns the attributes. */
+    /** Returns the list of attributes to be removed. */
     attributes?: SanitizeRemoveAttrs[]
 }
 
@@ -1136,9 +1137,9 @@ export interface ExecuteCommandOption {
  * Provides information about a SanitizeRemoveAttributes.
  */
 export interface SanitizeRemoveAttrs {
-    /** Defines the attribute name to sanitize */
+    /** Defines the attribute name to sanitize. */
     attribute?: string
-    /** Defines the selector that sanitize the specified attributes within the selector */
+    /** Defines the selector that sanitizes the specified attributes within the selector. */
     selector?: string
 }
 
@@ -1154,63 +1155,63 @@ export interface ISetToolbarStatusArgs {
 }
 
 /**
- * Provides information about a Change event.
+ * Provides detailed information about a change event in the RichTextEditor.
  */
 export interface ChangeEventArgs {
     /**
-     * Returns value of RichTextEditor
+     * Returns the current value/content of the RichTextEditor.
      */
     value: string
-    /** Defines the event name. */
+    /** Defines the name of the event. */
     name?: string
-    /** Specifies whether the request should be saved automatically or focused out. */
+    /** Specifies if the request should be saved automatically or triggered by user interaction (focus out). */
     isInteracted: boolean
 }
 
 /**
- * Provides information about a DialogOpen event.
+ * Provides information regarding a DialogOpen event in the RichTextEditor.
  */
 export interface DialogOpenEventArgs {
     /**
-     * Defines whether the current action can be prevented.
+     * Defines if the current dialog action can be prevented.
      */
     target: HTMLElement | string
     /**
-     * Returns the root container element of the dialog.
+     * Returns the root container element of the dialog being opened.
      */
     container: HTMLElement
     /**
-     * Returns the element of the dialog.
+     * Returns the element reference of the dialog.
      */
     element: Element
     /**
-     * Specify the name of the event.
+     * Name of the event if specified.
      */
     name?: string
 }
 
 /**
- * Provides information about a DialogClose event.
+ * Provides information related to a DialogClose event in the RichTextEditor.
  */
 export interface DialogCloseEventArgs {
     /**
-     * Defines whether the current action can be prevented.
+     * Identifies if the current action can be canceled.
      */
     cancel: boolean
     /**
-     * Returns the root container element of the dialog.
+     * Returns the root container element of the dialog being closed.
      */
     container: HTMLElement
     /**
-     * Returns the element of the dialog.
+     * Provides reference to the dialog element being closed.
      */
     element: Element
     /**
-     * Returns the original event arguments.
+     * Returns the original event arguments, if any.
      */
     event: Event
     /**
-     * Determines whether the event is triggered by interaction.
+     * Determines if the dialog close event is triggered by user interaction.
      */
     isInteracted: boolean
     /**
@@ -1218,13 +1219,13 @@ export interface DialogCloseEventArgs {
      */
     isInteraction: boolean
     /**
-     * Specify the name of the event.
+     * Specifies the event name, if available.
      */
     /* eslint-disable */
     name?: String
     /* eslint-enable */
     /**
-     * Defines whether the current action can be prevented.
+     * Determines if action can be prevented; target details.
      */
     /* eslint-disable */
     target: HTMLElement | String
@@ -1232,7 +1233,7 @@ export interface DialogCloseEventArgs {
 }
 
 /**
- * Provides information about a ImageSuccess event.
+ * Provides specific details about a successful Image upload event in the RichTextEditor.
  */
 export interface ImageSuccessEventArgs {
     /**
@@ -1240,37 +1241,37 @@ export interface ImageSuccessEventArgs {
      */
     e?: object
     /**
-     * Returns the details about upload file.
+     * Details about the file that was successfully uploaded.
      */
     file: FileInfo
     /**
-     * Returns the upload status.
+     * Provides the status text describing the image upload.
      */
     statusText?: string
     /**
-     * Returns the upload event operation.
+     * Describes the operation performed during the upload event.
      */
     operation: string
     /**
-     * Returns the upload event operation.
+     * Returns the response details of the upload event, if any.
      */
     response?: ResponseEventArgs
     /**
-     * Specify the name of the event.
+     * Specifies the name of the event.
      */
     name?: string
     /**
-     * Specify the name of the event.
+     * Specifies the HTML element related to the event.
      */
     element?: HTMLElement
     /**
-     * Specify the detected image source of the event.
+     * Provides the detected image source related to the event.
      */
     detectImageSource?: ImageInputSource
 }
 
 /**
- * Provides information about a ImageFailed event.
+ * Provides detailed information about a failed Image upload event in the RichTextEditor.
  */
 export interface ImageFailedEventArgs {
     /**
@@ -1278,145 +1279,145 @@ export interface ImageFailedEventArgs {
      */
     e?: object
     /**
-     * Returns the details about upload file.
+     * Details about the file that failed to upload.
      */
     file: FileInfo
     /**
-     * Returns the upload status.
+     * Provides status text describing the failed upload.
      */
     statusText?: string
     /**
-     * Returns the upload event operation.
+     * Describes the operation performed during the failed upload attempt.
      */
     operation: string
     /**
-     * Returns the upload event operation.
+     * Returns the response details of the failed upload event.
      */
     response?: ResponseEventArgs
     /**
-     * Specify the name of the event.
+     * Specifies the event name.
      */
     name?: string
 }
 
 /**
- * Provides information about a ImageResponse event.
+ * Provides information about a response received after an Image upload event in the RichTextEditor.
  */
 export interface ResponseEventArgs {
     /**
-     * Returns the headers information of the upload image.
+     * Returns upload image headers information, if available.
      */
     headers?: string
     /**
-     * Returns the readyState information.
+     * Returns readyState information of the upload process.
      */
     readyState?: object
     /**
-     * Returns the upload image statusCode.
+     * Provides the status code returned for the uploaded image.
      */
     statusCode?: object
     /**
-     * Returns the upload image statusText.
+     * Returns the status text of the uploaded image.
      */
     statusText?: string
     /**
-     * Returns the credentials status of the upload image.
+     * Indicates if the upload was performed with credentials.
      */
     withCredentials?: boolean
 }
 
 /**
- * Provides information about a Destroyed event.
+ * Provides specific details about a Destroyed event in the RichTextEditor.
  */
 export interface DestroyedEventArgs {
     /**
-     * Specify the name of the event.
+     * Specifies the name of the event.
      */
     name?: string
     /**
-     * Defines whether the current action can be prevented.
+     * Determines if the current action of destruction can be prevented.
      */
     cancel: boolean
 }
 
 /**
- * Provides information about a pasteCleanup args.
+ * Provides information regarding content pasted in the RichTextEditor for cleanup operations.
  */
 export interface PasteCleanupArgs {
     /**
-     * Returns the content in the ClipboardEvent arguments.
+     * Returns the content data present in the ClipboardEvent arguments.
      */
     value: string;
     /**
-     * Returns the list of image files data that is pasted.
+     * Returns a list of image file data that was pasted into the editor.
      */
     filesData: FileInfo[]
 }
 
 /**
- * Provides information about a Blur event.
+ * Provides specific information about a Blur event in the RichTextEditor.
  */
 export interface BlurEventArgs {
     /**
-     * Returns the original event arguments.
+     * Contains the original event arguments related to the blur event.
      */
     event: Event
     /**
-     * Determines whether the event is triggered by interaction.
+     * Indicates if the blur event was caused by user interaction.
      */
     isInteracted: boolean
     /**
-     * Specify the name of the event.
+     * Specifies the name of the blur event.
      */
     name?: string
 }
 
 /**
- * Provides information about a ToolbarClick event.
+ * Provides information about a ToolbarClick event in the RichTextEditor.
  */
 export interface ToolbarClickEventArgs {
     /**
-     * Defines whether the current action can be prevented.
+     * Determines if the current toolbar click action can be canceled.
      */
     cancel: boolean
     /**
-     * Defines the current Toolbar Item Object.
+     * Defines the current Toolbar Item Object being clicked.
      */
     item: ItemModel
     /**
-     * Defines the current Event arguments
+     * Contains the original mouse event arguments related to the toolbar click.
      */
     originalEvent: MouseEvent
     /**
-     * Specify the request type of the event.
+     * Specifies the request type associated with the toolbar click event.
      */
     requestType: string
     /**
-     * Specify the name of the event.
+     * Specifies the name of the event.
      */
     name?: string
 }
 
 /**
- * Provides information about a Focus event.
+ * Provides details about a Focus event in the RichTextEditor.
  */
 export interface FocusEventArgs {
     /**
-     * Returns the original event arguments.
+     * Contains the original event arguments associated with the focus event.
      */
     event: FocusEvent
     /**
-     * Determines whether the event is triggered by interaction.
+     * Indicates if the focus event was triggered by user interaction.
      */
     isInteracted: boolean
     /**
-     * Specify the name of the event.
+     * Specifies the name of the focus event.
      */
     name?: string
 }
 
 /**
- * Defines types to be used as ColorMode.
+ * Defines types to be used as colorMode for color selection in the RichTextEditor.
  */
 export declare type ColorModeType = 'Picker' | 'Palette';
 
@@ -1441,23 +1442,23 @@ export interface IExecutionGroup {
 }
 
 /**
- * Provides information about a image uploading event.
+ * Provides detailed information about an image uploading event.
  */
 export interface ImageUploadingEventArgs {
     /**
-     * Defines whether the current action can be prevented.
+     * Defines whether the current image upload action can be prevented.
      */
     cancel: boolean
     /**
-     * Defines the additional data in key and value pair format that will be submitted to the upload action.
+     * Defines the additional data in a key and value pair format that will be submitted with the upload action.
      */
     customFormData: { [key: string]: Object; }[];
     /**
-     * Returns the XMLHttpRequest instance that is associated with upload action.
+     * Returns the XMLHttpRequest instance that is associated with the current upload action.
      */
     currentRequest?: { [key: string]: string }[]
     /**
-     * Returns the list of files that will be uploaded.
+     * Returns the list of files that are scheduled to be uploaded.
      */
     filesData: FileInfo[]
 }
@@ -1659,6 +1660,11 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
 
 /**
  * Defines types to be used as CommandName.
+ *
+ * The `CommandName` type encompasses various commands that can be applied within the rich text editor.
+ * Each command represents a specific formatting or editing action, such as applying text styles,
+ * inserting multimedia content, and handling text alignment or structure.
+ *
  */
 export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrough' | 'superscript' |
 'subscript' | 'uppercase' | 'lowercase' | 'fontColor' | 'fontName' | 'fontSize' | 'backColor' |
@@ -1678,18 +1684,18 @@ export interface StatusArgs {
 }
 
 /**
- * Provides information about a updatedToolbarStatus event.
+ * Provides detailed information about the updatedToolbarStatus event in the Rich Text Editor.
  */
 export interface ToolbarStatusEventArgs {
-    /** Defines the event name. */
+    /** Defines the name of the event. */
     name?: string
-    /** Defines the redo argument. */
+    /** Defines the undo state argument, indicating whether an undo action can be performed. */
     undo: boolean
-    /** Defines the redo argument. */
+    /** Defines the redo state argument, indicating whether a redo action can be performed. */
     redo: boolean
-    /** Defines the HTML toolbar status arguments. */
+    /** Defines the HTML toolbar status arguments, providing the current status of the HTML toolbar. */
     html?: object
-    /** Defines the markdown toolbar status arguments. */
+    /** Defines the markdown toolbar status arguments, providing the current status of the Markdown toolbar. */
     markdown?: object
 }
 
@@ -1772,7 +1778,7 @@ export interface ISlashMenuItem {
      */
     command: string
     /**
-     * Specifies the icon class to be added in the slash menu item.
+     * Specifies the icon class to be added in the slash menu item for visual representation.
      */
     iconCss: string
     /**
@@ -1780,33 +1786,33 @@ export interface ISlashMenuItem {
      */
     description?: string
     /**
-     * Specifies the type of the slash menu item. Grouping will be done based on the tyoe.
+     * Specifies the type of the slash menu item. Grouping will be done based on the type.
      */
     type: string
 }
 
 /**
- * Provides information about a SlashMenuItemSelect event.
+ * Provides detailed information about a SlashMenuItemSelect event.
  */
-export interface SlashMenuItemSelectArgs{
+export interface SlashMenuItemSelectArgs {
     /**
-     * If the event is triggered by interaction, it returns true. Otherwise, it returns false.
+     * If the event is triggered by user interaction, it returns true. Otherwise, it returns false.
      */
     isInteracted: boolean;
     /**
-     * Returns the selected list item of the slash menu list.
+     * Returns the selected list item of the slash menu list as an HTMLLIElement.
      */
     item: HTMLLIElement;
     /**
-     * Returns the selected slash menu item data.
+     * Returns the selected slash menu item data corresponding to the interface.
      */
     itemData: ISlashMenuItem;
     /**
-     * Specifies the original event arguments.
+     * Specifies the original event arguments such as MouseEvent, KeyboardEvent, or TouchEvent.
      */
     originalEvent: MouseEvent | KeyboardEvent | TouchEvent;
     /**
-     * Specifies to the boolean value to cancel the default action.
+     * Specifies the boolean value to cancel the default action if set to true.
      */
     cancel?: boolean;
 }

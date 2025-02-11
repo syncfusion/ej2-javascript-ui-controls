@@ -285,3 +285,11 @@ export function removeClassWithAttr(elements: Element[] | NodeList, classes: str
     }
     return elements;
 }
+
+/**
+ * @returns {boolean} - returns the boolean value
+ * @hidden
+ */
+export function isSafari(): boolean {
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+}

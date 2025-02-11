@@ -3856,3 +3856,142 @@ describe('set cancel property as true in action begin', () => {
         }
     });
 });
+describe('Gantt Drag and Drop Functionality', () => {
+    let ganttObj: Gantt;
+    const taskData = [
+      { TaskID: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2024'), Duration: 1 },
+      { TaskID: 2, TaskName: 'Task 2', StartDate: new Date('04/02/2024'), Duration: 2 },
+      { TaskID: 3, TaskName: 'Task 3', StartDate: new Date('04/02/2024'), Duration: 2 },
+      { TaskID: 4, TaskName: 'Task 4', StartDate: new Date('04/02/2024'), Duration: 3 },
+      { TaskID: 5, TaskName: 'Task 5', StartDate: new Date('04/02/2024'), Duration: 3 },
+      { TaskID: 6, TaskName: 'Task 6', StartDate: new Date('04/02/2024'), Duration: 4 },
+    ];
+  
+    beforeAll((done: Function) => {
+      ganttObj = createGantt({
+        dataSource: taskData,
+        taskFields: {
+          id: 'TaskID',
+          name: 'TaskName',
+          startDate: 'StartDate',
+          endDate: 'EndDate',
+          duration: 'Duration',
+          progress: 'Progress',
+          parentID: 'ParentID'
+        },
+        editSettings: {
+          allowEditing: true,
+          allowTaskbarEditing: true,
+        },
+        toolbar: [
+          'Add', 'Edit', 'Update', 'Delete', 'Cancel', 
+          'ExpandAll', 'CollapseAll', 'Search',
+          'PrevTimeSpan', 'NextTimeSpan'
+        ],
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        highlightWeekends: true,
+        allowTaskbarDragAndDrop: true,
+        labelSettings: {
+          leftLabel: 'TaskName',
+          taskLabel: 'Progress'
+        },
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('04/01/2024'),
+        projectEndDate: new Date('07/06/2024')
+      }, done);
+    });
+  
+    it('should reflect changes in modified records after drag-and-drop action', (done) => {
+      ganttObj.actionComplete = (args: any): void => {
+        if (args.requestType === 'rowDropped') {
+            expect(args.modifiedRecords.length).toBe(2);
+            expect(args.modifiedRecords[0].ganttProperties.taskId).toBe(2);
+            expect(args.modifiedRecords[1].ganttProperties.taskId).toBe(1);
+            done();
+        }
+      }
+      // Trigger drag-and-drop actions
+      ganttObj.reorderRows([1], 0, 'child');
+    });
+  
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+  });
+  describe('Gantt Row Drop Test Suite', () => {
+    let ganttObj: Gantt;
+    const splitTasksData = [
+      { TaskID: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2024'), Duration: 1 },
+      { TaskID: 2, TaskName: 'Task 2', StartDate: new Date('04/02/2024'), Duration: 2 },
+      { TaskID: 3, TaskName: 'Task 3', StartDate: new Date('04/02/2024'), Duration: 2 },
+      { TaskID: 4, TaskName: 'Task 4', StartDate: new Date('04/02/2024'), Duration: 3 },
+      { TaskID: 5, TaskName: 'Task 5', StartDate: new Date('04/02/2024'), Duration: 3 },
+      { TaskID: 6, TaskName: 'Task 6', StartDate: new Date('04/02/2024'), Duration: 4 },
+    ];
+    
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+          dataSource: splitTasksData,
+          taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            parentID: 'ParentID'
+          },
+          editSettings: {
+            allowEditing: true,
+            allowTaskbarEditing: true,
+          },
+          toolbar: [
+            'Add', 'Edit', 'Update', 'Delete', 'Cancel', 
+            'ExpandAll', 'CollapseAll', 'Search', 
+            'PrevTimeSpan', 'NextTimeSpan'
+          ],
+          allowSelection: true,
+          allowRowDragAndDrop: true,
+          actionComplete:(args :any)=>{
+            if (args.requestType === 'rowDropped' && args.modifiedRecords.length === 3) {
+                expect(args.modifiedRecords.length).toBe(3);
+                expect(args.modifiedRecords[0].ganttProperties.taskId).toBe(3);
+                expect(args.modifiedRecords[1].ganttProperties.taskId).toBe(2);
+                expect(args.modifiedRecords[2].ganttProperties.taskId).toBe(1);
+              }
+          },
+          highlightWeekends: true,
+          allowTaskbarDragAndDrop: true,
+          labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: 'Progress'
+          },
+          height: '550px',
+          allowUnscheduledTasks: true,
+          projectStartDate: new Date('04/01/2024'),
+          projectEndDate: new Date('07/06/2024')
+        },
+        done
+      );
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 100);
+    });
+    it('should correctly update tasks on drag-and-drop action', () => {
+      ganttObj.reorderRows([1], 0, 'child');
+    });
+    it('should correctly update tasks on drag-and-drop action', () => {
+        ganttObj.reorderRows([2], 1, 'child');
+      });
+  
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+  });

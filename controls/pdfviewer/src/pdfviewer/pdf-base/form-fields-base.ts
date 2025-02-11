@@ -139,16 +139,19 @@ export class FormFieldsBase {
             const imageUrl: string = (stampObjects.toString()).split(',')[1];
             const left: number = this.convertPixelToPoint(boundsObject.left);
             const top: number = this.convertPixelToPoint(boundsObject.top);
-            const width: number = this.convertPixelToPoint(boundsObject.width);
-            const height: number = this.convertPixelToPoint(boundsObject.height);
+            let width: number = this.convertPixelToPoint(boundsObject.width);
+            let height: number = this.convertPixelToPoint(boundsObject.height);
+            if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
+                [width, height] = [height, width];
+            }
             const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(left, top, width, height);
             const bitmap: PdfImage = new PdfBitmap(imageUrl);
             const graphics: PdfGraphics = page.graphics;
             const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
             rubberStampAnnotation._dictionary.set('NM', signatureImage.signatureName.toString());
+            const rotationAngle: number = this.getRotateAngle(page.rotation);
+            rubberStampAnnotation.rotationAngle = Math.abs(rotationAngle);
             if (isAnnotationFlattern) {
-                const rotationAngle: number = this.getRotateAngle(page.rotation);
-                rubberStampAnnotation.rotationAngle = Math.abs(rotationAngle);
                 rubberStampAnnotation.flatten = true;
             }
             if (!isAnnotationFlattern) {

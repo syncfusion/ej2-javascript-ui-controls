@@ -5711,4 +5711,27 @@
       border-bottom: transparent;
     }
   }
+
+  @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    .e-filled.e-float-input.e-control-container.e-append:not(.e-prepend) {
+      padding: 0;
+  
+      input {
+        padding: 14px 2px 5px 12px;
+      }
+  
+      label.e-float-text {
+        padding-left: 12px;
+      }
+  
+      .e-input-in-wrap .e-input-group-icon {
+        @if $input-skin-name == 'material' {
+          padding-right: 17px;
+        }
+        @else {
+          margin-right: 10px;
+        }
+      }
+    }
+  }
 }

@@ -238,7 +238,7 @@ export class Edit implements IAction {
         this.parent.element.classList.remove('e-editing');
         this.editModule.closeEdit();
         this.refreshToolbar();
-        this.parent.notify(events.closeEdit, {});
+        this.parent.notify(events.closeEdit, { requestType: 'cancel' });
         if (this.parent.editSettings.showAddNewRow) {
             this.destroyToolTip();
         }
@@ -544,8 +544,8 @@ export class Edit implements IAction {
             this.parent.pagerModule.isForceCancel = false;
         }
         this.parent.focusModule.clearIndicator();
-        this.parent.focusModule.restoreFocus();
         this.dialogObj.hide();
+        this.parent.focusModule.restoreFocus({ requestType: 'cancel' });
         this.parent.notify('cancelcnfrmDlg', {});
     }
 
@@ -622,7 +622,7 @@ export class Edit implements IAction {
             this.parent.isEdit = this.parent.editSettings.showAddNewRow ? true : false;
         }
         if (e.requestType === 'batchsave') {
-            this.parent.focusModule.restoreFocus();
+            this.parent.focusModule.restoreFocus({ requestType: e.requestType });
         }
         this.refreshToolbar();
     }
@@ -1187,7 +1187,7 @@ export class Edit implements IAction {
                     isFHdrLastRow = true;
                 }
             }
-            if (isFHdrLastRow || (viewPortRowCount >= 1 && rows.length >= viewPortRowCount
+            if (isFHdrLastRow || (viewPortRowCount > 1 && rows.length > viewPortRowCount
                 && ((this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
                     && this.editModule.args.requestType === 'add')) || (td.classList.contains('e-lastrowcell')
                         && !row.classList.contains(literals.addedRow)))) || isBatchModeLastRow) {

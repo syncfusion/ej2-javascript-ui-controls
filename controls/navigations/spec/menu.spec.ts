@@ -885,6 +885,26 @@ describe('Menu', () => {
             menu.domKeyHandler(keyEventArgs);
             expect(menu.isMenuVisible()).toBe(true);
         });
+        it('getChangedItemIndex with nested items should traverse recursively', () => {
+            menu = new Menu({ items: items }, '#menu');
+            const newProps = {
+                items: {
+                    1: {
+                        items: {
+                            0: {
+                                items: {
+                                    1: {
+                                        text: 'Changed Text'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            const index = menu.getChangedItemIndex(newProps, [], 1);
+            expect(index).toEqual([1, 0, 1]);
+        });
     });
 
     describe('CR issues', () => {

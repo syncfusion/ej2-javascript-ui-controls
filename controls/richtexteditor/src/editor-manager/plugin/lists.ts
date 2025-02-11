@@ -1016,6 +1016,7 @@ export class Lists {
                     // eslint-disable-next-line
                     classAttr += ' class="' + className + '"';
                 }
+                const closestListMargin: string = this.getClosestListParentMargin(element);
                 if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
                     const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
                         ' class="' + className + ' e-rte-wrap-inner"';
@@ -1033,8 +1034,13 @@ export class Lists {
                     }
                     const wrapperTag: string = isNullOrUndefined(e.enterAction) ? CONSTANT.DEFAULT_TAG : e.enterAction;
                     const wrapper: string = '<' + wrapperTag + wrapperclass + this.domNode.attributes(element) + '></' + wrapperTag + '>';
+                    const tempElement: HTMLElement = document.createElement('div');
+                    tempElement.innerHTML = wrapper;
+                    if (closestListMargin !== '') {
+                        (tempElement.firstElementChild as HTMLElement).style.marginLeft = closestListMargin;
+                    }
                     if (e.enterAction !== 'BR') {
-                        this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
+                        this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(tempElement.innerHTML));
                     }
                     else {
                         const wrapperSpan: string = '<span class=e-rte-wrap-inner id=removeSpan></span>';
@@ -1098,7 +1104,16 @@ export class Lists {
             detach(emptyLi[i as number]);
         }
     }
-
+    private getClosestListParentMargin(element: Element): string {
+        let current: Element | null = element;
+        while (current && current !== this.parent.editableElement) {
+            if (current.nodeName === 'UL' || current.nodeName === 'OL') {
+                return (current as HTMLElement).style.marginLeft;
+            }
+            current = current.parentElement;
+        }
+        return '';
+    }
     private openTag(type: string): Element {
         return this.domNode.parseHTMLFragment('<span class="e-rte-list-open-' + type.toLowerCase() + '"></span>');
     }

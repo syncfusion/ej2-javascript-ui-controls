@@ -7416,6 +7416,9 @@ export class FormDesigner {
         if (selectedItem.formFieldAnnotationType === 'DropdownList' || selectedItem.formFieldAnnotationType === 'ListBox') {
             (inputElement as any).parentElement.style.backgroundColor = (inputElement as any).style.backgroundColor;
         }
+        if (!isReadOnly && (inputElement as any).disabled) {
+            (inputElement as any).disabled = false;
+        }
         if (isReadOnly) {
             if (selectedItem.formFieldAnnotationType === 'RadioButton') {
                 (inputElement as any).parentElement.style.cursor = 'default';

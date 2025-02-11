@@ -3009,6 +3009,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         const args: BeforeOpenEventArgs = { cancel: false };
         this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
+            let initialPopupHeight: number;
             if (!args.cancel) {
                 const popupEle: HTMLElement = this.createElement('div', {
                     id: this.element.id + '_popup', className: 'e-ddl e-popup ' + (this.cssClass !== null ? this.cssClass : '')
@@ -3029,6 +3030,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 document.body.appendChild(popupEle);
                 popupEle.style.top = '0px';
+                initialPopupHeight = popupEle.clientHeight;
                 if (this.enableVirtualization && this.itemTemplate) {
                     const listitems: NodeListOf<Element> = popupEle.querySelectorAll('li.e-list-item:not(.e-virtual-list)');
                     this.listItemHeight = listitems.length > 0 ? Math.ceil(listitems[0].getBoundingClientRect().height) +
@@ -3218,7 +3220,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     // Add the resizer div to the popup
                     if (this.list && this.list.parentElement) {
                         this.list.parentElement.classList.add('e-resize');
-                        if (this.popupHeight.toString().toLowerCase() !== 'auto') {
+                        if (this.popupHeight.toString().toLowerCase() !== 'auto' && initialPopupHeight > parseInt(this.popupHeight.toString(), 10)) {
                             this.list.parentElement.style.height = '100%';
                         }
                         this.list.parentElement.style.paddingBottom = (this.getModuleName() === 'dropdownlist' && this.allowFiltering && this.searchBoxHeight) ? (this.searchBoxHeight + resizePaddingBottom).toString() + 'px' : resizePaddingBottom.toString() + 'px';

@@ -736,8 +736,10 @@ export class InfiniteScroll implements IAction {
             const offset: number = targetEle.scrollHeight - targetEle.scrollTop;
             const round: number = Math.round(targetEle.scrollHeight - targetEle.scrollTop);
             let floor: number = offset < targetEle.clientHeight ? Math.ceil(offset) : Math.floor(offset);
-            if (floor > targetEle.clientHeight) { floor = floor - 1; }
-            const isBottom: boolean = (floor === targetEle.clientHeight || round === targetEle.clientHeight);
+            let targetHeight: number = targetEle.clientHeight;
+            if (floor > targetHeight) { floor = floor - 1; }
+            else if (targetHeight > floor) { targetHeight = targetHeight - 1; }
+            const isBottom: boolean = (floor === targetHeight || round === targetHeight);
             if (!isNullOrUndefined(this.groupCaptionAction)) { return; }
             if (this.isScroll && isBottom && (this.parent.pageSettings.currentPage <= this.maxPage - 1 || this.enableContinuousScroll)) {
                 if (this.parent.infiniteScrollSettings.enableCache) {

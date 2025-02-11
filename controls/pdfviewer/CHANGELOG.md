@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I683657` - Now, the scale ratio updated properly when changing the `measurementSettings` dynamically.
+- `#I683269` - Now, the form field value is updated properly after disabling read-only mode programmatically.
+- `#I675316` - The date and time format is now preserved correctly in the comment panel when importing annotations.
+- `#I687098` - Now , the Exception will not occur when downloading the customer provided document with the newly added annotation.
+- `#I680877` - Now, the handwritten signature width and height are not swapped for rotated documents.
+- `#I682398` - Now, the font height is retrieved properly from the widget annotation.
+- `#I686841` - Now , the `customData` will update properly when adding the annotations programmatically.
+
+## 28.2.4 (2025-02-04)
+
+### PDF Viewer
+
+#### Breaking Changes
+
+- `#I661474` - The default preservation of highlight annotations has been enhanced, along with an update to the default highlight color when added programmatically.
+
 ## 28.2.3 (2025-01-29)
 
 ### PDF Viewer

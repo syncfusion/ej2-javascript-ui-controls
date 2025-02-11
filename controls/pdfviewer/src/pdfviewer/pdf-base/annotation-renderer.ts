@@ -207,16 +207,10 @@ export class AnnotationRenderer {
         }
         else if (!isNullOrUndefined(shapeAnnotation.shapeAnnotationType) && shapeAnnotation.shapeAnnotationType === 'Circle') {
             const bounds: Rect = JSON.parse(shapeAnnotation.bounds);
-            const left: number = this.convertPixelToPoint(bounds.left);
-            const top: number = this.convertPixelToPoint(bounds.top);
-            const width: number = this.convertPixelToPoint(bounds.width);
-            const height: number = this.convertPixelToPoint(bounds.height);
-            if (isNullOrUndefined(bounds.left)) {
-                shapeAnnotation.bounds.left = 0;
-            }
-            if (isNullOrUndefined(bounds.top)) {
-                shapeAnnotation.bounds.top = 0;
-            }
+            const left: number = !isNullOrUndefined(bounds.left) ? this.convertPixelToPoint(bounds.left) : 0;
+            const top: number = !isNullOrUndefined(bounds.top) ? this.convertPixelToPoint(bounds.top) : 0;
+            const width: number = !isNullOrUndefined(bounds.width) ? this.convertPixelToPoint(bounds.width) : 0;
+            const height: number = !isNullOrUndefined(bounds.height) ? this.convertPixelToPoint(bounds.height) : 0;
             const cropValues : PointBase = this.getCropBoxValue(page, false);
             let cropX : number = 0;
             let cropY : number = 0;
@@ -2326,7 +2320,10 @@ export class AnnotationRenderer {
             dateValue = new Date(Date.parse(popupAnnotation.modifiedDate));
             annotation.modifiedDate = dateValue;
         }
-        annotation._dictionary.set('NM', popupAnnotation.annotName.toString());
+        if (!isNullOrUndefined(popupAnnotation.annotName))
+        {
+            annotation._dictionary.set('NM', popupAnnotation.annotName.toString());
+        }
         return annotation;
     }
 

@@ -365,9 +365,15 @@ export class VerticalView extends ViewBase implements IRenderer {
         const diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
         const hoursRange: { [key: string]: Date } =
             util.getStartEndHours(util.resetTime(new Date(date.getTime())), startHour, endHour);
-        const interval: number = this.parent.activeViewOptions.timeScale.slotCount !== 1 ?
-            this.parent.activeViewOptions.timeScale.interval :
-            (hoursRange.endHour.getTime() - hoursRange.startHour.getTime()) / util.MS_PER_MINUTE;
+        const totalMinutes: number = (hoursRange.endHour.getTime() - hoursRange.startHour.getTime()) / util.MS_PER_MINUTE;
+        const timescaleInterval: number = this.parent.activeViewOptions.timeScale.interval;
+        let interval: number = 0;
+        if (startHour.getHours() === 0 && startHour.getMinutes() === 0 && endHour.getHours() === 0 && endHour.getMinutes() === 0) {
+            interval = timescaleInterval;
+        } else {
+            interval = (this.parent.activeViewOptions.timeScale.slotCount !== 1) ? timescaleInterval :
+                (timescaleInterval > totalMinutes ? totalMinutes : timescaleInterval);
+        }
         return (diffInMinutes * this.getWorkCellHeight() * this.parent.activeViewOptions.timeScale.slotCount) / interval;
     }
 

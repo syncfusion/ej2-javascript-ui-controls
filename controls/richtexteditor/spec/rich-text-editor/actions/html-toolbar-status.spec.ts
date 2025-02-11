@@ -428,7 +428,7 @@ describe(' HTML editor update toolbar ', () => {
             editNode.style.height = "200px";
             controlId = rteObj.element.id;
         });
-        it('Maintain the active state of Bold toolbar item while click on document ', () => {
+        it(' Maintain the active state of Bold toolbar item while click on document ', () => {
             let node: Node = document.getElementById('paragraph2');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 2, 6);
             document.getElementById(controlId + "_toolbar_Bold").click();

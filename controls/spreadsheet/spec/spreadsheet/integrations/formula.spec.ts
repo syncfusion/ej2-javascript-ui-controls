@@ -16331,7 +16331,7 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
-        describe('EJ2-863643, EJ2-867609, EJ2-870519 ->', () => {
+        describe('EJ2-863643, EJ2-867609, EJ2-870519, EJ2-936018 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{
@@ -16396,6 +16396,24 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.invoke('getCell', [4, 10]).textContent).toBe('11/5/2200');
                 helper.edit('K6', '=DATE(F4,G9,G5)');
                 expect(helper.invoke('getCell', [5, 10]).textContent).toBe('6/11/2200');
+                done();
+            });
+            it('Wrong number of arguments issue occurs with the formula containing negative sign in nested formula.', (done: Function) => {
+                helper.edit('M4', 'Hello');
+                helper.edit('K7', '=IF(K3="YES",K3,IF(L5="YES",L5,IF(M4="HELLO", MAX(F13,-(SUM(F8,F9,F11,F12)-SUM(F18:F20))),7)))');
+                expect(helper.invoke('getCell', [6, 10]).textContent).toBe('-1010');
+                helper.edit('K8', '=IF(K3="YES",K3,IF(L5="YES",L5,IF(M3="HELLO", MAX(F13,-(SUM(F8,F9,F11,F12)-SUM(F18:F20))),7)))');
+                expect(helper.invoke('getCell', [7, 10]).textContent).toBe('7');
+                helper.edit('K9', '=MAX(F3,-(SUM(F6,F7,F8,F9)-SUM(F10:F11)))');
+                expect(helper.invoke('getCell', [8, 10]).textContent).toBe('600');
+                helper.edit('K10', '=SUM(H2,-(COUNT(G2:G11)))');
+                expect(helper.invoke('getCell', [9, 10]).textContent).toBe('0');
+                helper.edit('K11', '=SUM(G3,-(COUNT(G1:G11)))');
+                expect(helper.invoke('getCell', [10, 10]).textContent).toBe('-5');
+                helper.edit('K12', '=MAX(-(SUM(F6,F7,F8,F9)-SUM(F10:F11)),F2)');
+                expect(helper.invoke('getCell', [11, 10]).textContent).toBe('200');
+                helper.edit('K13', '=SUM((-MAX(G2:G5)+MIN(H2:H5)),E5,-(E2+E3))');
+                expect(helper.invoke('getCell', [12, 10]).textContent).toBe('-31');
                 done();
             });
         });

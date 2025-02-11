@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I687354` - The chart with the primary and secondary axes is now working properly even when no series is bound.
+
 ## 28.2.4 (2025-02-04)
 
 ### Chart

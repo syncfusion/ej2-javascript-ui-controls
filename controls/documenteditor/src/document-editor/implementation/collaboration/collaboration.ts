@@ -1043,7 +1043,7 @@ export class CollaborativeEditingHandler {
         let page: Page = selection.getSelectionPage(startPos);
         if (page) {
             caret.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * zoomFactor) + 'px';
-            let caretInfo: CaretHeightInfo = selection.updateCaretSize(startPos);
+            let caretInfo: CaretHeightInfo = selection.updateCaretSize(startPos, true);
             let topMargin: number = caretInfo.topMargin;
             caret.style.height = (caretInfo.height * zoomFactor) + 'px';
             let pageTop: number = selection.getPageTop(page);

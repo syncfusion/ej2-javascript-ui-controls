@@ -320,10 +320,6 @@ export class DiagramRenderer {
         (options as PathAttributes).data = element.absolutePath;
         options.id = options.id + '_highlighter';
         const ariaLabel: Object = element.description ? element.description : element.id;
-        if (!this.isSvgMode) {
-            options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
-            options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
-        }
         if (transform) {
             options.x = options.x * transform.scale;
             options.y = options.y * transform.scale;
@@ -1403,7 +1399,8 @@ export class DiagramRenderer {
             (options as any).arc = arc;
             (options as PathAttributes).data = updatePath(element, pathBounds, undefined, options);
         }
-        this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel);
+        this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel,
+                               undefined, this, element);
     }
 
     // Function to filter 'A' commands and extract r1 and r2 values
@@ -1798,7 +1795,7 @@ export class DiagramRenderer {
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
         this.renderer.drawText(
             canvas, options as TextAttributes, parentSvg, ariaLabel, this.diagramId,
-            (element.isExport && Math.min(element.exportScaleValue.x || element.exportScaleValue.y)), this.groupElement);
+            (element.isExport && Math.min(element.exportScaleValue.x || element.exportScaleValue.y)), this, element);
         if (this.isSvgMode) {
             element.doWrap = false;
         }
@@ -1926,7 +1923,7 @@ export class DiagramRenderer {
         (options as ImageAttributes).alignment = element.imageAlign;
         (options as ImageAttributes).scale = element.imageScale;
         (options as ImageAttributes).description = element.description ? element.description : element.id;
-        this.renderer.drawImage(canvas, options as ImageAttributes, parentSvg, fromPalette);
+        this.renderer.drawImage(canvas, options as ImageAttributes, parentSvg, fromPalette, this, element);
     }
 
     /**
@@ -1987,6 +1984,7 @@ export class DiagramRenderer {
             let parentG: HTMLCanvasElement | SVGElement;
             let svgParent: SvgParent;
             for (const child of group.children) {
+                this.groupElement = group;
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children) || child) || parentSvg;
                 if (this.isSvgMode) {
                     svgParent = this.getParentElement(this.hasNativeParent(group.children) || child, canvas, parentSvg);
@@ -1996,35 +1994,26 @@ export class DiagramRenderer {
                     }
                 }
                 if (!this.isSvgMode) {
-                    child.flip = group.flip;
+                    if (child.relativeMode === 'Object') {
+                        child.flip = group.flip;
+                        //To update the compensation and adhoc child flip in print and export.
+                        if (child.id && (child.id.includes('_0_compensation') || child.id.includes('_0_adhoc'))) {
+                            if (group.children[0].flip) {
+                                child.flip = group.children[0].flip;
+                            }
+                        }
+                    }
                 }
+                let parentGElement: any = parentG;
                 this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue,
                                    isPreviewNode, centerPoint, portCenterPoint);
-                if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
-                    this.renderFlipElement(child, parentG, child.flip);
-                }
-                //EJ2-826617 - for BPMN node label
-                if (child instanceof TextElement && parentG && (group.elementActions & ElementAction.ElementIsGroup)) {
-                    this.renderFlipElement(child, parentG, child.flip);
-                }
-                if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
-                    //EJ2-826617 - for BPMN node port
-                    if (parentG.id.includes('bpmn')) {
-                        this.renderFlipElement(group, parentG, child.flip);
-                        child.flip = 'None';
-                    }
-                    else {
-                        this.renderFlipElement(group, parentG, child.flip);
+                if (group.children && group.children[0] instanceof DiagramNativeElement) {
+                    if (child instanceof TextElement || (child.elementActions & ElementAction.ElementIsPort)) {
+                        parentGElement = document.getElementById(child.id + '_groupElement');
                     }
                 }
-                //EJ2-826617 - for BPMN node child rendering
-                if (!(child instanceof TextElement) &&
-                    (group.elementActions & ElementAction.ElementIsGroup) && !(child.elementActions & ElementAction.ElementIsPort)
-                    && parentG) {
-                    // EJ2-907739-Flipping the group node does not rotate the child nodes
-                    if (child.flip === 'None') {
-                        this.renderFlipElement(child, parentG || canvas, group.flip);
-                    }
+                if (child instanceof TextElement && parentGElement) {
+                    this.renderFlipTextElement(group, parentGElement, child, child.flip, child.flipMode);
                 }
             }
             let selectedNode: NodeModel;
@@ -2036,115 +2025,32 @@ export class DiagramRenderer {
             let innerLabelContent: any;
             let isNodeSelected: boolean = false;
             let Node: NodeModel;
+            const objId: string = group.id.includes('group_container')
+                ? group.id.split('group_container')[0]
+                : group.id;
             if ((diagram as Diagram) && (diagram as Diagram).selectedItems) {
-                Node = diagram.getObject(group.id);
+                Node = diagram.getObject(objId);
             }
-            if (group.flip !== 'None') {
-                selectedNode = Node;
-            }
-            // EJ2-71981 - Flip mode "Port" is not working properly while dragging multiselected node
-            // Below code to set selected node value
-            if (group.flip === 'None') {
-                selectedNode = Node;
-            }
+            selectedNode = Node;
             if (selectedNode && selectedNode.flipMode) { isNodeSelected = true; }
-            if (!(group.elementActions & ElementAction.ElementIsGroup) && diagram instanceof Diagram && (diagram as Diagram).nameTable[group.id] && (diagram as Diagram).nameTable[group.id].propName !== 'connectors') {
-                if (isNodeSelected && selectedNode) {
-                    if (group.children && group.children[0] instanceof DiagramNativeElement) {
-                        innerNodeContent = document.getElementById(selectedNode.id + '_content_inner_native_element');
-                    } else {
-                        innerNodeContent = document.getElementById(selectedNode.id + '_content_groupElement');
-                    }
-                    //Below code to check and flip the node.
-                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' && selectedNode.flipMode !== 'PortAndLabel' && selectedNode.flipMode !== 'LabelText' && selectedNode.flipMode !== 'PortAndLabelText' && selectedNode.flipMode !== 'LabelAndLabelText' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
-                        this.renderFlipElement(group, innerNodeContent, selectedNode.flip);
-                        return;
-                    }
-                    //Below code to check and flip the node except for flip mode Port.
-                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label' || selectedNode.flipMode === 'PortAndLabel' || selectedNode.flipMode === 'LabelText' || selectedNode.flipMode === 'PortAndLabelText' || selectedNode.flipMode === 'LabelAndLabelText') || (selectedNode.shape.type === 'Image' && (selectedNode as any).flipMode === 'Label')) {
-                        this.renderFlipElement(group, innerNodeContent, group.flip);
-                    }
-                    if (group.flip !== 'None' && selectedNode.flipMode === 'None') {
-                        this.renderFlipElement(group, innerNodeContent, group.flip);
-                    }
-                    //Below code to check and flip the text element in the node.
-                    else if (group.flip !== 'None' && (selectedNode.flipMode === 'Label' || selectedNode.flipMode === 'PortAndLabel' || selectedNode.flipMode === 'LabelText' || selectedNode.flipMode === 'PortAndLabelText' || selectedNode.flipMode === 'LabelAndLabelText') || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
-                        for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
-                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
-                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipTextElement(group, innerLabelContent,
-                                                           selectedNode.wrapper.children[parseInt(i.toString(), 10)],
-                                                           group.flip, selectedNode.flipMode);
-                                return;
-                            }
-                        }
-                    }
-                    //Below code to check and flip for flip mode all in the node.
-                    else if (group.flip !== 'None' && selectedNode.flipMode === 'All') {
-                        for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
-                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
-                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipTextElement(group, innerLabelContent,
-                                                           selectedNode.wrapper.children[parseInt(i.toString(), 10)],
-                                                           group.flip, selectedNode.flipMode);
-                            }
-                        }
-                        this.renderFlipElement(group, innerNodeContent, group.flip);
-                    }
-                    //Below code to check and flip the element for None in the node.
-                    else {
-                        this.renderFlipElement(group, innerNodeContent, group.flip);
-                    }
-                }
+            let containerId: string = '';
+            if (selectedNode) {
+                containerId = selectedNode.children ? selectedNode.id + 'group_container' :  selectedNode.id + '_content_groupElement';
             }
-            //EJ2-826617 - Flip and flip mode option for BPMN node
-            if ((group.elementActions & ElementAction.ElementIsGroup) && diagram instanceof Diagram && (diagram as Diagram).nameTable[group.id] && (diagram as Diagram).nameTable[group.id].propName !== 'connectors') {
+            if (diagram instanceof Diagram && (diagram as Diagram).nameTable[`${objId}`] && (diagram as Diagram).nameTable[`${objId}`].propName !== 'connectors') {
                 if (isNodeSelected && selectedNode) {
                     if (group.children && group.children[0] instanceof DiagramNativeElement) {
                         innerNodeContent = document.getElementById(selectedNode.id + '_content_inner_native_element');
-                    } else {
-                        innerNodeContent = document.getElementById(selectedNode.id + '_content_groupElement');
-                    }
-                    //Below code to check and flip the node.
-                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' && selectedNode.flipMode !== 'PortAndLabel' && selectedNode.flipMode !== 'LabelText' && selectedNode.flipMode !== 'PortAndLabelText' && selectedNode.flipMode !== 'LabelAndLabelText' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
-                        this.renderFlipElement(group, innerNodeContent, selectedNode.flip);
-                        return;
-                    }
-                    //Below code to check and flip the node except for flip mode Port.
-                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label' || selectedNode.flipMode === 'PortAndLabel' || selectedNode.flipMode === 'LabelText' || selectedNode.flipMode === 'PortAndLabelText' || selectedNode.flipMode === 'LabelAndLabelText') || (selectedNode.shape.type === 'Image' && (selectedNode as any).flipMode === 'Label')) {
-                        this.renderFlipElement(group, innerNodeContent, group.flip);
-                    }
-                    if (group.flip !== 'None' && selectedNode.flipMode === 'None') {
-                        this.renderFlipElement(group, innerNodeContent, group.flip);
-                    }
-                    //Below code to check and flip the text element in the node.
-                    else if (group.flip !== 'None' && (selectedNode.flipMode === 'Label' || selectedNode.flipMode === 'PortAndLabel' || selectedNode.flipMode === 'LabelText' || selectedNode.flipMode === 'PortAndLabelText' || selectedNode.flipMode === 'LabelAndLabelText') || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
-                        for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
-                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
-                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipTextElement(group, innerLabelContent,
-                                                           selectedNode.wrapper.children[parseInt(i.toString(), 10)],
-                                                           group.flip, selectedNode.flipMode);
-                                return;
-                            }
+                    } else if (group.children && group.children[0] instanceof DiagramHtmlElement) {
+                        innerNodeContent = document.getElementById(selectedNode.id + '_content_html_element');
+                        if (!innerNodeContent) {
+                            innerNodeContent = document.getElementById(containerId);
                         }
                     }
-                    //Below code to check and flip for flip mode all in the node.
-                    else if (group.flip !== 'None' && selectedNode.flipMode === 'All') {
-                        for (let i: number = 0; i < selectedNode.wrapper.children.length; i++) {
-                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
-                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
-                                this.renderFlipTextElement(group, innerLabelContent,
-                                                           selectedNode.wrapper.children[parseInt(i.toString(), 10)],
-                                                           group.flip, selectedNode.flipMode);
-                            }
-                        }
-                        this.renderFlipElement(group, innerNodeContent, group.flip);
-                    }
-                    //Below code to check and flip the element for None in the node.
                     else {
-                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                        innerNodeContent = document.getElementById(containerId);
                     }
+                    this.renderFlipElement(group, innerNodeContent, group.flip);
                 }
             }
         }
@@ -2159,33 +2065,42 @@ export class DiagramRenderer {
      * @param { DiagramElement } textElement - Provide the text element.
      * @param { FlipDirection } flip - Provide the node flip direction.
      * @param { FlipMode } flipMode - Provide the node flipMode.
+     * @param { boolean } isCanvasMode - Provide the isCanvas mode.
      */
     public renderFlipTextElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, textElement: DiagramElement,
-                                 flip: FlipDirection, flipMode: FlipMode): void {
+                                 flip: FlipDirection, flipMode: FlipMode, isCanvasMode?: boolean): object {
         let attr: object = {};
         let scaleX: number = 1;
         let scaleY: number = 1;
         let posX: number = 0; let posY: number = 0;
         let offsetX: number = 0; let offsetY: number = 0;
-        if (flip !== 'None') {
+        if (flip !== FlipDirection.None) {
+            let rotateAngle: number = element.rotateAngle;
+            if (element.rotateAngle === 0 && element.id.includes('group_container')) {
+                rotateAngle = element.parentTransform;
+            }
             // Fetch annotation offset
-            const textPos: PointModel = textElement.getAbsolutePosition(textElement.desiredSize);
-            if (textPos) {
+            let textPos: PointModel = textElement.getAbsolutePosition(textElement.desiredSize);
+            if (!textPos) {
+                const size: Size = textElement.desiredSize;
+                textPos = { x: 0.5 * size.width, y: 0.5 * size.height };
+            }
+            if (textPos && (textElement as TextElement).content !== '') {
                 // Inverting and translating Annotation
                 if (flipMode === 'All' || flipMode === 'LabelAndLabelText') {
-                    if (flip === 'Horizontal' || flip === 'Both') {
+                    if (flip === FlipDirection.Horizontal  || flip === FlipDirection.Both) {
                         posX = element.bounds.center.x;
                         offsetX = -element.bounds.center.x;
                         scaleX = -1;
                     }
-                    if (flip === 'Vertical' || flip === 'Both') {
+                    if (flip === FlipDirection.Vertical || flip === FlipDirection.Both) {
                         posY = element.bounds.center.y;
                         offsetY = -element.bounds.center.y;
                         scaleY = -1;
 
                     }
-                    if (flip === 'Horizontal' || flip === 'Vertical') {
-                        const angle: number = Math.sin(element.rotateAngle * Math.PI / 180);
+                    if (flip === FlipDirection.Horizontal  || flip === FlipDirection.Vertical) {
+                        const angle: number = Math.sin(rotateAngle * Math.PI / 180);
                         //918299 - Issue with Polygon Shape Node Rotation After Grouping and Flipping
                         if (textPos.y !== undefined && !isNaN(textPos.y)) {
                             const textPosY: number = textPos.y / textElement.desiredSize.height;
@@ -2207,12 +2122,12 @@ export class DiagramRenderer {
                 }
                 // Inverting Annotation without flipping position
                 else if (flipMode === 'LabelText' || flipMode === 'PortAndLabelText') {
-                    if (flip === 'Horizontal' || flip === 'Both') {
+                    if (flip === FlipDirection.Horizontal  || flip === FlipDirection.Both) {
                         posX = textElement.offsetX;
                         offsetX = -textElement.offsetX;
                         scaleX = -1;
                     }
-                    if (flip === 'Vertical' || flip === 'Both') {
+                    if (flip === FlipDirection.Vertical || flip === FlipDirection.Both) {
                         posY = textElement.offsetY;
                         offsetY = -textElement.offsetY;
                         scaleY = -1;
@@ -2236,21 +2151,27 @@ export class DiagramRenderer {
                 'transform': 'translate(' + 0 + ',' + 0 + ')'
             };
         }
-        this.setFlipAttributes(element, canvas, attr, scaleX, scaleY);
+        if (!isCanvasMode) {
+            this.setFlipAttributes(element, canvas, attr, scaleX, scaleY, false);
+            return {};
+        } else {
+            return attr;
+        }
     }
-    public renderFlipElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, flip: FlipDirection): void {
+    public renderFlipElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, flip: FlipDirection,
+                             isCanvasMode?: boolean): object {
         let attr: object = {};
         let scaleX: number = 1;
         let scaleY: number = 1;
         let posX: number = 0; let posY: number = 0; let offsetX: number = 0;
         let offsetY: number = 0;
-        if (flip !== 'None') {
-            if (flip === 'Horizontal' || flip === 'Both') {
+        if (flip !== FlipDirection.None) {
+            if (flip === FlipDirection.Horizontal  || flip === FlipDirection.Both) {
                 posX = element.bounds.center.x;
                 offsetX = -element.bounds.center.x;
                 scaleX = -1;
             }
-            if (flip === 'Vertical' || flip === 'Both') {
+            if (flip === FlipDirection.Vertical || flip === FlipDirection.Both) {
                 posY = element.bounds.center.y;
                 offsetY = -element.bounds.center.y;
                 scaleY = -1;
@@ -2265,21 +2186,28 @@ export class DiagramRenderer {
 
             };
         }
-        this.setFlipAttributes(element, canvas, attr, scaleX, scaleY);
+        const isHtml: boolean = element && (element as Container).children &&
+        (element as Container).children.length && ((element as Container).children[0] instanceof DiagramHtmlElement);
+        if (!isCanvasMode) {
+            this.setFlipAttributes(element, canvas, attr, scaleX, scaleY, isHtml);
+            return {};
+        } else {
+            return attr;
+        }
     }
 
     private setFlipAttributes(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement,
-                              attr: object, scaleX: number, scaleY: number): void {
+                              attr: object, scaleX: number, scaleY: number, isHtml: boolean): void {
         if (attr) {
-            if (element && (element as Container).children &&
-                (element as Container).children.length && ((element as Container).children[0] instanceof DiagramHtmlElement)) {
+            if (isHtml) {
                 const id: string[] = canvas.id.split('_preview');
                 const layer: HTMLElement = document.getElementById(id[0] + '_html_div') ||
                     (getHTMLLayer(this.diagramId).children[0]) as HTMLElement;
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
+                const flipAngle: number = (element.flip === FlipDirection.None || element.flip === FlipDirection.Both) ? 1 : -1;
                 if (canvas) {
                     canvas.style.transform =
-                        'scale(' + scaleX + ',' + scaleY + ')' + 'rotate(' + (element.rotateAngle + element.parentTransform) + 'deg)';
+                        'scale(' + scaleX + ',' + scaleY + ')' + 'rotate(' + ((flipAngle * element.rotateAngle) + element.parentTransform) + 'deg)';
                 }
             } else {
                 setAttributeSvg(canvas as SVGElement, attr);
@@ -2298,7 +2226,7 @@ export class DiagramRenderer {
      */
     private flipLabel(element: DiagramElement, textElement: DiagramElement, labelPos: PointModel, flip: FlipDirection): PointModel {
         let flippedOffset: PointModel;
-        if (flip !== 'None') {
+        if (flip !== FlipDirection.None) {
             let flippedOffsetX: number;
             let flippedOffsetY: number;
             // Node's topLeft Position
@@ -2308,10 +2236,10 @@ export class DiagramRenderer {
             };
             flippedOffsetX = topLeft.x + (element.desiredSize.width * ((labelPos.x / textElement.desiredSize.width)));
             flippedOffsetY = topLeft.y + (element.desiredSize.height * ((labelPos.y / textElement.desiredSize.height)));
-            if (flip === 'Both' || flip === 'Horizontal') {
+            if (flip === FlipDirection.Both || flip === FlipDirection.Horizontal ) {
                 flippedOffsetX = topLeft.x + (element.desiredSize.width * (1 - (labelPos.x / textElement.desiredSize.width)));
             }
-            if (flip === 'Both' || flip === 'Vertical') {
+            if (flip === FlipDirection.Both || flip === FlipDirection.Vertical) {
                 flippedOffsetY = topLeft.y + (element.desiredSize.height * (1 - (labelPos.y / textElement.desiredSize.height)));
             }
             // Flipped Position
@@ -2366,7 +2294,8 @@ export class DiagramRenderer {
             options.cornerRadius *= element.exportScaleValue.x;
         }
         const ariaLabel: Object = element.description ? element.description : element.id;
-        this.renderer.drawRectangle(canvas, options, this.diagramId, element.isExport, undefined, parentSvg, ariaLabel);
+        this.renderer.drawRectangle(canvas, options, this.diagramId, element.isExport, undefined, parentSvg, ariaLabel,
+                                    undefined, undefined, this, element);
     }
 
     /**
@@ -2421,6 +2350,13 @@ export class DiagramRenderer {
         }
         if (element.flip) {
             options.flip = element.flip;
+            if ((element.flip === FlipDirection.Horizontal  || element.flip === FlipDirection.Vertical) &&
+                 element instanceof ImageElement && !this.isSvgMode) {
+                (options as any).isImage = true;
+            }
+        }
+        if (element.flipMode) {
+            options.flipMode = element.flipMode;
         }
         if (transform) {
             options.x += transform.tx;

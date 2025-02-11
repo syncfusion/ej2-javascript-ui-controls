@@ -318,6 +318,8 @@ export class SfdtExport {
             if (this.documentHelper.pages.length > 0) {
                 let page: Page = this.documentHelper.pages[0];
                 this.writePage(page);
+            } else {
+                this.serializeMinimal();
             }
         }
         this.document[backgroundProperty[this.keywordIndex]]={[colorProperty[this.keywordIndex]]:this.documentHelper.backgroundColor};
@@ -332,6 +334,17 @@ export class SfdtExport {
         let doc: Document = this.document;
         this.clear();
         return doc;
+    }
+
+    private serializeMinimal(): void {
+        let section: any = {};
+        section[sectionFormatProperty[this.keywordIndex]] = {};
+        section[blocksProperty[this.keywordIndex]] = [];
+        let paragraph: any = {};
+        paragraph[inlinesProperty[this.keywordIndex]] = [];
+        section[blocksProperty[this.keywordIndex]].push(paragraph);
+        section[headersFootersProperty[this.keywordIndex]] = {};
+        this.document[sectionsProperty[this.keywordIndex]].push(section);
     }
 
     private getNextBlock(nextBlock: BlockWidget, lastBlock: BlockWidget): BlockWidget {
@@ -1568,6 +1581,11 @@ export class SfdtExport {
                 if (lineWidget.children[i - 1] instanceof ContentControl) {
                     if ((lineWidget.children[i - 1] as ContentControl).contentControlWidgetType === 'Block') {
                         this.blockContent = true;
+                    }
+                }
+                if (!isNullOrUndefined((lineWidget.children[i + 1]) && lineWidget.children[i + 1] instanceof ContentControl)) {
+                    if ((lineWidget.children[i + 1] as ContentControl).contentControlWidgetType === 'Inline') {
+                        this.blockContent = false;
                     }
                 }
                 if (!this.blockContent) {

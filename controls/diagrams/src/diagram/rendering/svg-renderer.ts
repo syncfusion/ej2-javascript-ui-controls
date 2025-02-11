@@ -339,7 +339,21 @@ export class SvgRenderer implements IRenderer {
         }
         if (!path || isSelector) {
             path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            svg.appendChild(path);
+            // Check if the parent of the SVG element has the ID 'diagram_nativeLayer'
+            if (svg.parentElement && svg.parentElement.id === 'diagram_nativeLayer') {
+                // Create a new 'g' element with the ID based on path.id + '_groupElement'
+                const groupElement: SVGGElement = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                groupElement.id = `${options.id}_groupElement`;
+
+                // Append the 'g' element as a child of the SVG element
+                svg.appendChild(groupElement);
+
+                // Append the path as a child of the newly created 'g' element
+                groupElement.appendChild(path);
+            } else {
+                // If the parent is not 'diagram_nativeLayer', append the path directly to the SVG
+                svg.appendChild(path);
+            }
         }
         this.renderPath(path, options, collection);
         let attr: object = {};
@@ -441,13 +455,14 @@ export class SvgRenderer implements IRenderer {
      *  @param {Object} ariaLabel - Provide the label properties .
      *  @param {string} diagramId - Provide the diagram id .
      *  @param {number} scaleValue - Provide the scale value .
-     *  @param {Container} parentNode - Provide the parent node .
+     *  @param {any} renderer - Provide the renderer value .
      *  @private
      */
     public drawText(
         canvas: SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement,
-        ariaLabel?: Object, diagramId?: string, scaleValue?: number, parentNode?: Container): void {
+        ariaLabel?: Object, diagramId?: string, scaleValue?: number, renderer?: any): void {
         if (options.content !== undefined) {
+            const parentNode: Container = renderer.groupElement;
             let textNode: Text;
             let childNodes: SubTextElement[];
             let wrapBounds: TextBounds; let position: PointModel; let child: SubTextElement;

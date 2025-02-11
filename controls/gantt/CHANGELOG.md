@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I678529` - When row drag and drop is used, the issue where modified records were not updating properly in the actionComplete event has been fixed.
+- `#I683525` - Resolved a script error that occurred during cell editing of the Resource field when the resource collection was modified through column editing.
+
+## 28.2.4 (2025-02-04)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I678529` -  Fixed issues where the Work column value was not updating correctly when one resource unit was set to 0 and another to 100. Additionally, resolved an issue in Fixed Duration mapping, where the Work value did not update to 0 when the resource unit was set to 0.
+- `#I682615`,`#I684467` - Duration updated incorrectly while updating record via method issue has been fixed.
+- `#I674922` - Taskbar Drag Issues When Overlapping on the Same Date issue has been fixed.
+
 ## 28.2.3 (2025-01-29)
 
 ### GanttChart

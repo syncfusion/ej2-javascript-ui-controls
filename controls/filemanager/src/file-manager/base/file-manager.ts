@@ -1838,13 +1838,24 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         }
     }
     /**
+     * Enables the specified menu items of the file manager.
+     *
+     * @param {string[]} items - Specifies an array of items to be enabled.
+     * @returns {void}
+     */
+    public enableMenuItems(items: string[]): void {
+        if (!isNOU(items) && !isNOU(this.contextmenuModule) && !isNOU(this.contextmenuModule.contextMenu)) {
+            this.contextmenuModule.enableItems(items, true, true);
+        }
+    }
+    /**
      * Disables the specified context menu items in file manager. This method is used only in the menuOpen event.
      *
      * @param {string[]} items - Specifies an array of items to be disabled.
      * @returns {void}
      */
     public disableMenuItems(items: string[]): void {
-        if (!isNOU(items) && !isNOU(this.contextmenuModule.contextMenu)) {
+        if (!isNOU(items) && !isNOU(this.contextmenuModule) && !isNOU(this.contextmenuModule.contextMenu)) {
             this.contextmenuModule.disableItem(items);
         }
     }

@@ -4895,10 +4895,6 @@ export abstract class ElementBox {
     /**
      * @private
      */
-    public isWrongWord: boolean = false;
-    /**
-     * @private
-     */
     public isVisible: boolean = false;
     /**
      * @private

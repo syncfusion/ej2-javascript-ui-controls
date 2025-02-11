@@ -3243,6 +3243,9 @@ export class SelectionCellFormat {
         this.topMargin = format.topMargin;
         this.bottomMargin = format.bottomMargin;
         this.background = format.shading.backgroundColor;
+        if (format.shading.hasValue('foregroundColor') && format.shading.textureStyle !== 'TextureNone') {
+            this.background = format.shading.foregroundColor;
+        }
         this.verticalAlignment = format.verticalAlignment;
         this.preferredWidth = format.preferredWidth;
         this.preferredWidthType = format.preferredWidthType;

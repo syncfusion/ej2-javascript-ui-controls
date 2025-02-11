@@ -1801,7 +1801,12 @@ export class StickyNotesAnnotation {
         }
     }
 
-    private checkIslockProperty(commentEvent: any): boolean {
+    /**
+     * @param {any} commentEvent - It describes about the selected reply
+     * @private
+     * @returns {boolean} - boolean
+     */
+    public checkIslockProperty(commentEvent: any): boolean {
         const annotCollection: any = this.pdfViewer.annotationCollection;
         let annotation: any;
         if (commentEvent.IsCommentLock) {
@@ -2301,7 +2306,9 @@ export class StickyNotesAnnotation {
                         if (type === 'textMarkup') {
                             this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                 clearCurrentAnnotationSelection(pageNumber - 1, true);
-                            const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + (pageNumber - 1));
+                            const canvasId: string = annotation && annotation.textMarkupAnnotationType === 'Highlight' ?
+                                '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
+                            const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + (pageNumber - 1));
                             this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                 selectAnnotation(pageCollections[parseInt(i.toString(), 10)], canvas, (pageNumber - 1));
                             this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAnnotation =

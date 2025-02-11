@@ -2198,7 +2198,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
         }
         eventArgs.filesData = fileData;
-        if (this.allowedExtensions.indexOf('*') > -1) {
+        if (!isNullOrUndefined(this.allowedExtensions) && this.allowedExtensions.indexOf('*') > -1) {
             this.allTypes = true;
         }
         if (this.enableHtmlSanitizer){
@@ -2375,7 +2375,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         const dropFiles: FileInfo[] = files;
         if (!this.isBlank(this.allowedExtensions)) {
             const allowedExtensions: string[] = [];
-            const extensions: string[] = this.allowedExtensions.split(',');
+            const extensions: string[] = !isNullOrUndefined(allowedExtensions) ? this.allowedExtensions.split(',') : [''];
             for (const extension of extensions) {
                 allowedExtensions.push(extension.trim().toLocaleLowerCase());
             }

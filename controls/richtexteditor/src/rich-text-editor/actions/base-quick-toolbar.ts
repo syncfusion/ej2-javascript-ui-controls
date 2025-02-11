@@ -125,8 +125,12 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                     target = target.childNodes[0] as HTMLElement;
                 }
                 targetOffsetTop = target.offsetTop;
-            } else{
-                targetOffsetTop = (target.classList.contains('e-rte-audio')) ? target.parentElement.offsetTop : target.offsetTop;
+            } else {
+                if (target.parentElement && target.classList.contains('e-rte-audio') || target.parentElement.classList.contains('e-video-clickelem')) {
+                    targetOffsetTop = target.parentElement.offsetTop;
+                } else {
+                    targetOffsetTop = target.offsetTop;
+                }
             }
         }
         const parentOffsetTop: number = window.pageYOffset + e.parentData.top;
@@ -148,8 +152,12 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         } else {
             if (this.parent.iframeSettings.enable) {
                 targetOffsetLeft = target.offsetLeft;
-            } else{
-                targetOffsetLeft = (target.classList.contains('e-rte-audio')) ? target.parentElement.offsetLeft : target.offsetLeft;
+            } else {
+                if (target.parentElement && target.classList.contains('e-rte-audio') || target.parentElement.classList.contains('e-video-clickelem')) {
+                    targetOffsetLeft = target.parentElement.offsetLeft;
+                } else {
+                    targetOffsetLeft = target.offsetLeft;
+                }
             }
         }
         if (target.offsetWidth > e.popWidth) {

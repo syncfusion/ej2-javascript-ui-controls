@@ -384,16 +384,12 @@ export class Resize extends ActionBase {
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             } else {
                 const cellWidth: number = this.actionObj.cellWidth;
-                cellIndex = isLeft ? Math.floor(offset / this.actionObj.cellWidth) :
+                cellIndex = isLeft ? Math.round(offset / this.actionObj.cellWidth) :
                     Math.ceil((offset + (this.parent.getElementWidth(this.actionObj.clone) - cellWidth)) / this.actionObj.cellWidth);
                 if (this.parent.enableRtl) {
-                    let cellOffsetWidth: number = 0;
-                    if (headerName === 'TimelineMonth' || (!this.parent.activeViewOptions.timeScale.enable &&
-                        !isTimelineMonth)) {
-                        cellOffsetWidth = this.actionObj.cellWidth;
-                    }
-                    const offsetWidth: number = (Math.floor(offset / this.actionObj.cellWidth) *
-                        this.actionObj.cellWidth) + (isLeft ? 0 : this.parent.getElementWidth(this.actionObj.clone) - cellOffsetWidth);
+                    const offsetWidth: number = (Math.round(offset / this.actionObj.cellWidth) *
+                        this.actionObj.cellWidth) + (isLeft ? 0 : (this.parent.getElementWidth(this.actionObj.clone) -
+                            this.actionObj.cellWidth));
                     cellIndex = Math.floor(offsetWidth / this.actionObj.cellWidth);
                 }
                 isLastCell = cellIndex === tdCollections.length;
@@ -412,11 +408,11 @@ export class Resize extends ActionBase {
                 if (!isLeft) {
                     offset += this.parent.getElementWidth(this.actionObj.clone);
                 }
-                let spanMinutes: number = Math.ceil((this.actionObj.slotInterval / this.actionObj.cellWidth) *
+                let spanMinutes: number = Math.floor((this.actionObj.slotInterval / this.actionObj.cellWidth) *
                     (offset - Math.floor(offset / this.actionObj.cellWidth) * this.actionObj.cellWidth));
                 spanMinutes = (isLastCell || (!isLeft && spanMinutes === 0)) ? this.actionObj.slotInterval : spanMinutes;
                 resizeTime = new Date(resizeDate.getTime());
-                resizeTime.setMinutes(resizeTime.getMinutes() + spanMinutes);
+                resizeTime = new Date(resizeDate.getTime() + (spanMinutes * util.MS_PER_MINUTE));
                 this.updateTimePosition(resizeTime);
             }
         } else {
@@ -485,11 +481,12 @@ export class Resize extends ActionBase {
         const slotInterval: number = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
         const pageWidth: number = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);
         const targetWidth: number = isTimelineView ?
-            (this.parent.getElementWidth(this.actionObj.element) / this.actionObj.cellWidth) * this.actionObj.cellWidth :
+            Math.round(this.parent.getElementWidth(this.actionObj.element) / this.actionObj.cellWidth) * this.actionObj.cellWidth :
             this.parent.currentView === 'Month' ? this.parent.getElementWidth(this.actionObj.element) :
                 Math.ceil(this.parent.getElementWidth(this.actionObj.element) / this.actionObj.cellWidth) * this.actionObj.cellWidth;
         let offsetWidth: number = targetWidth + (Math.ceil(pageWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth);
-        const left: number = (this.parent.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) : this.actionObj.clone.offsetLeft;
+        let left: number = (this.parent.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) : this.actionObj.clone.offsetLeft;
+        left = Math.round(left / slotInterval) * slotInterval;
         if (isTimeViews) {
             offsetWidth = targetWidth + (Math.ceil(pageWidth / slotInterval) * slotInterval);
             if (!isLeft) {
@@ -508,6 +505,7 @@ export class Resize extends ActionBase {
                 -(offsetWidth - this.actionObj.cellWidth);
             rightValue = isTimelineView ? rightValue : isLeft ? 0 : rightValue > 0 ? 0 : rightValue;
             if (isTimelineView && !isLeft) {
+                rightValue = Math.round(rightValue / slotInterval) * slotInterval;
                 rightValue = rightValue - (Math.ceil((this.actionObj.pageX - this.actionObj.X) / slotInterval) * slotInterval);
                 if (rightValue < 0) {
                     rightValue = parseInt(this.actionObj.clone.style.right, 10);

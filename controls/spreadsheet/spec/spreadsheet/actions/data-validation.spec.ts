@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, getCell, SheetModel, ValidationModel } from '../../../src/index';
+import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, getCell, SheetModel, ValidationModel, setCell } from '../../../src/index';
 import { getComponent, L10n } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
@@ -38,8 +38,8 @@ describe('Data validation ->', () => {
             expect(JSON.stringify(cell.validation)).toBe('{"type":"TextLength","operator":"LessThanOrEqualTo","value1":"12"}');
             helper.invoke('addInvalidHighlight', ['A2:A7']);
             let td: HTMLElement = helper.invoke('getCell', [1, 0]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [4, 0]);
             expect(td.style.backgroundColor).toBe('rgb(255, 255, 0)');
             expect(td.style.color).toBe('rgb(255, 0, 0)');
@@ -391,7 +391,7 @@ describe('Data validation ->', () => {
             helper.click('#' + helper.id + '_bold');
             helper.click('#' + helper.id + '_undo');
             const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[4];
-            expect(JSON.stringify(cell.validation)).toBe('{"type":"TextLength","operator":"EqualTo","value1":"3","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":false}');
+            expect(JSON.stringify(cell.validation)).toBe('{"type":"TextLength","operator":"EqualTo","value1":"3","value2":"","ignoreBlank":true,"inCellDropDown":null}');
             expect(cell.style).toBeUndefined();
             expect(helper.invoke('getCell', [1, 4]).style.fontWeight).toBe('');
             done();
@@ -544,10 +544,10 @@ describe('Data validation ->', () => {
             const td1: HTMLElement = helper.invoke('getCell', [2, 2]).children[0];
             (td1.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td1.children[0] });
             setTimeout(() => {
-            var popupLength=document.getElementsByClassName('e-list-parent').length;
-            expect(popupLength).toBe(1);
-            (helper.getElements('.e-list-item')[0] as HTMLElement) .click();
-            done();    
+                const popupLength: number = document.getElementsByClassName('e-list-parent').length;
+                expect(popupLength).toBe(1);
+                (helper.getElements('.e-list-item')[0] as HTMLElement).click();
+                done();
             });  
         });
 
@@ -557,7 +557,7 @@ describe('Data validation ->', () => {
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
-                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                const ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
                 ddlElem.ej2_instances[0].value = 'List';
                 ddlElem.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=value';
@@ -576,11 +576,42 @@ describe('Data validation ->', () => {
             const td1: HTMLElement = helper.invoke('getCell', [1, 5]).children[0];
             (td1.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td1.children[0] });
             setTimeout(() => {
-            var popupLength=document.getElementsByClassName('e-list-parent').length;
-            expect(popupLength).toBe(1);
-            (helper.getElements('.e-list-item')[0] as HTMLElement) .click();
-            done();  
+                const popupLength: number = document.getElementsByClassName('e-list-parent').length;
+                expect(popupLength).toBe(1);
+                (helper.getElements('.e-list-item')[0] as HTMLElement).click();
+                done();
             });         
+        });
+
+        it('List validation throws script error on providing the wrong defined name', (done: Function) => {
+            helper.invoke('selectRange', ['J2:J10']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                const ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'List';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-input')[2].value = '=Sync';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The list source must be a reference to single row or column.');
+                (document.querySelectorAll('.e-datavalidation-dlg.e-control.e-btn.e-lib.e-flat')[2] as HTMLElement).click();
+                done();
+            });
+        });
+
+        it('Applying bg color and font color on data validation highlighted cells', (done: Function) => {
+            helper.invoke('addInvalidHighlight', []);
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 0]);
+            expect(cellEle.style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(cellEle.style.color).toBe('rgb(255, 0, 0)');
+            helper.invoke('cellFormat', [{ backgroundColor: '#000080' }, 'A1']);
+            expect(cellEle.style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(cellEle.style.color).toBe('rgb(255, 0, 0)');
+            helper.invoke('cellFormat', [{ color: '#e7e6e6' }, 'A1']);
+            expect(cellEle.style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(cellEle.style.color).toBe('rgb(255, 0, 0)');
+            done();
         });
 
         it('ProtectSheet with Listvalidation', (done: Function) => {
@@ -604,6 +635,7 @@ describe('Data validation ->', () => {
     });
  
     describe('UI Interaction II ->', () => {
+        let spreadsheet: any;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{
@@ -624,13 +656,18 @@ describe('Data validation ->', () => {
             setTimeout(() => {
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-primary');
+                spreadsheet = helper.getInstance();
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[0].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"0","value2":"0","ignoreBlank":true,"inCellDropDown":null}');
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[0].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"0","value2":"0","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}');
                 expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
                 helper.switchRibbonTab(1);
                 helper.click('#spreadsheet_undo');
+                expect(spreadsheet.sheets[0].rows[0].cells[7].validation).toBeUndefined();
                 expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
                 helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(spreadsheet.sheets[0].rows[0].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"0","value2":"0","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}');
                 expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
                 done();
             });
@@ -640,11 +677,14 @@ describe('Data validation ->', () => {
             helper.switchRibbonTab(4);
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
             helper.click('.e-datavalidation-ddb li:nth-child(3)');
+            expect(JSON.stringify(spreadsheet.sheets[0].rows[0].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"0","value2":"0","ignoreBlank":true,"inCellDropDown":null}');
             expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
             helper.switchRibbonTab(1);
             helper.click('#spreadsheet_undo');
-            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(spreadsheet.sheets[0].rows[0].cells[7].validation).toBeUndefined();
+            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
             helper.click('#spreadsheet_redo');
+            expect(JSON.stringify(spreadsheet.sheets[0].rows[0].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"0","value2":"0","ignoreBlank":true,"inCellDropDown":null}');
             expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
             done();
         });
@@ -672,6 +712,8 @@ describe('Data validation ->', () => {
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
             helper.click('.e-datavalidation-ddb li:nth-child(4)');
             expect(JSON.stringify(cell.validation)).toBeUndefined();
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(3)');
             done();
         });
 
@@ -992,7 +1034,7 @@ describe('Data validation ->', () => {
                 helper.click('.e-datavalidation-dlg .e-primary');
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                expect(helper.invoke('getCell', [9, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(helper.invoke('getCell', [9, 3]).style.backgroundColor).toBe('');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"EqualTo","value1":"41","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
                 done();
             });
@@ -1629,7 +1671,7 @@ describe('Data validation ->', () => {
             });
 
             it('Clear all on column validation is not working', (done: Function) => {
-                helper.getInstance().workbookDataValidationModule.validationHandler({
+                helper.getInstance().workbookDataValidationModule.updateValidationHandler({
                     range: 'Sheet1!G:G', rules: {
                         type: 'List', operator: 'Between', value1: '1', value2: '', ignoreBlank: true, inCellDropDown: true
                     }
@@ -1706,8 +1748,8 @@ describe('Data validation ->', () => {
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
                 setTimeout(() => {
                     expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                    expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-                    expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                    expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
+                    expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('');
                     expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
                     helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                     helper.click('.e-datavalidation-ddb li:nth-child(3)');
@@ -1722,8 +1764,8 @@ describe('Data validation ->', () => {
                         helper.click('.e-datavalidation-ddb li:nth-child(2)');
                         setTimeout(() => {
                             expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-                            expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
+                            expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('');
                             expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
                             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                             helper.click('.e-datavalidation-ddb li:nth-child(3)');
@@ -1738,8 +1780,8 @@ describe('Data validation ->', () => {
                                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
                                 setTimeout(() => {
                                     expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                                    expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-                                    expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                                    expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
+                                    expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('');
                                     expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
                                     helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                                     helper.click('.e-datavalidation-ddb li:nth-child(3)');
@@ -1749,7 +1791,7 @@ describe('Data validation ->', () => {
                                     setTimeout(() => {
                                         expect(helper.invoke('getCell', [0, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
                                         expect(helper.invoke('getCell', [1, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                                        expect(helper.invoke('getCell', [8, 2]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                                        expect(helper.invoke('getCell', [8, 2]).style.backgroundColor).toBe('');
                                         expect(helper.invoke('getCell', [9, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
                                         done();
                                     });
@@ -2272,15 +2314,20 @@ describe('Data validation ->', () => {
                 (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
                 setTimeout(() => {
                     helper.click('.e-ddl.e-popup li:nth-child(1)');
-                    expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBe('test=texttable');
+                    const sheet: SheetModel = spreadsheet.sheets[0];
+                    expect(sheet.rows[1].cells[3].value).toBe('test=texttable');
                     expect(helper.invoke('getCell', [1, 3]).innerText).toBe('test=texttable');
                     helper.invoke('addInvalidHighlight', ['D2:D11']);
                     let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                    expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-                    expect(td.style.color).toBe('rgb(0, 0, 0)');
+                    expect(td.style.backgroundColor).toBe('');
+                    expect(td.style.color).toBe('');
                     td = helper.invoke('getCell', [4, 3]);
                     expect(td.style.backgroundColor).toBe('rgb(255, 255, 0)');
                     expect(td.style.color).toBe('rgb(255, 0, 0)');
+                    setCell(4, 3, sheet, { value: 'text=linear' }, true);
+                    helper.invoke('addInvalidHighlight', ['D2:D11']);
+                    expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
+                    expect(td.style.color).toBe('rgb(0, 0, 0)');
                     done();
                 });
             });
@@ -2368,40 +2415,40 @@ describe('Data validation ->', () => {
             helper.invoke('destroy');
         });
         it('Data validation ignoreBlank: true property is not working as expected', (done: Function) => {
-            expect(helper.invoke('getCell', [1, 0]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(helper.invoke('getCell', [2, 0]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 0]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 0]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [3, 0]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [2, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
             expect(helper.invoke('getCell', [3, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 2]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(helper.invoke('getCell', [2, 2]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 2]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 2]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [3, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [2, 3]).style.backgroundColor).toBe('rgb(255, 255, 0)');
             expect(helper.invoke('getCell', [3, 3]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [2, 5]).style.backgroundColor).toBe('rgb(255, 255, 0)');
             expect(helper.invoke('getCell', [3, 5]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 6]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(helper.invoke('getCell', [2, 6]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 6]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 6]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [3, 6]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
             expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(helper.invoke('getCell', [2, 8]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 8]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [3, 8]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 9]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 9]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [2, 9]).style.backgroundColor).toBe('rgb(255, 255, 0)');
             expect(helper.invoke('getCell', [3, 9]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 10]).style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(helper.invoke('getCell', [2, 10]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 10]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 10]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [3, 10]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-            expect(helper.invoke('getCell', [1, 11]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 11]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [2, 11]).style.backgroundColor).toBe('rgb(255, 255, 0)');
             expect(helper.invoke('getCell', [3, 11]).style.backgroundColor).toBe('rgb(255, 255, 0)');
             done();
@@ -3176,8 +3223,8 @@ describe('Data validation ->', () => {
             const sheet: SheetModel = helper.getInstance().getActiveSheet();
             const td: HTMLElement = helper.invoke('getCell', [1, 8]);
             expect(getCell(1, 8, sheet).validation.isHighlighted).toBeTruthy();
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             done();
         });
         it('Clear Highlight after applying whole column validation', (done: Function) => {
@@ -3185,9 +3232,9 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(3)');
             const sheet: SheetModel = helper.getInstance().getActiveSheet();
             const td: HTMLElement = helper.invoke('getCell', [1, 8]);
-            expect(getCell(1, 8, sheet).validation.isHighlighted).toBeFalsy();
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(getCell(1, 8, sheet).validation.isHighlighted).toBeUndefined();
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             done();
         });
     });
@@ -3240,11 +3287,11 @@ describe('Data validation ->', () => {
             expect(spreadsheet.sheets[0].rows[3].cells[3].validation.type).toBe('Custom');
             helper.invoke('addInvalidHighlight', ['D3:D4']);
             let td: HTMLElement = helper.invoke('getCell', [2, 3]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [3, 3]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             done();
         });
         it('Checking Empty cell value in custom data validation', (done: Function) => {
@@ -3256,11 +3303,11 @@ describe('Data validation ->', () => {
             expect(spreadsheet.sheets[0].rows[5].cells[3].validation.type).toBe('Custom');
             helper.invoke('addInvalidHighlight', ['D5:D6']);
             let td: HTMLElement = helper.invoke('getCell', [4, 3]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [5, 3]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             done();
         });
         it('Checking Empty cell value with cross sheet references in custom data validation', (done: Function) => {
@@ -3272,11 +3319,11 @@ describe('Data validation ->', () => {
             expect(spreadsheet.sheets[0].rows[7].cells[3].validation.type).toBe('Custom');
             helper.invoke('addInvalidHighlight', ['D7:D8']);
             let td: HTMLElement = helper.invoke('getCell', [6, 3]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [7, 3]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             done();
         });
         it('Checking cross sheet references in custom data validation', (done: Function) => {
@@ -3288,11 +3335,11 @@ describe('Data validation ->', () => {
             expect(spreadsheet.sheets[0].rows[1].cells[4].validation.type).toBe('Custom');
             helper.invoke('addInvalidHighlight', ['E1:E2']);
             let td: HTMLElement = helper.invoke('getCell', [0, 4]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [1, 4]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             done();
         });
         it('Checking cross sheet references with formulas in custom data validation', (done: Function) => {
@@ -3304,11 +3351,11 @@ describe('Data validation ->', () => {
             expect(spreadsheet.sheets[0].rows[3].cells[4].validation.type).toBe('Custom');
             helper.invoke('addInvalidHighlight', ['E3:E4']);
             let td: HTMLElement = helper.invoke('getCell', [2, 4]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [3, 4]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             done();
         });
         it('Checking formulas in custom data validation', (done: Function) => {
@@ -3320,11 +3367,11 @@ describe('Data validation ->', () => {
             expect(spreadsheet.sheets[0].rows[1].cells[6].validation.type).toBe('Custom');
             helper.invoke('addInvalidHighlight', ['G1:G10']);
             let td: HTMLElement = helper.invoke('getCell', [1, 6]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [2, 6]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             done();
         });
         it('Checking custom validation applied cell contains the formula referencing the same cells', (done: Function) => {
@@ -3336,8 +3383,8 @@ describe('Data validation ->', () => {
             expect(spreadsheet.sheets[0].rows[5].cells[7].validation.type).toBe('Custom');
             helper.invoke('addInvalidHighlight', ['H1:H11']);
             let td: HTMLElement = helper.invoke('getCell', [0, 7]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [1, 7]);
             expect(td.style.backgroundColor).toBe('rgb(255, 255, 0)');
             expect(td.style.color).toBe('rgb(255, 0, 0)');
@@ -3357,11 +3404,11 @@ describe('Data validation ->', () => {
             expect(spreadsheet.sheets[0].rows[5].cells[10].validation.type).toBe('Custom');
             helper.invoke('addInvalidHighlight', ['K1:K11']);
             let td: HTMLElement = helper.invoke('getCell', [0, 10]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             td = helper.invoke('getCell', [1, 10]);
-            expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
-            expect(td.style.color).toBe('rgb(0, 0, 0)');
+            expect(td.style.backgroundColor).toBe('');
+            expect(td.style.color).toBe('');
             helper.edit('K2', '15');
             helper.invoke('addInvalidHighlight', ['K1:K11']);
             td = helper.invoke('getCell', [1, 10]);

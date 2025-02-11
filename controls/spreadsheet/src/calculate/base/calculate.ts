@@ -1280,7 +1280,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.getErrorStrings()[CommonErrors.NA];
     }
 
-    public computeVHLookup(range: string[], isVlookup?: boolean): string {
+    public computeVHLookup(range: string[], isVLookup?: boolean): string {
         const argArr: string[] = range;
         if (isNullOrUndefined(argArr) || argArr.length < 3 || argArr.length > 4) {
             return this.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
@@ -1361,7 +1361,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 return errorStrings[CommonErrors.Ref];
             }
             const getCellValue: (row: number, col: number, curCell: string) => string = this.getCellValueFn(grid, this.cell, sheetId, true);
-            if (isVlookup) {
+            if (isVLookup) {
                 const matchIndex: number = colIdx + colNumIdx - 1;
                 if (matchIndex > endColIdx) {
                     return errorStrings[CommonErrors.Ref];
@@ -2822,6 +2822,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             }
             return val;
+        } else if (firstChar === 'u' && val.includes(this.arithMarker)) {
+            // To parse - sign with brackets, cell references and nested formulas in the formula arguments. Ex: -(I13+I14+I12)/(-D2+D1) as arguments in formulas.
+            val = this.parser.parseSimpleOperators(val.split('u').join('0-'), [this.parser.tokenSubtract], ['-']);
         } else {
             const isFirstCharUpper: boolean = this.isUpperChar(firstChar);
             if (!isFirstCharUpper) {

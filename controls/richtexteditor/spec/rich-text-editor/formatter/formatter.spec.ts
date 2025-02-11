@@ -212,6 +212,45 @@ Tabs and shift-tabs work too`;
             destroy(rteObj);
         });
     });
+
+    describe('Undo/Redo - Shift + Tab Key Handling', () => {
+        let rteObj: RichTextEditor;
+        let editNode: HTMLElement;
+        let keyboardEventArgs: any = {
+            preventDefault: () => { },
+            stopPropagation: () => { },
+            key: 'Tab',
+            code: 'Tab',
+            keyCode: 9,
+            shiftKey: true,
+            ctrlKey: false,
+            altKey: false,
+            action: 'shift-tab'
+        };
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                }
+            });
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('should not enable Undo when Shift + Tab is pressed inside a paragraph', () => {
+            editNode.innerHTML = '<p id="testPara">Test content</p>';
+            const paragraph = editNode.querySelector('#testPara') as HTMLElement;
+            paragraph.focus();
+            rteObj.formatter.onKeyHandler(rteObj, keyboardEventArgs);
+            const undoStatus = rteObj.formatter.editorManager.undoRedoManager.getUndoStatus();
+            expect(undoStatus.undo).toBe(false);
+        });
+    });
+
     describe('861633 - Table is created at the top instead of pointed place when using keyboard shortcut (Ctrl+Shift+E) ', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

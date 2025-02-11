@@ -43,8 +43,19 @@ export class Formats {
     }
 
     private getParentNode(node: Node): Node {
+        const formatNode: Node = node;
+        const blockTags: string[] = ['DIV',  'SECTION', 'ARTICLE', 'ASIDE', 'FOOTER', 'HEADER', 'NAV', 'MAIN'];
         for (; node.parentNode && node.parentNode !== this.parent.editableElement; null) {
             node = node.parentNode;
+        }
+        if (blockTags.indexOf(node.nodeName.toUpperCase()) !== -1) {
+            node = formatNode as Element;
+            while (blockTags.indexOf(node.nodeName.toUpperCase()) === -1) {
+                if (blockTags.indexOf(node.parentNode.nodeName.toUpperCase()) !== -1) {
+                    break;
+                }
+                node = node.parentNode as Element;
+            }
         }
         return node;
     }
@@ -382,29 +393,33 @@ export class Formats {
             const replaceNode: string = (e.subCommand.toLowerCase() === 'pre' && parentNode.tagName.toLowerCase() === 'pre') ?
                 'p' : e.subCommand;
             const isToggleBlockquoteList: boolean = e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
-                e.subCommand.toLowerCase() === 'blockquote' && this.parent.domNode.isList((parentNode as HTMLElement).firstElementChild);
+                e.subCommand.toLowerCase() === 'blockquote' && !isNOU(closest(formatsNodes[i as number], 'li'));
             const ensureNode: Element = parentNode.tagName === 'TABLE' ?
                 (!isNOU(closest((formatsNodes[i as number]), 'blockquote')) ? closest((formatsNodes[i as number]), 'blockquote') : parentNode) : parentNode;
             const isToggleBlockquote: boolean = (e.subCommand.toLowerCase() === ensureNode.tagName.toLowerCase())
                 && e.subCommand.toLowerCase() === 'blockquote';
             let replaceTag: string;
-            if (isToggleBlockquoteList) {
-                replaceTag = replaceHTML.replace('<blockquote>', '').replace('</blockquote>', '');
+            const startNode: Node = this.getNode(formatsNodes[i as number]);
+            const endNode: Node = this.getNode(formatsNodes[formatsNodes.length - 1]);
+            const wholeBlockquoteSelected: boolean = isToggleBlockquote && parentNode.firstChild === startNode
+             && parentNode.lastChild === endNode;
+            if (wholeBlockquoteSelected) {
+                replaceTag = replaceHTML.replace(/<blockquote[^>]*>|<\/blockquote>/g, '');
+            } else if (isToggleBlockquoteList) {
+                isWholeBlockquoteNotSelected = true;
+                if (i === 0) {
+                    this.createBlockquoteSpan('e-rte-blockquote-close', startNode as Element, 'before');
+                }
+                if (i === formatsNodes.length - 1) {
+                    this.createBlockquoteSpan('e-rte-blockquote-open', endNode as Element, 'after');
+                }
             } else if (isToggleBlockquote && closest(formatsNodes[0], 'blockquote') && closest(formatsNodes[formatsNodes.length - 1], 'blockquote')) {
-                if ( isNOU(formatsNodes[0].previousSibling) && isNOU(formatsNodes[formatsNodes.length - 1].nextSibling)) {
-                    replaceTag = replaceHTML.replace(/<blockquote[^>]*>|<\/blockquote>/g, '');
-                } else {
-                    isWholeBlockquoteNotSelected = true;
-                    if (i === 0) {
-                        const tempCloseSpanElem: HTMLElement = createElement('span');
-                        tempCloseSpanElem.classList.add('e-rte-blockquote-close');
-                        formatsNodes[i as number].parentNode.insertBefore(tempCloseSpanElem, formatsNodes[i as number]);
-                    }
-                    if (i === formatsNodes.length - 1) {
-                        const tempOpenSpanElem: HTMLElement = createElement('span');
-                        tempOpenSpanElem.classList.add('e-rte-blockquote-open');
-                        this.parent.domNode.insertAfter(tempOpenSpanElem, formatsNodes[i as number] as Element);
-                    }
+                isWholeBlockquoteNotSelected = true;
+                if (i === 0) {
+                    this.createBlockquoteSpan('e-rte-blockquote-close', formatsNodes[i as number] as Element, 'before');
+                }
+                if (i === formatsNodes.length - 1) {
+                    this.createBlockquoteSpan('e-rte-blockquote-open', formatsNodes[i as number] as Element, 'after');
                 }
             } else {
                 replaceTag = this.parent.domNode.createTagString(
@@ -469,6 +484,28 @@ export class Formats {
                 elements: this.parent.domNode.blockNodes() as Element[]
             });
         }
+    }
+
+    private getNode(node: Node): Node {
+        if (node.nodeName === 'BLOCKQUOTE') {
+            node = node.firstChild;
+            return node;
+        }
+        for (; node.parentNode && node.parentNode.nodeName !== 'BLOCKQUOTE' ; null) {
+            node = node.parentNode;
+        }
+        return node;
+    }
+
+    private createBlockquoteSpan(className: string, node: Element, position: 'before' | 'after'): HTMLElement {
+        const tempSpanElem: HTMLElement = createElement('span');
+        tempSpanElem.classList.add(className);
+        if (position === 'before') {
+            node.parentNode.insertBefore(tempSpanElem, node);
+        } else {
+            this.parent.domNode.insertAfter(tempSpanElem, node);
+        }
+        return tempSpanElem;
     }
 
     private setSelectionBRConfig(): void {

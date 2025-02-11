@@ -155,7 +155,7 @@ export class DiagramElement {
      * * FlipVertical - Rotate the diagram element throughout its immediate parent
      */
 
-    public flip: FlipDirection = 'None';
+    public flip: FlipDirection = FlipDirection.None;
 
     /**
      * Sets/Gets the element that is to be flipped in assigned flip direction along with the node

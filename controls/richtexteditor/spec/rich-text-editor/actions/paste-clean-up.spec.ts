@@ -4818,7 +4818,6 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
             done();
         });
     });
-
     describe('921860 - Nested list created after performing copy and pasting content from outlook', () => {
         let editor: RichTextEditor;
         beforeEach((done: DoneFn) => {
@@ -4845,6 +4844,37 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
             editor.onPaste(pasteEvent);
             setTimeout(() => {
                 var pastedElm = editor.inputElement.querySelector(".ulelement").parentElement.nodeName == 'UL';
+                expect(pastedElm).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('936593 - List Items Aligned Horizontally When Copying from Azure Task Description.', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                    prompt: false
+                },
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Pasting a UL element with display: flex and flex-direction styles.', (done: DoneFn) => {
+            editor.focusIn();
+            var element: Node = editor.inputElement.firstChild.childNodes[0];
+            setCursorPoint(element as Element, 0);
+            const clipBoardData: string = `<p style=" font-weight: 600; font-style: normal; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); margin: 12px 0px 0px; font-size: 16px; color: rgb(17, 17, 17); font-family: -apple-system, Roboto, SegoeUI, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, Helvetica, &quot;Microsoft YaHei&quot;, &quot;Meiryo UI&quot;, Meiryo, &quot;Arial Unicode MS&quot;, sans-serif; text-align: left;">asdasdfasdfasdf</p><ol style=" padding-left: 40px; font-style: normal; font-weight: 400; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); margin: 12px 0px 0px; display: flex; flex-direction: column; color: rgb(17, 17, 17); font-family: -apple-system, Roboto, SegoeUI, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, Helvetica, &quot;Microsoft YaHei&quot;, &quot;Meiryo UI&quot;, Meiryo, &quot;Arial Unicode MS&quot;, sans-serif; font-size: 16px; text-align: left;"><li style=" list-style: inherit;"><strong>JSON Serialization</strong>: The RichTextEditor should be able to serialize its content into a JSON format.</li><li style=" list-style: inherit;"><strong>JSON Deserialization</strong>: The editor should be able to load and render content from a JSON format.</li></ol>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                var pastedElm = (editor.inputElement.querySelector('OL') as any).style.flexDirection == 'column';
                 expect(pastedElm).toBe(true);
                 done();
             }, 100);
@@ -4883,6 +4913,150 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
                 expect(editor.inputElement.querySelectorAll('img').length).toBe(1);
                 done();
             }, 100);
+        });
+    });
+
+    describe("925901 - Table gets deleted when hit the enter key", () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+          preventDefault: () => { },
+          type: "keydown",
+          stopPropagation: () => { },
+          ctrlKey: false,
+          shiftKey: false,
+          action: null,
+          which: 64,
+          key: ""
+        };
+      
+        beforeAll((done: Function) => {
+          rteObj = renderRTE({
+            value: `<p><b>Description:</b></p><p class="custom">The Rich Text Editor (RTE) control is an easy to render in client side.</p>`,
+            pasteCleanupSettings: {
+              prompt: true
+            }
+          });
+          done();
+        });
+        it("Paste content to RTE table and then pressing the enter key table gets deleted", (done) => {
+          let localElem: string = `\x3C!--StartFragment-->\n\n<div style="direction:ltr;" class="pasteContent_RTE">\n\n<table border="1" cellpadding="0" cellspacing="0" valign="top" title="" summary="" style="direction:ltr;border-style:solid;border-width:\n 1pt;">\n <tbody><tr>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.6673in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.6673in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.5in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n </tr>\n <tr>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.6673in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.6673in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.5in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n </tr>\n</tbody></table>\n\n</div>\n\n\x3C!--EndFragment-->`;
+          keyBoardEvent.clipboardData = {
+            getData: () => {
+              return localElem;
+            },
+            items: []
+          };
+          rteObj.pasteCleanupSettings.prompt = false;
+          rteObj.pasteCleanupSettings.plainText = false;
+          rteObj.pasteCleanupSettings.keepFormat = true;
+          rteObj.dataBind();
+          let selectNode = (rteObj as any).inputElement.querySelector('.custom');
+          setCursorPoint(selectNode, 0);
+          rteObj.onPaste(keyBoardEvent);
+          let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 13,
+            keyCode: 13,
+            which: 13,
+            code: 'Enter',
+            action: 'enter',
+            type: 'keydown'
+          };
+          (<any>rteObj).keyDown(keyboardEventArgs);
+          setTimeout(() => {
+            let pastedElm: any = (rteObj as any).inputElement.innerHTML;
+            let expected: boolean = false;
+            let expectedElem: string = '<p><b>Description:</b></p><div style="direction:ltr;">\n\n<table border="1" cellpadding="0" cellspacing="0" valign="top" title="" summary="" style="direction:ltr;border-style:solid;border-width:\n 1pt;" class="e-rte-paste-table">\n <tbody><tr>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.6673in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.6673in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.5in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n </tr>\n <tr>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.6673in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.6673in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n  <td style="border-style:solid;border-width:1pt;\n  vertical-align:top;width:.5in;padding:4pt 4pt 4pt 4pt;">\n  <p style="margin:0in;font-family:Calibri;font-size:11.0pt;">&nbsp;</p>\n  </td>\n </tr>\n</tbody></table></div><p class="custom">The Rich Text Editor (RTE) control is an easy to render in client side.</p>';
+            if (pastedElm === expectedElem) {
+              expected = true;
+            }
+            expect(expected).toBe(true);
+            done();
+          }, 100);
+        });
+
+        afterAll((done: DoneFn) => {
+          destroy(rteObj);
+          done();
+        });
+      });
+
+      describe("936807 - Shortcut key of ctrl+shift+v should not open the prompt dialog", () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+          preventDefault: () => { },
+          type: "keydown",
+          stopPropagation: () => { },
+          ctrlKey: true,
+          shiftKey: true,
+          action: null,
+          which: 86,
+          key: "V"
+        };
+
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><b>Description:</b></p><p class="custom">The Rich Text Editor (RTE) control is an easy to render in client side.</p>`,
+                pasteCleanupSettings: {
+                    prompt: true
+                }
+            });
+            done();
+        });
+        it("Prompt should not open when ctrl + shift + v is pressed", (done) => {
+            keyBoardEvent.clipboardData = {
+                getData: (e: any) => {
+                    if (e === "text/plain") {
+                        return 'Description:\n\nThe Rich Text Editor (RTE) ';
+                    } else {
+                        return '';
+                    }
+                },
+                items: []
+            };
+            rteObj.pasteCleanupSettings.prompt = true;
+            rteObj.pasteCleanupSettings.plainText = false;
+            rteObj.pasteCleanupSettings.keepFormat = true;
+            rteObj.dataBind();
+            let selectNode = (rteObj as any).inputElement.querySelector('.custom');
+            setCursorPoint(selectNode, 0);
+            let keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: true,
+                shiftKey: true,
+                char: '',
+                key: 'v',
+                charCode: 0,
+                keyCode: 86,
+                which: 86,
+                code: 'KeyV',
+                action: '',
+                type: 'keydown'
+            };
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            rteObj.onPaste(keyBoardEvent);
+            setTimeout(() => {
+                let pastedElm: any = (rteObj as any).inputElement.innerHTML;
+                let expected: boolean = false;
+                let expectedElem: string = '<p><b>Description:</b></p><p class="custom">Description:<br><br>The Rich Text Editor (RTE)&nbsp;The Rich Text Editor (RTE) control is an easy to render in client side.</p>';
+                if (pastedElm === expectedElem) {
+                    expected = true;
+                }
+                expect(expected).toBe(true);
+                expect((rteObj as any).isPlainPaste).toBe(false);
+                done();
+            }, 100);
+        });
+
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
         });
     });
 

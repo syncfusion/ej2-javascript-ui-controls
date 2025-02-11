@@ -127,7 +127,7 @@ export class Formatter {
             && args.item.command !== 'Font' && args.item.command !== 'Export')
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
-                && args.name === 'colorPickerChanged') || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker')) {
+                && (args.name === 'colorPickerChanged' ||  args.name === 'tableColorPickerChanged')) || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker')) {
             extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value, selectType: args.name }, true);
             self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                 if (!actionBeginArgs.cancel) {
@@ -170,7 +170,8 @@ export class Formatter {
                 }
             });
         }
-        if ((isNOU(event) || event && (event as KeyboardEventArgs).action !== 'copy')) {
+        if ((isNOU(event) || event && (event as KeyboardEventArgs).action !== 'copy') &&
+            !(event && event.shiftKey && (event as KeyboardEventArgs).key === 'Tab')) {
             this.enableUndo(self);
         }
     }

@@ -36,7 +36,10 @@ export class Image {
     private contentModule: IRenderer;
     private rendererFactory: RendererFactory;
     private quickToolObj: IRenderer;
-    private imgResizeDiv: HTMLElement;
+    /**
+     * @hidden
+     */
+    public imgResizeDiv: HTMLElement;
     private imgDupPos: { [key: string]: number | string };
     private resizeBtnStat: { [key: string]: boolean };
     private imgEle: HTMLImageElement;
@@ -269,13 +272,8 @@ export class Image {
             if (this.parent.formatter.getUndoRedoStack().length === 0) {
                 this.parent.formatter.saveData();
             }
-            if (this.parent.iframeSettings.enable) {
-                this.pageX = (e as PointerEvent).screenX;
-                this.pageY = (e as PointerEvent).screenY;
-            } else {
-                this.pageX = this.getPointX(e);
-                this.pageY = this.getPointY(e);
-            }
+            this.pageX = this.getPointX(e);
+            this.pageY = this.getPointY(e);
             e.preventDefault();
             e.stopImmediatePropagation();
             this.resizeBtnInit();
@@ -356,21 +354,40 @@ export class Image {
         this.imgResizePos(e, this.imgResizeDiv);
         this.resizeImgDupPos(e);
         this.contentModule.getEditPanel().appendChild(this.imgResizeDiv);
+        if (this.parent.element.style.height === 'auto') {
+            this.imgResizePos(e, this.imgResizeDiv);
+        }
     }
 
     private getPointX(e: PointerEvent | TouchEvent): number {
-        if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
-            return (e as TouchEvent).touches[0].pageX;
+        if (this.parent.iframeSettings.enable) {
+            if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
+                return (e as TouchEvent).touches[0].screenX;
+            } else {
+                return (e as PointerEvent).screenX;
+            }
         } else {
-            return (e as PointerEvent).pageX;
+            if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
+                return (e as TouchEvent).touches[0].pageX;
+            } else {
+                return (e as PointerEvent).pageX;
+            }
         }
     }
 
     private getPointY(e: PointerEvent | TouchEvent): number {
-        if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
-            return (e as TouchEvent).touches[0].pageY;
+        if (this.parent.iframeSettings.enable) {
+            if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
+                return (e as TouchEvent).touches[0].screenY;
+            } else {
+                return (e as PointerEvent).screenY;
+            }
         } else {
-            return (e as PointerEvent).pageY;
+            if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
+                return (e as TouchEvent).touches[0].pageY;
+            } else {
+                return (e as PointerEvent).pageY;
+            }
         }
     }
 
@@ -535,8 +552,8 @@ export class Image {
         if (this.resizeBtnStat.botRight || this.resizeBtnStat.botLeft || this.resizeBtnStat.topRight || this.resizeBtnStat.topLeft) {
             if (this.parent.iframeSettings.enable) {
                 const resizeFactor: number[] = this.getResizeFactor(this.currentResizeHandler);
-                const currentScreenX: number = (e as PointerEvent).screenX;
-                const currentScreenY: number = (e as PointerEvent).screenY;
+                const currentScreenX: number = this.getPointX(e);
+                const currentScreenY: number = this.getPointY(e);
                 const currentWidth: number  = this.imgEle.clientWidth;
                 const currentHeight: number = this.imgEle.clientHeight;
                 const deltaX: number = currentScreenX - this.pageX;
@@ -583,7 +600,7 @@ export class Image {
         return image.clientWidth / image.clientHeight;
     }
 
-    private cancelResizeAction(): void {
+    public cancelResizeAction(): void {
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         if (this.imgEle && this.imgResizeDiv && this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
@@ -1194,6 +1211,7 @@ export class Image {
                     subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
                 });
             this.dialogObj.hide({ returnValue: false } as Event);
+            this.parent.inputElement.focus({ preventScroll: true });
         }
     }
 
@@ -1487,7 +1505,7 @@ export class Image {
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event: BeforeCloseEventArgs) => {
-                if (event && event.closedBy !== 'user action' && this.uploadObj.filesData.length > 0) {
+                if (event && event.closedBy !== 'user action' && this.uploadObj && this.uploadObj.filesData.length > 0) {
                     this.uploadObj.remove();
                 }
                 this.parent.isBlur = false;
@@ -1803,6 +1821,7 @@ export class Image {
             proxy.imgResizePos(e.selectNode[0] as HTMLImageElement, this.imgResizeDiv);
         }
         proxy.dialogObj.hide({ returnValue: true } as Event);
+        proxy.parent.inputElement.focus({ preventScroll: true });
     }
 
     private insertImage(e: IImageNotifyArgs): void {
@@ -1874,6 +1893,9 @@ export class Image {
                 filesData = e.filesData;
                 this.parent.trigger(events.imageSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {
+                        if (isNOU(selectArgs.filesData[0])) {
+                            return;
+                        }
                         this.checkExtension(selectArgs.filesData[0]);
                         altText = selectArgs.filesData[0].name.replace(/\.[a-zA-Z0-9]+$/, '');
                         if (this.parent.editorMode === 'HTML' && isNOU(this.parent.insertImageSettings.path)) {

@@ -7,7 +7,7 @@ import { Path} from '../../../src/diagram/objects/node';
 import { HtmlModel, NodeModel } from '../../../src/diagram/objects/node-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
-import { DiagramTools, KeyModifiers, Keys } from '../../../src/diagram/enum/enum';
+import { DiagramTools, FlipDirection, KeyModifiers, Keys } from '../../../src/diagram/enum/enum';
 import { CommandManager } from '../../../src/diagram/diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel } from '../../../src/diagram/diagram/keyboard-commands-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
@@ -916,7 +916,7 @@ describe('Diagram keyboard commands', () => {
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
             expect(diagram.selectedItems.nodes.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'H', true);
-            expect(diagram.selectedItems.nodes[0].flip=="Horizontal").toBe(true);
+            expect(diagram.selectedItems.nodes[0].flip==FlipDirection.Horizontal).toBe(true);
             done();
         });
         it('Checking flip vertical commands', (done: Function) => {
@@ -924,7 +924,7 @@ describe('Diagram keyboard commands', () => {
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
             expect(diagram.selectedItems.nodes.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'J', true);
-            expect(diagram.selectedItems.nodes[0].flip=="Vertical").toBe(true);
+            expect(diagram.selectedItems.nodes[0].flip==FlipDirection.Vertical).toBe(true);
             done();
         });
         it('Checking group commands', (done: Function) => {

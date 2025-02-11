@@ -913,6 +913,7 @@ export interface ITreeView extends Component<HTMLElement> {
 /** @hidden */
 export interface IContextMenu extends Component<HTMLElement> {
     disableItem(items: string[]): void;
+    enableItems(items: string[], enable?: boolean, isUniqueId?: boolean): void;
     getItemIndex(item: string): number;
     contextMenu: ContextMenu;
     contextMenuBeforeOpen: Function;

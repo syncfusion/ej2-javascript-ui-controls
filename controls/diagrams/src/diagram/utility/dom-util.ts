@@ -20,6 +20,7 @@ import { SelectorModel } from '../objects/node-model';
 import { UserHandleModel } from '../interaction/selector-model';
 import { ConnectorFixedUserHandle, NodeFixedUserHandle } from '../objects/fixed-user-handle';
 import { Diagram } from './../diagram';
+import { FlipDirection } from '../enum/enum';
 
 /**
  * Defines the functionalities that need to access DOM
@@ -123,13 +124,13 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
         const flipY: number = top + element.actualSize.height - point.y;
         // 895069: Updating the node and connector's docking point for node's fliped position
         switch (element.flip) {
-        case 'Both':
+        case FlipDirection.Both:
             pt1 = { x: flipX, y: flipY };
             break;
-        case 'Horizontal':
+        case FlipDirection.Horizontal :
             pt1 = { x: flipX, y: baseY };
             break;
-        case 'Vertical':
+        case FlipDirection.Vertical:
             pt1 = { x: baseX, y: flipY };
             break;
         default:

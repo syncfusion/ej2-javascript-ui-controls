@@ -4,6 +4,7 @@ import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base'
 import { AjaxHandler } from '../index';
 import { DiagramHtmlElement } from '../drawing/html-element';
 import { Size } from '@syncfusion/ej2-drawings';
+import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
 
 /**
  * Print module
@@ -125,10 +126,10 @@ export class Print {
             this.pdfViewerBase.showPrintLoadingIndicator(false);
         } else {
             if (proxy.pdfViewerBase.clientSideRendering) {
-                this.pdfViewerBase.pdfViewerRunner.postMessage({
+                this.pdfViewerBase.pdfViewerRunner.addTask({
                     pageIndex: pageIndex, message: 'printImage', printScaleFactor:
                         printScaleFactor >= 0.5 && printScaleFactor <= 5 ? printScaleFactor : printScaleFactor > 5 ? 5 : 1
-                });
+                }, TaskPriorityLevel.High);
             } else {
                 proxy.printRequestHandler.send(jsonObject);
             }
@@ -189,7 +190,7 @@ export class Print {
             }
             if (printImage && printImage.uniqueId === this.pdfViewerBase.documentId) {
                 this.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.print, printImage);
-                let annotationSource: string = '';
+                let annotationSource: any;
                 if (!this.pdfViewer.annotationSettings.skipPrint) {
                     const annotationCollections: any = this.pdfViewerBase.documentAnnotationCollections;
                     if (annotationCollections && annotationCollections[printImage.pageNumber] &&
@@ -203,20 +204,20 @@ export class Print {
                             const freeTextAnnotation: number[] = printCollection.freeTextAnnotation;
                             const stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
                             annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
-                                printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber, stampAnnotation,
-                                                           shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation,
-                                                           freeTextAnnotation);
+                                printAnnotationsInCanvas(textMarkupAnnotation, printImage.pageNumber, stampAnnotation,
+                                                         shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation,
+                                                         freeTextAnnotation);
                         } else {
                             annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
-                                printTextMarkupAnnotations(printCollection.textMarkupAnnotation, printImage.pageNumber,
-                                                           printCollection.stampAnnotations, printCollection.shapeAnnotation,
-                                                           printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation,
-                                                           printCollection.freeTextAnnotation);
+                                printAnnotationsInCanvas(printCollection.textMarkupAnnotation, printImage.pageNumber,
+                                                         printCollection.stampAnnotations, printCollection.shapeAnnotation,
+                                                         printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation,
+                                                         printCollection.freeTextAnnotation);
                         }
                     }
                     if (this.pdfViewerBase.isAnnotationCollectionRemoved) {
                         annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
-                            printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null, null);
+                            printAnnotationsInCanvas(null, printImage.pageNumber, null, null, null, null, null);
                     }
                 }
                 const currentPageNumber: number = printImage.pageNumber;
@@ -262,11 +263,18 @@ export class Print {
                 const context: CanvasRenderingContext2D = this.printCanvas.getContext('2d');
                 const pageImage: HTMLImageElement = new Image();
                 const annotationImage: HTMLImageElement = new Image();
+                const annotationImage1: HTMLImageElement = new Image();
                 pageImage.onload = (): void => {
                     if ((pageHeight > pageWidth) || !this.pdfViewer.enablePrintRotation) {
                         context.drawImage(pageImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
-                        if (annotationSource) {
+                        if (annotationSource.annotImg) {
                             context.drawImage(annotationImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
+                        }
+                        if (annotationSource.highlightImg) {
+                            context.save();
+                            context.globalCompositeOperation = 'multiply';
+                            context.drawImage(annotationImage1, 0, 0, this.printCanvas.width, this.printCanvas.height);
+                            context.restore();
                         }
                     } else {
                         // translate to center canvas
@@ -277,8 +285,14 @@ export class Print {
                         context.translate(-this.printCanvas.height * 0.5, -this.printCanvas.width * 0.5);
                         // draw the image
                         context.drawImage(pageImage, 0, 0, this.printCanvas.height, this.printCanvas.width);
-                        if (annotationSource) {
+                        if (annotationSource.annotImg) {
                             context.drawImage(annotationImage, 0, 0, this.printCanvas.height, this.printCanvas.width);
+                        }
+                        if (annotationSource.highlightImg) {
+                            context.save();
+                            context.globalCompositeOperation = 'multiply';
+                            context.drawImage(annotationImage1, 0, 0, this.printCanvas.width, this.printCanvas.height);
+                            context.restore();
                         }
                     }
                     if (currentPageNumber === (this.pdfViewerBase.pageCount - 1)) {
@@ -287,7 +301,10 @@ export class Print {
                     this.pdfViewer.renderDrawing(null, pageIndex);
                 };
                 pageImage.src = printImage.image;
-                annotationImage.src = annotationSource;
+                annotationImage.src = annotationSource.annotImg;
+                if (!isNullOrUndefined(annotationSource.highlightImg)) {
+                    annotationImage1.src = annotationSource.highlightImg;
+                }
                 this.printViewerContainer.appendChild(this.printCanvas);
             }
         }

@@ -4,6 +4,7 @@ import { Tooltip, TooltipEventArgs, Dialog } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { Toolbar, ClickEventArgs, ContextMenu, MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel, EventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, showSpinner, hideSpinner } from '../base/spinner';
+import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
 
 interface IActionOrganizeElements {
     action: string;
@@ -713,12 +714,12 @@ export class PageOrganizer {
             };
         } else {
             for (let pageIndex: number = startIndex; pageIndex < previewLimit; pageIndex++) {
-                this.pdfViewerBase.pdfViewerRunner.postMessage({
+                this.pdfViewerBase.pdfViewerRunner.addTask({
                     startIndex: startIndex,
                     endIndex: previewLimit,
                     pageIndex: pageIndex,
                     message: 'renderPreviewTileImage'
-                });
+                }, TaskPriorityLevel.Low);
             }
         }
     }

@@ -2728,18 +2728,18 @@ describe ('left indent testing', () => {
         });
     });
 
-    describe('935455 - Empty List Deletion When Selecting Text and Pressing Delete Key', () => {
+    describe('926563 - Decrease Indent Format Applied to Paragraph Format, After Reverting a List for Selected Combination of Heading and Paragraph Format with Increase Indent Format.', () => {
         let editorObj: RichTextEditor;
         beforeEach((done) => {
             editorObj = renderRTE({
                 toolbarSettings: {
                     items: ['OrderedList', 'UnorderedList']
                 },
-                value: `<p><br></p><ol>
-                  <li>test 2</li>
-                  <li>test 3</li>
-                  <li>test 4</li><li><br></li>
-                </ol>`
+                value: `<ul style="margin-left: 80px;">
+                <li class="list1">Rich Text Editor 1</li>
+                <li style="">Rich Text Editor 2</li>
+                <li class="list2">Rich Text Editor 3</li>
+                </ul>`
             });
             done();
         });
@@ -2747,15 +2747,12 @@ describe ('left indent testing', () => {
             destroy(editorObj);
             done();
         });
-        it('Press the Backspace key on the list and check that the empty <li> element is not removed.', (done) => {
-            let startNode = editorObj.inputElement.querySelector('ol');
-            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstElementChild.firstChild, startNode.firstElementChild.firstChild, 3, 5);
-            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
-            keyBoardEvent.keyCode = 8;
-            keyBoardEvent.code = 'Backspace';
-            (editorObj as any).keyDown(keyBoardEvent);
-            expect(editorObj.inputElement.querySelector("ol").lastElementChild.nodeName === 'LI').toBe(true);
-            expect(editorObj.inputElement.querySelector("ol").lastElementChild.textContent === '').toBe(true);
+        it('Press the unordered list toolbar item to revert the list.', (done) => {
+            let startNode = editorObj.inputElement.querySelector('.list1');
+            let endNode = editorObj.inputElement.querySelector('.list2');
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 5);
+            (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+            expect(editorObj.inputElement.innerHTML === `<p class="list1" style="margin-left: 80px;">Rich Text Editor 1</p><p style="margin-left: 80px;">Rich Text Editor 2</p><p class="list2" style="margin-left: 80px;">Rich Text Editor 3</p>`).toBe(true);
             done();
         });
     });
@@ -2791,5 +2788,37 @@ describe ('left indent testing', () => {
             done();
         });
         
+    });
+
+    describe('935455 - Empty List Deletion When Selecting Text and Pressing Delete Key', () => {
+        let editorObj: RichTextEditor;
+        beforeEach((done) => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<p><br></p><ol>
+                  <li>test 2</li>
+                  <li>test 3</li>
+                  <li>test 4</li><li><br></li>
+                </ol>`
+            });
+            done();
+        });
+        afterEach((done) => {
+            destroy(editorObj);
+            done();
+        });
+        it('Press the Backspace key on the list and check that the empty <li> element is not removed.', (done) => {
+            let startNode = editorObj.inputElement.querySelector('ol');
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstElementChild.firstChild, startNode.firstElementChild.firstChild, 3, 5);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(editorObj.inputElement.querySelector("ol").lastElementChild.nodeName === 'LI').toBe(true);
+            expect(editorObj.inputElement.querySelector("ol").lastElementChild.textContent === '').toBe(true);
+            done();
+        });
     });
 });

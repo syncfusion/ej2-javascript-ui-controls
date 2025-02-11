@@ -2,8 +2,8 @@
  * RTE - CSS related spec in this file we have added the css in the document head.
  */
 import { RichTextEditor, ToolbarConfigItems } from '../../src/rich-text-editor/index';
-import { BACKSPACE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../constant.spec';
-import { renderRTE, destroy, clickImage, clickGripper, moveGripper, leaveGripper, ImageResizeGripper, clickVideo, clickAudio } from '../rich-text-editor/render.spec';
+import { BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../constant.spec';
+import { renderRTE, destroy, clickImage, clickGripper, moveGripper, leaveGripper, ImageResizeGripper, clickVideo, clickAudio, setCursorPoint } from '../rich-text-editor/render.spec';
 import { getImageFIle } from '../rich-text-editor/online-service.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -914,6 +914,52 @@ describe('UI Spec ', () => {
         });
     });
 
+    describe('926706: Incorrect Quick Toolbar Position After Replacing Embedded Video in RTE Editor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                insertVideoSettings: {
+                    layoutOption: 'Inline',
+                    width: '200px',
+                    height: '200px',
+                    resize: false,
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    path: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox'
+                },
+                value: '<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank" rel="noopener" aria-label="Open in new window">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank" rel="noopener" aria-label="Open in new window">markdown</a> of the content</p><p><strong>Toolbar</strong></p><ol>\n<li>\n<p>The Toolbar contains commands to align the text, insert a link, insert an image, insert list, undo/redo operations, HTML view, etc</p>\n</li>\n<li>\n<p>The Toolbar is fully customizable</p>\n</li>\n</ol><p><strong>Links</strong></p><ol>\n<li>\n<p>You can insert a hyperlink with its corresponding dialog</p>\n</li>\n<li>\n<p>Attach a hyperlink to the displayed text.</p>\n</li>\n<li>\n<p>Customize the quick toolbar based on the hyperlink</p>\n</li>\n</ol><p><strong>Image.</strong></p><ol>\n<li>\n<p>Allows you to insert images from an online source as well as the local computer</p>\n</li>\n<li>\n<p>You can upload an image</p>\n</li>\n<li>\n<p>Provides an option to customize the quick toolbar for an image</p>\n</li>\n</ol><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Inserting embed code as video', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let pElement: HTMLElement = rteObj.inputElement.querySelector('p');
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(rteObj.inputElement.ownerDocument, pElement, 1);
+            rteObj.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = `<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            let insertBtn: HTMLElement = document.querySelector('.e-insertVideo.e-primary');
+            insertBtn.click();
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+                const quickToolbar = document.querySelector('.e-rte-quick-toolbar');
+                const quickToolbarRect = quickToolbar.getBoundingClientRect();
+                const videoElment: HTMLAudioElement = document.querySelector('IFRAME');
+                const videoRect = videoElment.getBoundingClientRect();
+                expect(videoRect.left).toBeGreaterThan(quickToolbarRect.left);
+                done();
+            }, 2000);
+        });
+    });
+
     describe('932198 - To resolve the CI failed on the Test stage with incomplete test runs - Phase 2. ', () => {
         let editor: RichTextEditor;
         beforeAll(() => {
@@ -979,4 +1025,5 @@ describe('UI Spec ', () => {
             }, 50);
         });
     });
+
 });

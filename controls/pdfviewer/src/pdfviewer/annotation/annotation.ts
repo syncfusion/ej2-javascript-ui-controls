@@ -709,7 +709,10 @@ export class Annotation {
                 customData = this.pdfViewer.inkAnnotationSettings.customData;
             }
         } else {
-            customData = typeof annotation.CustomData === 'string' ? JSON.parse(annotation.CustomData) : annotation.customData;
+            const data: any = annotation.CustomData ? annotation.CustomData : annotation.customData;
+            if (!isNullOrUndefined(data)) {
+                customData = typeof data === 'string' ? JSON.parse(data) : data;
+            }
         }
         return customData;
     }
@@ -979,7 +982,8 @@ export class Annotation {
                     this.previousIndex = pageIndex;
                     if (annotation.shapeAnnotationType === 'textMarkup') {
                         this.pdfViewer.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(pageIndex, true);
-                        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageIndex);
+                        const canvasId: string = annotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
+                        const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + pageIndex);
                         const textMarkupAnnotation: any = this.getTextMarkupAnnotations(pageIndex, annotation);
                         if (textMarkupAnnotation) {
                             this.textMarkupAnnotationModule.currentTextMarkupAnnotation = null;
@@ -1179,7 +1183,8 @@ export class Annotation {
                 this.previousIndex = pageIndex;
                 if (annotation.shapeAnnotationType === 'textMarkup') {
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(pageIndex, true);
-                    const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageIndex);
+                    const canvasId: string = annotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
+                    const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + pageIndex);
                     const textMarkupAnnotation: any = this.getTextMarkupAnnotations(pageIndex, annotation);
                     if (textMarkupAnnotation) {
                         this.textMarkupAnnotationModule.currentTextMarkupAnnotation = null;
@@ -3844,6 +3849,31 @@ export class Annotation {
     }
 
     /**
+     * Generates a canvas element with mix-blend mode to highlight annotations.
+     * @param {HTMLElement} pageDiv - pageDiv
+     * @param {number} pageWidth - pageWidth
+     * @param {number} pageHeight - pageHeight
+     * @param {number} pageNumber - pageNumber
+     * @param {string} displayMode - displayMode
+     * @private
+     * @returns {HTMLElement} - htmlelement
+     */
+    public createBlendAnnotationsIntoCanvas(pageDiv: HTMLElement, pageWidth: number,
+                                            pageHeight: number, pageNumber: number, displayMode?: string): HTMLElement {
+        const canvas: HTMLElement = this.pdfViewerBase.getElement('_blendAnnotationsIntoCanvas_' + pageNumber);
+        if (canvas) {
+            this.updateCanvas(canvas as HTMLCanvasElement, pageWidth, pageHeight, pageNumber);
+            return canvas;
+        } else {
+            const annotationCanvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_blendAnnotationsIntoCanvas_' + pageNumber, className: 'e-pv-annotation-canvas' }) as HTMLCanvasElement;
+            this.updateCanvas(annotationCanvas, pageWidth, pageHeight, pageNumber);
+            (annotationCanvas.style as any)['mixBlendMode'] = 'multiply';
+            pageDiv.appendChild(annotationCanvas);
+            return annotationCanvas;
+        }
+    }
+
+    /**
      * @param {number} width - width
      * @param {number} height - height
      * @param {number} pageNumber - pageNumber
@@ -3851,12 +3881,15 @@ export class Annotation {
      * @returns {void}
      */
     public resizeAnnotations(width: number, height: number, pageNumber: number): void {
-        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-        if (canvas) {
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            this.pdfViewerBase.applyElementStyles(canvas, pageNumber);
-        }
+        // Styles need to be applied to both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+        ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'].forEach((id: string) => {
+            const canvas: HTMLElement = this.pdfViewerBase.getElement(id + pageNumber);
+            if (canvas) {
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                this.pdfViewerBase.applyElementStyles(canvas, pageNumber);
+            }
+        });
     }
 
     /**
@@ -3865,17 +3898,21 @@ export class Annotation {
      * @returns {void}
      */
     public clearAnnotationCanvas(pageNumber: number): void {
-        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         const zoom: number = this.pdfViewerBase.getZoomFactor();
         const ratio: number = this.pdfViewerBase.getZoomRatio(zoom);
-        if (canvas) {
-            const width: number = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].width;
-            const height: number = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].height;
-            (canvas as HTMLCanvasElement).width = width * ratio;
-            (canvas as HTMLCanvasElement).height = height * ratio;
-            (canvas as HTMLCanvasElement).style.width = width * zoom + 'px';
-            (canvas as HTMLCanvasElement).style.height = height * zoom + 'px';
-        }
+        // Styles need to be applied to both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+        const canvasIds: string[] = ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'];
+        canvasIds.forEach((id: string) => {
+            const canvas: HTMLElement = this.pdfViewerBase.getElement(id + pageNumber) as HTMLCanvasElement;
+            if (canvas) {
+                const width: number = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].width;
+                const height: number = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].height;
+                (canvas as HTMLCanvasElement).width = width * ratio;
+                (canvas as HTMLCanvasElement).height = height * ratio;
+                (canvas as HTMLCanvasElement).style.width = width * zoom + 'px';
+                (canvas as HTMLCanvasElement).style.height = height * zoom + 'px';
+            }
+        });
     }
 
     /**
@@ -3920,6 +3957,10 @@ export class Annotation {
             canvas = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         }
         this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
+        const highlighCanvas: HTMLElement = this.pdfViewerBase.getElement('_blendAnnotationsIntoCanvas_' + pageNumber);
+        if (highlighCanvas) {
+            this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
+        }
         if (!this.pdfViewerBase.isInkAdded && this.pdfViewer.tool === 'Ink' && this.pdfViewer.currentPageNumber - 1 === pageNumber) {
             const currentcanvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + (this.pdfViewer.currentPageNumber - 1));
             const zoom: number = this.pdfViewerBase.getZoomFactor();
@@ -4797,11 +4838,19 @@ export class Annotation {
                 const commentDiv: HTMLElement = document.getElementById(annotation.annotationId);
                 this.deletComment(commentDiv);
             }
-            if (annotation.comments) {
-                for (let j: number = 0; j < annotation.comments.length; j++) {
-                    if (annotation.comments[parseInt(j.toString(), 10)].note === '' && annotation.commentType === 'delete') {
-                        const commentDiv: HTMLElement = document.getElementById(annotation.comments[parseInt(j.toString(), 10)].annotName);
-                        this.deletComment(commentDiv);
+            if (annotation.comments && annotation.commentType === 'delete' && annotation.note !== '') {
+                const repliesDiv: any = document.querySelectorAll('.e-pv-more-options-button');
+                if (repliesDiv) {
+                    for (let i: number = 0; i < repliesDiv.length; i++) {
+                        if (repliesDiv[parseInt(i.toString(), 10)].style.visibility === 'visible') {
+                            const activeReplyDiv: any = repliesDiv[parseInt(i.toString(), 10)].parentElement.nextSibling;
+                            const isLocked: boolean = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
+                                checkIslockProperty(activeReplyDiv);
+                            if (activeReplyDiv && !isLocked) {
+                                this.deletComment(activeReplyDiv.parentElement);
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -4813,7 +4862,8 @@ export class Annotation {
                                                                           this.textMarkupAnnotationModule.selectTextMarkupCurrentPage);
                     }
                 }
-                if (annotation && currentAnnotation.annotationSelectorSettings !== annotation.annotationSelectorSettings) {
+                if (annotation && JSON.stringify(currentAnnotation.annotationSelectorSettings) !==
+                JSON.stringify(annotation.annotationSelectorSettings)) {
                     const pageAnnotations: ITextMarkupAnnotation[] = this.textMarkupAnnotationModule.modifyAnnotationProperty('AnnotationSelectorSettings', annotation.annotationSelectorSettings, null);
                     this.textMarkupAnnotationModule.manageAnnotations(pageAnnotations,
                                                                       this.textMarkupAnnotationModule.selectTextMarkupCurrentPage);
@@ -5178,6 +5228,7 @@ export class Annotation {
                             const newAnnot: any = this.modifyAnnotationProperties(annotationCollection[parseInt(i.toString(), 10)],
                                                                                   annotation, annotationType);
                             annotationCollection[parseInt(i.toString(), 10)] = newAnnot;
+                            this.storeAnnotationCollections(newAnnot , pageNumber);
                         }
                     }
                     if (!this.pdfViewerBase.isStorageExceed) {
@@ -5209,7 +5260,8 @@ export class Annotation {
         }
         if (annotation.comments) {
             for (let j: number = 0; j < annotation.comments.length; j++) {
-                if (!isNullOrUndefined(annotation.comments[parseInt(j.toString(), 10)].isLock)) {
+                if (!isNullOrUndefined(annotation.comments[parseInt(j.toString(), 10)].isLock) &&
+                !isNullOrUndefined(newAnnotation.comments[parseInt(j.toString(), 10)])) {
                     newAnnotation.comments[parseInt(j.toString(), 10)].isLock = annotation.comments[parseInt(j.toString(), 10)].isLock;
                 }
             }

@@ -14,7 +14,7 @@ import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefin
  */
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
-     * Specifies whether to render toolbar in RichTextEditor.
+     * Specifies whether to render the toolbar in the RichTextEditor.
      *
      * @default true
      */
@@ -22,7 +22,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     public enable: boolean;
 
     /**
-     * Specifies whether to enable/disable floating toolbar.
+     * Specifies whether to enable or disable the floating toolbar.
      *
      * @default true
      */
@@ -30,11 +30,11 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     public enableFloating: boolean;
 
     /**
-     * Specifies the Toolbar display types.
-     * The possible types are:
-     * - Expand: Toolbar items placed within the available space and rest of the items are placed to the extended menu section.
-     * - MultiRow: Toolbar which placed at top of Rich Text Editor editing area.
-     * - Scrollable: All the toolbar items are displayed in a single line with horizontal scrolling enabled.
+     * Specifies the display types of the toolbar.
+     * The available types are:
+     * - Expand: Toolbar items fit within available space, and the rest are placed in the extended menu.
+     * - MultiRow: Toolbar placed at the top of the RichTextEditor editing area.
+     * - Scrollable: Toolbar items displayed in a single line with horizontal scrolling enabled.
      *
      * @default Expand
      */
@@ -42,16 +42,15 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     public type: ToolbarType;
 
     /**
-     * An array of string or object that is used to configure items.
+     * An array of strings or objects used to configure the toolbar items.
      *
-     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote' 'OrderedList',
-     * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
+     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'Blockquote', 'OrderedList', 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
      */
     @Property(predefinedItems)
-    public items: (string |ToolbarConfigItems | IToolbarItems)[];
+    public items: (string | ToolbarConfigItems | IToolbarItems)[];
 
     /**
-     * Using this property, Modify the default toolbar item configuration like icon class.
+     * Allows modification of the default toolbar item configuration, such as the icon class.
      *
      * @default {}
      */
@@ -62,66 +61,69 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 /**
  * Configures the importWord settings of the RichTextEditor.
  */
-
 export class ImportWord extends ChildProperty<ImportWord> {
     /**
-     * Specifies the URL that will receive and handle file uploads on the server.
+     * Specifies the URL to receive and handle file uploads on the server.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public serviceUrl: string;
 }
-/**
- * Configures the export word of the RichTextEditor.
- */
 
+/**
+ * Configures the export settings for Word format in the RichTextEditor.
+ */
 export class ExportWord extends ChildProperty<ExportWord> {
     /**
-     * Specifies the URL used to export Rich Text Editor content into Word files.
+     * Specifies the URL used to export RichTextEditor content into Word files.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public serviceUrl: string;
+
     /**
-     * Specifies the file name of the exported word file.
+     * Specifies the file name for the exported Word file.
      *
      * @default 'Sample.docx'
      */
     @Property('Sample.docx')
     public fileName: string;
+
     /**
      * Specifies the stylesheet to be applied to the exported file.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public stylesheet: string;
 }
-/**
- * Configures the export settings of the RichTextEditor.
- */
 
+/**
+ * Configures the export settings for PDF format in the RichTextEditor.
+ */
 export class ExportPdf extends ChildProperty<ExportPdf> {
     /**
-     * Specifies the URL used to export Rich Text Editor content into PDF files.
+     * Specifies the URL used to export RichTextEditor content into PDF files.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public serviceUrl: string;
+
     /**
-     * Specifies the file name of the exported pdf file.
+     * Specifies the file name for the exported PDF file.
      *
      * @default 'Sample.pdf'
      */
     @Property('Sample.pdf')
     public fileName: string;
+
     /**
      * Specifies the stylesheet to be applied to the exported file.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public stylesheet: string;
@@ -130,113 +132,121 @@ export class ExportPdf extends ChildProperty<ExportPdf> {
 /**
  * Configures the image settings of the RichTextEditor.
  */
-
 export class ImageSettings extends ChildProperty<ImageSettings> {
     /**
-     * Specifies whether to allowType based file select.
+     * Specifies the allowed file types for selection.
      *
      * @default ['.jpeg', '.jpg', '.png']
      */
     @Property(['.jpeg', '.jpg', '.png'])
     public allowedTypes: string[];
+
     /**
-     * Specifies whether insert image inline or break.
+     * Specifies whether the image is inserted inline or with a break.
      *
      * @default 'inline'
      */
     @Property('inline')
     public display: string;
+
     /**
-     * Specifies whether the inserted image is saved as blob or base64.
+     * Specifies whether the inserted image is saved as a blob or base64.
      *
      * @default 'Blob'
      */
     @Property('Blob')
     public saveFormat: SaveFormat;
+
     /**
-     * Specifies whether image width.
+     * Specifies the width of the image.
      *
      * @default 'auto'
      */
     @Property('auto')
     public width: string;
+
     /**
-     * Specifies whether image height.
+     * Specifies the height of the image.
      *
      * @default 'auto'
      */
     @Property('auto')
     public height: string;
+
     /**
-     * Specifies the URL of save action that will receive the uploaded image and save it on the server.
+     * Specifies the URL for the save action that handles uploaded images on the server.
      *
+     * This URL should handle a `POST` request, with an argument named `UploadFiles`.
      *
-     * The URL of the save action for uploading and saving images on the server.
-     * The save action should handle a `POST` request and define an argument with the name `UploadFiles`.
-     *
-     * Trigger the event when inserting the image via Insert image dialog, pasting the image, replacing the existing image, and dragging and dropping from the file browser.
+     * The event is triggered when inserting an image via the Insert Image dialog, pasting an image, replacing an existing image, or dragging and dropping from the file browser.
      *
      * @default null
      */
     @Property(null)
     public saveUrl: string;
+
     /**
-     * Specifies the path of the location to store the images and refer it to display the images.
+     * Specifies the path for storing and displaying images.
      *
      * @default null
      */
     @Property(null)
     public path: string;
+
     /**
-     * To enable resizing for image element.
+     * Enables resizing for the image element.
      *
-     * @default 'true'
+     * @default true
      */
     @Property(true)
     public resize: boolean;
+
     /**
-     * Specifies the URL of remove action that receives the image information and handles the remove operation on the server.
+     * Specifies the URL for the remove action that handles image removal on the server.
      *
-     * The URL of the remove action for removing the image on the server.
+     * This URL should handle a `POST` request, with an argument named `UploadFiles`.
      *
-     * The remove action should handle a `POST` request and define an argument with the name `UploadFiles`.
-     *
-     * Trigger the event when uploading and canceling or removing an image in the insert image dialog, pasting and removing an image in Paste cleanup popup.
+     * The event is triggered when uploading and canceling or removing an image in the insert image dialog, pasting, and removing an image in the Paste cleanup popup.
      *
      * @default null
      */
     @Property(null)
     public removeUrl: string;
+
     /**
-     * Defines the minimum Width of the image.
+     * Defines the minimum width of the image.
      *
-     * @default '0'
+     * @default 0
      */
     @Property(0)
     public minWidth: string | number;
+
     /**
-     * Defines the maximum Width of the image.
+     * Defines the maximum width of the image.
      *
      * @default null
      */
     @Property(null)
     public maxWidth: string | number;
+
     /**
-     * Defines the minimum Height of the image.
+     * Defines the minimum height of the image.
      *
-     * @default '0'
+     * @default 0
      */
     @Property(0)
     public minHeight: string | number;
+
     /**
-     * Defines the maximum Height of the image.
+     * Defines the maximum height of the image.
      *
      * @default null
      */
     @Property(null)
     public maxHeight: string | number;
+
     /**
-     * image resizing should be done by percentage calculation.
+     * Enables image resizing by percentage calculation.
      *
      * @default false
      */
@@ -247,47 +257,51 @@ export class ImageSettings extends ChildProperty<ImageSettings> {
 /**
  * Configures the audio settings of the RichTextEditor.
  */
-
 export class AudioSettings extends ChildProperty<AudioSettings> {
     /**
-     * Specifies whether to allowType based file select.
+     * Specifies the allowed file types for audio selection.
      *
-     * @default ['.wav', '.mp3', '.m4a','.wma']
+     * @default ['.wav', '.mp3', '.m4a', '.wma']
      */
     @Property(['.wav', '.mp3', '.m4a', '.wma'])
     public allowedTypes: string[];
+
     /**
-     * Specifies whether insert audio inline or break.
+     * Specifies whether the audio is inserted inline or with a break.
      *
      * @default 'Inline'
      */
     @Property('Inline')
     public layoutOption: DisplayLayoutOptions;
+
     /**
-     * Specifies whether the inserted audio is saved as blob or base64.
+     * Specifies whether the inserted audio is saved as a blob or base64.
      *
      * @default 'Blob'
      */
     @Property('Blob')
     public saveFormat: SaveFormat;
+
     /**
-     * Specifies the URL of save action that will receive the upload files and save in the server.
+     * Specifies the URL for the save action that handles uploaded audio files on the server.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public saveUrl: string;
+
     /**
-     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     * Specifies the URL for the remove action that handles audio removal on the server.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public removeUrl: string;
+
     /**
-     * Specifies the path of the location to store the audio and refer it to display the audio.
+     * Specifies the path for storing and displaying audio files.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public path: string;
@@ -296,101 +310,113 @@ export class AudioSettings extends ChildProperty<AudioSettings> {
 /**
  * Configures the video settings of the RichTextEditor.
  */
-
 export class VideoSettings extends ChildProperty<VideoSettings> {
     /**
-     * Specifies whether to allowType based file select.
+     * Specifies the allowed file types for video selection.
      *
-     * @default ['.mp4', '.mov', '.wmv','.avi']
+     * @default ['.mp4', '.mov', '.wmv', '.avi']
      */
     @Property(['.mp4', '.mov', '.wmv', '.avi'])
     public allowedTypes: string[];
+
     /**
-     * Specifies whether insert video inline or break.
+     * Specifies whether the video is inserted inline or with a break.
      *
      * @default 'Inline'
      */
     @Property('Inline')
     public layoutOption: DisplayLayoutOptions;
+
     /**
-     * Specifies whether the inserted video is saved as blob or base64.
+     * Specifies whether the inserted video is saved as a blob or base64.
      *
      * @default 'Blob'
      */
     @Property('Blob')
     public saveFormat: SaveFormat;
+
     /**
-     * Specifies whether video width.
+     * Specifies the width of the video.
      *
      * @default 'auto'
      */
     @Property('auto')
     public width: string;
+
     /**
-     * Specifies whether video height.
+     * Specifies the height of the video.
      *
      * @default 'auto'
      */
     @Property('auto')
     public height: string;
+
     /**
-     * Specifies the URL of save action that will receive the upload files and save in the server.
+     * Specifies the URL for the save action that handles uploaded video files on the server.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public saveUrl: string;
+
     /**
-     * Specifies the path of the location to store the images and refer it to display the images.
+     * Specifies the path for storing and displaying video files.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public path: string;
+
     /**
-     * To enable resizing for video element.
+     * Enables resizing for the video element.
      *
-     * @default 'true'
+     * @default true
      */
     @Property(true)
     public resize: boolean;
+
     /**
-     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     * Specifies the URL for the remove action that handles video removal on the server.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public removeUrl: string;
+
     /**
-     * Defines the minimum Width of the video.
+     * Defines the minimum width of the video.
      *
-     * @default '0'
+     * @default 0
      */
     @Property(0)
     public minWidth: string | number;
+
     /**
-     * Defines the maximum Width of the video.
+     * Defines the maximum width of the video.
      *
      * @default null
      */
     @Property(null)
     public maxWidth: string | number;
+
     /**
-     * Defines the minimum Height of the video.
+     * Defines the minimum height of the video.
      *
-     * @default '0'
+     * @default 0
      */
     @Property(0)
     public minHeight: string | number;
+
     /**
-     * Defines the maximum Height of the video.
+     * Defines the maximum height of the video.
      *
      * @default null
      */
     @Property(null)
     public maxHeight: string | number;
+
     /**
-     * Video resizing should be done by percentage calculation.
+     * Enables video resizing by percentage calculation.
      *
      * @default false
      */
@@ -403,144 +429,157 @@ export class VideoSettings extends ChildProperty<VideoSettings> {
  */
 export class FileManagerSettings extends ChildProperty<FileManagerSettings> {
     /**
-     * Event triggers before sending the AJAX request to the server.
-     * Set the cancel argument to true to cancel the request.
+     * Event triggered before sending an AJAX request to the server.
+     * Set the cancel argument to true to prevent the request.
      *
-     * @event 'beforeSend'
+     * @event beforeSend
      */
-
     @Event()
     public beforeSend: EmitType<BeforeSendEventArgs>;
+
     /**
-     * Specifies the AJAX settings of the file manager.
+     * Specifies the AJAX settings for the file manager.
      *
      * @default {
-     * getImageUrl: null;
-     * url: null;
-     * uploadUrl: null;
-     * downloadUrl: null;
+     *   getImageUrl: null,
+     *   url: null,
+     *   uploadUrl: null
      * }
      */
     @Complex<AjaxSettingsModel>({ getImageUrl: null, url: null, uploadUrl: null }, AjaxSettings)
     public ajaxSettings: AjaxSettingsModel;
+
     /**
-     * Enables or disables drag-and-drop of files.
+     * Enables or disables drag-and-drop functionality for files.
      *
      * @default false
      */
     @Property(false)
     public allowDragAndDrop: boolean;
+
     /**
-     * Specifies the context menu settings of the file manager.
+     * Specifies the context menu settings for the file manager.
      *
      * @default {
-     *  file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
-     *  folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
-     *  layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'],
-     *  visible: true
+     *   file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
+     *   folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
+     *   layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'],
+     *   visible: true
      * }
      */
     @Complex<ContextMenuSettingsModel>({ visible: true, file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'], folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'], layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'] }, ContextMenuSettings)
     public contextMenuSettings: ContextMenuSettingsModel;
+
     /**
-     * Specifies the root CSS class of the file manager that allows you to customize the appearance by overriding the styles.
+     * Specifies the root CSS class of the file manager, allowing customization by overriding styles.
      *
      * @default ''
      */
     @Property('')
     public cssClass: string;
+
     /**
-     * Specifies the details view settings of the file manager.
+     * Specifies the details view settings for the file manager.
      *
      * @default {
-     *  columns: [{
-     *    field: 'name', headerText: 'Name', minWidth: 120, template: '<span class="e-fe-text">${name}</span>',
-     *    customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified', type: 'dateTime',
-     *    format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
-     *    template: '<span class="e-fe-size">${size}</span>'
-     *  }]
+     *   columns: [{
+     *     field: 'name', headerText: 'Name', minWidth: 120, template: '<span class="e-fe-text">${name}</span>',
+     *     customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified', type: 'dateTime',
+     *     format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
+     *     template: '<span class="e-fe-size">${size}</span>' }
+     *   ]
      * }
      */
     @Complex<DetailsViewSettingsModel>({}, DetailsViewSettings)
     public detailsViewSettings: DetailsViewSettingsModel;
+
     /**
-     * Specifies whether to enable the file manager in RichTextEditor.
+     * Specifies whether to enable the file manager in the RichTextEditor.
      *
      * @default false
      */
     @Property(false)
     public enable: boolean;
+
     /**
-     * Specifies the navigation pane settings of the file manager.
+     * Specifies the navigation pane settings for the file manager.
      *
      * @default { maxWidth: '650px', minWidth: '240px', visible: true }
      */
     @Complex<NavigationPaneSettingsModel>({ maxWidth: '650px', minWidth: '240px', visible: true }, NavigationPaneSettings)
     public navigationPaneSettings: NavigationPaneSettingsModel;
+
     /**
-     * Specifies the current path of the file manager.
+     * Specifies the current path in the file manager.
      *
      * @default '/'
      */
     @Property('/')
     public path: string;
+
     /**
-     * Specifies the root folder alias name in file manager
+     * Specifies the alias name for the root folder in the file manager.
      *
      * @default null
      */
     @Property(null)
     public rootAliasName: string;
+
     /**
-     * Specifies the search settings of the file manager.
+     * Specifies the search settings for the file manager.
      *
      * @default {
-     *  allowSearchOnTyping: true,
-     *  filterType: 'contains',
-     *  ignoreCase: true
+     *   allowSearchOnTyping: true,
+     *   filterType: 'contains',
+     *   ignoreCase: true
      * }
      */
     @Complex<SearchSettingsModel>({}, SearchSettings)
     public searchSettings: SearchSettingsModel;
+
     /**
-     * Shows or hides the file extension in file manager.
+     * Determines whether to show or hide file extensions in the file manager.
      *
      * @default true
      */
     @Property(true)
     public showFileExtension: boolean;
+
     /**
-     * Shows or hides the files and folders that are marked as hidden.
+     * Determines whether to show or hide files and folders marked as hidden.
      *
      * @default false
      */
     @Property(false)
     public showHiddenItems: boolean;
+
     /**
-     * Shows or hides the thumbnail images in large icons view.
+     * Determines whether to show or hide thumbnail images in the large icons view.
      *
      * @default true
      */
     @Property(true)
     public showThumbnail: boolean;
+
     /**
-     * Specifies a value that indicates whether the folders and files are sorted in the ascending or descending order,
-     * or they are not sorted at all. The available types of sort orders are,
-     * `None` - Indicates that the folders and files are not sorted.
-     * `Ascending` - Indicates that the folders and files are sorted in the ascending order.
-     * `Descending` - Indicates that the folders and files are sorted in the descending order.
+     * Specifies the sort order for folders and files. Options are:
+     * - `None`: Folders and files are not sorted.
+     * - `Ascending`: Folders and files are sorted in ascending order.
+     * - `Descending`: Folders and files are sorted in descending order.
      *
      * @default 'Ascending'
      */
     @Property('Ascending')
     public sortOrder: SortOrder;
+
     /**
-     * Specifies the group of items aligned horizontally in the toolbar.
+     * Specifies groups of items aligned horizontally in the toolbar.
      *
      * @default { visible: true, items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'] }
      */
     @Complex<FileToolbarSettingsModel>({ visible: true, items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'] }, FileToolbarSettings)
     public toolbarSettings: FileToolbarSettingsModel;
+
     /**
      * Specifies the upload settings for the file manager.
      *
@@ -548,12 +587,13 @@ export class FileManagerSettings extends ChildProperty<FileManagerSettings> {
      */
     @Complex<UploadSettingsModel>({ autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }, UploadSettings)
     public uploadSettings: UploadSettingsModel;
+
     /**
      * Specifies the initial view of the file manager.
      *
-     * With the help of this property, initial view can be changed to details or largeicons view. The available views are:
-     * * `LargeIcons`
-     * * `Details`
+     * This property allows setting the initial view to either 'Details' or 'LargeIcons'. The available views are:
+     * - `LargeIcons`
+     * - `Details`
      *
      * @default 'LargeIcons'
      */
@@ -563,48 +603,57 @@ export class FileManagerSettings extends ChildProperty<FileManagerSettings> {
 
 export class TableSettings extends ChildProperty<TableSettings> {
     /**
-     * To specify the width of table
+     * Specifies the width of the table.
      *
      * @default '100%'
      */
     @Property('100%')
     public width: string | number;
+
     /**
-     * Class name should be appended by default in table element.
-     * It helps to design the table in specific CSS styles always when inserting in editor.
+     * Class names appended by default to the table element.
+     * Assists in styling the table in specific CSS styles when inserted in the editor.
      *
-     * @default TableStyleItems;
+     * Available styles:
+     * - `Dashed Borders`: Adds dashed borders around the table using the `e-dashed-borders` CSS class.
+     * - `Alternate Rows`: Applies alternating row colors for better readability using the `e-alternate-rows` CSS class.
+     *
+     * @default TableStyleItems
      */
     @Property(TableStyleItems)
     public styles: IDropDownItemModel[];
+
     /**
-     * To enable resizing for table element.
+     * Enables resizing for the table element.
      *
-     * @default 'true'
+     * @default true
      */
     @Property(true)
     public resize: boolean;
+
     /**
-     * Defines the minimum Width of the table.
+     * Defines the minimum width of the table.
      *
-     * @default '0'
+     * @default 0
      */
     @Property(0)
     public minWidth: string | number;
+
     /**
-     * Defines the maximum Width of the table.
+     * Defines the maximum width of the table.
      *
      * @default null
      */
     @Property(null)
     public maxWidth: string | number;
 }
+
 /**
  * Configures the quick toolbar settings of the RichTextEditor.
  */
 export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     /**
-     * Specifies whether to enable quick toolbar in RichTextEditor.
+     * Specifies whether to enable the quick toolbar in the RichTextEditor.
      *
      * @default true
      */
@@ -612,7 +661,7 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     public enable: boolean;
 
     /**
-     * Specifies whether to opens a quick toolbar on the right click.
+     * Specifies whether the quick toolbar opens on right-click.
      *
      * @default false
      */
@@ -620,7 +669,7 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     public showOnRightClick: boolean;
 
     /**
-     * Specifies the action that should happen when scroll the target-parent container.
+     * Specifies the action to perform when scrolling the target-parent container.
      *
      * @default 'hide'
      */
@@ -628,7 +677,7 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     public actionOnScroll: ActionOnScroll;
 
     /**
-     * Specifies the items to render in quick toolbar, when link selected.
+     * Specifies the items to render in the quick toolbar when a link is selected.
      *
      * @default ['Open', 'Edit', 'UnLink']
      */
@@ -636,15 +685,15 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     public link: (string | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when image selected.
+     * Specifies the items to render in the quick toolbar when an image is selected.
      *
-     * @default ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink','OpenImageLink', 'EditImageLink', 'RemoveImageLink', 'Display', 'AltText', 'Dimension']
+     * @default ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'OpenImageLink', 'EditImageLink', 'RemoveImageLink', 'Display', 'AltText', 'Dimension']
      */
     @Property(['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'OpenImageLink', 'EditImageLink', 'RemoveImageLink', 'Display', 'AltText', 'Dimension'])
     public image: (string | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when audio selected.
+     * Specifies the items to render in the quick toolbar when audio is selected.
      *
      * @default ['AudioReplace', 'Remove', 'AudioLayoutOption']
      */
@@ -652,7 +701,7 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     public audio: (string | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when video selected.
+     * Specifies the items to render in the quick toolbar when a video is selected.
      *
      * @default ['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension']
      */
@@ -660,7 +709,7 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     public video: (string | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when text selected.
+     * Specifies the items to render in the quick toolbar when text is selected.
      *
      * @default null
      */
@@ -668,38 +717,41 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     public text: (string | ToolbarConfigItems | IToolbarItems)[];
 
     /**
-     * Specifies the items to render in quick toolbar, when table selected.
+     * Specifies the items to render in the quick toolbar when a table is selected.
      *
      * @default ['TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles']
      */
     @Property(['TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles'])
     public table: (string | IToolbarItems)[];
 }
+
 /**
- * Configure the format painter settings of the Rich Text Editor.
+ * Configures the format painter settings of the RichTextEditor.
  */
 export class FormatPainterSettings extends ChildProperty<FormatPainterSettings> {
     /**
-     * Defines the tag name selectors for obtaining the formats from the elements.
+     * Defines the tag name selectors to obtain formats from elements.
      *
      * @default 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; ol; ul; li; pre;'
      */
     @Property('b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; ol; ul; li; pre;')
     public allowedFormats: string;
+
     /**
-     * Defines selectors for the elements from which fetching formats is expressly prohibited.
+     * Defines selectors for elements from which fetching formats is expressly prohibited.
      *
      * @default null
      */
     @Property(null)
     public deniedFormats: string;
 }
+
 /**
- * Specifies the emoji picker options in Rich Text Editor with the following properties.
+ * Specifies the emoji picker options in the RichTextEditor.
  */
 export class EmojiSettings extends ChildProperty<EmojiSettings> {
     /**
-     * Specify an array of items representing emoji icons.
+     * Specifies an array of items representing emoji icons.
      *
      * @default [{
         name: 'Smilies & People', code: '1F600', iconCss: 'e-emoji', icons: [{ code: '1F600', desc: 'Grinning face' },
@@ -885,20 +937,22 @@ export class EmojiSettings extends ChildProperty<EmojiSettings> {
      */
     @Property(defaultEmojiIcons)
     public iconsSet: EmojiIconsSet[];
+
     /**
-     * Enables or disables the search box in an emoji picker.
+     * Enables or disables the search box in the emoji picker.
      *
      * @default true
      */
     @Property(true)
     public showSearchBox: boolean;
 }
+
 /**
- * Configures the Paste Cleanup settings of the RichTextEditor.
+ * Configures the paste cleanup settings of the RichTextEditor.
  */
 export class PasteCleanupSettings extends ChildProperty<PasteCleanupSettings> {
     /**
-     * Specifies whether to enable the prompt for paste in RichTextEditor.
+     * Specifies whether to enable the prompt for paste in the RichTextEditor.
      *
      * @default false
      */
@@ -906,7 +960,7 @@ export class PasteCleanupSettings extends ChildProperty<PasteCleanupSettings> {
     public prompt: boolean;
 
     /**
-     * Specifies the attributes to restrict when pasting in RichTextEditor.
+     * Specifies the attributes to restrict when pasting in the RichTextEditor.
      *
      * @default null
      */
@@ -914,15 +968,15 @@ export class PasteCleanupSettings extends ChildProperty<PasteCleanupSettings> {
     public deniedAttrs: string[];
 
     /**
-     * Specifies the allowed style properties when pasting in RichTextEditor.
+     * Specifies the allowed style properties when pasting in the RichTextEditor.
      *
-     * @default ['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius', 'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor', 'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style', 'height', 'left', 'line-height', 'list-style-type', 'margin', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width', 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right', 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-transform', 'text-indent', 'top', 'vertical-align', 'visibility', 'white-space', 'width']
+     * @default ['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius', 'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor', 'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style', 'height', 'left', 'line-height', 'list-style-type', 'margin', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width', 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right', 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-transform', 'text-indent', 'top', 'vertical-align', 'visibility', 'white-space', 'width', 'flex-direction']
      */
-    @Property(['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius', 'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor', 'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style', 'height', 'left', 'line-height', 'list-style-type', 'margin', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width', 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right', 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-transform', 'text-indent', 'top', 'vertical-align', 'visibility', 'white-space', 'width'])
+    @Property(['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius', 'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor', 'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style', 'height', 'left', 'line-height', 'list-style-type', 'margin', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width', 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right', 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-transform', 'text-indent', 'top', 'vertical-align', 'visibility', 'white-space', 'width', 'flex-direction'])
     public allowedStyleProps: string[];
 
     /**
-     * Specifies the tags to restrict when pasting in RichTextEditor.
+     * Specifies the tags to restrict when pasting in the RichTextEditor.
      *
      * @default null
      */
@@ -930,7 +984,7 @@ export class PasteCleanupSettings extends ChildProperty<PasteCleanupSettings> {
     public deniedTags: string[];
 
     /**
-     * Specifies whether to keep or remove the format when pasting in RichTextEditor.
+     * Specifies whether to keep or remove formatting when pasting in the RichTextEditor.
      *
      * @default true
      */
@@ -938,7 +992,7 @@ export class PasteCleanupSettings extends ChildProperty<PasteCleanupSettings> {
     public keepFormat: boolean;
 
     /**
-     * Specifies whether to paste as plain text or not in RichTextEditor.
+     * Specifies whether to paste as plain text or not in the RichTextEditor.
      *
      * @default false
      */
@@ -949,24 +1003,25 @@ export class PasteCleanupSettings extends ChildProperty<PasteCleanupSettings> {
 /**
  * Configures the font family settings of the RichTextEditor.
  */
-
 export class FontFamily extends ChildProperty<FontFamily> {
     /**
-     * Specifies default font family selection
+     * Specifies the default font family selection.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public default: string;
+
     /**
-     * Specifies content width
+     * Specifies the width of the content area.
      *
      * @default '72px'
      */
     @Property('72px')
     public width: string;
+
     /**
-     * Specifies default font family items
+     * Specifies the default font family items.
      *
      * @default fontFamily
      */
@@ -977,24 +1032,25 @@ export class FontFamily extends ChildProperty<FontFamily> {
 /**
  * Configures the font size settings of the RichTextEditor.
  */
-
 export class FontSize extends ChildProperty<FontSize> {
     /**
-     * Specifies default font size selection
+     * Specifies the default font size selection.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public default: string;
+
     /**
-     * Specifies content width
+     * Specifies the width of the content area.
      *
      * @default '60px'
      */
     @Property('60px')
     public width: string;
+
     /**
-     * Specifies default font size items
+     * Specifies the default font size items.
      *
      * @default fontSize
      */
@@ -1005,24 +1061,26 @@ export class FontSize extends ChildProperty<FontSize> {
 /**
  * Configures the format settings of the RichTextEditor.
  */
-
 export class Format extends ChildProperty<Format> {
     /**
-     * Specifies default format
+     * Specifies the default format.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public default: string;
+
     /**
-     * Specifies content width
+     * Specifies the width of the content area.
      *
      * @default '65px'
      */
     @Property('65px')
     public width: string;
+
     /**
-     * Specifies default font size items
+     * Specifies the collection of default font size items for the format dropdown.
+     * These items define the available options for users to select.
      *
      * @default formatItems
      */
@@ -1031,40 +1089,43 @@ export class Format extends ChildProperty<Format> {
 }
 
 /**
- * Configures the font Color settings of the RichTextEditor.
+ * Configures the font color settings of the RichTextEditor.
  */
-
 export class FontColor extends ChildProperty<FontColor> {
     /**
-     * Specifies default font color
+     * Specifies the default font color.
      *
      * @default '#ff0000'
      */
     @Property('#ff0000')
     public default: string;
+
     /**
-     * Specifies mode
+     * Specifies the color mode.
      *
      * @default 'Palette'
      */
     @Property('Palette')
     public mode: ColorModeType;
+
     /**
-     * Specifies columns
+     * Specifies the number of columns in the color palette.
      *
      * @default 10
      */
     @Property(10)
     public columns: number;
+
     /**
-     * Specifies color code customization
+     * Specifies custom color codes.
      *
      * @default fontColor
      */
     @Property(fontColor)
     public colorCode: { [key: string]: string[] };
+
     /**
-     * Specifies modeSwitcher button
+     * Enables or disables the mode switcher button.
      *
      * @default false
      */
@@ -1073,52 +1134,56 @@ export class FontColor extends ChildProperty<FontColor> {
 }
 
 /**
- * Configures the background Color settings of the RichTextEditor.
+ * Configures the background color settings of the RichTextEditor.
  */
-
 export class BackgroundColor extends ChildProperty<BackgroundColor> {
     /**
-     * Specifies default font color
+     * Specifies the default background color.
      *
      * @default '#ffff00'
      */
     @Property('#ffff00')
     public default: string;
+
     /**
-     * Specifies mode
+     * Specifies the color mode.
      *
      * @default 'Palette'
      */
     @Property('Palette')
     public mode: ColorModeType;
+
     /**
-     * Specifies columns
+     * Specifies the number of columns in the color palette.
      *
      * @default 10
      */
     @Property(10)
     public columns: number;
+
     /**
-     * Specifies color code customization
+     * Specifies custom color codes.
      *
      * @default backgroundColor
      */
     @Property(backgroundColor)
     public colorCode: { [key: string]: string[] };
+
     /**
-     * Specifies a modeSwitcher button
+     * Enables or disables the mode switcher button.
      *
      * @default false
      */
     @Property(false)
     public modeSwitcher: boolean;
 }
+
 /**
- * Configures the numberFormatList settings of the RichTextEditor.
+ * Configures the settings for the number format list in the RichTextEditor.
  */
 export class NumberFormatList extends ChildProperty<NumberFormatList> {
     /**
-     * Specifies default numberFormatList items
+     * Specifies the default options for the number format list items.
      *
      * @default numberFormatList
      */
@@ -1127,11 +1192,11 @@ export class NumberFormatList extends ChildProperty<NumberFormatList> {
 }
 
 /**
- * Configures the bulletFormatList settings of the RichTextEditor.
+ * Configures the settings for the bullet format list in the RichTextEditor.
  */
 export class BulletFormatList extends ChildProperty<BulletFormatList> {
     /**
-     * Specifies default numberFormatList items
+     * Specifies the default options for the bullet format list items.
      *
      * @default bulletFormatList
      */

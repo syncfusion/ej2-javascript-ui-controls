@@ -108,23 +108,24 @@ export type PortAlignment =
  * * Both - Rotate  and Translate the diagram element throughout its immediate parent
  * * None - Set the flip Direction as None
  */
-export type FlipDirection =
+export enum FlipDirection {
     /**
      * FlipHorizontal - Translate the diagram element throughout its immediate parent
      */
-    'Horizontal' |
+    Horizontal = 1 << 0,
     /**
      * FlipVertical - Rotate the diagram element throughout its immediate parent
      */
-    'Vertical' |
+    Vertical = 1 << 1,
     /**
-     * Both - Rotate  and Translate the diagram element throughout its immediate parent
+     * Both - Rotate and Translate the diagram element throughout its immediate parent
      */
-    'Both' |
+    Both = 1 << 0 | 1 << 1,
     /**
      * None - Set the flip Direction as None
      */
-    'None';
+    None = 0,
+}
 
 /**
  * Allows you to flip only the node or along with port, label, labelText

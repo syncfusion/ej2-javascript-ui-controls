@@ -2896,6 +2896,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private animateHeight(args: AnimationOptions, start: number, end: number): void {
+        if (isNullOrUndefined(args.element.parentElement)) {
+            return;
+        }
         const remaining: number = (args.duration - args.timeStamp) / args.duration;
         const currentHeight: number = (end - start) * remaining + start;
         args.element.parentElement.style.height = currentHeight + 'px';
@@ -6082,9 +6085,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.updateWrap();
                 break;
             case 'checkedNodes':
-                if (this.showCheckBox) {
-                    this.checkedNodes = oldProp.checkedNodes;
-                    this.setCheckedNodes(newProp.checkedNodes);
+                if (JSON.stringify(oldProp.checkedNodes) !== JSON.stringify(newProp.checkedNodes)) {
+                    if (this.showCheckBox) {
+                        this.checkedNodes = oldProp.checkedNodes;
+                        this.setCheckedNodes(newProp.checkedNodes);
+                    }
                 }
                 break;
             case 'autoCheck':

@@ -1390,7 +1390,6 @@ export class BaseHistoryInfo {
                     item.revisions.splice(revisionIndex, 1);
                     let rangeIndex: number = currentRevision.range.indexOf(item);
                     currentRevision.range.splice(rangeIndex, 1);
-                    this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
                 }
                 if (currentRevision.range.length === 0) {
                     this.owner.revisions.remove(currentRevision);
@@ -1406,6 +1405,7 @@ export class BaseHistoryInfo {
                 }
             }
         }
+        this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
         this.removedNodes.push(id);
     }
 

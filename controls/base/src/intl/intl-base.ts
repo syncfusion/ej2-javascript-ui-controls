@@ -1249,9 +1249,10 @@ export namespace IntlBase {
     /**
      * @private
      * @param {Date} date ?
+     * @param {number} firstDayOfWeek ?
      * @returns {number} ?
      */
-    export function getWeekOfYear(date: Date): number {
+    export function getWeekOfYear(date: Date, firstDayOfWeek: number): number {
         const newYear: Date = new Date(date.getFullYear(), 0, 1);
         let day: number = newYear.getDay();
         let weeknum: number;
@@ -1259,7 +1260,7 @@ export namespace IntlBase {
         const daynum: number = Math.floor((date.getTime() - newYear.getTime() -
             (date.getTimezoneOffset() - newYear.getTimezoneOffset()) * 60000) / 86400000) + 1;
         if (day < 4) {
-            weeknum = Math.floor((daynum + day - 1) / 7) + 1;
+            weeknum = Math.floor((daynum + day - firstDayOfWeek -  1) / 7) + 1;
             if (weeknum > 52) {
                 const nYear: Date = new Date(date.getFullYear() + 1, 0, 1);
                 let nday: number = nYear.getDay();
@@ -1267,7 +1268,7 @@ export namespace IntlBase {
                 weeknum = nday < 4 ? 1 : 53;
             }
         } else {
-            weeknum = Math.floor((daynum + day - 1) / 7);
+            weeknum = Math.floor((daynum + day - firstDayOfWeek - 1) / 7);
         }
         return weeknum;
     }

@@ -35,6 +35,10 @@ export const TABLE_VERTICAL_SPLIT: string = 'TABLE_VERTICAL_SPLIT';
 
 export const TABLE_HORIZONTAL_SPLIT: string = 'TABLE_HORIZONTAL_SPLIT';
 
+export const TABLE_DASHED: string = 'TABLE_DASHED';
+
+export const TABLE_ALTERNATE: string = 'TABLE_ALTERNATE';
+
 export const TABLE_MOVE: string = 'TABLE_MOVE';
 
 /**

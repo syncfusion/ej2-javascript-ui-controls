@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I683467` - Improved performance by optimizing bookmark manipulation during text insertion.
+- `#I684634` - Fixed an issue where focus moved to the document editor when selecting a tracked revision.
+- `#I684435` - Resolved a freezing issue when accepting all tracked changes.
+- `#I686056` - Fixed an issue where the background color was not updating properly in the properties pane.
+- `#I679707` - Corrected the continuation of page numbers after restarting page numbering.
+- `#I680995` - Fixed font rendering issues when applying the theme font to text.
+- `#I687189` - Resolved caret height inconsistencies in collaborative editing.
+- `#I682585` - Fixed incorrect list indentation when performing an undo action.
+- `#F195801` - Resolved an issue where the content change event was triggered twice when applying a paragraph style.
+
 ## 28.2.4 (2025-02-04)
 
 ### DocumentEditor

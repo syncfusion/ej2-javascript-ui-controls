@@ -39,6 +39,8 @@ export class TableCommand {
         this.parent.observer.on(CONSTANT.TABLE_MERGE, this.cellMerge, this);
         this.parent.observer.on(CONSTANT.TABLE_HORIZONTAL_SPLIT, this.HorizontalSplit, this);
         this.parent.observer.on(CONSTANT.TABLE_VERTICAL_SPLIT, this.VerticalSplit, this);
+        this.parent.observer.on(CONSTANT.TABLE_DASHED, this.tableStyle, this);
+        this.parent.observer.on(CONSTANT.TABLE_ALTERNATE, this.tableStyle, this);
         this.parent.observer.on(CONSTANT.TABLE_MOVE, this.tableMove, this);
         this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
     }
@@ -55,6 +57,8 @@ export class TableCommand {
         this.parent.observer.off(CONSTANT.TABLE_MERGE, this.cellMerge);
         this.parent.observer.off(CONSTANT.TABLE_HORIZONTAL_SPLIT, this.HorizontalSplit);
         this.parent.observer.off(CONSTANT.TABLE_VERTICAL_SPLIT, this.VerticalSplit);
+        this.parent.observer.off(CONSTANT.TABLE_DASHED, this.tableStyle);
+        this.parent.observer.off(CONSTANT.TABLE_ALTERNATE, this.tableStyle);
         this.parent.observer.off(CONSTANT.TABLE_MOVE, this.tableMove);
         this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
@@ -1039,6 +1043,18 @@ export class TableCommand {
     private restoreRange(target: HTMLElement): void {
         if (this.parent.currentDocument.getSelection().rangeCount && (target.nodeName === 'TD' || target.nodeName === 'TH')) {
             this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, target, 0);
+        }
+    }
+
+    private tableStyle(e: IHtmlItem): void {
+        if (e.callBack) {
+            e.callBack({
+                requestType: e.item.subCommand,
+                editorMode: 'HTML',
+                event: e.event,
+                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
+            });
         }
     }
 

@@ -629,7 +629,7 @@ describe('FileManager control Grid view', () => {
         let feObj: FileManager;
         let ele: HTMLElement;
         let originalTimeout: any;
-        beforeEach((): void => {
+        beforeEach((done: Function): void => {
             jasmine.Ajax.install();
             feObj = undefined;
             let ele: HTMLElement = createElement('div', { id: 'file' });
@@ -647,6 +647,7 @@ describe('FileManager control Grid view', () => {
                     { field: 'type', headerText: 'Type', width: '100', minWidth: 8, textAlign: 'Left', },
                     { field: 'size', headerText: 'Size', headerTextAlign: 'Left', minWidth: 8, width: '100', textAlign: 'Right' },
                     { field: 'hasChild', headerText: 'Has Children', minWidth: 8, width: '200', textAlign: 'Right' },
+                    { field: 'filterPath', headerText: 'Path'}
                     ]
                 },
             });
@@ -658,7 +659,9 @@ describe('FileManager control Grid view', () => {
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
-
+            setTimeout(function () {
+                done();
+            }, 500);
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -669,7 +672,7 @@ describe('FileManager control Grid view', () => {
 
         it('columnResizing testing', (done: Function) => {
             expect(feObj.detailsViewSettings.columnResizing).toEqual(true);
-            expect(feObj.detailsViewSettings.columns.length).toEqual(4);
+            expect(feObj.detailsViewSettings.columns.length).toEqual(5);
             expect((feObj.detailsViewSettings.columns[0] as any).headerTextAlign).toEqual("Left");
             expect((feObj.detailsViewSettings.columns[0] as any).minWidth).toEqual(120);
             expect((feObj.detailsViewSettings.columns[0] as any).maxWidth).toEqual(300);
@@ -679,8 +682,38 @@ describe('FileManager control Grid view', () => {
             let headerText: any = document.getElementById('file_grid').querySelectorAll('.e-headertext')
             expect(headerText[3].innerText).toBe("Has Children");
             expect(document.getElementById('file_grid').classList.contains('e-resize-lines')).toEqual(true);
-            expect(document.getElementById('file_grid').querySelectorAll('.e-rhandler').length).toBe(4);
+            expect(document.getElementById('file_grid').querySelectorAll('.e-rhandler').length).toBe(5);
             done();
+        });
+        it('mouse click on view button', (done: Function) => {
+            feObj.detailsviewModule.gridObj.selectRows([0]);
+            expect(feObj.selectedItems.length).toEqual(1);
+            expect(feObj.detailsviewModule.gridObj.getColumns().length).toEqual(7);
+            const items: HTMLElement = document.getElementById('file_tb_view');
+            items.click();
+            const size: HTMLElement = document.getElementById('file_ddl_large');
+            size.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data5)
+            });
+            setTimeout(function () {
+                const items: HTMLElement = document.getElementById('file_tb_view');
+                items.click();
+                const size: HTMLElement = document.getElementById('file_ddl_details');
+                size.click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data5)
+                });
+                setTimeout(function () {
+                    expect(feObj.selectedItems.length).toEqual(1);
+                    expect(feObj.detailsviewModule.gridObj.getColumns().length).toEqual(7);
+                    done();
+                }, 500);
+            }, 500);
         });
     });
     describe('sortComparer function', () => {

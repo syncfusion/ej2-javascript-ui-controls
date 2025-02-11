@@ -191,8 +191,8 @@ export class EnterKeyAction {
                                 let isPreWrapApplied: boolean = false;
                                 let isTextWrapApplied: boolean = false;
                                 if (parentElement) {
-                                    // eslint-disable-next-line max-len
-                                    const computedStyle: CSSStyleDeclaration = this.parent.contentModule.getDocument().defaultView.getComputedStyle(parentElement);
+                                    const computedStyle: CSSStyleDeclaration = this.parent.contentModule.getDocument()
+                                        .defaultView.getComputedStyle(parentElement);
                                     isPreWrapApplied = computedStyle.getPropertyValue('white-space') === 'pre-wrap';
                                     isTextWrapApplied = computedStyle.getPropertyValue('text-wrap') === 'nowrap';
                                 }
@@ -207,7 +207,7 @@ export class EnterKeyAction {
                                     const isCursorAtStartNonPreWrap: boolean = lastCharBeforeCursor !== 160
                                         && isSplitTextEmpty && !isPreWrapApplied && !isTextWrapApplied;
                                     const isCursorAtStartPreWrapWithContent: boolean = lastCharBeforeCursor === 32
-                                        && (isPreWrapApplied || isTextWrapApplied) && isSplitTextEmpty && hasContentAfterCursor;
+                                        && (isPreWrapApplied || isTextWrapApplied)  && isSplitTextEmpty && hasContentAfterCursor;
                                     if ((isCursorAtStartNonPreWrap || isCursorAtStartPreWrapWithContent) &&
                                         !this.range.startContainer.previousSibling) {
                                         isFocusedFirst = true;

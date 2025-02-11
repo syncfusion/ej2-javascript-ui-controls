@@ -3,6 +3,7 @@ import { PdfViewer, PdfViewerBase } from '../index';
 import {AnnotationRenderer, ShapeAnnotationBase, PopupAnnotationBase, FreeTextAnnotationBase, MeasureShapeAnnotationBase, TextMarkupAnnotationBase, SignatureAnnotationBase, InkSignatureAnnotation, ImageStructureBase  } from './index';
 import { PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfDictionary, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _ContentParser, _stringToBytes, _PdfRecord, _encode, _PdfBaseStream, PdfPageSettings, PdfMargins, PdfTemplate, _annotationFlagsToString } from '@syncfusion/ej2-pdf';
 import { Matrix, Rect, Size } from '@syncfusion/ej2-drawings';
+import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
 
 /**
  * PageRenderer
@@ -416,10 +417,6 @@ export class PageRenderer{
                                 if (annotation._dictionary.get('Name').name && (annotation._dictionary.get('Name').name.includes('#23D') || annotation._dictionary.get('Name').name.includes('#D'))) {
                                     rubberStampAnnotation.IsDynamic = true;
                                 }
-                                if (!isNullOrUndefined(rubberStampAnnotation.Subject) &&
-                                !(this.IsStampExist(rubberStampAnnotation.Subject))) {
-                                    rubberStampAnnotation.Subject = stampAnnotation.icon.toString();
-                                }
                             }
                             rubberStampAnnotation.IsMaskedImage = this.isMaskedImage;
                             rubberStampAnnotation.Apperarance = this.htmldata;
@@ -602,10 +599,10 @@ export class PageRenderer{
         data = this.pdfViewerBase.checkDocumentData(data, false);
         const fileByteArray: any = this.pdfViewerBase.convertBase64(data);
         if (isFormField) {
-            this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder, isFormField: isFormField, formFieldName: formFieldName, formFieldList: JSON.stringify(formFieldList), rubberStampAnnotation: rubberStampAnnotation, PageIndex: PageIndex });
+            this.pdfViewerBase.pdfViewerRunner.addTask({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder, isFormField: isFormField, formFieldName: formFieldName, formFieldList: JSON.stringify(formFieldList), rubberStampAnnotation: rubberStampAnnotation, PageIndex: PageIndex }, TaskPriorityLevel.High);
         }
         else {
-            this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder });
+            this.pdfViewerBase.pdfViewerRunner.addTask({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder }, TaskPriorityLevel.High);
         }
     }
 

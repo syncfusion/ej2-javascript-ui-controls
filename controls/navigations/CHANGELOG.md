@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I686179` - An issue where the Tab content not loaded properly while switching the tabs has been fixed.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I686187` - The expand animation issue, which occurred when adding and removing nodes inside the TreeView component's expanding event handler, has been resolved.
+
 ## 28.2.4 (2025-02-04)
 
 ### TreeView

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### Common
+
+#### Bug Fixes
+
+- `#I664843` - Resolved the issue with `formatDate` method incorrectly calculates the week number.
+
+## 28.2.4 (2025-02-04)
+
+### Common
+
+#### Bug Fixes
+
+- `#I664843` - Resolved the issue with `formatDate` method incorrectly calculates the week number.
+
 ## 23.2.6 (2023-11-28)
 
 ### Common

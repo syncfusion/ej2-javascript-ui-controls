@@ -45,7 +45,7 @@ export class MonthAgenda extends Month {
     }
 
     public updateSelectedCellClass(data: TdData): void {
-        if (util.resetTime(data.date).getTime() === util.resetTime(this.monthAgendaDate).getTime()) {
+        if (util.resetTime(data.date).getTime() === util.resetTime(new Date('' + this.parent.selectedDate)).getTime()) {
             data.className.push(cls.SELECTED_CELL_CLASS);
         }
     }

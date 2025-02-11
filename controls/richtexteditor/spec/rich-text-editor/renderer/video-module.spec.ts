@@ -4573,4 +4573,229 @@ client side. Customer easy to edit the contents and get the HTML content for
             done();
         });
     });
+    describe('Test Align center button in the video quick toolbar', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<video controls style="width: 300px; height: 200px;"><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Click on Align center button in the video quick toolbar and check its behavior', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('video');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            // Dispatch the mousedown event to activate the quick toolbar
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            // Verify that the quick toolbar is visible
+            expect(!isNullOrUndefined(document.querySelector('video') as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+            // Click on the Align button in the quick toolbar
+            let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+            // Verify the Align dropdown opens
+            const alignDropdown = document.querySelector('.e-quick-dropdown') as HTMLElement;
+            expect(!isNullOrUndefined(alignDropdown)).toBe(true);
+            alignDropdown.click();
+            const alignDropdownOpen= document.querySelector('.e-popup-open') as HTMLElement;
+            // Click the second option in the Align dropdown
+            const alignOptions = alignDropdownOpen.querySelectorAll('li');
+            alignOptions[1].click();
+            // Verify the second option has the 'e-active' class
+            expect(alignOptions[0].classList.contains('e-active')).toBe(true);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+            videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+            // Verify the Align dropdown opens again
+            const alignDropdownAgain = document.querySelector('.e-quick-dropdown') as HTMLElement;
+            expect(!isNullOrUndefined(alignDropdownAgain)).toBe(true);
+            alignDropdownAgain.click();
+            const alignDropdownOpenAgain = document.querySelector('.e-popup-open') as HTMLElement;
+            expect(!isNullOrUndefined(alignDropdownOpenAgain)).toBe(true);
+            // Click the second option in the Align dropdown again
+            const alignOptionsAgain = alignDropdownOpenAgain.querySelectorAll('li');
+            expect(alignOptionsAgain[1].classList.contains('e-active')).toBe(true);
+            done();
+        });
+    });
+    describe('Test Align right button in the video quick toolbar', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<video controls style="width: 300px; height: 200px;"><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Click on Align right button in the video quick toolbar and check its behavior', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('video');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            expect(!isNullOrUndefined(document.querySelector('video') as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+            let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+            const alignDropdown = document.querySelector('.e-quick-dropdown') as HTMLElement;
+            expect(!isNullOrUndefined(alignDropdown)).toBe(true);
+            alignDropdown.click();
+            const alignDropdownOpen= document.querySelector('.e-popup-open') as HTMLElement;
+            const alignOptions = alignDropdownOpen.querySelectorAll('li');
+            alignOptions[2].click();
+            expect(alignOptions[0].classList.contains('e-active')).toBe(true);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+            videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+            const alignDropdownAgain = document.querySelector('.e-quick-dropdown') as HTMLElement;
+            expect(!isNullOrUndefined(alignDropdownAgain)).toBe(true);
+            alignDropdownAgain.click();
+            const alignDropdownOpenAgain = document.querySelector('.e-popup-open') as HTMLElement;
+            expect(!isNullOrUndefined(alignDropdownOpenAgain)).toBe(true);
+            const alignOptionsAgain = alignDropdownOpenAgain.querySelectorAll('li');
+            expect(alignOptionsAgain[2].classList.contains('e-active')).toBe(true);
+            done();
+        });
+    });
+
+    describe('Video Quick Toolbar open testing after selecting some text', () => {
+        let rteObj: any;
+        let ele: HTMLElement;
+        it("selecting some text and then clicking on video quick toolbar open testing", (done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p><span class=\"e-video-wrap\" contenteditable=\"false\" title=\"mov_bbb.mp4\"></span><br>"
+            });
+            (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Video').toBe(true);
+            expect(dialogEle.querySelector('.e-vid-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
+            (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 2);
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let args: any = {
+                item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
+                preventDefault: function () { }
+            };
+            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
+            (rteObj.element.querySelector('.e-rte-video') as HTMLElement).focus();
+            args = {
+                item: { url: null, selection: null },
+                preventDefault: function () { }
+            };
+            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
+            let evnArg: any = { args, self: (<any>rteObj).videoModule, selection: save, selectNode: [''], link: null, target: '' };
+            evnArg.selectNode = [(<any>rteObj).element.querySelector('.e-rte-video')];
+            let trg: any = <HTMLElement>rteObj.element.querySelectorAll(".e-content")[0];
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: evnArg.selectNode[0] };
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+                done();
+            }, 300);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('926553 - Image/video Overlaps the List After Changing Alignment to Left',()=>{
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `<p>Rich Text Editor allows inserting images from online sources as well as the local computers where you want to insert the image in your content.</p>
+                        <li><span class="e-video-wrap" contenteditable="false" title="Screen Recording 2025-01-07 175543.mp4"><video controls="" width="auto" height="auto" style="min-width: 0px; max-width: 1434px; min-height: 0px; width: 200px;" class="e-rte-video e-resize"><source src="blob:http://127.0.0.1:5501/7fe46da2-7e9b-44ad-95ac-ff95e90e8c78" type="video/mp4"></video></span><br></li><li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('926553 - Video Overlaps the List After Changing Alignment to Left',(done:Function)=>{
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            let target:HTMLElement=rteObj.element.querySelector('.e-rte-video');
+            dispatchEvent(target,'mousedown');
+            target.click();
+            dispatchEvent(target,'mouseup');
+            var eventArgs={pageX:50,pageY:300,target:target};
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventArgs });
+            (<any>rteObj).imageModule.imgEle = rteObj.contentModule.getEditPanel().querySelector('.e-rte-video');
+            setTimeout(() => {
+                let mouseEventArgs = {
+                    item: { command: 'Videos', subCommand: 'JustifyLeft' }
+                };
+                (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
+                let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
+                expect(video.classList.contains('e-video-left')).toBe(true);
+                expect((video.parentElement.nextElementSibling as HTMLElement).style.clear=='left').toBe(true);
+                done();
+            },200);
+        });
+        it('926553 - Video Overlaps the List After Changing Alignment to Right',(done:Function)=>{
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            let target:HTMLElement=rteObj.element.querySelector('.e-rte-video');
+            dispatchEvent(target,'mousedown');
+            target.click();
+            dispatchEvent(target,'mouseup');
+            var eventArgs={pageX:50,pageY:300,target:target};
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventArgs });
+            (<any>rteObj).imageModule.imgEle = rteObj.contentModule.getEditPanel().querySelector('.e-rte-video');
+            setTimeout(() => {
+                let mouseEventArgs = {
+                    item: { command: 'Videos', subCommand: 'JustifyRight' }
+                };
+                (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
+                let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
+                expect(video.classList.contains('e-video-right')).toBe(true);
+                expect((video.parentElement.nextElementSibling as HTMLElement).style.clear == 'right').toBe(true);
+                done();
+            },200);
+        });
+    });
+
 });

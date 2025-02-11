@@ -31,6 +31,7 @@ export class Link {
     private dialogRenderObj: DialogRenderer;
     private isDestroyed: boolean;
     private mouseDown: EventListenerOrEventListenerObject;
+    private linkQTPopupTime: number;
 
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -145,15 +146,25 @@ export class Link {
                 pageX = (this.parent.iframeSettings.enable) ? parentLeft + linkLeft : target.getBoundingClientRect().left;
                 pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ?
                     (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
+                this.linkQTPopupTime = setTimeout(() => {
+                    this.showLinkPopup(pageX, pageY, range);
+                }, 400);
             } else {
                 let args: Touch | MouseEvent;
                 args = (e.args as TouchEvent).touches ? (e.args as TouchEvent).changedTouches[0] : args = e.args as MouseEvent;
                 pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset + parentLeft + args.clientX : args.pageX;
                 pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
+                this.showLinkPopup(pageX, pageY, range);
             }
             if (this.quickToolObj.linkQTBar) {
                 this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer as Element, 'link');
             }
+        }
+    }
+
+    private showLinkPopup(pageX: number, pageY: number, range: Range): void {
+        if (this.quickToolObj.linkQTBar) {
+            this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer as Element, 'link');
         }
     }
 
@@ -608,6 +619,10 @@ export class Link {
      */
     public destroy(): void {
         if (this.isDestroyed) { return; }
+        if (!isNOU(this.linkQTPopupTime)) {
+            clearTimeout(this.linkQTPopupTime);
+            this.linkQTPopupTime = null;
+        }
         this.removeEventListener();
         this.isDestroyed = true;
     }

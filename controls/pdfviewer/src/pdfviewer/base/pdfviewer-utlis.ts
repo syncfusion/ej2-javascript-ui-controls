@@ -1,5 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfFontStyle, PdfTrueTypeFont } from '@syncfusion/ej2-pdf';
+import { PdfViewer } from '../index';
 
 /**
  *
@@ -214,6 +215,39 @@ export class PdfViewerUtils {
     public static convertPixelToPoint(value: number): number {
         return (value * 72 / 96);
     }
+
+    /**
+     * Method to deep-shallow copy an object, only if it is a Proxy
+     *
+     * @private
+     * @param {any} obj - Get the data of the next queued task.
+     * @returns {any} - The copied object if it was a Proxy; otherwise, returns the original object.
+     */
+    public static cloneProxy(obj: any): any {
+        if (this.isProxy(obj)) {
+            const copy: any = Object.assign({}, obj);
+            for (const key in copy) {
+                // eslint-disable-next-line security/detect-object-injection
+                if (this.isProxy(copy[key])) {
+                    // eslint-disable-next-line security/detect-object-injection
+                    copy[key] = this.cloneProxy(copy[key]); // Recursively process each property
+                }
+            }
+            return copy;
+        }
+        return obj;
+    }
+
+    /**
+     * Method to check if a value is a plain object (Proxy detection)
+     *
+     * @private
+     * @param {any} value - Get the data of the next queued task.
+     * @returns {boolean} - Returns true if the value is a Proxy; otherwise, false.
+     */
+    public static isProxy(value: any): boolean {
+        return Object.prototype.toString.call(value) === '[object Object]';
+    }
 }
 
 /**
@@ -383,5 +417,90 @@ export class PdfViewerSessionStorage {
             }
         }
         return keysToProcess;
+    }
+}
+
+/**
+ *
+ * @hidden
+ */
+export enum TaskPriorityLevel {
+    High = 1,
+    Medium = 2,
+    Low = 3
+}
+
+/**
+ *
+ * @hidden
+ */
+export class PdfiumTaskScheduler {
+    //Fields
+    private worker: any;
+    private taskQueue: any[] = [];
+    private isProcessing: boolean = false;
+    private pdfViewer: PdfViewer;
+
+    // Constructor
+    constructor(workerScript: any, pdfViewer: PdfViewer) {
+        this.worker = new Worker(workerScript);
+        this.taskQueue = [];
+        this.isProcessing = false;
+        this.pdfViewer = pdfViewer;
+    }
+
+    /**
+     * Method to add the given task into request for the worker
+     *
+     * @param {any} taskData - Get the task data.
+     * @param {TaskPriorityLevel} priority - Get the priority level for the task.
+     * @private
+     * @returns {void}
+     */
+    public addTask(taskData: any, priority: TaskPriorityLevel): void {
+        this.taskQueue.push({ taskData, priority });
+        this.taskQueue.sort((a: any, b: any) => a.priority - b.priority); // Sort by priority
+        this.processQueue(); // Start processing if idle
+    }
+
+    /**
+     * Method to request posted for the queue task
+     *
+     * @returns {void}
+     */
+    private processQueue(): void {
+        if (this.isProcessing || this.taskQueue.length === 0) { return; }
+        const nextTask: any = this.taskQueue.shift();
+        this.isProcessing = true;
+        const isVue3: any = (this as any).pdfViewer.isVue3 || ((this as any).pdfViewer.parent && (this as any).pdfViewer.parent.isVue3);
+        const taskData: any = isVue3 ? PdfViewerUtils.cloneProxy(nextTask.taskData) : nextTask.taskData;
+        this.worker.postMessage(taskData);
+    }
+
+    /**
+     * Method to call on message for the worker
+     *
+     * @param {any} method - Get the method for the onmessage.
+     * @private
+     * @returns {void}
+     */
+    public onMessage(method: (event: any) => void): void {
+        this.worker.onmessage = (event: MessageEvent) => {
+            if (event.data.message !== '') {
+                method(event); // Call the provided method with the event
+            }
+            this.isProcessing = false;
+            this.processQueue();
+        };
+    }
+
+    /**
+     * Method to terminate the worker
+     *
+     * @private
+     * @returns {void}
+     */
+    public terminate(): void {
+        this.worker.terminate();
     }
 }

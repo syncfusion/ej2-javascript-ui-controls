@@ -46,6 +46,7 @@ async function checkServiceStatus() {
 
 describe('Test case with online service', () => {
     describe('901364 - After image delete is called multiple times when the CTRL + A is pressed multiple times.', ()=> {
+
         let editor: RichTextEditor;
         let imageSuccess: boolean = false;
         let imageRemove: boolean = false;

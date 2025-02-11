@@ -130,3 +130,32 @@ describe('Validate the bullet list symbol is not render issue on exported docume
         expect(characterFormat.fontFamilyNonFarEast).toBe('Symbol');
     });
 });
+describe('Ensure the minimal section content on exported sfdt document', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSfdtExport: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport, WordExport);
+        editor.documentEditorSettings.optimizeSfdt = false;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((): void => {
+        if (editor) {
+            editor.destroy();
+        }
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+    });
+    it("Validate the minimal content if pages length is zero", () => {
+        editor.openBlank();
+        editor.documentHelper.pages = [];
+        let exportData: any = JSON.parse(editor.sfdtExportModule.serialize());
+        expect(exportData.sections.length).toBe(1);
+    });
+});

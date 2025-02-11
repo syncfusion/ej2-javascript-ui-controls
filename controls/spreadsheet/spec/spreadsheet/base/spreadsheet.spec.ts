@@ -2747,6 +2747,39 @@ describe('Spreadsheet base module ->', () => {
                 },20);
             });
         });
+    
+        describe('EJ2-936024 ->', () => {
+            beforeAll((done: Function) => {
+                let rowModel: Object[] = [];
+                for (let i: number = 1; i < 100; i++) {
+                    rowModel[i as number] = { hidden: true };
+                }
+                helper.initializeSpreadsheet({ sheets: [{ rows: rowModel , ranges: [{ dataSource: defaultData }], rowCount: 200, colCount: 200, frozenRows: 1 }], scrollSettings: { enableVirtualization: true, isFinite: true } }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Script error occurs while scrolling in finite mode when first 100+ rows are hidden.', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[23].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[92].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[99].hidden).toBeTruthy();
+                helper.invoke('getScrollElement').scrollLeft = 3392;
+                spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 3392 });
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('BB101');
+                    expect(spreadsheet.sheets[0].topLeftCell).toBe('BB1');
+                    helper.invoke('getMainContent').parentElement.scrollTop = 980;
+                    spreadsheet.notify(onContentScroll, { scrollTop: 980, scrollLeft: 3392 });
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('BB150');
+                        expect(spreadsheet.sheets[0].topLeftCell).toBe('BB1');
+                        done();
+                    });
+                });
+            });
+        });
     });
     describe('Null or Undefined values testing for public properties ->', () => {
         beforeAll(() => {

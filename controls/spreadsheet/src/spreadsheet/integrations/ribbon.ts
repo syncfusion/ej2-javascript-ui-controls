@@ -1613,7 +1613,7 @@ export class Ribbon {
                     this.parent.notify(initiateDataValidation, null);
                     break;
                 case l10n.getConstant('HighlightInvalidData'):
-                    this.parent.notify(invalidData, { isRemoveHighlight: false });
+                    this.parent.notify(invalidData, {});
                     break;
                 case l10n.getConstant('ClearHighlight'):
                     this.parent.notify(invalidData, { isRemoveHighlight: true });

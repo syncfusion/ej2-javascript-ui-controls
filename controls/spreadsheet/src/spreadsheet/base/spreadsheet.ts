@@ -47,7 +47,7 @@ import { ConditionalFormatting } from '../actions/conditional-formatting';
 import { WorkbookImage, WorkbookChart, updateView, focusChartBorder, ExtendedRange, NumberFormatArgs } from '../../workbook/index';
 import { WorkbookProtectSheet, isImported } from '../../workbook/index';
 import { contentLoaded, completeAction, freeze, ConditionalFormatEventArgs, refreshOverlayElem, insertDesignChart } from '../common/index';
-import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress, cellValidation } from './../../workbook/common/index';
+import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress } from './../../workbook/common/index';
 import { updateScroll, SelectionMode, clearCopy, clearUndoRedoCollection, clearChartBorder, propertyChange } from '../common/index';
 import { Print } from '../renderer/print';
 /**
@@ -1768,7 +1768,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - This method is used for remove validation.
      */
     public removeDataValidation(range?: string): void {
-        this.notify(cellValidation, { range: range, isRemoveValidation: true, viewport: this.viewport });
+        super.removeDataValidation(range);
     }
 
     /**
@@ -1780,20 +1780,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - This method is used to highlight the invalid data.
      */
     public addInvalidHighlight(range?: string): void {
-        let ranges: string = range ? range : this.dataValidationRange;
-        if (ranges.indexOf(',') > - 1) {
-            let sheetName: string = '';
-            if (ranges.includes('!')) {
-                sheetName = ranges.substring(0, ranges.lastIndexOf('!')) + '!';
-                ranges = ranges.substring(ranges.lastIndexOf('!') + 1);
-            }
-            const splitRange: string[] = ranges.split(',');
-            for (let i: number = 0; i < splitRange.length - 1; i++) {
-                super.addInvalidHighlight(sheetName + splitRange[i as number]);
-            }
-        } else {
-            super.addInvalidHighlight(ranges);
-        }
+        super.addInvalidHighlight(range);
     }
 
     /**
@@ -1805,20 +1792,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - This method is used for remove highlight from invalid data.
      */
     public removeInvalidHighlight(range?: string): void {
-        let address: string = range ? range : this.dataValidationRange;
-        if (address.indexOf(',') > - 1) {
-            let sheetName: string = '';
-            if (address.includes('!')) {
-                sheetName = address.substring(0, address.lastIndexOf('!')) + '!';
-                address = address.substring(address.lastIndexOf('!') + 1);
-            }
-            const splitRange: string[] = address.split(',');
-            for (let i: number = 0; i < splitRange.length - 1; i++) {
-                super.removeInvalidHighlight(sheetName + splitRange[i as number]);
-            }
-        } else {
-            super.removeInvalidHighlight(address);
-        }
+        super.removeInvalidHighlight(range);
     }
 
     /**

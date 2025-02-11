@@ -340,7 +340,10 @@ export class DOMNode {
      * @deprecated
      */
     public unWrap(element: Element): Element[] {
-        const parent: Element = element.parentNode as Element;
+        const parent: Element = element && element.parentNode as Element;
+        if (!parent) {
+            return [];
+        }
         let unWrapNode: Element[] = [];
         while (element.firstChild && (element.textContent !== ' ')) {
             unWrapNode.push(element.firstChild as Element);

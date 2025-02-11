@@ -1,6 +1,6 @@
 import { ShadowModel, GradientModel } from '../core/appearance-model';
 import { PointModel } from './../primitives/point-model';
-import { TextOverflow, Scale, ImageAlignment, Stretch, TextWrap, FlipDirection } from '../enum/enum';
+import { TextOverflow, Scale, ImageAlignment, Stretch, TextWrap, FlipDirection, FlipMode } from '../enum/enum';
 
 /**
  * canvas interface
@@ -31,6 +31,7 @@ export interface BaseAttributes extends StyleAttributes {
     description?: string;
     canApplyStyle?: boolean;
     flip?: FlipDirection;
+    flipMode?: FlipMode;
     shapeType?: string;
 }
 
@@ -155,4 +156,8 @@ export interface IKeyDownType {
 /** @private */
 export interface IReactDiagram {
     isReact?: boolean;
+}
+
+export interface ITransform {
+    transform: string;
 }

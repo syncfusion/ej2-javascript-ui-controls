@@ -7786,6 +7786,7 @@ export class Selection {
             }
             this.owner.fireSelectionChange();
         }
+        this.triggerSpellCheckWhenSelectionChanges();
         if(this.owner.enableAutoFocus)
         {
             this.documentHelper.updateFocus();
@@ -7819,6 +7820,17 @@ export class Selection {
         this.retrieveTableFormat(startPosition, endPosition);
         this.isRetrieveFormatting = false;
         this.setCurrentContextType();
+    }
+    
+    private triggerSpellCheckWhenSelectionChanges(): void {
+        if (this.documentHelper.isSpellCheckPending && this.documentHelper.owner.isSpellCheck && !this.documentHelper.isTextInput) {
+            this.documentHelper.triggerElementsOnLoading = true;
+            this.documentHelper.triggerSpellCheck = true;
+            this.viewer.updateScrollBars();
+            this.documentHelper.isSpellCheckPending = false;
+            this.documentHelper.triggerElementsOnLoading = false;
+            this.documentHelper.triggerSpellCheck = false;
+        }
     }
     /**
      * @private
@@ -7970,7 +7982,7 @@ export class Selection {
             }
         }
         let currentRevision: Revision[] = this.getCurrentRevision();
-        if (!isNullOrUndefined(currentRevision) && this.owner.showRevisions) {
+        if (!isNullOrUndefined(currentRevision) && this.owner.showRevisions && this.owner.isUpdateTrackChanges) {
             this.owner.trackChangesPane.currentSelectedRevision = currentRevision[0];
             if (isNullOrUndefined(this.owner.documentHelper.currentSelectedComment)) {
                 this.owner.commentReviewPane.selectReviewTab('Changes');

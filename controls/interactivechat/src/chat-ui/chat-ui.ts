@@ -509,7 +509,6 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     private chatHeader: HTMLElement;
     private messageWrapper: HTMLElement;
     private downArrowIcon: Fab;
-    private lastUser: string;
     private intl: Internationalization;
     private indicatorWrapper: HTMLElement;
     private isEmptyChatTemplateRendered: boolean;
@@ -586,7 +585,20 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         }
         this.wireEvents();
         this.renderTypingIndicator();
-        this.scrollToBottom();
+        this.updateScrollPosition(false, 0);
+    }
+    private updateScrollPosition(isMethodCall: boolean, timeDelay: number): void {
+        if (this.isReact || this.isAngular) {
+            setTimeout(() => {
+                if (isMethodCall) {
+                    this.handleAutoScroll();
+                } else {
+                    this.scrollToBottom();
+                }
+            }, timeDelay);
+        } else {
+            this.scrollToBottom();
+        }
     }
     private renderChatHeader(): void {
         if (this.headerText) {
@@ -718,7 +730,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.handleTimeBreak(prevIndex, index, loadOldChat);
         }
         if (msg.author.id === this.user.id) {
-            if ((msg.author.id !== this.lastUser) || (this.showTimeBreak && this.isTimeBreakAdded(chatContentWrapper, loadOldChat))) {
+            const hasTimeBreak: boolean = this.showTimeBreak && this.isTimeBreakAdded(chatContentWrapper, loadOldChat);
+            if ((msg.author.id !== this.getLastUser(prevIndex)) || hasTimeBreak) {
                 messageGroup = this.createElement('div', {className: `e-message-group e-right ${this.messageTemplate ? 'e-message-item-template' : ''}`});
                 this.manageChatContent(loadOldChat, chatContentWrapper, messageGroup);
                 this.addGroupItems(msg, messageGroup, false, true, index, loadOldChat);
@@ -730,7 +743,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             }
         }
         else {
-            if (this.lastUser !== msg.author.id || this.isTimeVaries(index, prevIndex)) {
+            if (this.getLastUser(prevIndex) !== msg.author.id || this.isTimeVaries(index, prevIndex)) {
                 messageGroup = this.createElement('div', {className: `e-message-group e-left ${this.messageTemplate ? 'e-message-item-template' : ''}`});
                 const avatarElement: HTMLElement = this.createAvatarIcon(msg.author, false);
                 if (!this.messageTemplate) { messageGroup.prepend(avatarElement); }
@@ -754,7 +767,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 }
             }
         }
-        this.lastUser = msg.author.id;
+    }
+    private getLastUser(prevIndex: number): string {
+        if (prevIndex >= 0) {
+            return this.messages[parseInt(prevIndex.toString(), 10)].author.id;
+        }
+        return '';
     }
     private isTimeVaries(index: number, prevIndex: number): boolean {
         const currentMessageDate: Date = this.getMessageDate(index);
@@ -1103,7 +1121,6 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         }
     }
     private renderUpdatedMessage(): void {
-        this.lastUser = '';
         this.messageWrapper.innerHTML = '';
         this.renderMessageGroup(this.messageWrapper);
     }
@@ -1133,7 +1150,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.renderNewMessage(newMessageObj, (this.messages.length - 1));
         });
         if (this.suggestionsElement) { this.suggestionsElement.hidden = false; }
-        this.scrollToBottom();
+        // To prevent the issue where scrolling does not move to the bottom in the `messageTemplate` case on Angular and React platforms.
+        this.updateScrollPosition(false, 5);
     }
     private getContextObject(
         templateName: string,
@@ -1317,7 +1335,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.messages = [...this.messages, message];
             this.renderNewMessage(message, (this.messages.length - 1));
         }
-        this.handleAutoScroll();
+        // To prevent the issue where scrolling does not move to the bottom in the `messageTemplate` case on Angular and React platforms.
+        this.updateScrollPosition(true, 5);
         this.isProtectedOnChange = prevOnChange;
     }
 
@@ -1351,7 +1370,6 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.destroyAndNullify(this.toolbar);
         this.destroyChatUI();
         this.intl = null;
-        this.lastUser = null;
     }
 
     /**

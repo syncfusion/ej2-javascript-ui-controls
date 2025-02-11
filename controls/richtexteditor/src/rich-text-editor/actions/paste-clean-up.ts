@@ -208,7 +208,7 @@ export class PasteCleanup {
             const isValueNotEmpty: boolean = tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
             !isNOU(tempDivElem.querySelector('table'));
             const imgElements: NodeListOf<HTMLImageElement> = tempDivElem.querySelectorAll('img');
-            const base: string = this.parent.contentModule.getDocument().location.origin;
+            const base: string = this.parent.contentModule.getDocument().baseURI;
             imgElements.forEach((imgElement: HTMLImageElement) => {
                 let imageFileFormat: string;
                 const imgElementSrc: string = imgElement.getAttribute('src');
@@ -234,7 +234,7 @@ export class PasteCleanup {
                     value = currentValue;
                 }
             });
-            if (this.parent.pasteCleanupSettings.prompt) {
+            if (this.parent.pasteCleanupSettings.prompt && !e.isPlainPaste) {
                 if (isValueNotEmpty) {
                     (e.args as ClipboardEvent).preventDefault();
                     this.pasteDialog(value, args, isClipboardHTMLDataNull);
@@ -243,7 +243,7 @@ export class PasteCleanup {
             else if (this.parent.pasteCleanupSettings.plainText) {
                 (e.args as ClipboardEvent).preventDefault();
                 this.plainFormatting(value, args, isClipboardHTMLDataNull);
-            } else if (this.parent.pasteCleanupSettings.keepFormat) {
+            } else if (this.parent.pasteCleanupSettings.keepFormat || e.isPlainPaste) {
                 (e.args as ClipboardEvent).preventDefault();
                 this.formatting(value, false, args);
             } else {
@@ -930,6 +930,10 @@ export class PasteCleanup {
             } else if (!tableElement[i as number].classList.contains('e-rte-table')) {
                 tableElement[i as number].classList.add('e-rte-table');
             }
+            if (isNOU(tableElement[i as number].nextElementSibling) && tableElement[i as number].nextSibling &&
+                !tableElement[i as number].nextSibling.textContent.trim()) {
+                detach(tableElement[i as number].nextSibling);
+            }
         }
         return element;
     }
@@ -1287,12 +1291,13 @@ export class PasteCleanup {
 
     private processPictureElement(clipBoardElem: HTMLElement): void {
         const pictureElems: NodeListOf<HTMLElement> = clipBoardElem.querySelectorAll('picture');
+        const base: string = this.parent.contentModule.getDocument().baseURI;
         for (let i: number = 0; i < pictureElems.length; i++) {
             const imgElem: HTMLImageElement | null = pictureElems[i as number].querySelector('img');
             const sourceElems: NodeListOf<HTMLSourceElement> = pictureElems[i as number].querySelectorAll('source');
             if (imgElem && imgElem.getAttribute('src')) {
                 const srcValue: string = (imgElem as HTMLElement).getAttribute('src');
-                const url: URL = new URL(srcValue);
+                const url: URL = srcValue.indexOf('http') > -1 ? new URL(srcValue) : new URL(srcValue, base);
                 for (let j: number = 0; j < sourceElems.length; j++) {
                     const srcset: string | null = sourceElems[j as number].getAttribute('srcset');
                     if (srcset) {

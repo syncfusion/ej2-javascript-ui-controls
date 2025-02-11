@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { ChildArrangement, ConnectionPointOrigin, DiagramTools, NodeConstraints, ConnectorConstraints, PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
+import { ChildArrangement, ConnectionPointOrigin, DiagramTools, NodeConstraints, ConnectorConstraints, PortVisibility, PortConstraints, FlipDirection } from '../../../src/diagram/enum/enum';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { BasicShapeModel, BpmnShapeModel, NativeModel, NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
@@ -3040,7 +3040,7 @@ describe('Click event not triggered properly in scrollbar position issue', () =>
 
         let node: NodeModel = {
             id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
-            flipMode: 'None', flip: 'Horizontal'
+            flipMode: 'None', flip: FlipDirection.Horizontal
         };
         let node2: NodeModel = {
             id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200, annotations: [{ content: 'Node2' }]

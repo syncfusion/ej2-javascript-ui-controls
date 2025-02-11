@@ -3,6 +3,7 @@
 import { INode, IConnector, Layout, Bounds } from './layout-base';
 import { PointModel } from '../primitives/point-model';
 import { Connector, OrthogonalSegment } from '../objects/connector';
+import { Node } from '../objects/node';
 import { Direction, LayoutOrientation } from '../enum/enum';
 import { Rect as RectModel } from '../primitives/rect';
 import { Point } from '../primitives/point';
@@ -424,6 +425,7 @@ class HierarchicalLayoutUtil {
                 }
                 dnode.offsetX += x - dnode.offsetX;
                 dnode.offsetY += y - dnode.offsetY;
+                matrixModel.nodePropertyChange(dnode);
             }
         }
         if (!checkLinear) {
@@ -432,9 +434,7 @@ class HierarchicalLayoutUtil {
                 this.isNodeOverLap(this.nameTable[this.vertices[parseInt(i.toString(), 10)].name], layoutProp);
             }
         }
-        if ((matrixModel && layoutProp.connectionPointOrigin === 'DifferentPoint') || canEnableRouting) {
-            matrixModel.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
-        }
+        matrixModel.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
         if (canEnableRouting) {
             const vertices: object = {};
             let matrixrow1: MatrixCellGroupObject[];
@@ -3081,9 +3081,11 @@ class MatrixModel {
                                     }
                                 }
                             }
-                            rank.reverse();
-                            rank.pop();
-                            rank.reverse();
+                            // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout
+                            const vertex: IVertex = matrixCell.cells[parseInt(i.toString(), 10)] as IVertex;
+                            if (rank.indexOf(vertex) !== -1) {
+                                rank.splice(rank.indexOf(vertex), 1);
+                            }
                         }
                     }
                     matrixCell.size += ((matrixCell.cells as CellObject[]).length - 1) * spacing;
@@ -3135,10 +3137,11 @@ class MatrixModel {
                                 parentMartixCell.children.push(matrixCell);
                             }
                         }
-
-                        rank.reverse();
-                        rank.pop();
-                        rank.reverse();
+                        // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout
+                        const vertex: IVertex = matrixCell.cells[parseInt(i.toString(), 10)] as IVertex;
+                        if (rank.indexOf(vertex) !== -1) {
+                            rank.splice(rank.indexOf(vertex), 1);
+                        }
                     }
 
                     matrixCell.size += ((matrixCell.cells as CellObject[]).length - 1) * spacing;
@@ -3525,9 +3528,12 @@ class MatrixModel {
                             else if (layout.orientation === 'RightToLeft') {
                                 x1 = modelBounds.width - dxValue1;
                             }
-
-                            x1 += trnsX;
-                            y1 += trnsY;
+                            if (modelBounds.x < 0) {
+                                x1 -= modelBounds.x;
+                            }
+                            if (modelBounds.y < 0) {
+                                y1 -= modelBounds.y;
+                            }
 
                             intermediatePoint = this.getPointvalue(x1, y1);
                         }
@@ -3543,10 +3549,12 @@ class MatrixModel {
 
                         // eslint-disable-next-line max-len
                         pts = this.updateConnectorPoints(pts as Point[], segmentsize, intermediatePoint as Point, (transModelBounds as RectModel), layout.orientation);
-
-                        for (let p: number = 0; p < pts.length; p++) {
-                            const pt: PointModel = pts[parseInt(p.toString(), 10)];
-                            internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
+                        // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout
+                        if (intermediatePoint != null && this.diagram.layout.connectionPointOrigin !== 'DifferentPoint') {
+                            for (let p: number = 0; p < pts.length; p++) {
+                                const pt: PointModel = pts[parseInt(p.toString(), 10)];
+                                internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
+                            }
                         }
                         this.resetConnectorPoints(internalConnector);
                     }
@@ -3588,8 +3596,12 @@ class MatrixModel {
                                 x1 = modelBounds.width - dx1;
                             }
 
-                            x1 += trnsX;
-                            y1 += trnsY;
+                            if (modelBounds.x < 0) {
+                                x1 -= modelBounds.x;
+                            }
+                            if (modelBounds.y < 0) {
+                                y1 -= modelBounds.y;
+                            }
                             intermediatePoint = this.getPointvalue(x1, y1);
                         }
 
@@ -3606,9 +3618,12 @@ class MatrixModel {
                         pts = this.updateConnectorPoints(pts as Point[], segmentsize, (intermediatePoint as Point), transModelBounds as RectModel, layoutProp.orientation);
                         pts.reverse();
                         internalConnector['pointCollection'] = [];
-                        for (let p: number = 0; p < pts.length; p++) {
-                            const pt: PointModel = pts[parseInt(p.toString(), 10)];
-                            internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
+                        // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout
+                        if (intermediatePoint != null && this.diagram.layout.connectionPointOrigin !== 'DifferentPoint') {
+                            for (let p: number = 0; p < pts.length; p++) {
+                                const pt: PointModel = pts[parseInt(p.toString(), 10)];
+                                internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
+                            }
                         }
                         this.resetConnectorPoints(internalConnector);
                     }
@@ -3628,98 +3643,54 @@ class MatrixModel {
     private updateConnectorPoints(
         connectorPoints: Point[], startSegmentSize: number, intermediatePoint: Point, bounds: object, orientation: string):
         Point[] {
+        // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout
         const layoutBounds: RectModel = bounds as RectModel;
         const isHorizontal: boolean = orientation === 'LeftToRight' || orientation === 'RightToLeft';
         const pts: Point[] = connectorPoints;
-        if (pts.length > 2) {
-            const newPt: Point = Point.transform(pts[0], Point.findAngle(pts[0], pts[1]), startSegmentSize) as Point;
-            const nextPt: Point = Point.transform(newPt, Point.findAngle(pts[1], pts[2]), Point.findLength(pts[1], pts[2])) as Point;
-            pts.splice(1, 2, newPt, nextPt);
-            if (intermediatePoint != null) {
-                const index: number = 2;
-                const ptsCount: number = pts.length;
-                const newPt1: Point = Point.transform(
-                    pts[ptsCount - 1],
-                    Point.findAngle(pts[ptsCount - 1], pts[ptsCount - 2]),
-                    startSegmentSize) as Point;
-                pts.splice(ptsCount - 1, 0, newPt1);
-                while (index < (pts.length - 2)) {
-                    pts.splice(index, 1);
-                }
-
-                const edgePt: Point = intermediatePoint;
-                this.inflate((layoutBounds as RectModel), (layoutBounds as RectModel).width, layoutBounds.height);
-
-                const line1: Point[] = [];
-                line1[0] = this.getPointvalue(edgePt.x, layoutBounds.y) as Point;
-                line1[1] = this.getPointvalue(edgePt.x, layoutBounds.y + layoutBounds.height) as Point;
-
-                const line2: Point[] = [];
-                line2[0] = this.getPointvalue(layoutBounds.x, pts[1].y) as Point;
-                line2[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, pts[1].y) as Point;
-
-                const line3: Point[] = [];
-                line3[0] = this.getPointvalue(layoutBounds.x, newPt1.y) as Point;
-                line3[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, newPt1.y) as Point;
-
-
-                if (isHorizontal) {
-                    line1[0] = this.getPointvalue(layoutBounds.x, edgePt.y) as Point;
-                    line1[1] = this.getPointvalue(layoutBounds.x + layoutBounds.width, edgePt.y) as Point;
-
-                    line2[0] = this.getPointvalue(pts[1].x, layoutBounds.y) as Point;
-                    line2[1] = this.getPointvalue(pts[1].x, layoutBounds.y + layoutBounds.height) as Point;
-
-                    line3[0] = this.getPointvalue(newPt1.x, layoutBounds.y) as Point;
-                    line2[1] = this.getPointvalue(newPt1.x, layoutBounds.y + layoutBounds.height) as Point;
-                }
-
-                const intercepts1: Point[] = [intersect2(
-                    line1[0] as Point,
-                    line1[1] as Point, line2[0] as Point, line2[1] as Point)] as Point[];
-                const intercepts2: Point[] = [intersect2(
-                    line1[0] as Point, line1[1] as Point,
-                    line3[0] as Point, line3[1] as Point)] as Point[];
-
-                if (intercepts2.length > 0) {
-                    pts.splice(2, 0, intercepts2[0]);
-                }
-
-                if (intercepts1.length > 0) {
-                    pts.splice(2, 0, intercepts1[0]);
-                }
+        const startPoint:Point = pts[0];
+        const endPoint: Point = pts[pts.length - 1];
+        if (intermediatePoint != null) {
+            const startNext: Point = Point.transform(startPoint, Point.findAngle(startPoint, pts[1]), startSegmentSize) as Point;
+            const endBefore: Point = Point.transform(endPoint, Point.findAngle(endPoint, pts[pts.length - 2]), startSegmentSize) as Point;
+            const intermediateStart: Point = this.getPointvalue(intermediatePoint.x, startNext.y) as Point;
+            const intermediateEnd: Point = this.getPointvalue(intermediatePoint.x, endBefore.y) as Point;
+            if (isHorizontal) {
+                intermediateStart.x = startNext.x;
+                intermediateStart.y = intermediatePoint.y;
+                intermediateEnd.x = endBefore.x;
+                intermediateEnd.y = intermediatePoint.y;
             }
-        }
-
-        let i: number = 1;
-        while (i < pts.length - 1) {
-            if (Point.equals(pts[i - 1], pts[parseInt(i.toString(), 10)])) {
-                pts.splice(i, 1);
-            } else if (Point.findAngle(pts[i - 1], pts[parseInt(i.toString(), 10)])
-                === Point.findAngle(pts[parseInt(i.toString(), 10)], pts[i + 1])) {
-                pts.splice(i, 1);
-            } else {
-                i++;
+            const length: number = Math.abs(Point.findAngle(intermediateEnd, endBefore));
+            if (length < 0.1) {
+                return [startPoint, startNext, intermediateStart, endBefore, endPoint];
             }
+            return [startPoint, startNext, intermediateStart, intermediateEnd, endBefore, endPoint];
         }
-
+        else if (pts.length === 4) {
+            const startNext: Point = Point.transform(startPoint, Point.findAngle(startPoint, pts[1]), startSegmentSize) as Point;
+            const intermediateStart: Point = this.getPointvalue(pts[2].x, startNext.y) as Point;
+            if (isHorizontal) {
+                intermediateStart.x = startNext.x;
+                intermediateStart.y = pts[2].y;
+            }
+            return [startPoint, startNext, intermediateStart, endPoint];
+        }
         return pts;
     }
 
     private resetConnectorPoints(edge: ConnectorModel): void {
-        const obstacleCollection: string = 'obstaclePointCollection';
-        if ((edge.segments[0] as OrthogonalSegment).points
-            && (edge.segments[0] as OrthogonalSegment).points.length > 0 && edge[`${obstacleCollection}`]) {
+        // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout
+        if (edge['pointCollection'] && edge['pointCollection'].length > 0) {
             const connector: ConnectorModel = edge;
-            connector.sourcePoint = (edge as Connector)[`${obstacleCollection}`][0];
-            connector.targetPoint = (edge as Connector)[`${obstacleCollection}`][(edge as Connector)[`${obstacleCollection}`].length - 1];
-            const segments: OrthogonalSegment[] = [];
-            for (let i: number = 0; i < (edge as Connector)[`${obstacleCollection}`].length - 1; i++) {
-                const point1: Point = (edge as Connector)[`${obstacleCollection}`][parseInt(i.toString(), 10)];
-                const point2: Point = (edge as Connector)[`${obstacleCollection}`][i + 1];
+            connector.sourcePoint = edge['pointCollection'][0];
+            connector.targetPoint = edge['pointCollection'][edge['pointCollection'].length - 1];
+            const segments: any[] = [];
+            for (let i: number = 0; i < edge['pointCollection'].length - 1; i++) {
+                const point1: PointModel = edge['pointCollection'][parseInt(i.toString(), 10)];
+                const point2: PointModel = edge['pointCollection'][i + 1];
                 let length: number = findDistance(point1, point2);
                 const direction: string = getConnectorDirection(point1, point2);
-                if (i === (edge as Connector)[`${obstacleCollection}`].length - 2) {
+                if (i === edge['pointCollection'].length - 2) {
                     if ((this.diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
                         || (this.diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
                         || (this.diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
@@ -3742,6 +3713,46 @@ class MatrixModel {
                 segments: connector.segments
             } as Connector);
         }
+        else if (this.diagram.layout.connectionPointOrigin === 'DifferentPoint') {
+            const obstacleCollection: string = 'obstaclePointCollection';
+            if ((edge.segments[0] as OrthogonalSegment).points
+                && (edge.segments[0] as OrthogonalSegment).points.length > 0 && edge[`${obstacleCollection}`]) {
+                const connector: ConnectorModel = edge;
+                connector.sourcePoint = (edge as Connector)[`${obstacleCollection}`][0];
+                connector.targetPoint = (edge as Connector)[`${obstacleCollection}`][(edge as Connector)[`${obstacleCollection}`].length - 1];
+                const segments: OrthogonalSegment[] = [];
+                for (let i: number = 0; i < (edge as Connector)[`${obstacleCollection}`].length - 1; i++) {
+                    const point1: Point = (edge as Connector)[`${obstacleCollection}`][parseInt(i.toString(), 10)];
+                    const point2: Point = (edge as Connector)[`${obstacleCollection}`][i + 1];
+                    let length: number = findDistance(point1, point2);
+                    const direction: string = getConnectorDirection(point1, point2);
+                    if (i === (edge as Connector)[`${obstacleCollection}`].length - 2) {
+                        if ((this.diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
+                            || (this.diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
+                            || (this.diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
+                            || (this.diagram.layout.orientation === 'BottomToTop' && direction === 'Top')) {
+                            length = length / 2;
+                        }
+                    }
+                    /* tslint:enable */
+                    const tempSegment: OrthogonalSegment = new OrthogonalSegment(edge, 'segments', { type: 'Orthogonal' }, true);
+                    tempSegment.length = length;
+                    tempSegment.direction = (direction as Direction);
+                    segments.push(tempSegment);
+                }
+                connector.segments = segments;
+                connector.type = 'Orthogonal';
+                this.diagram.connectorPropertyChange(connector as Connector, {} as Connector, {
+                    type: 'Orthogonal',
+                    segments: connector.segments
+                } as Connector);
+            }
+        }
+    }
+
+    public nodePropertyChange(dnode: any): void {
+        // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout
+        this.diagram.nodePropertyChange(dnode as Node, {} as Node, { offsetX: dnode.offsetX, offsetY: dnode.offsetY } as Node);
     }
 }
 

@@ -1532,4 +1532,33 @@ describe('DropDownList', () => {
             done();
         });
     });
+    describe('936862: ', () => {
+        let ddlObj1: any;
+        let ddlEle1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl1' });
+        let empList: any = [ 
+        { id: 1, sports: 'American Football' }, { id: 2, sports: 'Badminton' },
+        { id: 3, sports: 'Badminton' }, { id: 4, sports: 'Cricket' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle1);
+            ddlObj1 = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'sports', value: 'id' },
+                allowResize: true,
+                popupHeight: '200px'
+            });
+            ddlObj1.appendTo(ddlEle1);
+        });
+        afterAll(() => {
+            ddlObj1.destroy();
+            ddlEle1.remove();
+        });
+        it('Extra space appears when using AllowResize with height', (done) => {
+            ddlObj1.text = "Badminton";
+            ddlObj1.dataBind();
+            ddlObj1.showPopup();
+            expect(ddlObj1.popupObj.element.clientHeight < 200).toBe(true);
+            done();
+        });
+    });
 });

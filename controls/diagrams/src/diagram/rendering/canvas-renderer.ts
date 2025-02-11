@@ -7,11 +7,16 @@ import { processPathData, pathSegmentCollection, getRectanglePath } from './../u
 import { overFlow } from './../utility/base-util';
 import { createHtmlElement, setChildPosition } from './../utility/dom-util';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { PathSegment, ImageAttributes, StyleAttributes, BaseAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
+import { PathSegment, ImageAttributes, StyleAttributes, BaseAttributes, LineAttributes, CircleAttributes, ITransform } from './canvas-interface';
 import { LinearGradientModel, RadialGradientModel, StopModel } from './../core/appearance-model';
 import { RectAttributes, PathAttributes, TextAttributes, SubTextElement, TextBounds } from './canvas-interface';
 import { IRenderer } from './../rendering/IRenderer';
 import { Container } from '../core/containers/container';
+import { PathElement } from '../core/elements/path-element';
+import { TextElement } from '../core/elements/text-element';
+import { ImageElement } from '../core/elements/image-element';
+import { DiagramElement } from '../core/elements/diagram-element';
+import { ElementAction, FlipDirection } from '../enum/enum';
 
 /**
  * Canvas Renderer
@@ -226,16 +231,26 @@ export class CanvasRenderer implements IRenderer {
      *  @param { RectAttributes} options - Provide the Rect attributes .
      *  @param { string} diagramId - Provide the diagram id .
      *  @param { boolean} isExport - Provide the isExport .
+     *  @param { boolean} isSelector - Provide the selector possobilities .
+     *  @param { SVGSVGElement} parentSvg - Provide the parent svg element .
+     *  @param { Object} ariaLabel - Provide the Arial label attributes .
+     *  @param { boolean} isCircularHandle - Provide the boolean attribute for the circular handle .
+     *  @param { number} enableSelector - Provide the selector possobilities .
+     *  @param { any } renderer - Provide the renderer value .
+     *  @param { any } element - Provide the element value .
      *  @private
      */
-    public drawRectangle(canvas: HTMLCanvasElement, options: RectAttributes, diagramId: string, isExport: boolean): void {
+    public drawRectangle(canvas: HTMLCanvasElement, options: RectAttributes, diagramId: string, isExport: boolean,
+                         isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object,
+                         isCircularHandle?: boolean, enableSelector?: number, renderer?: any, element?: any): void {
         if (options.visible === true) {
             if (options.cornerRadius) {
                 if (!isExport && (options.width < 30 || options.height < 30)) {
                     this.drawRoundedRect(canvas, options);
                 } else {
                     (options as PathAttributes).data = getRectanglePath(options.cornerRadius, options.height, options.width);
-                    this.drawPath(canvas, options as PathAttributes);
+                    this.drawPath(canvas, options as PathAttributes, diagramId, isSelector, parentSvg, ariaLabel,
+                                  undefined, renderer, element);
                 }
             } else {
                 const ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
@@ -248,15 +263,8 @@ export class CanvasRenderer implements IRenderer {
                 const cornerRadius: number = options.cornerRadius;
                 const pivotX: number = options.x + options.width * options.pivotX;
                 const pivotY: number = options.y + options.height * options.pivotY;
-                // 919944: Image Node Flip and Rotation Not Applied in Exported Image
-                if (options.flip === 'Horizontal' || options.flip === 'Vertical') {
-                    ctx.translate(options.x + options.width / 2, options.y + options.height / 2);
-                    ctx.rotate(-options.angle * Math.PI / 180);
-                    ctx.translate(-options.x - options.width / 2, -options.y - options.height / 2);
-                }
-                else {
-                    this.rotateContext(canvas, options.angle, pivotX, pivotY);
-                }
+                const angle: number = (options as any).isImage ? -options.angle : options.angle;
+                this.rotateContext(canvas, angle, pivotX, pivotY);
                 this.setStyle(canvas, options as StyleAttributes);
                 ctx.rect(options.x, options.y, options.width, options.height);
                 ctx.fillRect(options.x, options.y, options.width, options.height);
@@ -311,9 +319,17 @@ export class CanvasRenderer implements IRenderer {
      *
      *  @param { SVGElement} canvas - Provide the SVG element .
      *  @param { PathAttributes} options - Provide the path element attributes .
+     *  @param {string} diagramId - Provide the diagram id .
+     *  @param {boolean} isSelector - Provide selector boolean value .
+     *  @param {SVGSVGElement} parentSvg - Provide the parent SVG element .
+     *  @param {Object} ariaLabel - Provide arial label value .
+     *  @param {number} scale - Provide the scale value .
+     *  @param {any} renderer - Provide the renderer value .
+     *  @param {PathElement} element - Provide the path element value .
      *  @private
      */
-    public drawPath(canvas: HTMLCanvasElement, options: PathAttributes): void {
+    public drawPath(canvas: HTMLCanvasElement, options: PathAttributes, diagramId?: string, isSelector?: boolean,
+        parentSvg?: SVGSVGElement, ariaLabel?: Object, scale?: number, renderer?: any, element?: PathElement): void {
         let collection: Object[] = [];
         collection = processPathData(options.data);
         collection = pathSegmentCollection(collection);
@@ -325,25 +341,9 @@ export class CanvasRenderer implements IRenderer {
         ctx.beginPath();
         const pivotY: number = options.y + options.height * options.pivotY;
         const pivotX: number = options.x + options.width * options.pivotX;
-        if (options.flip === 'Horizontal' || options.flip === 'Vertical') {
-            ctx.translate(options.x + options.width / 2, options.y + options.height / 2);
-            ctx.rotate(-options.angle * Math.PI / 180);
-            ctx.translate(-options.x - options.width / 2, -options.y - options.height / 2);
-        } else {
-            this.rotateContext(canvas, options.angle, pivotX, pivotY);
-        }
+        this.applyFlipAndRotate(ctx, options, canvas, pivotX, pivotY, renderer, element);
         this.setStyle(canvas, options as StyleAttributes);
         ctx.translate(options.x, options.y);
-        if (options.flip === 'Horizontal') {
-            ctx.scale(-1, 1);
-            ctx.translate(options.width * -1, 0);
-        } else if (options.flip === 'Vertical') {
-            ctx.scale(1, -1);
-            ctx.translate(0, options.height * -1);
-        } else if (options.flip === 'Both') {
-            ctx.scale(-1, -1);
-            ctx.translate(options.width * -1, options.height * -1);
-        }
         this.renderPath(canvas, options, collection);
         ctx.fill();
         ctx.translate(-options.x, -options.y);
@@ -493,14 +493,16 @@ export class CanvasRenderer implements IRenderer {
      *  @param {Object} ariaLabel - Provide the label properties .
      *  @param {string} diagramId - Provide the diagram id .
      *  @param {number} scaleValue - Provide the scale value .
-     *  @param {Container} parentNode - Provide the parent node .
+     *  @param {any} renderer - Provide the renderer value .
+     *  @param {element} element - Provide the text element value.
      *  @private
      */
     public drawText(
         canvas: HTMLCanvasElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object,
-        diagramId?: string, scaleValue?: number, parentNode?: Container):
+        diagramId?: string, scaleValue?: number, renderer?: any, element?: TextElement):
         void {
         if (options.content && options.visible === true) {
+            const parentNode: Container = renderer.groupElement;
             const ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
             ctx.save();
             this.setStyle(canvas, options as StyleAttributes);
@@ -510,7 +512,7 @@ export class CanvasRenderer implements IRenderer {
             const pivotX: number = options.x + options.width * options.pivotX;
             const pivotY: number = options.y + options.height * options.pivotY;
             // 919944: Text Flip and Rotation Not Applied in Exported Image
-            this.applyFlipAndRotate(ctx, options, canvas, pivotX, pivotY);
+            this.applyFlipAndRotate(ctx, options, canvas, pivotX, pivotY, renderer, element);
 
             this.setFontStyle(canvas, options);
 
@@ -581,30 +583,46 @@ export class CanvasRenderer implements IRenderer {
 
     // 919944: Flip position and rotate angle calculation for elements
     private applyFlipAndRotate(
-        ctx: CanvasRenderingContext2D, options: any, canvas: HTMLCanvasElement, pivotX: number, pivotY: number):
+        ctx: CanvasRenderingContext2D, options: any, canvas: HTMLCanvasElement, pivotX: number, pivotY: number,
+        renderer?: any, element?: PathElement | TextElement | ImageElement | DiagramElement):
         void {
-        if (options.flip === 'Horizontal' || options.flip === 'Vertical') {
-            ctx.translate(options.x + options.width / 2, options.y + options.height / 2);
-            ctx.rotate(-options.angle * Math.PI / 180);
-            ctx.translate(-options.x - options.width / 2, -options.y - options.height / 2);
-        }
-        else {
+            if (options.flip !== FlipDirection.None && renderer && element && !(element.elementActions & ElementAction.ElementIsPort)) {
+                const parent: Container  = renderer.groupElement;
+                const textWrapper: PathElement | TextElement | ImageElement | DiagramElement = element;
+                let transform: ITransform;
+                if ((element instanceof TextElement && (element as any).position)) {
+                    transform = renderer.renderFlipTextElement( parent, canvas, textWrapper, options.flip, options.flipMode, true );
+                } else if (element instanceof PathElement || element instanceof ImageElement || (element instanceof TextElement
+                           && !(element as any).position) || element instanceof DiagramElement) {
+                    transform = renderer.renderFlipElement( parent, canvas, options.flip, true);
+                }
+                //To set the translate and scale for the diagram elements while print and export.
+                if (transform && transform.transform) {
+                    // Parse and apply the transform directly
+                    const transformRegex: RegExp = /(translate|scale|rotate)\(([^)]+)\)/g;
+                    let match: RegExpExecArray | null;
+                    // eslint-disable-next-line no-cond-assign
+                    while ((match = transformRegex.exec(transform.transform)) !== null) {
+                        const type: string = match[1]; // translate, scale, rotate
+                        const values: number[] = match[2].split(',').map((v: string) => parseFloat(v.trim()));
+                        switch (type) {
+                            case 'translate': {
+                                const tx: number = values[0] || 0;
+                                const ty: number = values[1] || 0;
+                                ctx.translate(tx, ty);
+                                break;
+                            }
+                            case 'scale': {
+                                const sx: number = values[0] || 1;
+                                const sy: number = values[1] || sx; // Use uniform scaling if sy is not specified
+                                ctx.scale(sx, sy);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
             this.rotateContext(canvas, options.angle, pivotX, pivotY);
-        }
-        ctx.translate(options.x, options.y);
-        if (options.flip === 'Horizontal') {
-            ctx.scale(-1, 1);
-            ctx.translate(options.width * -1, 0);
-        }
-        else if (options.flip === 'Vertical') {
-            ctx.scale(1, -1);
-            ctx.translate(0, options.height * -1);
-        }
-        else if (options.flip === 'Both') {
-            ctx.scale(-1, -1);
-            ctx.translate(options.width * -1, options.height * -1);
-        }
-        ctx.translate(-options.x, -options.y);
     }
 
     private loadImage(
@@ -624,9 +642,12 @@ export class CanvasRenderer implements IRenderer {
      *  @param {ImageAttributes} obj - Provide the image attributes .
      *  @param {SVGSVGElement} parentSvg - Provide the parent SVG element .
      *  @param {boolean} fromPalette - Provide the pointer event value .
+     *  @param {any} renderer - provide renderer value
+     *  @param {ImageElement} element - provide image element
      *  @private
      */
-    public drawImage(canvas: HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
+    public drawImage(canvas: HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean,
+                     renderer?: any, element?: ImageElement): void {
 
         if (obj.visible) {
             const ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
@@ -652,7 +673,7 @@ export class CanvasRenderer implements IRenderer {
              * }
              */
             // 919944: Image Node Flip and Rotation Not Applied in Exported Image
-            this.applyFlipAndRotate(ctx, obj, canvas, pivotX, pivotY);
+            this.applyFlipAndRotate(ctx, obj, canvas, pivotX, pivotY, renderer, element);
             if (!fromPalette) {
                 this.loadImage(ctx, obj, canvas, pivotX, pivotY);
             } else {
@@ -732,23 +753,8 @@ export class CanvasRenderer implements IRenderer {
             } else {
                 ctx.drawImage(image, x, y, width, height);
             }
-        } else if (alignOptions.flip !== 'None') {
-            let scaleX: number = 1;
-            let scaleY: number = 1;
-            if (alignOptions.flip === 'Horizontal' || alignOptions.flip === 'Both') {
-                x = -x;
-                width = -width;
-                scaleX = -1;
-            }
-            if (alignOptions.flip === 'Vertical' || alignOptions.flip === 'Both') {
-                y = -y;
-                height = -height;
-                scaleY = -1;
-            }
-            ctx.scale(scaleX, scaleY);
-            ctx.drawImage(image, x, y, width, height);
-
-        } else {
+        }
+        else {
             ctx.drawImage(image, x, y, width, height);
         }
         ctx.closePath();

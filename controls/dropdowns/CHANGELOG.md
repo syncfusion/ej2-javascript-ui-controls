@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I685229` - Fixed the issue where an extra space appears when using the allowResize with height properties.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I684184` - An issue when using value property as two way binding and selecting a filtered node has been resolved.
+
+- `#I681976` - An issue with value property when updating a data source dynamically in Dropdown Tree component has been resolved.
+
+- `#I682748` - An issue Tab focus occurs when navigating a disabled Dropdown Tree component has been resolved.
+
+- `#I682703` - An Focusing issues in Dropdown Tree component when `showSelectAll` property is true has been resolved.
+
 ## 28.2.4 (2025-02-04)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I679000` - An issue with react Dropdown Tree `CustomTemplate` when the state updates in the change event has been resolved.
+
+- `#I681727` - An issue with selection and `CustomTemplate` not updating after filtering in Dropdown Tree component has been resolved.
 
 ### MultiSelect
 

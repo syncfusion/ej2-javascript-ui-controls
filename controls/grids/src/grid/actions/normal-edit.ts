@@ -89,6 +89,7 @@ export class NormalEdit {
                 requestType: 'save',
                 type: events.actionComplete
             }));
+            this.parent.notify(events.closeEdit, {requestType: 'save', action: e[`${action}`]});
             break;
         case 'delete':
             this.parent.trigger(events.actionComplete, extend(e, {
@@ -98,6 +99,7 @@ export class NormalEdit {
             if (!this.parent.isCheckBoxSelection) {
                 this.parent.selectRow(this.editRowIndex);
             }
+            this.parent.notify(events.closeEdit, {requestType: 'delete', action: e[`${action}`]});
             break;
         }
     }
@@ -132,7 +134,7 @@ export class NormalEdit {
             const rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
         } else if (this.parent.enableVirtualization || this.parent.enableColumnVirtualization ||
-            (this.parent.enableInfiniteScrolling && !this.previousData)) {
+            (this.parent.enableInfiniteScrolling && (!this.previousData || this.parent.infiniteScrollSettings.enableCache))) {
             this.previousData = e.data;
         } else if (!this.parent.enableVirtualization) {
             this.previousData = extend({}, {}, this.parent.getForeignKeyColumns().length ?
@@ -459,6 +461,7 @@ export class NormalEdit {
                 this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
             }
         }
+        this.parent.notify(events.closeEdit, {requestType: args.requestType, action: args.action});
         if (this.parent.aggregates.length && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
             && ((this.parent as Grid).groupModule.getGroupAggregateTemplates(true).length
             || (this.parent as Grid).groupModule.getGroupAggregateTemplates(false).length)) {
@@ -771,4 +774,5 @@ interface EditArgs {
     type?: string;
     promise?: Promise<Object>;
     row?: Element;
+    action?: string
 }

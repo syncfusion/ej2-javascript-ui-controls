@@ -81,7 +81,7 @@ export interface pdfLayoutSettings {
      * Determines whether the content should fit into a single page in the PDF.
      *
      * - **true**: Content will automatically scale to fit within one page.
-     * - **false**: Content may span across multiple pages if it doesn’t fit.
+     * - **false**: Content may span across multiple pages if it does not fit.
      *
      */
     fitSheetOnOnePage?: boolean;
@@ -1119,7 +1119,7 @@ export interface SerializationOptions {
      */
     ignoreStyle?: boolean;
     /**
-     * Specifies whether to exclude formulwhen loading or saving JSON data.
+     * Specifies whether to exclude formula when loading or saving JSON data.
      */
     ignoreFormula?: boolean;
     /**

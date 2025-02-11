@@ -3,18 +3,19 @@ import { ResourcesModel } from './iframe-settings-model';
 import { MetaTag } from '../base/interface';
 
 /**
- * Objects used for configuring the iframe resources properties.
+ * Objects used to configure the properties of iframe resources.
  */
 export class Resources extends ChildProperty<Resources> {
     /**
-     * Specifies styles that inject into iframe.
+     * Specifies the styles to be injected into the iframe.
      *
      * @default []
      */
     @Property([])
     public styles: string[];
+
     /**
-     * Specifies scripts that inject into iframe.
+     * Specifies the scripts to be injected into the iframe.
      *
      * @default []
      */
@@ -23,11 +24,11 @@ export class Resources extends ChildProperty<Resources> {
 }
 
 /**
- * Configures the iframe settings of the RTE.
+ * Configures the iframe settings for the Rich Text Editor.
  */
 export class IFrameSettings extends ChildProperty<IFrameSettings> {
     /**
-     * Specifies whether to render iframe based editable element in RTE.
+     * Determines whether to render the Rich Text Editor with an iframe-based editable element.
      *
      * @default false
      */
@@ -35,15 +36,15 @@ export class IFrameSettings extends ChildProperty<IFrameSettings> {
     public enable: boolean;
 
     /**
-     * Defines additional attributes to render iframe.
+     * Defines additional attributes for rendering the iframe.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public attributes: { [key: string]: string };
 
     /**
-     * The object used for inject styles and scripts.
+     * Object used to inject styles and scripts into the iframe.
      *
      * @default {}
      */
@@ -51,7 +52,7 @@ export class IFrameSettings extends ChildProperty<IFrameSettings> {
     public resources: ResourcesModel;
 
     /**
-     * Specifies the meta tags to be applied to the iframe's <head> element.
+     * Specifies the meta tags to be applied to the <head> element of the iframe.
      *
      * @default []
      */
@@ -59,11 +60,13 @@ export class IFrameSettings extends ChildProperty<IFrameSettings> {
     public metaTags: Array<MetaTag>;
 
     /**
-     * Represents the sandbox attribute for the Rich Text Editor's iframe, defining the security restrictions applied to the embedded content.
-     * Configure this property using a string array (e.g., ["allow-scripts", "allow-forms"]). If set to an empty array, all restrictions are applied except "allow-same-origin".
+     * Represents the sandbox attribute for the Rich Text Editor's iframe,
+     * defining the security restrictions applied to the embedded content.
+     * Configure this property using a string array (e.g., ["allow-scripts", "allow-forms"]).
+     * If set to an empty array, all restrictions are applied except "allow-same-origin".
      * By default, "allow-same-origin" is included in the Rich Text Editor's iframe sandbox.
      *
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public sandbox: string[];

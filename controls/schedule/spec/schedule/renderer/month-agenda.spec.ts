@@ -769,6 +769,68 @@ describe('Month-agenda view rendering', () => {
         });
     });
 
+    describe('Month Agenda view selected cells checking', () => {
+        let schObj: Schedule;
+
+        beforeAll(() => {
+            const model: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2025, 0, 5),
+                views: [
+                    { option: 'Day', isSelected: true },
+                    { option: 'MonthAgenda' },
+                ]
+            };
+            schObj = util.createSchedule(model, []);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should check selected cells in Month Agenda View after Day view is selected', () => {
+            expect(schObj.viewCollections.length).toEqual(2);
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
+            schObj.changeView('MonthAgenda');
+            const selectedCell = schObj.element.querySelector('.e-selected-cell');
+            expect(selectedCell).toBeTruthy();
+            const selectedDateTime = schObj.selectedDate.getTime();
+            const selectedCellDate = parseInt(selectedCell.getAttribute('data-date'), 10);
+            expect(selectedDateTime).toEqual(selectedCellDate);
+        });
+
+        it('should check selected cells in Month Agenda View after using the next button to navigate and return', () => {
+            expect(schObj.viewCollections.length).toEqual(2);
+            schObj.changeView('Day');
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
+            (schObj.element.querySelector('.e-next') as HTMLElement).click();            
+            schObj.changeView('MonthAgenda');
+            const selectedCell = schObj.element.querySelector('.e-selected-cell');
+            expect(selectedCell).toBeTruthy();
+            const selectedDateTime = schObj.selectedDate.getTime();
+            const selectedCellDate = parseInt(selectedCell.getAttribute('data-date'), 10);
+            expect(selectedDateTime).toEqual(selectedCellDate);
+        });
+
+        it('should check selected cells in Month Agenda View after selecting a date from the calendar in the toolbar', () => {
+            expect(schObj.viewCollections.length).toEqual(2);
+            schObj.changeView('Day');
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
+            const calendarButton = schObj.element.querySelector('.e-schedule-toolbar .e-toolbar-items .e-date-range') as HTMLElement;
+            calendarButton.click();
+            const dateId = "1511461800000_40";
+            const dateCell = document.getElementById(dateId) as HTMLElement;
+            if (dateCell) {
+                dateCell.click();
+            } 
+            schObj.changeView('MonthAgenda');
+            const selectedCell = schObj.element.querySelector('.e-selected-cell');
+            expect(selectedCell).toBeTruthy();
+            const selectedDateTime = schObj.selectedDate.getTime();
+            const selectedCellDate = parseInt(selectedCell.getAttribute('data-date'), 10);
+            expect(selectedDateTime).toEqual(selectedCellDate);
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

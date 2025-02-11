@@ -41,7 +41,7 @@ import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs
 import { ContextMenuSettingsModel } from './pdfviewer-model';
 import { IFormField, IFormFieldBound } from './form-designer/form-designer';
 import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
-import { PdfViewerUtils } from './base/pdfviewer-utlis';
+import { PdfViewerUtils, PdfiumTaskScheduler, TaskPriorityLevel } from './base/pdfviewer-utlis';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -1117,7 +1117,7 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
     /**
      * specifies the color of the annotation.
      */
-    @Property('#ffff00')
+    @Property('#FFDF56')
     public color: string;
 
     /**
@@ -7993,11 +7993,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     private initializePdfiumModule(fontCollection: { [key: string]: any }): void {
-        this.viewerBase.pdfViewerRunner.postMessage({
+        this.viewerBase.pdfViewerRunner.addTask({
             url: this.getScriptPathForPlatform(),
             fonts: fontCollection,
             message: 'initialLoading'
-        });
+        }, TaskPriorityLevel.High);
     }
 
     protected render(): void {
@@ -8012,7 +8012,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             const proxy: any = this;
             const workerBob: any = new Blob([PdfiumRunner.toString().replace(/^[^{]*{([\s\S]*)}$/m, '$1')], { type: 'text/javascript' });
             const workerBlobUrl: any = URL.createObjectURL(workerBob);
-            (window as any)['pdfViewerRunner_' + this.element.id] = this.viewerBase.pdfViewerRunner = new Worker(workerBlobUrl);
+            (window as any)['pdfViewerRunner_' + this.element.id] = this.viewerBase.pdfViewerRunner = new PdfiumTaskScheduler(workerBlobUrl, proxy);
             if (this.customFonts && this.customFonts.length > 0) {
                 PdfViewerUtils.fetchCustomFonts(this.customFonts,
                                                 this.getScriptPathForPlatform()).then((fontCollection: { [key: string]: any }) => {
@@ -8023,11 +8023,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             else {
                 this.initializePdfiumModule({});
             }
-            this.viewerBase.pdfViewerRunner.onmessage = function (event: any): void {
+            this.viewerBase.pdfViewerRunner.onMessage(function (event: any): void {
                 if (event.data.message === 'loaded') {
                     proxy.renderComponent();
                 }
-            };
+            });
         } else {
             this.renderComponent();
         }
@@ -9317,7 +9317,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public unload(): void {
         if (!isNullOrUndefined(this.viewerBase.pdfViewerRunner) && !this.viewerBase.isPasswordProtected) {
-            this.viewerBase.pdfViewerRunner.postMessage({ message: 'unloadFPDF' });
+            this.viewerBase.pdfViewerRunner.addTask({ message: 'unloadFPDF' }, TaskPriorityLevel.High);
         }
         this.viewerBase.clear(true);
         this.pageCount = 0;

@@ -10,7 +10,8 @@ import { Point } from './../primitives/point';
 import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows, DiagramAction,
     UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType, BlazorAction,
-    ControlPointsVisibility, DiagramEvent
+    ControlPointsVisibility, DiagramEvent,
+    ElementAction
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
@@ -1596,6 +1597,8 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
         }
     }
     diagram.nodes = dataObj.nodes || [];
+    changeOldFlipDirectionType(diagram.nodes);
+    changeOldFlipDirectionType(diagram.connectors);
     diagram.rulerSettings = dataObj.rulerSettings || {};
     diagram.snapSettings = dataObj.snapSettings || {};
     diagram.width = dataObj.width || '100%';
@@ -1653,6 +1656,36 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
     });
     return dataObj;
 }
+/**
+ * To change the string type flip into enum type.\
+ *
+ * @param {(NodeModel | ConnectorModel)[]} obj - provide the node or connector collection.
+ * @private
+ */
+export function changeOldFlipDirectionType(obj: (NodeModel | ConnectorModel)[]) {
+    // Filter elements that have `flip` set as a string
+    const filteredElements = obj.filter(
+        (element: NodeModel | ConnectorModel) => typeof element.flip === 'string'
+    );
+    // Loop through the filtered elements and update their `flip` property
+    for (const element of filteredElements) {
+        switch (element.flip as any) {
+            case 'Horizontal':
+                element.flip = FlipDirection.Horizontal;
+                break;
+            case 'Vertical':
+                element.flip = FlipDirection.Vertical;
+                break;
+            case 'Both':
+                element.flip = FlipDirection.Both;
+                break;
+            case 'None':
+                element.flip = FlipDirection.None;
+                break;
+        }
+    }
+}
+
 
 /**
  * EJ2-61537 - Connectors not connected to the node after save and load
@@ -2852,13 +2885,13 @@ export let flipConnector: Function = (connector: Connector): void => {
     if (!connector.sourceID && !connector.targetID) {
         let source: PointModel = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
         let target: PointModel = { x: connector.targetPoint.x, y: connector.targetPoint.y };
-        if (connector.flip === 'Horizontal') {
+        if (connector.flip === FlipDirection.Horizontal) {
             connector.sourcePoint.x = target.x;
             connector.targetPoint.x = source.x;
-        } else if (connector.flip === 'Vertical') {
+        } else if (connector.flip === FlipDirection.Vertical) {
             connector.sourcePoint.y = target.y;
             connector.targetPoint.y = source.y;
-        } else if (connector.flip === 'Both') {
+        } else if (connector.flip === FlipDirection.Both) {
             connector.sourcePoint = target;
             connector.targetPoint = source;
         }
@@ -2869,13 +2902,13 @@ export let flipConnector: Function = (connector: Connector): void => {
 export let updatePortEdges: Function = (portContent: DiagramElement, flip: FlipDirection, port: PointPortModel): DiagramElement => {
     let offsetX: number = port.offset.x;
     let offsetY: number = port.offset.y;
-    if (flip === 'Horizontal') {
+    if (flip === FlipDirection.Horizontal ) {
         offsetX = 1 - port.offset.x;
         offsetY = port.offset.y;
-    } else if (flip === 'Vertical') {
+    } else if (flip === FlipDirection.Vertical) {
         offsetX = port.offset.x;
         offsetY = 1 - port.offset.y;
-    } else if (flip === 'Both') {
+    } else if (flip === FlipDirection.Both) {
         offsetX = 1 - port.offset.x;
         offsetY = 1 - port.offset.y;
     }
@@ -2884,32 +2917,76 @@ export let updatePortEdges: Function = (portContent: DiagramElement, flip: FlipD
 };
 
 /** @private */
-export let alignElement: Function = (element: Container, offsetX: number, offsetY: number, diagram: Diagram, flip: FlipDirection): void => {
+export let alignElement: Function = (element: Container, offsetX: number, offsetY: number, diagram: Diagram, flip: FlipDirection, isHorizontal: boolean, isVertical: boolean, isInitialRendering?: boolean): void => {
     if (element.hasChildren()) {
         for (let child of element.children) {
-            // 923507: Ports rotating opposite to the node rotation after Group and Flip actions
-            if (!(child instanceof PathElement)) {
-                child.flip = flip;
+            let nodeObj: NodeModel;
+            if (child instanceof Canvas) {
+                nodeObj = diagram.nameTable[child.id];
+                if(nodeObj) {
+                    if (isHorizontal) {
+                        nodeObj.flip ^= FlipDirection.Horizontal;
+                    }
+                    if (isVertical) {
+                        nodeObj.flip ^= FlipDirection.Vertical;
+                    }
+                }
             }
             let childX: number = ((offsetX - child.offsetX) + offsetX);
             let childY: number = ((offsetY - child.offsetY) + offsetY);
-            if (flip === 'Horizontal' || flip === 'Both') {
-                child.offsetX = childX;
-                child.flipOffset.x = childX - child.desiredSize.width / 2;
+            if(!(child instanceof TextElement)) {
+                if(!(child.elementActions & ElementAction.ElementIsPort)) {
+                    if (flip === FlipDirection.Horizontal || isHorizontal) {
+                        child.offsetX = childX;
+                        if (nodeObj) {
+                            nodeObj.offsetX = childX;
+                        }
+                        child.flipOffset.x = childX - child.desiredSize.width / 2;
+                    }
+                    if (flip === FlipDirection.Vertical || isVertical) {
+                        child.offsetY = childY;
+                        if (nodeObj) {
+                            nodeObj.offsetY = childY;
+                        }
+                        child.flipOffset.y = childY - child.desiredSize.height / 2;
+                    } 
+                    else if (flip === FlipDirection.Both) {
+                        child.offsetX = childX;
+                        child.flipOffset.x = childX - child.desiredSize.width / 2;
+                        child.offsetY = childY;
+                        child.flipOffset.y = childY - child.desiredSize.height / 2;
+                        if (nodeObj) {
+                            nodeObj.offsetX = childX;
+                            nodeObj.offsetY = childY;
+                        }
+                    }
+                }
             }
-            if (flip === 'Vertical' || flip === 'Both') {
-                child.offsetY = childY;
-                child.flipOffset.y = childY - child.desiredSize.height / 2;
-            }
-            if (child instanceof Canvas || child instanceof Container) {
-                alignElement(child, offsetX, offsetY, diagram, flip);
+            if (!isInitialRendering) {
+                if (child instanceof Canvas || child instanceof Container) {
+                    if (isHorizontal) {
+                        child.flip ^= FlipDirection.Horizontal;
+                    }
+                    if (isVertical) {
+                        child.flip ^= FlipDirection.Vertical;
+                    }
+                    if(!child.id.includes('group_container') && child.children) {
+                        if (isHorizontal) {
+                            child.children[0].flip ^= FlipDirection.Horizontal;
+                        }
+                        if (isVertical) {
+                            child.children[0].flip ^= FlipDirection.Vertical;
+                        }
+                    }
+                    alignElement(child, offsetX, offsetY, diagram, flip, isHorizontal, isVertical, isInitialRendering);
+                }
             }
             child.measure(new Size(child.bounds.width, child.bounds.height));
             child.arrange(child.desiredSize);
             let node: Node = diagram.nameTable[child.id];
             if (node) {
                 diagram.updateConnectorEdges(node);
-            }
+            }          
         }
     }
 };

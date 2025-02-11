@@ -605,6 +605,11 @@ export const drop: string = 'drop';
  * @hidden
  * @deprecated
  */
+export const renderQuickToolbar: string = 'renderQuickToolbar';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const xhtmlValidation: string = 'xhtmlValidation';
 /**
  * @hidden
@@ -968,3 +973,8 @@ export const conversionFactors: Record<string, Record<string, number>> = {
  * @deprecated
  */
 export const onHandleFontsizeChange: string = 'onHandleFontsizeChange';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const preventQuickToolbarClose: string = 'preventQuickToolbarClose';

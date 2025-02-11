@@ -2130,7 +2130,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.inputEle.setAttribute('aria-label', this.getModuleName());
         const id: string = this.element.getAttribute('id');
         this.hiddenElement.id = id + '_hidden';
-        this.inputWrapper.setAttribute('tabindex', '0');
+        this.inputWrapper.setAttribute('tabindex', this.inputWrapper.classList.contains('e-disabled') ? '-1' : '0');
         this.inputWrapper.setAttribute('aria-label', this.getModuleName());
         attributes(this.inputWrapper, this.getAriaAttributes());
     }
@@ -2480,9 +2480,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 removeClass([this.popupEle], DDTHIDEICON);
                 this.updatePopupHeight();
                 this.popupObj.refreshPosition();
-                if (!(this.showCheckBox && this.showSelectAll) && (!this.popupDiv.classList.contains(NODATA)
-                    && this.treeItems.length > 0)) {
-                    let focusedElement: HTMLElement = this.value != null && this.text != null ? this.treeObj.element.querySelector('[data-uid="' + this.value[0] + '"]') : null;
+                if (this.showSelectAll && !this.allowFiltering) {
+                    this.checkAllParent.focus();
+                }
+                if ((!this.popupDiv.classList.contains(NODATA) && this.treeItems.length > 0)) {
+                    let focusedElement: HTMLElement = this.value != null || this.text != null ? this.treeObj.element.querySelector('[data-uid="' + this.value[0] + '"]') : null;
                     if (focusedElement) {
                         this.treeObj.element.querySelector('li').setAttribute('tabindex', '-1');
                         focusedElement.setAttribute('tabindex', '0');
@@ -2818,7 +2820,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.updateTemplate();
         }
         this.treeObj.fields = this.getTreeFields(this.fields);
+        this.setProperties({ value: this.oldValue }, true);
         this.treeObj.dataBind();
+        this.updateValue(this.value);
     }
     private getEventArgs(args: NodeCheckEventArgs | NodeSelectEventArgs): DdtSelectEventArgs {
         const checkData: { [key: string]: Object }[] = (args as NodeCheckEventArgs).data;
@@ -3379,6 +3383,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         chip.appendChild(chipContent);
         this.chipCollection.appendChild(chip);
+        if ((this as any).isReact) {
+            this.renderReactTemplates();
+        }
     }
 
     private setSelectAllWrapper(state: boolean): void {
@@ -3798,8 +3805,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.updateFilterPlaceHolder();
                 break;
             case 'value':
-                this.oldValue = oldProp.value;
-                this.updateValue(newProp.value); break;
+                if (JSON.stringify(oldProp.value) !== JSON.stringify(newProp.value)) {
+                    this.oldValue = oldProp.value;
+                    this.updateValue(newProp.value);
+                }
+                break;
             case 'text': this.updateText(newProp.text); break;
             case 'allowMultiSelection': this.updateMultiSelection(newProp.allowMultiSelection); break;
             case 'mode':
@@ -4060,6 +4070,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 if (this.allowFiltering) {
                     addClass([this.inputWrapper], [INPUTFOCUS]);
                 }
+            }
+            if (this.isFilteredData) {
+                (this.treeObj as any)['treeData'] = this.treeData;
             }
             if (this.destroyPopupOnHide) {
                 this.isFirstRender = true;

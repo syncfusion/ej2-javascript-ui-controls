@@ -2,7 +2,7 @@ import { DiagramElement } from '../core/elements/diagram-element';
 import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { Diagram } from '../diagram';
-import { AnnotationConstraints, HorizontalAlignment, TextAlign, TextDecoration, TextWrap, VerticalAlignment } from '../enum/enum';
+import { AnnotationConstraints, HorizontalAlignment, TextAlign, TextDecoration, TextOverflow, VerticalAlignment } from '../enum/enum';
 import { AnnotationModel, HyperlinkModel, PathAnnotationModel, ShapeAnnotationModel } from '../objects/annotation-model';
 import { ConnectorModel } from '../objects/connector-model';
 import { NodeModel } from '../objects/node-model';
@@ -27,8 +27,11 @@ export class LabelProperties {
                 const label: AnnotationModel = oldLabels[parseInt(i.toString(), 10)];
                 const newLabel: ShapeAnnotationModel|PathAnnotationModel = {};
                 (newLabel).style = {};
+                // 930796: EJ1's Annotation id is not applied properly in EJ2 diagram
                 if ((label as labels).name) {
-                    newLabel.id = (label as labels).name;
+                    const annotationId: string[] = (label as labels).name.split('_');
+                    const id: string = annotationId[annotationId.length - 1];
+                    newLabel.id = id;
                 }
                 if (label.addInfo) {
                     newLabel.addInfo = label.addInfo;
@@ -87,8 +90,23 @@ export class LabelProperties {
                 if ((label as labels).borderWidth) {
                     newLabel.style.strokeWidth = (label as labels).borderWidth;
                 }
-                if ((label as labels).textWrapping) {
-                    newLabel.style.textWrapping = (label as labels).textWrapping;
+                // 930796: EJ1's Annotation wrapping and text overflow style is not applied properly in EJ2 diagram
+                if ((label as labels).wrapping) {
+                    switch ((label as labels).wrapping) {
+                    case 'wrap':
+                        newLabel.style.textWrapping = 'Wrap';
+                        break;
+                    case 'nowrap':
+                        newLabel.style.textWrapping = 'NoWrap';
+                        break;
+                    case 'wrapwithoverflow':
+                        newLabel.style.textWrapping = 'WrapWithOverflow';
+                        break;
+                    }
+                }
+                if ((label as labels).textOverflow && (label as labels).overflowType) {
+                    newLabel.style.textOverflow = ((label as labels).overflowType.charAt(0).toUpperCase() +
+                    ((label as labels).overflowType).slice(1)) as TextOverflow;
                 }
                 if ((label as labels).textAlign) {
                     newLabel.style.textAlign = (label as labels).textAlign.charAt(0).toUpperCase() +
@@ -194,8 +212,6 @@ export interface labels extends AnnotationModel {
 
     verticalAlignment: VerticalAlignment;
 
-    textWrapping: TextWrap;
-
     textAlign: TextAlign;
 
     textDecoration: TextDecoration;
@@ -207,4 +223,24 @@ export interface labels extends AnnotationModel {
     fontColor: string;
 
     offset: { x: number, y: number };
+
+    textOverflow: boolean;
+
+    overflowType: EJ1TextOverflow;
+
+    wrapping: EJ1TextWrap;
 }
+
+export type EJ1TextWrap =
+    /** wrap - Wraps the text and breaks the word, if necessary */
+    'wrap' |
+    /** nowrap - Text will no be wrapped */
+    'nowrap' |
+    /** wrapwithoverflow - Wraps the text so that no word is broken */
+    'wrapwithoverflow'
+
+export type EJ1TextOverflow =
+    /** ellipsis - It truncates the overflown text and represents the clipping with an ellipsis */
+    'ellipsis' |
+    /** clip - It clips the overflow text */
+    'clip'

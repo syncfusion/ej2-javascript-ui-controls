@@ -499,6 +499,10 @@ export class GanttTreeGrid {
                         this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
                     }
                 }
+                if (isNullOrUndefined(this.currentEditRow) && args['column'] && args['column'].edit && args['column'].field === this.parent.taskFields.resourceInfo) {
+                    const field: string = this.parent.taskFields.resourceInfo;
+                    this.currentEditRow = { [field]: data['resources'] };
+                }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
                 this.parent.editModule.cellEditModule.isCellEdit = false;
                 this.currentEditRow = {};
@@ -591,6 +595,9 @@ export class GanttTreeGrid {
         }
         if (this.parent.undoRedoModule) {
             this.parent.undoRedoModule['isFromUndoRedo'] = false;
+        }
+        if (getValue('requestType', args) === 'refresh') {
+            this.parent.initiateEditAction(false);
         }
         this.parent.trigger('actionComplete', updatedArgs);
         if ( this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {

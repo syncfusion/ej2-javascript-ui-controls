@@ -103,7 +103,7 @@ export class BatchEdit {
     }
 
     private batchCancel(): void {
-        this.parent.focusModule.restoreFocus();
+        this.parent.focusModule.restoreFocus({ requestType: 'batchCancel' });
     }
 
     private dataBound(): void {
@@ -513,6 +513,7 @@ export class BatchEdit {
             }
             gObj.trigger(events.batchDelete, beforeBatchDeleteArgs);
             gObj.notify(events.batchDelete, { rows: this.parent.getRowsObject() });
+            gObj.focusModule.restoreFocus({ requestType: 'batchDelete' });
             gObj.notify(events.toolbarRefresh, {});
             if (!gObj.getContentTable().querySelector('tr.e-row')) {
                 gObj.renderModule.renderEmptyRow();

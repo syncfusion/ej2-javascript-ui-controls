@@ -12520,6 +12520,53 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('Active class management among tabs', () => {
+        let tab: Tab;
+        let needActionButton: boolean = false;
+
+        function getDynamicHeight(): string {
+            return needActionButton ? 'calc(100% - 170px)' : 'calc(100% - 120px)';
+        }
+    
+        function tabSelecting(e: any): void {
+            needActionButton = e.selectingIndex === 0;
+            tab.height = getDynamicHeight();
+        }
+
+        beforeEach(() => {
+            const ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+
+        afterEach(() => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('should manage the e-active class correctly when switching tabs', () => {
+            tab = new Tab({
+                items: [
+                    { header: { text: 'item1' }, content: 'Content1' },
+                    { header: { text: 'item2' }, content: 'Content2' }
+                ],
+                height: getDynamicHeight(),
+                selecting: tabSelecting,
+                animation: { previous: { effect: 'None' }, next: { effect: 'None' } }
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-content > .e-item').item(0).classList.contains('e-active')).toBe(true);
+            const tabItem2: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(1);
+            tabItem2.click();
+            expect(element.querySelectorAll('.e-content > .e-item').item(1).classList.contains('e-active')).toBe(true);
+            const tabItem1: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(0);
+            tabItem1.click();
+            expect(element.querySelectorAll('.e-content > .e-item').item(0).classList.contains('e-active')).toBe(true);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

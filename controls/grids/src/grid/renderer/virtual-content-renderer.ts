@@ -193,7 +193,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
             || ((info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString())
-            || (this.parent.isFrozenGrid() && this.parent.getVisibleFrozenLeftCount() >= viewInfo.columnIndexes[0]
+            || (this.parent.isFrozenGrid() && info.axis === 'X' && this.parent.getVisibleFrozenLeftCount() >= viewInfo.columnIndexes[0]
             && this.prevInfo.columnIndexes.toString().includes(viewInfo.columnIndexes.toString()))))) {
             this.parent.removeMaskRow();
             if (Browser.isIE) {

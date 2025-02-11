@@ -787,10 +787,13 @@ export class TextHelper {
                     //     if (fontName != null)
                     //         fontNameFromTheme = fontName;
                     // }
-                    // //To-Do: Have to implement the font name retrieval behavior, when a bidi attribute is not available in theme.
-                    // else 
-                    if (majorMinorFontScheme.fontTypeface.containsKey('Arab'))
-                    {
+                    //If the font name is mentioned as Ascii or HAnsi, then we need to get the font name from Latin.
+                    if (!charFormat.complexScript && (!charFormat.bidi && (fontName === "majorAscii" || fontName === "majorHAnsi" || fontName === "minorAscii" || fontName === "minorHAnsi"))
+                        || (charFormat.bidi && (fontName === "majorHAnsi" || fontName === "minorHAnsi"))) {
+                        fontName = fontNameFromTheme;
+                    }
+                    //To-Do: Have to implement the font name retrieval behavior, when a bidi attribute is not available in theme.
+                    else if (majorMinorFontScheme.fontTypeface.containsKey('Arab')) {
                         //map(object => object.id).indexOf('c');
                         //Gets the Arab-script (language) based font from font scheme (theme)
                         fontNameFromTheme = majorMinorFontScheme.fontTypeface.get('Arab');

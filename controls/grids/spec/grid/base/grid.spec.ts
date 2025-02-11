@@ -5183,3 +5183,37 @@ describe('EJ2-927038: Script Error with Grid AutoFit: Undefined First Column Wid
         gridObj = null;
     });
 });
+
+describe('935213: Script error occurs when updating dataSource with frozen column and pager dropdown All option', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 12),
+                allowPaging: true,
+                pageSettings: {pageSizes: true},
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 10 },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ]
+            }, done);
+    });
+
+    it('Change DataSource', (done: Function) => {
+        let dataBound = function() {
+            done();
+        }
+        gridObj.dataBound = dataBound;
+        gridObj.dataSource = filterData.slice(0, 24);
+    });
+
+    it ('If script error not occurs grid datasource changed to 24 datas', (done: Function) => {
+        expect((gridObj.currentViewData as any).length === 24).toBeTruthy();
+        done();
+    })
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -59,6 +59,7 @@ import { SlashMenuSettings } from '../models/slash-menu-settings';
 import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';
 import { SlashMenu} from '../renderer/slash-menu';
 import { mentionRestrictKeys } from '../../common/config';
+import { isSafari } from '../../common/util';
 
 /**
  * Represents the Rich Text Editor component.
@@ -246,20 +247,28 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public emojiPickerModule: EmojiPicker;
     public needsID: boolean;
     /**
-     * Specifies the group of items aligned horizontally in the toolbar as well as defined the toolbar rendering type.
-     * By default, toolbar is float at the top of the RichTextEditor.
-     * When you scroll down, the toolbar will scroll along with the page on Rich Text Editor with the specified offset value.
-     * * enable: set boolean value to show or hide the toolbar.
-     * * enableFloating: Set Boolean value to enable or disable the floating toolbar.
-     * Preserves the toolbar at top of the Rich Text Editor on scrolling.
-     * * type: it has two possible options
-     * 1. Expand: Hide the overflowing toolbar items in the next row. Click the expand arrow to view overflowing toolbar items
-     * 2. MultiRow: The toolbar overflowing items wrapped in the next row.
-     * * items: Specifies the array of items aligned horizontally in the toolbar.
-     * > | and - can insert a vertical and horizontal separator lines in the toolbar.
-     * * itemConfigs: Modify the default toolbar item configuration like icon class.
+     * Specifies the configuration for the toolbar, including the alignment and rendering type.
+     * By default, the toolbar floats at the top of the RichTextEditor.
+     * When you scroll down, the toolbar will move with the page applying the specified offset.
      *
-     * > By default, The toolbar is rendered with scrollable in mobile devices and does not support the toolbar type.
+     * Properties:
+     *
+     * - enable: A boolean value to show or hide the toolbar.
+     *
+     * - enableFloating: A boolean value to enable or disable the floating toolbar.
+     *   This keeps the toolbar fixed at the top of the RichTextEditor during scrolling.
+     *
+     * - type: Defines the toolbar type, with the following options:
+     *   1. Expand: Overflowing toolbar items are hidden and can be accessed by clicking the expand arrow.
+     *   2. MultiRow: Overflowing toolbar items wrap into the next row.
+     *   3. Scrollable: Toolbar items are on a single line and can be scrolled horizontally if they overflow.
+     *
+     * - items: An array specifying the items aligned horizontally in the toolbar.
+     * > '|' and '-' can be used to insert vertical and horizontal separator lines in the toolbar.
+     *
+     * - itemConfigs: Allows the modification of the default toolbar item configuration, such as the icon class.
+     *
+     * > By default, the toolbar is rendered with a scrollable option on mobile devices and does not support other toolbar types.
      *
      * {% codeBlock src='rich-text-editor/toolbar-settings/index.md' %}{% endcodeBlock %}
      *
@@ -277,17 +286,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
-     * Specifies the list items in the mention popup.
-     * * enable- Specifies to enable or disable the slash menu in the Editor.
-     * * items- Specfies the items to be rendered in the slash menu.
-     * * popupWidth- Specifies the width of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
-     * * popupHeight- Specifies the height of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
+     * Configuration options for the slash menu feature in the Editor, used to display a mention popup.
+     * Properties:
+     * * enable: A boolean indicating whether the slash menu is enabled in the Editor.
+     * * items: An array specifying the list of items to be displayed in the slash menu.
+     * * popupWidth: Defines the width of the slash menu popup. Accepts values in pixels, numbers, or percentages. Numeric values are treated as pixels.
+     * * popupHeight: Defines the height of the slash menu popup. Accepts values in pixels, numbers, or percentages. Numeric values are treated as pixels.
      *
      * @default
      * {
      * enable: false,
-     * items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'OrderedList', 'UnorderedList'
-     * .'CodeBlock', 'BlockQuote'],
+     * items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'OrderedList', 'UnorderedList',
+     * 'CodeBlock', 'BlockQuote'],
      * popupWidth: '300px',
      * popupHeight: '320px'
      * }
@@ -296,16 +306,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public slashMenuSettings: SlashMenuSettingsModel;
 
     /**
-     * Specifies the items to be rendered in quick toolbar based on the target element.
-     * * It has following fields:
-     * * enable - set boolean value to show or hide the quick toolbar
-     * * actionOnScroll - it has two possible options
-     * 1. hide: The quickToolbar is closed when the parent element is scrolled.
-     * 2. none: The quickToolbar cannot be closed even the parent element is scrolled.
-     * * link  - Specifies the items to be rendered in quick toolbar based on link element such as `Open`, `Edit`, and `UnLink`.
-     * * image - Specifies the items to be rendered in quick toolbar based on image element such as 'Replace',
-     * 'Align', 'Caption', 'Remove', 'InsertLink', 'Display', 'AltText', 'Dimension'.
-     * * text	 - Specifies the items to be rendered in quick toolbar based on text element such as 'Cut', 'Copy', 'Paste'.
+     * Specifies the items to be rendered in the quick toolbar based on the target element.
+     * Properties:
+     * * enable: Boolean to show or hide the quick toolbar.
+     * * actionOnScroll: Options for quick toolbar behavior on scroll:
+     *   1. hide: The quick toolbar closes when the parent element is scrolled.
+     *   2. none: The quick toolbar stays open even if the parent element is scrolled.
+     * * link: Specifies items in the quick toolbar for links ('Open', 'Edit', 'UnLink').
+     * * image: Specifies items in the quick toolbar for images ('Replace', 'Align', 'Caption', 'Remove', 'InsertLink', 'Display', 'AltText', 'Dimension').
+     * * text: Specifies items in the quick toolbar for text ('Cut', 'Copy', 'Paste').
+     * * audio: Specifies items for audio ('AudioReplace', 'AudioRemove', 'AudioLayoutOption').
+     * * video: Specifies items for video ('VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension').
      *
      * {% codeBlock src='rich-text-editor/quick-toolbar-settings/index.md' %}{% endcodeBlock %}
      *
@@ -321,14 +332,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<QuickToolbarSettingsModel>({}, QuickToolbarSettings)
     public quickToolbarSettings: QuickToolbarSettingsModel;
+
     /**
-     * Specifies the pasting options in Rich Text Editor component and control with the following properties.
-     * * prompt - Set boolean value to enable or disable the prompt when pasting.
-     * * deniedAttrs  -  Specifies the attributes to restrict when pasting in RTE.
-     * * allowedStyleProps  -  Specifies the allowed style properties when pasting in RTE.
-     * * deniedTags	 -  Specifies the tags to restrict when pasting in RTE.
-     * * keepFormat	 -   Set boolean value to keep or remove the from when pasting.
-     * * plainText	 -   Set boolean value to paste as plain text or not.
+     * Configures paste options in the Rich Text Editor.
+     * Properties:
+     * * prompt: Boolean to enable or disable paste prompt.
+     * * deniedAttrs: Attributes to restrict during paste.
+     * * allowedStyleProps: Style properties allowed when pasting.
+     * * deniedTags: Tags to restrict when pasting.
+     * * keepFormat: Boolean to keep or remove format when pasting.
+     * * plainText: Boolean to paste as plain text.
      *
      * {% codeBlock src='rich-text-editor/paste-cleanup-settings/index.md' %}{% endcodeBlock %}
      *
@@ -343,7 +356,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width',
      * 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right',
      * 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-transform', 'text-indent',
-     * 'top', 'vertical-align', 'visibility', 'white-space', 'width'],
+     * 'top', 'vertical-align', 'visibility', 'white-space', 'width', 'flex-direction'],
      * deniedTags: null,
      * keepFormat: true,
      * plainText:  false
@@ -351,10 +364,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<PasteCleanupSettingsModel>({}, PasteCleanupSettings)
     public pasteCleanupSettings: PasteCleanupSettingsModel;
+
     /**
-     * Specifies the format painter options in Rich Text Editor with the following properties.
-     * * allowedFormats - Sets the tag name selectors  for elements from which the formats  can be copied.
-     * * deniedFormats - Sets the selectors  for elements from which formats  cannot be copied.
+     * Configures the format painter options in the Rich Text Editor.
+     * Properties:
+     * * allowedFormats: Tags selectors that allow format copying.
+     * * deniedFormats: Tag selectors that prevent format copying.
      *
      * {% codeBlock src='rich-text-editor/format-painter-settings/index.md' %}{% endcodeBlock %}
      *
@@ -365,25 +380,29 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * }
      */
     @Complex<FormatPainterSettingsModel>({}, FormatPainterSettings)
-    public formatPainterSettings: FormatPainterSettingsModel
+    public formatPainterSettings: FormatPainterSettingsModel;
+
     /**
-     * Specifies the emoji picker options in Rich Text Editor with the following properties.
-     * * iconsSet – Specify an array of items representing emoji icons.
-     * * showSearchBox -  Enables or disables the search box in an emoji picker.
+     * Configures emoji picker options in the Rich Text Editor.
+     * Properties:
+     * * iconsSet: Array representing emoji icons.
+     * * showSearchBox: Enables/disables the search box.
      *
      *
      */
     @Complex<EmojiSettingsModel>({}, EmojiSettings)
-    public emojiPickerSettings : EmojiSettingsModel
+    public emojiPickerSettings: EmojiSettingsModel;
+
     /**
-     * Specifies the items to be rendered in an iframe mode, and it has the following properties.
-     * * enable - Set Boolean value to enable, the editors content is placed in an iframe and isolated from the rest of the page.
-     * * attributes - Custom style to be used inside the iframe to display content. This style is added to the iframe body.
-     * * resources - we can add both styles and scripts to the iframe.
-     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content
-     * 2. scripts[] - An array of JS script files to inject inside the iframe
-     * * metaTags[] - An array of meta tags to inject inside the iframe's head for setting up various metadata like http-equiv, charset, etc.
-     * * sandbox - A string array defining the sandbox attribute for the iframe, which controls the security restrictions applied to the embedded content. By default, "allow-same-origin" is included in the Rich Text Editor's iframe sandbox.
+     * Configures iframe mode items in the Rich Text Editor.
+     * Properties:
+     * * enable: Boolean to place editor content in an iframe, isolating it from the page.
+     * * attributes: Custom style for displaying content inside the iframe. Applied to iframe body.
+     * * resources: Adds styles and scripts to the iframe.
+     *   1. styles[]: Array of CSS files for the iframe content.
+     *   2. scripts[]: Array of JS script files for the iframe.
+     * * metaTags[]: Array of meta tags for iframe's head, setting metadata (http-equiv, charset, etc.).
+     * * sandbox: String array defining iframe sandbox attributes, controlling security restrictions. Default includes "allow-same-origin".
      *
      * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
      *
@@ -399,302 +418,313 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Complex<IFrameSettingsModel>({}, IFrameSettings)
     public iframeSettings: IFrameSettingsModel;
     /**
-     * Specifies the image insert options in Rich Text Editor component and control with the following properties.
-     * * allowedTypes - Specifies the extensions of the image types allowed to insert on bowering and
-     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
-     * * display - Sets the default display for an image when it is inserted in to the RichTextEditor.
-     * Possible options are: 'inline' and 'block'.
-     * * width - Sets the default width of the image when it is inserted in the RichTextEditor.
-     * * saveFormat - Specifies the format to store the image in the Rich Text Editor (Base64 or Blob).
-     * > If you want to insert a lot of tiny images in the editor and don't want a specific physical location for
-     * saving images, you can opt to save format as Base64.
-     * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
-     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
-     * * path - Specifies the path of the location to store the images and refer it to display the images.
+     * Specifies the options for inserting images in the Rich Text Editor. Includes properties such as:
+     * - `allowedTypes`: Specifies the allowed image file extensions as a comma-separated list (e.g., '.jpg', '.png').
+     * - `display`: Sets the default display mode for an inserted image, either 'inline' or 'block'.
+     * - `width`: Specifies the default width for an inserted image.
+     * - `saveFormat`: Indicates the format for storing images in the editor (Base64 or Blob).
+     *   > Select Base64 for numerous small images without a specific physical storage location.
+     * - `height`: Defines the default height for an inserted image.
+     * - `saveUrl`: Specifies the URL for the service that handles image upload and storage on the server.
+     * - `path`: Determines the storage location for images and their display path.
      *
      * {% codeBlock src='rich-text-editor/insert-image-settings/index.md' %}{% endcodeBlock %}
      *
      * @default
      * {
-     * allowedTypes: ['.jpeg', '.jpg', '.png'],
-     * display: 'inline',
-     * width: 'auto',
-     * height: 'auto',
-     * saveFormat: 'Blob'
-     * saveUrl: null,
-     * path: null,
+     *   allowedTypes: ['.jpeg', '.jpg', '.png'],
+     *   display: 'inline',
+     *   width: 'auto',
+     *   height: 'auto',
+     *   saveFormat: 'Blob',
+     *   saveUrl: null,
+     *   path: null
      * }
      */
     @Complex<ImageSettingsModel>({}, ImageSettings)
     public insertImageSettings: ImageSettingsModel;
+
     /**
-     * Specifies the file insert options for the Rich Text Editor component, with the following property:
-     * * serviceUrl - Specifies the URL that will receive the uploaded files on the server.
+     * Configures the options for importing Word files in the Rich Text Editor component.
+     * The `serviceUrl` property specifies the server endpoint URL where the uploaded Word file will be processed.
      *
      * @default
      * {
-     * serviceUrl: null,
+     *   serviceUrl: null
      * }
      */
     @Complex<ImportWordModel>({}, ImportWord)
     public importWord: ImportWordModel;
+
     /**
-     * Specifies the file export options for the Rich Text Editor component, with the following properties:
-     * * serviceurl - Specifies the URL that will be used to export the Rich Text Editor content into Word files.
-     * * fileName - Specifies the name of the exported Word file.
-     * * stylesheet - Specifies the stylesheet to be applied to the exported Word file.
+     * Defines file export options for the Rich Text Editor with properties like:
+     * - `serviceurl`: The URL utilized for exporting editor content to Word files.
+     * - `fileName`: Designates the default name for exported Word files.
+     * - `stylesheet`: Applies a stylesheet to the exported Word file.
      *
      * @default
      * {
-     * serviceUrl:null,
-     * fileName:Sample.docx,
-     * stylesheet: null,
+     *   serviceUrl: null,
+     *   fileName: Sample.docx,
+     *   stylesheet: null
      * }
      */
     @Complex<ExportWordModel>({}, ExportWord)
     public exportWord: ExportWordModel;
+
     /**
-     * Specifies the file export options for the Rich Text Editor component, with the following properties:
-     * * serviceurl - Specifies the URL that will be used to export the Rich Text Editor content into PDF files.
-     * * fileName - Specifies the name of the exported PDF file.
-     * * stylesheet - Specifies the stylesheet to be applied to the exported PDF file.
+     * Describes file export options to PDF in the Rich Text Editor, such as:
+     * - `serviceurl`: URL used for exporting content to PDF format.
+     * - `fileName`: Specifies the default PDF file name upon export.
+     * - `stylesheet`: Applies a stylesheet to the exported PDF file.
      *
      * @default
      * {
-     * serviceUrl:null,
-     * fileName:Sample.pdf,
-     * stylesheet: null,
+     *   serviceUrl: null,
+     *   fileName: 'Sample.pdf',
+     *   stylesheet: null
      * }
      */
     @Complex<ExportPdfModel>({}, ExportPdf)
     public exportPdf: ExportPdfModel;
+
     /**
-     * Specifies the audio insert options in Rich Text Editor component and control with the following properties.
-     * * allowedTypes - Specifies the extensions of the audio types allowed to insert on bowering and
-     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
-     * * layoutOption - Sets the default display for an audio when it is inserted in to the RichTextEditor.
-     * Possible options are: 'Inline' and 'Break'.
-     * * saveFormat - Specifies the format to store the audio in the Rich Text Editor (Base64 or Blob).
-     * > If you want to insert a lot of tiny audios in the editor and don't want a specific physical location for
-     * saving audios, you can opt to save format as Base64.
-     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
-     * * path - Specifies the path of the location to store the audios and refer it to display the audios.
+     * Defines the options for inserting audio files in the Rich Text Editor, including properties such as:
+     * - `allowedTypes`: Specifies the file extensions for audio files allowed to be inserted, listed as a comma-separated string (e.g., '.wav', '.mp3').
+     * - `layoutOption`: Sets the default layout for audio files when inserted into the Rich Text Editor. The options are 'Inline' and 'Break'.
+     * - `saveFormat`: Determines the format used to store audio files in the Rich Text Editor, either 'Base64' or 'Blob'.
+     *   > Choose 'Base64' for frequently inserted small audio files without the need for a specific storage location.
+     * - `saveUrl`: Provides the service URL responsible for handling audio file uploads and storage on the server.
+     * - `path`: Specifies the storage path for audio files and the reference for displaying them.
      *
      * @default
      * {
-     * allowedTypes: ['.wav', '.mp3', '.m4a','.wma'],
-     * layoutOption: 'Inline',
-     * saveFormat: 'Blob'
-     * saveUrl: null,
-     * path: null,
+     *   allowedTypes: ['.wav', '.mp3', '.m4a', '.wma'],
+     *   layoutOption: 'Inline',
+     *   saveFormat: 'Blob',
+     *   saveUrl: null,
+     *   path: null
      * }
      */
     @Complex<AudioSettingsModel>({}, AudioSettings)
     public insertAudioSettings: AudioSettingsModel;
+
     /**
-     * Specifies the video insert options in Rich Text Editor component and control with the following properties.
-     * * allowedTypes - Specifies the extensions of the video types allowed to insert on bowering and
-     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
-     * * layoutOption - Sets the default display for an video when it is inserted in to the RichTextEditor.
-     * Possible options are: 'Inline' and 'Break'.
-     * * width - Sets the default width of the video when it is inserted in the RichTextEditor.
-     * * saveFormat - Specifies the format to store the video in the Rich Text Editor (Base64 or Blob).
-     * > If you want to insert a lot of tiny videos in the editor and don't want a specific physical location for
-     * saving videos, you can opt to save format as Base64.
-     * * height - Sets the default height of the video when it is inserted in the RichTextEditor.
-     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
-     * * path - Specifies the path of the location to store the videos and refer it to display the videos.
+     * Specifies video insert options in the Rich Text Editor, detailing properties such as:
+     * - `allowedTypes`: Allowed video file extensions as a comma-separated list (e.g., '.mp4', '.mov').
+     * - `layoutOption`: Determines the display mode for videos ('Inline' or 'Break').
+     * - `width`: Sets default width for inserted videos.
+     * - `saveFormat`: Format for storing video files (Base64 or Blob).
+     *   > Select Base64 for numerous small video inserts without defined storage requirements.
+     * - `height`: Sets default height for inserted videos.
+     * - `saveUrl`: URL of the service for handling video uploads and server storage.
+     * - `path`: Identifies the path for storing and displaying videos.
      *
      * @default
      * {
-     * allowedTypes: ['.mp4', '.mov', '.wmv','.avi'],
-     * layoutOption: 'Inline',
-     * width: 'auto',
-     * height: 'auto',
-     * saveFormat: 'Blob'
-     * saveUrl: null,
-     * path: null,
+     *   allowedTypes: ['.mp4', '.mov', '.wmv', '.avi'],
+     *   layoutOption: 'Inline',
+     *   width: 'auto',
+     *   height: 'auto',
+     *   saveFormat: 'Blob',
+     *   saveUrl: null,
+     *   path: null
      * }
      */
     @Complex<VideoSettingsModel>({}, VideoSettings)
     public insertVideoSettings: VideoSettingsModel;
+
     /**
-     * Specifies the table insert options in Rich Text Editor component and control with the following properties.
-     * * styles - Class name should be appended by default in table element.
-     * It helps to design the table in specific CSS styles always when inserting in editor.
-     * * width - Sets the default width of the table when it is inserted in the RichTextEditor.
-     * * minWidth - Sets the default minWidth of the table when it is inserted in the RichTextEditor.
-     * * maxWidth - Sets the default maxWidth of the table when it is inserted in the RichTextEditor.
-     * * resize - To enable resize the table.
+     * Specifies the options for inserting tables in the Rich Text Editor, featuring properties like:
+     * - `styles`: Automatically appends a CSS class to tables for consistent styling.
+     * - `width`: Defines default table width upon insertion.
+     * - `minWidth`: Sets the minimum width for inserted tables.
+     * - `maxWidth`: Indicates the maximum permissible width for tables.
+     * - `resize`: Enables or disables table resizing functionality.
      *
      * {% codeBlock src='rich-text-editor/table-settings/index.md' %}{% endcodeBlock %}
      *
      * @default
      * {
-     * width: '100%',
-     * styles: [{ text: 'Dashed Borders', class: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
-     * { text: 'Alternate Rows', class: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }],
-     * resize: true,
-     * minWidth: 0,
-     * maxWidth: null,
+     *   width: '100%',
+     *   styles: [
+     *     { text: 'Dashed Borders', class: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
+     *     { text: 'Alternate Rows', class: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
+     *   ],
+     *   resize: true,
+     *   minWidth: 0,
+     *   maxWidth: null
      * }
      */
     @Complex<TableSettingsModel>({}, TableSettings)
     public tableSettings: TableSettingsModel;
+
     /**
-     * Preserves the toolbar at the top of the Rich Text Editor on scrolling and
-     * specifies the offset of the floating toolbar from documents top position
+     * Keeps the toolbar fixed at the top of the Rich Text Editor during scrolling and specifies the
+     * toolbar's offset from the document's top position.
      *
      * @default 0
      */
     @Property(0)
     public floatingToolbarOffset: number;
+
     /**
-     * Enable or disable the inline edit mode.
-     * * enable - set boolean value to enable or disable the inline edit mode.
-     * * onSelection - If its set to true, upon selecting the text, the toolbar is opened in inline.
-     * If its set to false, upon clicking to the target element, the toolbar is opened.
+     * Configures the inline edit mode for the Rich Text Editor with the following options:
+     * - `enable`: A boolean value to enable or disable the inline edit mode.
+     * - `onSelection`: Determines how the toolbar is activated:
+     *   - If set to `true`, the toolbar appears inline upon text selection.
+     *   - If set to `false`, the toolbar opens when clicking on the target element.
      *
      * {% codeBlock src='rich-text-editor/inline-mode/index.md' %}{% endcodeBlock %}
      *
      * @default
      * {
-     * enable: false,
-     * onSelection: true
+     *   enable: false,
+     *   onSelection: true
      * }
      */
     @Complex<InlineModeModel>({}, InlineMode)
     public inlineMode: InlineModeModel;
+
     /**
-     * Specifies the image manager options in Rich Text Editor component and control with the following properties.
-     * * enable - set boolean value to enable or disable the image manager.
-     * * ajaxSettings - Specifies the AJAX settings of the image manager.
-     * * contextMenuSettings - Specifies the context menu settings of the image manager.
-     * * navigationPaneSettings - Specifies the navigation pane settings of the image manager.
-     * * toolbarSettings - Specifies the group of items aligned horizontally in the toolbar.
-     * * uploadSettings - Specifies the upload settings for the image manager.
+     * Defines image manager options in the Rich Text Editor with the following attributes:
+     * - `enable`: Boolean to enable or disable the image manager.
+     * - `ajaxSettings`: Configures AJAX settings for image handling.
+     * - `contextMenuSettings`: Manages context menu availability and options.
+     * - `navigationPaneSettings`: Sets up the navigation pane display and contents.
+     * - `toolbarSettings`: Specifies toolbar configuration and visible items.
+     * - `uploadSettings`: Manages upload-specific configurations.
      *
      * @default
      * {
-     * enable: false,
-     * path: '/',
-     * ajaxSettings: { getImageUrl: null, url: null, uploadUrl: null },
-     * contextMenuSettings: {
-     * visible: true,
-     * file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
-     * folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
-     * layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll']
-     * },
-     * navigationPaneSettings: {
-     * visible: true,
-     * items: [
-     * 'NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download',
-     * 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'
-     * ]
-     * },
-     * toolbarSettings: { visible: true, items: ['Upload', 'NewFolder'] },
-     * uploadSettings: { autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }
+     *   enable: false,
+     *   path: '/',
+     *   ajaxSettings: { getImageUrl: null, url: null, uploadUrl: null },
+     *   contextMenuSettings: {
+     *     visible: true,
+     *     file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
+     *     folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
+     *     layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll']
+     *   },
+     *   navigationPaneSettings: {
+     *     visible: true,
+     *     items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download',
+     *       'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details']
+     *   },
+     *   toolbarSettings: { visible: true, items: ['Upload', 'NewFolder'] },
+     *   uploadSettings: { autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }
      * }
      */
     @Complex<FileManagerSettingsModel>({}, FileManagerSettings)
     public fileManagerSettings: FileManagerSettingsModel;
+
     /**
-     * Specifies the width of the RichTextEditor.
+     * Specifies the width of the Rich Text Editor.
      *
      * @default '100%'
      */
     @Property('100%')
     public width: string | number;
+
     /**
-     * Enables or disables the persisting component's state between page reloads.
-     * If enabled, the value of Rich Text Editor is persisted
+     * Enables or disables the persistence of the component's state between page reloads.
+     * If enabled, the value of the Rich Text Editor is retained.
      *
      * {% codeBlock src='rich-text-editor/enable-persistence/index.md' %}{% endcodeBlock %}
      *
-     * @default false.
+     * @default false
      */
     @Property(false)
     public enablePersistence: boolean;
+
     /**
-     * Specify the value whether tooltip will be displayed for the Rich Text Editor toolbar.
+     * Configures whether a tooltip should be displayed for the Rich Text Editor toolbar.
      *
-     * @default true.
+     * @default true
      */
     @Property(true)
     public showTooltip: boolean;
+
     /**
      * Enables or disables the resizing option in the editor.
-     * If enabled, the Rich Text Editor can be resized by dragging the resize icon in the bottom right corner.
+     * When enabled, the editor can be resized by dragging the resize icon in its bottom right corner.
      *
      * {% codeBlock src='rich-text-editor/enable-resize/index.md' %}{% endcodeBlock %}
      *
-     * @default false.
+     * @default false
      */
     @Property(false)
     public enableResize: boolean;
+
     /**
-     * Allows additional HTML attributes such as title, name, etc., and
-     * It will be accepts n number of attributes in a key-value pair format.
+     * Allows specifying additional HTML attributes like title, name, etc.
+     * Accepts multiple attributes in a key-value pair format.
      *
-     * @default {}.
+     * @default {}
      */
     @Property({})
     public htmlAttributes: { [key: string]: string };
+
     /**
-     * Specifies the placeholder for the RichTextEditor’s content used when the Rich Text Editor body is empty.
+     * Specifies the placeholder text for the content area of the RichTextEditor when it is empty.
      *
-     * @default null.
+     * @default null
      */
     @Property(null)
     public placeholder: string;
 
     /**
-     * Enables or disables the auto-save option which performs the save action while in the idle state after typed content.
-     * If enabled, the Rich Text Editor will save the content on idle state with `saveInterval` property's value.
-     * The change event will be triggered if the content has changed from the last saved state.
+     * Enables or disables the auto-save option, which performs the save action during idle states after content changes.
+     * If enabled, the editor will save content in idle state based on the `saveInterval` property's value.
+     * The change event is triggered if the content has been modified since the last saved state.
      *
-     * @default false.
+     * @default false
      */
     @Property(false)
     public autoSaveOnIdle: boolean;
 
     /**
-     * The user interactions on the component are disabled, when set to true.
+     * Disables user interactions on the component when set to true.
      *
-     * @default false.
+     * @default false
      */
     @Property(false)
     public readonly: boolean;
+
     /**
-     * Specifies a value that indicates whether the component is enabled or not.
+     * Indicates whether the component is enabled or disabled.
      *
      * {% codeBlock src='rich-text-editor/enabled/index.md' %}{% endcodeBlock %}
      *
-     * @default true.
+     * @default true
      */
     @Property(true)
     public enabled: boolean;
+
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Indicates whether to allow cross-site scripting (XSS) or not.
      *
      * @default true
      */
     @Property(true)
     public enableHtmlSanitizer: boolean;
+
     /**
-     * specifies the value whether the source code is displayed with encoded format.
+     * Determines if source code should be displayed in an encoded format.
      *
-     * @default false.
+     * @default false
      */
     @Property(false)
     public enableHtmlEncode: boolean;
+
     /**
-     * Specifies a value that indicates whether the xhtml is enabled or not.
+     * Indicates whether XHTML is enabled or not.
      *
-     * @default false.
+     * @default false
      */
     @Property(false)
     public enableXhtml: boolean;
+
     /**
      * Specifies the height of the Rich Text Editor component.
      *
@@ -702,17 +732,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property('auto')
     public height: string | number;
+
     /**
-     * Specifies the CSS class name appended with the root element of the RichTextEditor.
-     * One or more custom CSS classes can be added to a RichTextEditor.
+     * Specifies the CSS class name appended to the root element of the RichTextEditor.
+     * Multiple custom CSS classes can be added.
      *
      * @default null
      */
     @Property(null)
     public cssClass: string;
+
     /**
-     * Specifies the value displayed in the RichTextEditor's content area and it should be string.
-     * The content of Rich Text Editor can be loaded with dynamic data such as database, AJAX content, and more.
+     * Specifies the initial content to be displayed in the RichTextEditor's content area. It should be a string.
+     * The editor's content can also be dynamically loaded from a database, AJAX, etc.
      *
      * {% codeBlock src='rich-text-editor/value/index.md' %}{% endcodeBlock %}
      *
@@ -720,34 +752,33 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(null)
     public value: string;
+
     /**
-     * Specifies tag to be inserted when enter key is pressed.
+     * Specifies the tag to be inserted when the enter key is pressed.
      *
-     * - `P` - When the enter key is pressed a `p` tag will be inserted and the default value of the Rich Text Editor will be &lt;p&gt;&lt;br&gt;&lt;/p&gt;.
-     *
-     * - `DIV` - When the enter key is pressed a `div` tag will be inserted instead of the default `P` tag and the default value of the Rich Text Editor will be &lt;div&gt;&lt;br&gt;&lt;/div&gt;.
-     *
-     * - `BR` - When the enter key is pressed a `br` tag will be inserted instead of the default `P` tag and the default value of the Rich Text Editor will be &lt;br&gt;.
+     * - `P`: Pressing enter inserts a `p` tag. The default value will be `<p><br></p>`.
+     * - `DIV`: Inserts a `div` tag instead of the default `P` tag.
+     * - `BR`: Inserts a `br` tag instead of the default `P` tag.
      *
      * @default 'P'
      */
     @Property('P')
     public enterKey: EnterKey;
+
     /**
-     * Specifies tags to be inserted when shift+enter key is pressed.
+     * Specifies tags to be inserted when the Shift + Enter keys are pressed.
      *
-     * - `BR` - When the shift + enter key is pressed a `br` tag will be inserted which is the default behavior.
-     *
-     * - `P` - When the shift + enter key is pressed a `p` tag will be inserted instead of the default `br` tag.
-     *
-     * - `DIV` - When the shift + enter key is pressed a `div` tag will be inserted instead of the default `br` tag.
+     * - `BR` - When the Shift + Enter key is pressed, a `br` tag will be inserted, which is the default behavior.
+     * - `P` - When the Shift + Enter key is pressed, a `p` tag will be inserted instead of the default `br` tag.
+     * - `DIV` - When the Shift + Enter key is pressed, a `div` tag will be inserted instead of the default `br` tag.
      *
      * @default 'BR'
      */
     @Property('BR')
     public shiftEnterKey: ShiftEnterKey;
+
     /**
-     * Specifies the count of undo history which is stored in undoRedoManager.
+     * Specifies the number of undo history steps stored in the undo/redo manager.
      *
      * {% codeBlock src='rich-text-editor/undo-redo-steps/index.md' %}{% endcodeBlock %}
      *
@@ -755,28 +786,30 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(30)
     public undoRedoSteps: number;
+
     /**
-     * Specifies the interval value in milliseconds that store actions in undoRedoManager. The minimum value is 300 milliseconds.
+     * Specifies the interval time in milliseconds for storing actions in the undo/redo manager.
+     * The minimum value is 300 milliseconds.
      *
      * @default 300
      */
     @Property(300)
     public undoRedoTimer: number;
+
     /**
-     * Specifies the editing mode of the RichTextEditor.
+     * Defines the mode of the RichTextEditor.
      *
-     * - `HTML` - Render Rich Text Editor as HTML editor using &lt;IFRAME&gt; element or content editable &lt;div&gt; element
-     * or &lt;textarea&gt; element.
-     *
-     * - `Markdown` - Render Rich Text Editor as markdown editor using &lt;textarea&gt;.
+     * - `HTML`: Render as an HTML editor using an `<IFRAME>`, content editable `<div>`, or `<textarea>`.
+     * - `Markdown`: Render as a Markdown editor using a `<textarea>`.
      *
      * @default 'HTML'
      */
     @Property('HTML')
     public editorMode: EditorMode;
+
     /**
-     * Customizes the key actions in RichTextEditor.
-     * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * Customizes key actions in the RichTextEditor.
+     * For example, German keyboard users can customize key actions using these shortcuts.
      *
      * {% codeBlock src='rich-text-editor/keyconfig/index.md' %}{% endcodeBlock %}
      *
@@ -784,8 +817,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(null)
     public keyConfig: { [key: string]: string };
+
     /**
-     * Sets Boolean value to enable or disable the display of the character counter.
+     * Enables or disables the display of the character counter.
      *
      * {% codeBlock src='rich-text-editor/show-char-count/index.md' %}{% endcodeBlock %}
      *
@@ -793,6 +827,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public showCharCount: boolean;
+
     /**
      * Allows the tab key action in the Rich Text Editor content.
      *
@@ -802,9 +837,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public enableTabKey: boolean;
+
     /**
-     * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks, otherwise
-     * the given URL will automatically convert to absolute path URL by prefixing `https://` for hyperlinks.
+     * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks.
+     * Otherwise, the given URL will automatically convert to an absolute path URL by prefixing it with `https://` for hyperlinks.
      *
      * {% codeBlock src='rich-text-editor/enable-autourl/index.md' %}{% endcodeBlock %}
      *
@@ -812,8 +848,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public enableAutoUrl: boolean;
+
     /**
-     * Specifies the maximum number of characters allowed in the Rich Text Editor component.
+     * Specifies the maximum number of characters allowed in the Rich Text Editor.
      *
      * {% codeBlock src='rich-text-editor/max-length/index.md' %}{% endcodeBlock %}
      *
@@ -821,8 +858,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(-1)
     public maxLength: number;
+
     /**
-     * Predefine the collection of paragraph styles along with quote and code style that populate in format dropdown from the toolbar.
+     * Predefines a collection of paragraph styles along with quote and code styles
+     * that populate the format dropdown in the toolbar.
      *
      * {% codeBlock src='rich-text-editor/format/index.md' %}{% endcodeBlock %}
      *
@@ -838,14 +877,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * { text: 'Heading 4', value: 'H4' },
      * { text: 'Heading 5', value: 'H5' },
      * { text: 'Heading 6', value: 'H6' },
-     * { text: 'Preformatted', value: 'Pre' },
+     * { text: 'Preformatted', value: 'Pre' }
      * ]
      * }
      */
     @Complex<FormatModel>({}, Format)
     public format: FormatModel;
+
     /**
-     * Predefine the advanced list types that populate in the numberFormatList dropdown list from the toolbar.
+     * Predefines advanced list types that populate the numberFormatList dropdown in the toolbar.
      *
      * @default
      * {
@@ -856,14 +896,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * { text: 'Lower Roman', value: 'lowerRoman' },
      * { text: 'Upper Alpha', value: 'upperAlpha' },
      * { text: 'Lower Alpha', value: 'lowerAlpha' },
-     * { text: 'Upper Roman', value: 'upperRoman' },
+     * { text: 'Upper Roman', value: 'upperRoman' }
      * ]
      * }
      */
     @Complex<NumberFormatListModel>({}, NumberFormatList)
     public numberFormatList: NumberFormatListModel;
+
     /**
-     * Predefine the advanced list types that populate in the bulletFormatList dropdown list from the toolbar.
+     * Predefines advanced list types that populate the bulletFormatList dropdown in the toolbar.
      *
      * @default
      * {
@@ -877,8 +918,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<BulletFormatListModel>({}, BulletFormatList)
     public bulletFormatList: BulletFormatListModel;
+
     /**
-     * Predefine the font families that populate in font family dropdown list from the toolbar.
+     * Predefines font families that populate the font family dropdown in the toolbar.
      *
      * {% codeBlock src='rich-text-editor/font-family/index.md' %}{% endcodeBlock %}
      *
@@ -888,7 +930,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * width: '65px',
      * items: [
      * { text: 'Segoe UI', value: 'Segoe UI' },
-     * { text: 'Arial',  value: 'Arial,Helvetica,sans-serif' },
+     * { text: 'Arial', value: 'Arial,Helvetica,sans-serif' },
      * { text: 'Courier New', value: 'Courier New,Courier,monospace' },
      * { text: 'Georgia', value: 'Georgia,serif' },
      * { text: 'Impact', value: 'Impact,Charcoal,sans-serif' },
@@ -902,8 +944,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<FontFamilyModel>({}, FontFamily)
     public fontFamily: FontFamilyModel;
+
     /**
-     * Predefine the font sizes that populate in font size dropdown list from the toolbar.
+     * Defines the predefined font sizes that populate the font size dropdown in the toolbar.
      *
      * {% codeBlock src='rich-text-editor/font-size/index.md' %}{% endcodeBlock %}
      *
@@ -924,8 +967,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<FontSizeModel>({}, FontSize)
     public fontSize: FontSizeModel;
+
     /**
-     * Predefine the color palette that can be rendered for font color toolbar command .
+     * Defines the color palette for the font color toolbar command.
      *
      * {% codeBlock src='rich-text-editor/font-color/index.md' %}{% endcodeBlock %}
      *
@@ -945,8 +989,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<FontColorModel>({}, FontColor)
     public fontColor: FontColorModel;
+
     /**
-     * Predefine the color palette that can be rendered for background color (text highlighted color) toolbar command.
+     * Defines the color palette for the background color (text highlight color) toolbar command.
      *
      * {% codeBlock src='rich-text-editor/background-color/index.md' %}{% endcodeBlock %}
      *
@@ -962,10 +1007,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<BackgroundColorModel>({}, BackgroundColor)
     public backgroundColor: BackgroundColorModel;
+
     /**
-     * Accepts the template design and assigns it as RichTextEditor’s content.
-     * The built-in template engine which provides options to compile template string into a executable function.
-     * For EX: We have expression evolution as like ES6 expression string literals
+     * Accepts a template design and assigns it as the content of the Rich Text Editor.
+     * The built-in template engine provides options to compile a template string into an executable function.
+     * For example, it supports expression evaluation similar to ES6 template string literals.
      *
      * {% codeBlock src='rich-text-editor/value-template/index.md' %}{% endcodeBlock %}
      *
@@ -976,8 +1022,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public valueTemplate: string | Function;
 
     /**
-     * Specifies the saveInterval in milliseconds for autosave the value.
-     * The change event will be triggered if the content was changed from the last saved interval.
+     * Specifies the save interval in milliseconds for automatically saving the content.
+     * The change event is triggered if the content changes from the last saved interval.
      *
      * {% codeBlock src='rich-text-editor/save-interval/index.md' %}{% endcodeBlock %}
      *
@@ -987,253 +1033,283 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public saveInterval: number;
 
     /**
-     * Triggers before command execution using toolbar items or executeCommand method.
-     * If you cancel this event, the command cannot be executed.
-     * Set the cancel argument to true to cancel the command execution.
+     * This event triggers before executing a command via toolbar items.
+     * Cancel this event to prevent the command from executing by setting the `cancel` argument to `true`.
      *
      * @event 'actionBegin'
      */
     @Event()
     public actionBegin: EmitType<ActionBeginEventArgs>;
+
     /**
-     * Triggers after command execution using toolbar items or executeCommand method.
+     * This event triggers after executing a command via toolbar items.
      *
      * @event 'actionComplete'
      */
     @Event()
     public actionComplete: EmitType<ActionCompleteEventArgs>;
+
     /**
-     * Event triggers when the dialog is being opened.
-     * If you cancel this event, the dialog remains closed.
-     * Set the cancel argument to true to cancel the open of a dialog.
+     * This event triggers before a dialog is opened.
+     * Cancel this event to prevent the dialog from opening by setting the `cancel` argument to `true`.
      *
      * @event 'beforeDialogOpen'
      */
-
     @Event()
     public beforeDialogOpen: EmitType<BeforeOpenEventArgs>;
+
     /**
-     * Event triggers when a dialog is opened.
+     * This event triggers when a dialog is opened.
      *
      * @event 'dialogOpen'
      */
     @Event()
     public dialogOpen: EmitType<Object>;
+
     /**
-     * Event triggers when the dialog is being closed.
-     * If you cancel this event, the dialog remains opened.
-     * Set the cancel argument to true to prevent closing a dialog.
+     * This event triggers before a dialog is closed.
+     * Cancel this event to prevent the dialog from closing by setting the `cancel` argument to `true`.
      *
      * @event 'beforeDialogClose'
      */
     @Event()
     public beforeDialogClose: EmitType<BeforeCloseEventArgs>;
+
     /**
-     * Event triggers after the dialog has been closed.
+     * This event triggers after a dialog has been closed.
      *
      * @event 'dialogClose'
      */
     @Event()
     public dialogClose: EmitType<Object>;
+
     /**
-     * Event triggers when the quick toolbar is being opened.
+     * This event triggers before the quick toolbar opens.
      *
      * @event 'beforeQuickToolbarOpen'
      */
     @Event()
     public beforeQuickToolbarOpen: EmitType<BeforeQuickToolbarOpenArgs>;
+
     /**
-     * Event triggers when a quick toolbar is opened.
+     * This event triggers when the quick toolbar is opened.
      *
      * @event 'quickToolbarOpen'
      */
     @Event()
     public quickToolbarOpen: EmitType<Object>;
+
     /**
-     * Event triggers after the quick toolbar has been closed.
+     * This event triggers after the quick toolbar has been closed.
      *
      * @event 'quickToolbarClose'
      */
     @Event()
     public quickToolbarClose: EmitType<Object>;
+
     /**
-     * This event is deprecated and no longer works. Use `updatedToolbarStatus` event to get the undo and redo status.
+     * This event is deprecated and no longer works. Use the `updatedToolbarStatus` event for undo/redo status.
      *
      * @deprecated
      * @event 'toolbarStatusUpdate'
      */
     @Event()
     public toolbarStatusUpdate: EmitType<Object>;
+
     /**
-     * Triggers when the toolbar items status is updated.
+     * This event triggers when the toolbar items status is updated.
      *
      * @event 'updatedToolbarStatus'
      */
     @Event()
     public updatedToolbarStatus: EmitType<ToolbarStatusEventArgs>;
+
     /**
-     * Event triggers when the image is selected or dragged into the insert image dialog.
+     * This event triggers when an image is selected or dragged into the insert image dialog.
      *
      * @event 'imageSelected'
      */
     @Event()
     public imageSelected: EmitType<SelectedEventArgs>;
+
     /**
-     * Event triggers before the image upload process.
+     * This event triggers before the image upload process starts.
      *
      * @event 'beforeImageUpload'
      */
     @Event()
     public beforeImageUpload: EmitType<BeforeUploadEventArgs>;
+
     /**
-     * Event triggers when the selected image begins to upload in the insert image dialog.
+     * This event triggers when an image upload begins in the insert image dialog.
+     * It provides access to the upload details through the event arguments.
      *
      * @event 'imageUploading'
      */
     @Event()
     public imageUploading: EmitType<UploadingEventArgs>;
     /**
-     * Event triggers when the image is successfully uploaded to the server side.
+     * This event triggers when an image has been successfully uploaded to the server side.
      *
      * @event 'imageUploadSuccess'
      */
     @Event()
     public imageUploadSuccess: EmitType<ImageSuccessEventArgs>;
+
     /**
-     * Event triggers when there is an error in the image upload.
+     * This event triggers when there is an error during image upload.
      *
      * @event 'imageUploadFailed'
      */
     @Event()
     public imageUploadFailed: EmitType<ImageFailedEventArgs>;
+
     /**
-     * Event triggers when the selected image is cleared from the insert image dialog.
+     * This event triggers when a selected image is removed from the insert image dialog.
      *
      * @event 'imageRemoving'
      */
     @Event()
     public imageRemoving: EmitType<RemovingEventArgs>;
+
     /**
-     * Event triggers when the selected image is cleared from the Rich Text Editor Content.
+     * This event triggers when a selected image is removed from the Rich Text Editor content.
      *
      * @event 'afterImageDelete'
      */
     @Event()
     public afterImageDelete: EmitType<AfterImageDeleteEventArgs>;
+
     /**
-     * Event triggers when the media is selected or dragged into the insert media audio/video dialog.
+     * This event triggers when media is selected or dragged into the insert media audio/video dialog.
      *
      * @event 'fileSelected'
      */
     @Event()
     public fileSelected: EmitType<SelectedEventArgs>;
+
     /**
-     * Event triggers before the media audio/video upload process.
+     * This event triggers before the media audio/video upload process starts.
      *
      * @event 'beforeFileUpload'
      */
     @Event()
     public beforeFileUpload: EmitType<BeforeUploadEventArgs>;
+
     /**
-     * Event triggers when the selected media begins to upload in the insert media audio/video dialog.
+     * This event triggers when media begins uploading in the insert media audio/video dialog.
      *
      * @event 'fileUploading'
      */
     @Event()
     public fileUploading: EmitType<UploadingEventArgs>;
+
     /**
-     * Event triggers when the media is successfully uploaded to the server side.
+     * This event triggers when media has been successfully uploaded to the server side.
      *
      * @event 'fileUploadSuccess'
      */
     @Event()
     public fileUploadSuccess: EmitType<Object>;
+
     /**
-     * Event triggers when there is an error in the media upload.
+     * This event triggers when there is an error during media upload.
      *
      * @event 'fileUploadFailed'
      */
     @Event()
     public fileUploadFailed: EmitType<Object>;
+
     /**
-     * Event triggers when the selected media is cleared from the insert audio/video dialog.
+     * This event triggers when selected media is removed from the insert audio/video dialog.
      *
      * @event 'fileRemoving'
      */
     @Event()
     public fileRemoving: EmitType<RemovingEventArgs>;
+
     /**
-     * Event triggers when the selected media is cleared from the Rich Text Editor Content.
+     * This event triggers when selected media is removed from the Rich Text Editor content.
      *
      * @event 'afterMediaDelete'
      */
     @Event()
     public afterMediaDelete: EmitType<AfterMediaDeleteEventArgs>;
+
     /**
-     * Triggers when the Rich Text Editor is rendered.
+     * This event triggers when the Rich Text Editor is rendered.
      *
      * @event 'created'
      */
     @Event()
     public created: EmitType<Object>;
+
     /**
-     * Triggers when the Rich Text Editor is destroyed.
+     * This event triggers when the Rich Text Editor is destroyed.
      *
      * @event 'destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
+
     /**
-     * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
+     * This event triggers before sanitizing the value. Applicable only when `editorMode` is `HTML`.
      *
      * @event 'beforeSanitizeHtml'
      */
     @Event()
     public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
+
     /**
-     * Triggers when Rich Text Editor is focused out.
+     * This event triggers when the Rich Text Editor loses focus.
      *
      * @event 'blur'
      */
     @Event()
     public blur: EmitType<Object>;
+
     /**
-     * Triggers when Rich Text Editor Toolbar items is clicked.
+     * This event triggers when a Rich Text Editor toolbar item is clicked.
      *
      * @event 'toolbarClick'
      */
     @Event()
     public toolbarClick: EmitType<Object>;
+
     /**
-     * Triggers when Rich Text Editor is focused in
+     * This event triggers when the Rich Text Editor gains focus.
      *
      * @event 'focus'
      */
     @Event()
     public focus: EmitType<Object>;
+
     /**
-     * Triggers only when Rich Text Editor is blurred and changes are done to the content.
+     * This event triggers when the Rich Text Editor loses focus and changes have been made to the content.
      *
      * @event 'change'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
+
     /**
-     * Triggers only when resizing the image.
+     * This event triggers when resizing elements such as tables, images, videos, and the overall Rich Text Editor.
      *
      * @event 'resizing'
      */
     @Event()
     public resizing: EmitType<ResizeArgs>;
+
     /**
-     * Triggers only when start resize the image.
+     * This event triggers when resizing starts for various elements including tables, images, videos, and the overall editor.
      *
      * @event 'resizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
+
     /**
-     * Triggers only when stop resize the image.
+     * This event triggers when resizing stops for various elements including tables, images, videos, and the overall editor.
      *
      * @event 'resizeStop'
      */
@@ -1241,7 +1317,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public resizeStop: EmitType<ResizeArgs>;
 
     /**
-     * Triggers before cleanup the copied content.
+     * This event triggers before cleaning up copied content.
      *
      * @event 'beforePasteCleanup'
      */
@@ -1249,7 +1325,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public beforePasteCleanup: EmitType<PasteCleanupArgs>;
 
     /**
-     * Triggers after cleanup the copied content.
+     * This event triggers after cleaning up copied content.
      *
      * @event 'afterPasteCleanup'
      */
@@ -1257,14 +1333,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public afterPasteCleanup: EmitType<object>;
 
     /**
-     * Triggers before drop the image.
+     * This event triggers before an image is dropped.
      *
      * @event 'beforeImageDrop'
      */
     @Event()
     public beforeImageDrop: EmitType<ImageDropEventArgs>;
+
     /**
-     * Customize keyCode to change the key value.
+     * Customize the `keyCode` to change the key value.
      *
      * {% codeBlock src='rich-text-editor/formatter/index.md' %}{% endcodeBlock %}
      *
@@ -1274,7 +1351,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public formatter: IFormatter;
 
     /**
-     * Triggers when an slash menu item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
+     * This event triggers when a slash menu item in the popup is selected by the user using mouse, tap, or keyboard navigation.
      *
      * @event 'slashMenuItemSelect'
      */
@@ -1288,6 +1365,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private clickPoints: { [key: string]: number };
     private initialValue: string;
     private isCopyAll: boolean;
+    private isPlainPaste: boolean = false;
 
     public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -1513,7 +1591,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return this.addOnPersist(['value']);
     }
     /**
-     * Focuses the Rich Text Editor component
+     * Focuses the Rich Text Editor component.
      *
      * @returns {void}
      * @public
@@ -1524,8 +1602,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.focusHandler({} as FocusEvent);
         }
     }
+
     /**
-     * Blurs the Rich Text Editor component
+     * Blurs the Rich Text Editor component, removing focus.
      *
      * @returns {void}
      * @public
@@ -1536,8 +1615,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.blurHandler({} as FocusEvent);
         }
     }
+
     /**
-     * Selects all the content in RichTextEditor
+     * Selects all content within the RichTextEditor.
      *
      * @returns {void}
      * @public
@@ -1545,11 +1625,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public selectAll(): void {
         this.notify(events.selectAll, {});
     }
+
     /**
-     * Selects a content range or an element
+     * Selects a specific content range or element.
      *
-     * @param {Range} range - Specify the range which you want to select within the content.
-     * The method used to select a particular sentence or word or entire document.
+     * @param {Range} range - Specify the range you want to select within the content.
+     * This method is used to select a particular sentence, word, or the entire document.
      *
      * @returns {void}
      * @public
@@ -1557,10 +1638,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public selectRange(range: Range): void {
         this.notify(events.selectRange, { range: range });
     }
+
     /**
-     * Retrieves the HTML markup content from currently selected content of RichTextEditor.
+     * Retrieves the HTML markup from the currently selected content in RichTextEditor.
      *
-     * @returns {void}
+     * @returns {string} - Returns the HTML string of selected content.
      * @public
      */
     public getSelection(): string {
@@ -1573,26 +1655,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return str;
     }
     /**
-     * Shows the emoji picker
+     * Displays the emoji picker. If coordinates are provided, it positions the picker at those locations.
      *
-     * @param {number} x - specifies the number value.
-     * @param {number} y - specifies the number value.
+     * @param {number} x - The x-axis position for the emoji picker.
+     * @param {number} y - The y-axis position for the emoji picker.
      * @returns {void}
      * @public
      */
-    public  showEmojiPicker(x?: number, y?: number): void {
+    public showEmojiPicker(x?: number, y?: number): void {
         if (this.readonly){
             return ;
         }
         this.notify(events.emojiPicker, {x, y});
     }
     /**
-     * Executes the commands
+     * Executes a specified command within the rich text editor, optionally utilizing additional parameters to tailor execution.
      *
      * @returns {void}
-     * @param {CommandName} commandName - Specifies the name of the command to be executed.
-     * @param {string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs} value - Specifies the value that you want to execute.
-     * @param {ExecuteCommandOption} option - specifies the command option
+     * @param {CommandName} commandName - The name of the command to be executed, such as 'importWord', 'insertHTML', and others.
+     * @param {string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel | IAudioCommandsArgs | IVideoCommandsArgs} value
+     * - An optional parameter that supplies the necessary value relevant to the command. This could be a string, an HTMLElement, or specific argument types like ILinkCommandsArgs, etc., contingent on the command requirements.
+     * @param {ExecuteCommandOption} option - Specifies additional options for executing the command, such as enabling features like undo functionality.
      * @public
      */
     public executeCommand(
@@ -1948,7 +2031,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         if (!isNOU(closestLI) && endNode.textContent.trim().length === currentRangeEndOffset &&
-        !range.collapsed && isNOU(endNode.nextElementSibling)) {
+        !range.collapsed && isNOU(endNode.nextElementSibling) && !endNode.classList.contains(classes.CLS_IMG_INNER)) {
             for (let i: number = 0; i < closestLI.childNodes.length; i++) {
                 if (closestLI.childNodes[i as number].nodeName === '#text' && closestLI.childNodes[i as number].textContent.trim().length === 0) {
                     detach(closestLI.childNodes[i as number]);
@@ -1982,6 +2065,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      */
     public keyDown(e: KeyboardEvent): void {
+        const isMacDev: boolean = window.navigator.platform.toLocaleLowerCase().includes('mac');
+        if (((e.ctrlKey || (e.metaKey && isMacDev)) && e.shiftKey && e.keyCode === 86) ||
+            (e.metaKey && isMacDev && e.altKey && e.shiftKey && e.keyCode === 86)) {
+            this.isPlainPaste = true;
+        }
         if (this.inputElement.classList.contains('e-mention')) {
             const mentionPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_popup');
             const slashMenuPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_slash_menu_popup');
@@ -1991,6 +2079,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const isSlashMenuPopupOpen: boolean = slashMenuPopup && slashMenuPopup.classList.contains('e-popup-open');
             if (isMentionKeys && (isMentionPopupOpen || isSlashMenuPopupOpen)) {
                 return;
+            }
+        }
+        if (this.enableTabKey) {
+            if (this.quickToolbarModule && !e.altKey && e.key !== 'F10' && (e as KeyboardEventArgs).action !== 'toolbar-focus') {
+                this.quickToolbarModule.hideQuickToolbars();
+            }
+            const isImageResize: boolean = this.imageModule && this.imageModule.imgResizeDiv ? true : false;
+            const isVideoResize: boolean = this.videoModule && this.videoModule.vidResizeDiv ? true : false;
+            if (isImageResize) {
+                this.imageModule.cancelResizeAction();
+            }
+            if (isVideoResize) {
+                this.videoModule.cancelResizeAction();
             }
         }
         this.notify(events.keyDown, { member: 'keydown', args: e });
@@ -2068,6 +2169,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             switch ((e as KeyboardEventArgs).action) {
             case 'toolbar-focus':
                 if (this.toolbarSettings.enable && this.getToolbarElement()) {
+                    if (isSafari() && e.type === 'keydown' && this.formatter.editorManager.nodeSelection &&
+                    this.formatter.editorManager.nodeSelection.get(this.contentModule.getDocument()).rangeCount > 0 &&
+                    this.inputElement.contains(this.getRange().startContainer)) {
+                        this.notify(events.selectionSave, {});
+                    }
                     let firstActiveItem: HTMLElement = this.getToolbarElement().querySelector('.e-toolbar-item:not(.e-overlay)[title]');
                     const quickToolbarElem: HTMLElement | null = this.getRenderedQuickToolbarElem();
                     if (quickToolbarElem) {
@@ -2099,9 +2205,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.isCopyAll = true;
             }
         }
-    }
-
-    private onKeyDown(e: KeyboardEvent): void {
+        // Cmd + Backspace triggers only the keydown event; the keyup event is not triggered.
         if (e.metaKey && e.key === 'Backspace' && this.autoSaveOnIdle) {
             this.keyUp(e);
         }
@@ -2116,7 +2220,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 const selection: Selection = this.iframeSettings.enable ? this.contentModule.getPanel().ownerDocument.getSelection() :
                     this.contentModule.getDocument().getSelection();
                 if (this.isCopyAll) {
-                    this.inputElement.innerHTML = this.enterKey !== 'BR' ? '<' + this.enterKey + '><br></' + this.enterKey + '>' : '<br>';
+                    const brElement: HTMLElement = this.createElement('br');
+                    const newElement: HTMLElement = this.enterKey === 'BR' ? brElement : this.createElement(this.enterKey).appendChild(brElement).parentElement;
+                    this.inputElement.innerHTML = '';
+                    this.inputElement.appendChild(newElement);
+                    this.formatter.editorManager.nodeSelection.setCursorPoint(
+                        this.contentModule.getDocument(),
+                        brElement,
+                        0
+                    );
                     this.isCopyAll = false;
                 }
                 if (selection.rangeCount > 0 && this.contentModule.getDocument().activeElement.tagName !== 'INPUT' && this.inputElement.contains(this.contentModule.getDocument().activeElement) && (range.startContainer as HTMLElement).innerHTML === '<br>' && (range.startContainer as HTMLElement).textContent === '' ) {
@@ -2141,7 +2253,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.inputElement.innerHTML === '<br>')) {
             this.inputElement.innerHTML = getEditValue(getDefaultValue(this), this);
         }
-        const allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
+        const isMention: boolean = this.inputElement.classList.contains('e-mention');
+        const allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46 || e.which === 9 && isMention;
         const formatPainterCopy: boolean = e.key === 'C' && e.altKey && e.shiftKey;
         const formatPainterPaste: boolean = e.key === 'V' && e.altKey && e.shiftKey;
         if ((!formatPainterCopy && !formatPainterPaste) && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
@@ -2173,11 +2286,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return value;
     }
     /**
-     * This method will clean up the HTML against cross-site scripting attack and return the HTML as string.
-     * It's only applicable to editorMode as `HTML`.
+     * Sanitizes an HTML string to prevent cross-site scripting (XSS) attacks.
+     * This method is applicable when the editor mode is specifically set to `HTML`.
      *
-     * @param {string} value - Specifies the value that you want to sanitize.
-     * @returns {string} - specifies the the string value
+     * @param {string} value - The HTML content to be sanitized for security purposes.
+     * @returns {string} - The HTML content after being sanitized.
      */
     public sanitizeHtml(value: string): string {
         return this.serializeValue(value);
@@ -2310,35 +2423,39 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 const isImageDialogOpen: HTMLElement = this.contentModule.getDocument().querySelector('.e-rte-img-dialog');
                 if (!isNOU(this.pasteCleanupModule)) {
                     if (isNOU(isImageDialogOpen)) {
-                        this.notify(events.pasteClean, { args: e as ClipboardEvent });
+                        this.notify(events.pasteClean, { args: e as ClipboardEvent, isPlainPaste: this.isPlainPaste });
                     }
                 } else {
-                    console.warn('[WARNING] :: Module "pasteCleanup" is not available in RichTextEditor component! You either misspelled the module name or forgot to load it.');
-                    const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
-                    let value: string = null;
-                    let htmlValue: boolean = false;
-                    if (e && !isNOU((e as ClipboardEvent).clipboardData)) {
-                        value = (e as ClipboardEvent).clipboardData.getData('text/plain');
-                        htmlValue = (e as ClipboardEvent).clipboardData.getData('text/html').indexOf('MsoNormal') > 0;
+                    if (!this.isPlainPaste) {
+                        console.warn('[WARNING] :: Module "pasteCleanup" is not available in RichTextEditor component! You either misspelled the module name or forgot to load it.');
+                        const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
+                        let value: string = null;
+                        let htmlValue: boolean = false;
+                        if (e && !isNOU((e as ClipboardEvent).clipboardData)) {
+                            value = (e as ClipboardEvent).clipboardData.getData('text/plain');
+                            htmlValue = (e as ClipboardEvent).clipboardData.getData('text/html').indexOf('MsoNormal') > 0;
+                        }
+                        const file: File = e && (e as ClipboardEvent).clipboardData &&
+                            (e as ClipboardEvent).clipboardData.items.length > 0 ?
+                            (e as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
+                        if (value !== null) {
+                            this.notify(events.paste, {
+                                file: file,
+                                args: e,
+                                text: value,
+                                isWordPaste: htmlValue
+                            });
+                        }
+                        setTimeout(() => {
+                            this.formatter.onSuccess(this, args);
+                        }, 0);
                     }
-                    const file: File = e && (e as ClipboardEvent).clipboardData && (e as ClipboardEvent).clipboardData.items.length > 0 ?
-                        (e as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
-                    if (value !== null) {
-                        this.notify(events.paste, {
-                            file: file,
-                            args: e,
-                            text: value,
-                            isWordPaste: htmlValue
-                        });
-                    }
-                    setTimeout(() => {
-                        this.formatter.onSuccess(this, args);
-                    }, 0);
                 }
             } else {
                 e.preventDefault();
             }
         });
+        this.isPlainPaste = false;
     }
 
     /**
@@ -2372,7 +2489,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
-     * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
+     * Destroys the component by detaching or removing all event handlers,
+     * attributes, and CSS classes. It also clears the component's element content.
      *
      * @returns {void}
      */
@@ -2498,26 +2616,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Returns the HTML or Text inside the RichTextEditor.
+     * Retrieves the HTML or text content inside the RichTextEditor.
      *
-     * @returns {Element} - specifies the element.
+     * @returns {Element} - The element containing the content.
      */
     public getContent(): Element {
         return this.contentModule.getPanel();
     }
+
     /**
-     * Returns the text content as string.
+     * Retrieves the text content as a string.
      *
-     * @returns {string} - specifies the string value.
+     * @returns {string} - The plain text content.
      */
     public getText(): string {
         return this.contentModule.getText();
     }
 
     /**
-     * Returns the html value of the selected content as string.
+     * Retrieves the HTML representation of the selected content as a string.
      *
-     * @returns {string} - specifies the string value.
+     * @returns {string} - The HTML content of the selected area.
      */
     public getSelectedHtml(): string {
         let range: Range;
@@ -2532,7 +2651,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * It shows the inline quick toolbar
+     * Displays the inline quick toolbar.
      *
      * @returns {void}
      */
@@ -2548,7 +2667,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * It hides the inline quick toolbar
+     * Hides the inline quick toolbar.
      *
      * @returns {void}
      */
@@ -2913,7 +3032,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
-     * By default, prints all the pages of the RichTextEditor.
+     * Prints all the pages of the RichTextEditor by default.
      *
      * @returns {void}
      */
@@ -2940,7 +3059,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Refresh the view of the editor.
+     * Refreshes the view of the editor.
      *
      * @returns {void}
      * @public
@@ -2948,47 +3067,45 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public refreshUI(): void {
         this.renderModule.refresh();
     }
+
     /**
-     * Shows the Rich Text Editor component in full-screen mode.
+     * Displays the Rich Text Editor component in full-screen mode.
      *
      * @returns {void}
      */
     public showFullScreen(): void {
         this.fullScreenModule.showFullScreen();
     }
+
     /**
-     * Enables the give toolbar items in the Rich Text Editor component.
+     * Enables the specified toolbar items in the Rich Text Editor component.
      *
+     * @param {string | string[]} items - A single item or a collection of items to be enabled in the toolbar.
+     * @param {boolean} muteToolbarUpdate - Determines whether to mute updates of the toolbar item status in the Rich Text Editor.
      * @returns {void}
-     * @param {string | string[]} items - Specifies the single or collection of items
-     * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
-     * that you want to be enable in Rich Text Editor’s Toolbar.
-     *
      * @public
      */
     public enableToolbarItem(items: string | string[], muteToolbarUpdate?: boolean): void {
         this.toolbarModule.enableTBarItems(this.getBaseToolbarObject(), items, true, muteToolbarUpdate);
     }
+
     /**
-     * Disables the given toolbar items in the Rich Text Editor component.
+     * Disables the specified toolbar items in the Rich Text Editor component.
      *
+     * @param {string | string[]} items - A single item or a collection of items to be disabled in the toolbar.
+     * @param {boolean} muteToolbarUpdate - Determines whether to mute updates of the toolbar item status in the Rich Text Editor.
      * @returns {void}
-     * @param {string | string[]} items - Specifies the single or collection of items
-     * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
-     * that you want to be disable in Rich Text Editor’s Toolbar.
-     *
      * @public
      */
     public disableToolbarItem(items: string | string[], muteToolbarUpdate?: boolean): void {
         this.toolbarModule.enableTBarItems(this.getBaseToolbarObject(), items, false, muteToolbarUpdate);
     }
+
     /**
-     * Removes the give toolbar items from the Rich Text Editor component.
+     * Removes the specified toolbar items from the Rich Text Editor component.
      *
+     * @param {string | string[]} items - A single item or a collection of items to be removed from the toolbar.
      * @returns {void}
-     * @param {string | string[]} items - Specifies the single or collection of items
-     * that you want to be remove from Rich Text Editor’s Toolbar.
-     *
      * @public
      */
     public removeToolbarItem(items: string | string[]): void {
@@ -3192,9 +3309,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Retrieves the HTML from RichTextEditor.
+     * Retrieves the HTML content from the Rich Text Editor.
      *
-     * @returns {void}
+     * @returns {string} - The HTML content as a string. If XHTML is enabled, `null` is returned for empty content.
      * @public
      */
     public getHtml(): string {
@@ -3204,9 +3321,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Retrieves the Rich Text Editor's XHTML validated HTML content when `enableXhtml` property is enabled.
+     * Retrieves XHTML validated HTML content from the Rich Text Editor
+     * when the `enableXhtml` property is set to true.
      *
-     * @returns {void}
+     * @returns {string} - The XHTML validated HTML content as a string.
      * @public
      */
     public getXhtml(): string {
@@ -3218,7 +3336,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Shows the source HTML/MD markup.
+     * Toggles the display of the HTML/Markdown source code within the editor.
      *
      * @returns {void}
      * @public
@@ -3231,9 +3349,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Returns the maximum number of characters in the Rich Text Editor.
+     * Calculates the maximum number of characters currently in the Rich Text Editor.
      *
-     * @returns {void}
+     * @returns {number} - The total number of characters.
      * @public
      */
     public getCharCount(): number {
@@ -3249,9 +3367,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Show the dialog in the Rich Text Editor.
+     * Displays a specified dialog within the Rich Text Editor.
      *
-     * @param {DialogType} type - specifies the dialog type.
+     * @param {DialogType} type - The type of dialog to display.
      * @returns {void}
      * @public
      */
@@ -3270,9 +3388,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Close the dialog in the Rich Text Editor.
+     * Closes a specified dialog within the Rich Text Editor.
      *
-     * @param {DialogType} type - specifies the dialog type.
+     * @param {DialogType} type - The type of dialog to close.
      * @returns {void}
      * @public
      */
@@ -3616,13 +3734,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * invokeChangeEvent method
      *
      * @returns {void}
+     * @param {CustomEvent} args - The arguments associated with the content change event.
      * @hidden
      * @deprecated
      */
-    private contentChanged(): void {
+    private contentChanged(args: CustomEvent): void {
         const tempSpanToRemove: any = this.inputElement.querySelector('.tempSpan');
         if (tempSpanToRemove){
             detach(tempSpanToRemove);
+        }
+        if ( args && !isNOU(args.detail)  && args.detail.click) {
+            this.formatter.saveData();
         }
         if (this.autoSaveOnIdle) {
             if (!isNOU(this.saveInterval)) {
@@ -3825,10 +3947,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (formElement) {
             EventHandler.add(formElement, 'reset', this.resetHandler, this);
         }
-        // Cmd + Backspace triggers only the keydown event; the keyup event is not triggered.
-        if (navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-            EventHandler.add(this.inputElement, 'keydown', this.onKeyDown, this);
-        }
         EventHandler.add(this.inputElement, 'keyup', this.keyUp, this);
         EventHandler.add(this.inputElement, 'paste', this.onPaste, this);
         EventHandler.add(this.inputElement, 'content-changed', this.contentChanged, this);
@@ -3911,9 +4029,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const formElement: Element = closest(this.valueContainer, 'form');
         if (formElement) {
             EventHandler.remove(formElement, 'reset', this.resetHandler);
-        }
-        if (navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
-            EventHandler.remove(this.inputElement, 'keydown', this.onKeyDown);
         }
         EventHandler.remove(this.inputElement, 'keyup', this.keyUp);
         EventHandler.remove(this.inputElement, 'paste', this.onPaste);

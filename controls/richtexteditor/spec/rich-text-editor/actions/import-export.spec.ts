@@ -75,6 +75,48 @@ describe('Bug 905477: Script error occurred in import from word', () => {
         done();
     });
 });
+describe('Bug 908191: Action begin event cancel not working for import from document', () => {
+    let rteObj: RichTextEditor;
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['ImportWord']
+            },
+            importWord: {
+                serviceUrl: hostURL + 'api/RichTextEditor/ImportFromWord',
+            },
+            actionBegin: (e: any) => {
+                if (e.requestType === 'Import') {
+                    e.cancel = true;
+                }
+            }
+        });
+        done();
+    });
+    afterEach((done: Function) => {
+        destroy(rteObj);
+        done();
+    });
+    it('To check the action begin event cancel', (done: Function) => {
+        let rteEle: HTMLElement = rteObj.element;
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+        const args = {
+            e: {
+                currentTarget: {
+                    response: `<div class="Section0">
+                            <p style="text-align:left;page-break-inside:auto;page-break-after:auto;page-break-before:avoid;margin-top:0pt;margin-bottom:8pt;">
+                                <span lang="en-US" style="font-family:Aptos;font-size:26pt;text-transform:none;font-weight:bold;font-style:normal;font-variant:normal;text-decoration:none;line-height:107.916664%;">
+                                    CheckingggggWord
+                                </span>
+                            </p>
+                        </div>` }
+            }
+        };
+        expect((<any>rteObj).importExportModule.uploaderObj).toBeUndefined();
+        done();
+    });
+});
 describe('Export function', () => {
     let rteObj: RichTextEditor;
     beforeEach((done: Function) => {

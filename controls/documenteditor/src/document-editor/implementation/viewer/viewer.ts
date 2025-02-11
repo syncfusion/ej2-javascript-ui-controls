@@ -105,6 +105,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+     public isSpellCheckPending: boolean = false;
+    /**
+     * @private
+     */
     public owner: DocumentEditor;
     /**
      * @private
@@ -1696,8 +1700,10 @@ export class DocumentHelper {
             }
             if (char !== ' ' && char !== '\r' && char !== '\b' && char !== String.fromCharCode(27) && !ctrl) {
                 this.triggerSpellCheck = false;
+                this.isSpellCheckPending = true;
                 this.owner.editorModule.handleTextInput(char);
             } else if (char === ' ') {
+                this.isSpellCheckPending = false;
                 this.triggerSpellCheck = true;
                 this.owner.editorModule.handleTextInput(' ');
                 this.triggerSpellCheck = false;
@@ -1933,6 +1939,7 @@ export class DocumentHelper {
         this.layout.isDocumentContainsRtl = false;
         this.layout.isMultiColumnDoc = false;
         this.isMappedContentControlUpdated = true;
+        this.isSpellCheckPending = false;
         this.updateAuthorIdentity();
         for (let i: number = 0; i < this.pages.length; i++) {
             for (let j: number = 0; j < this.pages[i].bodyWidgets.length; j++) {
@@ -2000,7 +2007,6 @@ export class DocumentHelper {
             this.owner.selectionModule.isViewPasteOptions = false;
             this.owner.selectionModule.showHidePasteOptions(undefined, undefined);
         }
-        this.layout.isInitialLoad = false;
         this.owner.fireDocumentChange();
         this.owner.showHideRulers();
         setTimeout((): void => {
@@ -2015,6 +2021,7 @@ export class DocumentHelper {
         if (!isNullOrUndefined(picture_cc)) {
             this.owner.renderPictureContentControlElement(this.owner, false, false);
         }
+        this.layout.isInitialLoad = false;
     }
     /**
      * Fires on scrolling.
@@ -4118,7 +4125,7 @@ export class DocumentHelper {
                         page.currentPageNum = page.bodyWidgets[0].sectionFormat.pageStartingNumber + page.index;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
-                    if (!isNullOrUndefined(page.previousPage) && ((page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.currentPageNum === 1)
+                    if (!isNullOrUndefined(page.previousPage) && ((page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.currentPageNum >= 1)
                         || (this.isRestartNumbering && page.previousPage.currentPageNum !== 1))) {
                         if (page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering) {
                             this.isRestartNumbering = true;

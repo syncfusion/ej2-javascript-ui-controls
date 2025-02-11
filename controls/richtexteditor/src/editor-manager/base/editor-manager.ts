@@ -231,8 +231,13 @@ export class EditorManager {
             case 'verticalsplit':
                 this.observer.notify(CONSTANT.TABLE_VERTICAL_SPLIT, { item: exeValue, event: event, callBack: callBack });
                 break;
+            case 'dashed':
+                this.observer.notify(CONSTANT.TABLE_DASHED, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'alternate':
+                this.observer.notify(CONSTANT.TABLE_ALTERNATE, { item: exeValue, event: event, callBack: callBack });
+                break;
             }
-
             break;
         case 'font':
         case 'style':

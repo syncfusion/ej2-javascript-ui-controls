@@ -564,7 +564,9 @@ export class MeasureAnnotation {
         this.volumeThickness = this.pdfViewer.volumeSettings.thickness ? this.pdfViewer.volumeSettings.thickness : 1;
         this.unit = this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() as CalibrationUnit;
         this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
-        this.ratio = !isNullOrUndefined(this.ratio) ? this.ratio : 1 * this.pdfViewer.measurementSettings.scaleRatio;
+        if (isNullOrUndefined(this.ratio) || this.ratio !== this.pdfViewer.measurementSettings.scaleRatio) {
+            this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
+        }
         this.volumeDepth = this.pdfViewer.measurementSettings.depth;
         this.scaleRatioString = '1 ' + this.unit + ' = ' + this.ratio.toString() + ' ' + this.displayUnit;
     }

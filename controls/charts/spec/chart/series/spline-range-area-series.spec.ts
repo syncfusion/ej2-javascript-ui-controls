@@ -1079,7 +1079,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
                 let axis1: Element = document.getElementById('containerAxisLine_2');
                 let axisCollection: Element = document.getElementById('containerAxisInsideCollection');
-                expect(+axisCollection.childElementCount).toEqual(19);
+                expect(+axisCollection.childElementCount).toEqual(17);
                 let seriesCollection: Element = document.getElementById('containerSeriesCollection');
                 expect(+seriesCollection.childElementCount).toEqual(11);
 

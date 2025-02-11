@@ -881,37 +881,37 @@ export class PdfGraphics {
             } else {
                 matrix._translate(bounds.x, -(bounds.y + bounds.height));
             }
-            if (needScale) {
-                if (template._isAnnotationTemplate && template._needScale) {
-                    let scaleApplied: boolean = false;
-                    if (template._content && template._content.dictionary) {
-                        const dictionary: _PdfDictionary = template._content.dictionary;
-                        if (dictionary.has('Matrix') && dictionary.has('BBox')) {
-                            const templateMatrix: number[] = dictionary.getArray('Matrix');
-                            const templateBox: number[] = dictionary.getArray('BBox');
-                            if (templateMatrix && templateBox && templateMatrix.length > 5 && templateBox.length > 3) {
-                                const templateScaleX: number = Number.parseFloat(_numberToString(-templateMatrix[1]));
-                                const templateScaleY: number = Number.parseFloat(_numberToString(templateMatrix[2]));
-                                const roundScaleX: number = Number.parseFloat(_numberToString(scaleX));
-                                const roundScaleY: number = Number.parseFloat(_numberToString(scaleY));
-                                if (roundScaleX === templateScaleX &&
-                                    roundScaleY === templateScaleY &&
-                                    templateBox[2] === template._size[0] &&
-                                    templateBox[3] === template._size[1]) {
-                                    matrix = new _PdfTransformationMatrix();
-                                    matrix._translate(bounds.x - templateMatrix[4], -(bounds.y + templateMatrix[5]));
-                                    matrix._scale(1, 1);
-                                    scaleApplied = true;
-                                }
-                            }
+            let scaleApplied: boolean = false;
+            if (template._content && template._content.dictionary) {
+                const dictionary: _PdfDictionary = template._content.dictionary;
+                if (dictionary.has('Matrix') && dictionary.has('BBox')) {
+                    const templateMatrix: number[] = dictionary.getArray('Matrix');
+                    const templateBox: number[] = dictionary.getArray('BBox');
+                    if (templateMatrix && templateBox && templateMatrix.length > 5 && templateBox.length > 3) {
+                        const templateScaleX: number = Number.parseFloat(_numberToString(-templateMatrix[1]));
+                        const templateScaleY: number = Number.parseFloat(_numberToString(templateMatrix[2]));
+                        const roundScaleX: number = Number.parseFloat(_numberToString(scaleX));
+                        const roundScaleY: number = Number.parseFloat(_numberToString(scaleY));
+                        if (roundScaleX === templateScaleX &&
+                            roundScaleY === templateScaleY &&
+                            templateBox[2] === template._size[0] &&
+                            templateBox[3] === template._size[1] && template._isAnnotationTemplate
+                            && template._needScale && needScale) {
+                            matrix = new _PdfTransformationMatrix();
+                            matrix._translate(bounds.x - templateMatrix[4], -(bounds.y + templateMatrix[5]));
+                            matrix._scale(1, 1);
+                            scaleApplied = true;
+                        } else if (templateBox[0] !== 0 && templateBox[1] !== 0 && templateBox[0] === bounds.x &&
+                                   this._page && bounds.y + templateBox[1] === this._page._size[1]) {
+                            matrix._translate(bounds.x - templateBox[0], -(bounds.y + templateBox[1]));
+                            matrix._scale(scaleX, scaleY);
+                            scaleApplied = true;
                         }
                     }
-                    if (!scaleApplied) {
-                        matrix._scale(scaleX, scaleY);
-                    }
-                } else {
-                    matrix._scale(scaleX, scaleY);
                 }
+            }
+            if (needScale && !scaleApplied) {
+                matrix._scale(scaleX, scaleY);
             }
             this._sw._modifyCtm(matrix);
             let sourceDictionary: _PdfDictionary;

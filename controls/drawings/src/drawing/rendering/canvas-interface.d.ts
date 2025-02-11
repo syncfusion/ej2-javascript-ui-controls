@@ -126,3 +126,9 @@ export interface ImageAttributes extends BaseAttributes {
     alignment: ImageAlignment;
     printID?: string;
 }
+/** @private */
+export interface ImageEntry {
+    id: string;
+    image: HTMLImageElement;
+    canvasId: string;
+}

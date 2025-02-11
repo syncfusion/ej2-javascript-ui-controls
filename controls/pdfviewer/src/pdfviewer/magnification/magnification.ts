@@ -980,10 +980,11 @@ export class Magnification {
                 oldCanvasCollection[parseInt(i.toString(), 10)].parentElement.removeChild(oldCanvasCollection[parseInt(i.toString(), 10)]);
             }
         }
-        const newCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-        if (newCanvas) {
-            newCanvas.style.display = 'block';
-        }
+        // Styles need to be applied to both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+        ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'].forEach((id: string) => {
+            const canvas: HTMLElement = this.pdfViewerBase.getElement(`${id}${pageNumber}`);
+            canvas.style.setProperty('display', 'block');
+        });
     }
 
     private designNewCanvas(currentPageIndex: number): void {

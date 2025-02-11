@@ -501,3 +501,33 @@ describe('888232 - Blockquote toolbar icon and Format dropdown status checking',
         expect(format.formats).toBe('h1');
     });
 });
+
+describe('924326 - Both Bullet and Number Format Toolbar Icons Highlighted After Switching List Items to None', () => {
+    let innervalue = '<div id="div1"><ul style="list-style-type: none;"><li id="focusNode">Item 1</li><li>Item 2</li></ul></div>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+    });
+
+    afterAll(() => {
+        detach(divElement);
+    });
+
+    it('Should not highlight both Bullet List and Numbered List icons when list format is None', () => {
+        let node: Node = document.getElementById('focusNode');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 2, 2);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['8pt'], ['Arial']);
+
+        expect(format.unorderedlist).toEqual(true);
+        expect(format.orderedlist).toEqual(false);
+        expect(format.bulletFormatList).toEqual('None');
+        expect(format.numberFormatList).toEqual(null);
+    });
+});

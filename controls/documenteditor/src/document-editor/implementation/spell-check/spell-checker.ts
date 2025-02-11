@@ -722,15 +722,15 @@ export class SpellChecker {
         }
         if (jsonObject.HasSpellingError && isSamePage) {
             this.addErrorCollection(currentText, elementBox, jsonObject.Suggestions);
-
-            const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-            this.documentHelper.render.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
-            elementBox.isSpellChecked = true;
-            elementBox.isWrongWord = true;
+            if (currentText === elementBox.text.trim())
+            {
+                const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+                this.documentHelper.render.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
+                elementBox.isSpellChecked = true;
+            }
         } else {
             this.addCorrectWordCollection(currentText);
             elementBox.isSpellChecked = true;
-            elementBox.isWrongWord = false;
         }
     }
 
@@ -957,7 +957,6 @@ export class SpellChecker {
                 if (para.childWidgets[i] == elementBox.line) break;
                 lineY += (para.childWidgets[i] as LineWidget).height;
             }
-            elementBox.isWrongWord = true;
             if (elementBox.isRightToLeft) {
                 this.documentHelper.render.renderWavyLine(span, span.end.location.x, lineY, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
             } else {

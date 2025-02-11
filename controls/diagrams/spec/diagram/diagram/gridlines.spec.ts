@@ -5,7 +5,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { GridlinesModel, SnapSettingsModel } from '../../../src/diagram/diagram/grid-lines-model';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
-import { BpmnDiagrams, BpmnFlowModel, ComplexHierarchicalTree, ConnectorBridging, ConnectorConstraints, ConnectorModel, DataBinding, DiagramConstraints, DiagramContextMenu, DiagramTools, FlowchartLayout, HierarchicalTree, LayoutAnimation, LineDistribution, SelectorConstraints, UndoRedo } from '../../../src/diagram/index';
+import { BpmnDiagrams, BpmnFlowModel, ComplexHierarchicalTree, ConnectorBridging, ConnectorConstraints, ConnectorModel, DataBinding, DiagramConstraints, DiagramContextMenu, DiagramTools, FlipDirection, FlowchartLayout, HierarchicalTree, LayoutAnimation, LineDistribution, SelectorConstraints, UndoRedo } from '../../../src/diagram/index';
 Diagram.Inject(ConnectorBridging,DiagramContextMenu,DataBinding,LineDistribution,LayoutAnimation,UndoRedo,BpmnDiagrams,FlowchartLayout,HierarchicalTree,ComplexHierarchicalTree)
 /**
  * Gridlines
@@ -290,7 +290,7 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].height === undefined && diagram.nodes[0].shape !== undefined).toBe(true);
             expect(diagram.nodes[0].style !== undefined && diagram.nodes[0].ports !== undefined).toBe(true);
             expect(diagram.nodes[0].constraints === 5240814 && diagram.nodes[0].annotations !== undefined).toBe(true);
-            expect(diagram.nodes[0].fixedUserHandles !== undefined && diagram.nodes[0].flip === 'None').toBe(true);
+            expect(diagram.nodes[0].fixedUserHandles !== undefined && diagram.nodes[0].flip === FlipDirection.None).toBe(true);
             expect(diagram.nodes[0].flipMode === 'All' && diagram.nodes[0].tooltip !== undefined).toBe(true);
             expect(diagram.nodes[0].children === undefined && diagram.nodes[0].excludeFromLayout === false).toBe(true);
             expect(diagram.nodes[0].expandIcon !== undefined && diagram.nodes[0].collapseIcon !== undefined).toBe(true);

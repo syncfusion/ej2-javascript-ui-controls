@@ -395,7 +395,6 @@ th.e-multi-cells-select {
     cursor: pointer;
     display: block;
     float: none;
-    height: auto;
     margin: 5px auto;
     max-width: 100%;
     position: relative;

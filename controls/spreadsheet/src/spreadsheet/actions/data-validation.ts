@@ -6,7 +6,7 @@ import { getCell, setCell, getFormattedCellObject, getFormattedBarText, DateForm
 import { isHiddenRow, setRow, ColumnModel, beginAction, ActionEventArgs, getSwapRange, checkColumnValidation } from '../../workbook/index';
 import { CellFormatArgs, DefineNameModel, ExtendedRange, getData, isCellReference, parseLocaleNumber } from '../../workbook/index';
 import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, checkIsFormula, isReadOnly } from '../../workbook/index';
-import { getColumn, isLocked, validationHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
+import { getColumn, isLocked, updateHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
 import { dialog, locale, initiateDataValidation, invalidData, editOperation, keyUp, focus, removeElements } from '../common/index';
 import { formulaBarOperation, removeDataValidation, CellValidationEventArgs } from '../common/index';
 import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser, getNumericObject } from '@syncfusion/ej2-base';
@@ -19,6 +19,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { getBorderHeight, rowHeightChanged } from '../../spreadsheet/index';
+import { isHiddenCol, addHighlight, removeHighlight } from '../../workbook/index';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -75,11 +76,11 @@ export class DataValidation {
         }
         this.parent.on(initiateDataValidation, this.initiateDataValidationHandler, this);
         this.parent.on(invalidData, this.invalidDataHandler, this);
-        this.parent.on(isValidation, this.checkDataValidation, this);
+        this.parent.on(isValidation, this.isValidCellHandler, this);
         this.parent.on(activeCellChanged, this.listHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(removeDataValidation, this.removeValidationHandler, this);
-        this.parent.on(validationHighlight, this.invalidElementHandler, this);
+        this.parent.on(updateHighlight, this.updateHighlightHandler, this);
         this.parent.on(rowHeightChanged, this.listValidationHeightHandler, this);
         this.parent.on(addListValidationDropdown, this.addListValidationDropdownHandler, this);
     }
@@ -93,11 +94,11 @@ export class DataValidation {
         if (!this.parent.isDestroyed) {
             this.parent.off(initiateDataValidation, this.initiateDataValidationHandler);
             this.parent.off(invalidData, this.invalidDataHandler);
-            this.parent.off(isValidation, this.checkDataValidation);
+            this.parent.off(isValidation, this.isValidCellHandler);
             this.parent.off(activeCellChanged, this.listHandler);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(removeDataValidation, this.removeValidationHandler);
-            this.parent.off(validationHighlight, this.invalidElementHandler);
+            this.parent.off(updateHighlight, this.updateHighlightHandler);
             this.parent.off(rowHeightChanged, this.listValidationHeightHandler);
             this.parent.off(addListValidationDropdown, this.addListValidationDropdownHandler);
         }
@@ -128,7 +129,7 @@ export class DataValidation {
             this.parent.notify(beginAction, { eventArgs: args, action: 'removeValidation' });
         }
         if (!args.cancel) {
-            this.parent.notify(cellValidation, { range: range, isRemoveValidation: true, viewport: this.parent.viewport });
+            this.parent.notify(cellValidation, { range: range, isRemoveValidation: true });
             if (eventArgs.isAction) {
                 delete args.cancel;
                 this.parent.notify(completeAction, { eventArgs: args, action: 'removeValidation' });
@@ -168,25 +169,20 @@ export class DataValidation {
         }
     }
 
-    private invalidDataHandler(args: { isRemoveHighlight: boolean, range?: string, isPublic?: boolean }): void {
-        const eventArgs: { range: string, cancel: boolean } = { range: args.range || this.parent.dataValidationRange, cancel: false };
-        if (!eventArgs.range) {
-            return;
-        }
+    private invalidDataHandler(args: { isRemoveHighlight?: boolean, isPublic?: boolean }): void {
+        const eventArgs: { range: string, cancel: boolean } = { range: '', cancel: false };
         let actionArgs: ActionEventArgs;
+        const action: string = args.isRemoveHighlight ? removeHighlight : addHighlight;
         if (!args.isPublic) {
-            actionArgs = { eventArgs: eventArgs, action: args.isRemoveHighlight ? 'removeHighlight' : 'addHighlight' };
+            actionArgs = { eventArgs: eventArgs, action: action };
             this.parent.notify(beginAction, actionArgs);
             if (eventArgs.cancel) {
                 return;
             }
         }
-        if (args.isRemoveHighlight) {
-            this.parent.removeInvalidHighlight(eventArgs.range);
-        } else {
-            this.parent.addInvalidHighlight(eventArgs.range);
-        }
+        this.parent.notify(action, { range: eventArgs.range, isAction: true });
         if (!args.isPublic) {
+            actionArgs.preventAction = true;
             this.parent.notify(completeAction, actionArgs);
         }
     }
@@ -509,9 +505,8 @@ export class DataValidation {
             }
             if (isNew) {
                 for (let i: number = indexes[1]; i <= indexes[3]; i++) {
-                    const column: ColumnModel = getColumn(sheet, i);
-                    const validation: ValidationModel = column && column.validation;
-                    if (checkColumnValidation(column, indexes[0], i) && validation) {
+                    if (checkColumnValidation(sheet.columns[i as number], indexes[0], i)) {
+                        const validation: ValidationModel = sheet.columns[i as number].validation;
                         isNew = false;
                         type = validation.type;
                         operator = validation.operator;
@@ -522,9 +517,11 @@ export class DataValidation {
                         const currRange: number[] = getRangeIndexes(sheet.selectedRange);
                         const prevRange: number[] = [0, i, 0, i];
                         const cell: CellModel = getCell(currRange[0], currRange[1], sheet, null, true);
-                        if (validation && !cell.validation) {
-                            value1 = getUpdatedFormula(currRange, prevRange, sheet, this.parent, { formula: value1 });
-                            if (value2 !== '') {
+                        if (!cell.validation) {
+                            if (checkIsFormula(value1)) {
+                                value1 = getUpdatedFormula(currRange, prevRange, sheet, this.parent, { formula: value1 });
+                            }
+                            if (checkIsFormula(value2)) {
                                 value2 = getUpdatedFormula(currRange, prevRange, sheet, this.parent, { formula: value2 });
                             }
                         }
@@ -1013,7 +1010,6 @@ export class DataValidation {
         const dlgCont: HTMLElement = dlgEle.querySelector('.e-validation-dlg');
         const allowDataCont: HTMLElement = dlgCont.querySelector('.e-allowdata');
         const valuesCont: HTMLElement = dlgCont.querySelector('.e-values');
-        const ignoreBlank: HTMLElement = dlgCont.querySelector('.e-ignoreblank');
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dataCont: HTMLElement = allowDataCont.querySelector('.e-data');
         const clearChildEle: Function = (element: HTMLElement): void => {
@@ -1116,27 +1112,39 @@ export class DataValidation {
             }
             if (valueArr[0].startsWith('=')) {
                 let address: string = valueArr[0].substring(1);
-                if (address.includes(':')) {
-                    let isSheetNameValid: boolean;
-                    if (valueArr[0].includes('!')) {
-                        let sheetName: string = address.substring(0, address.lastIndexOf('!'));
-                        address = address.substring(address.lastIndexOf('!') + 1);
-                        if (sheetName.startsWith('\'') && sheetName.endsWith('\'')) {
-                            sheetName = sheetName.substring(1, sheetName.length - 1);
-                        }
-                        isSheetNameValid = getSheetIndex(this.parent, sheetName) > -1;
+                const definedName: DefineNameModel = this.parent.definedNames.find((item: DefineNameModel) => item.name === address);
+                if (definedName) {
+                    address = definedName.refersTo.substring(1);
+                }
+                let isSheetNameValid: boolean;
+                if (address.includes('!')) {
+                    const sheetTokenIdx: number = address.lastIndexOf('!');
+                    let sheetName: string = address.substring(0, sheetTokenIdx);
+                    address = address.substring(sheetTokenIdx + 1);
+                    if (sheetName.startsWith('\'') && sheetName.endsWith('\'')) {
+                        sheetName = sheetName.substring(1, sheetName.length - 1);
+                    }
+                    isSheetNameValid = getSheetIndex(this.parent, sheetName) > -1;
+                    if (!definedName) {
                         valArr[0] = '=' + sheetName + '!' + address;
-                    } else {
-                        isSheetNameValid = true;
                     }
+                } else {
+                    isSheetNameValid = true;
+                }
+                if (!address.includes(':') && isCellReference(address)) {
+                    address = `${address}:${address}`;
+                }
+                let isSingleRowOrCol: boolean;
+                if (isSheetNameValid) {
                     const cellRef: string[] = address.split(':');
-                    const isSingleCol: boolean = address.match(/[a-z]/gi) &&
-                        cellRef[0].replace(/[0-9]/g, '') === cellRef[1].replace(/[0-9]/g, '');
-                    const isSingleRow: boolean = address.match(/\d/g) && cellRef[0].replace(/\D/g, '') === cellRef[1].replace(/\D/g, '');
-                    isValid = isSheetNameValid && (isSingleCol || isSingleRow);
-                    if (!isValid) {
-                        errorMsg = l10n.getConstant('DialogError');
+                    if (cellRef.length === 2) {
+                        isSingleRowOrCol = address.match(/[a-z]/gi) && cellRef[0].replace(/[0-9]/g, '') === cellRef[1].replace(/[0-9]/g, '')
+                            || address.match(/\d/g) && cellRef[0].replace(/\D/g, '') === cellRef[1].replace(/\D/g, '');
                     }
+                }
+                isValid = isSingleRowOrCol;
+                if (!isValid) {
+                    errorMsg = l10n.getConstant('DialogError');
                 }
             } else if (valueArr[0].length > 256) {
                 isValid = false;
@@ -1162,10 +1170,10 @@ export class DataValidation {
         }
         if (isValid) {
             const sheet: SheetModel = this.parent.getActiveSheet();
-            const validDlg: { isValidate: boolean, errorMsg: string } = this.isDialogValidator(valArr, type, operator);
-            if (operator === 'Between' && validDlg.isValidate && !isNaN(parseFloat(valArr[0])) && !isNaN(parseFloat(valArr[1])) &&
+            const validDlg: { isValid: boolean, errorMsg: string } = this.isDialogValidator(valArr, type, operator);
+            if (operator === 'Between' && validDlg.isValid && !isNaN(parseFloat(valArr[0])) && !isNaN(parseFloat(valArr[1])) &&
                 parseFloat(valArr[0]) > parseFloat(valArr[1])) {
-                validDlg.isValidate = false;
+                validDlg.isValid = false;
                 validDlg.errorMsg = l10n.getConstant('MinMaxError');
             }
             if (type === 'Custom') {
@@ -1175,13 +1183,13 @@ export class DataValidation {
                     this.parent.notify(commputeFormulaValue, eventArgs);
                     const customValue: string = eventArgs.value;
                     if (errorStrings.indexOf(customValue) > -1) {
-                        validDlg.isValidate = false;
+                        validDlg.isValid = false;
                         validDlg.errorMsg = l10n.getConstant('InvalidFormula');
                     }
                 }
             }
             errorMsg = validDlg.errorMsg;
-            isValid = validDlg.isValidate;
+            isValid = validDlg.isValid;
             if (isValid) {
                 const args: CellValidationEventArgs = { range: sheet.name + '!' + range, value1: valArr[0], value2: valArr[1] || '',
                     ignoreBlank: ignoreBlank, type: <ValidationType>type, operator: <ValidationOperator>operator, inCellDropDown:
@@ -1190,7 +1198,7 @@ export class DataValidation {
                 if (!args.cancel) {
                     this.parent.notify(
                         cellValidation, { rules: { type: args.type, operator: args.operator, value1: args.value1, value2: args.value2,
-                            ignoreBlank: args.ignoreBlank, inCellDropDown: args.inCellDropDown }, range: args.range });
+                            ignoreBlank: args.ignoreBlank, inCellDropDown: args.inCellDropDown }, range: args.range, isAction: true });
                     delete args.cancel;
                     if (!this.parent.element.getElementsByClassName('e-validation-error-dlg')[0]) {
                         if (dialogInst.dialogInstance) {
@@ -1275,11 +1283,11 @@ export class DataValidation {
         return <ValidationType>value;
     }
 
-    private isDialogValidator(values: string[], type: ValidationType, operator?: string): { isValidate: boolean, errorMsg: string } {
+    private isDialogValidator(values: string[], type: ValidationType, operator?: string): { isValid: boolean, errorMsg: string } {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let count: number = 0;
         let isEmpty: boolean = false;
-        let formValidation: { isValidate: boolean, errorMsg: string };
+        let formValidation: { isValid: boolean, errorMsg: string };
         if (type === 'List') {
             isEmpty = values.length > 0 ? false : true;
         } else {
@@ -1303,16 +1311,16 @@ export class DataValidation {
                     value = values[idx as number];
                 }
                 formValidation = this.formatValidation(value, type, true);
-                if (formValidation.isValidate) {
+                if (formValidation.isValid) {
                     count = count + 1;
                 } else {
                     break;
                 }
             }
-            formValidation.isValidate = count === values.length ? true : false;
+            formValidation.isValid = count === values.length ? true : false;
             return formValidation;
         } else {
-            return { isValidate: false, errorMsg: l10n.getConstant('EmptyError') };
+            return { isValid: false, errorMsg: l10n.getConstant('EmptyError') };
         }
     }
 
@@ -1333,234 +1341,164 @@ export class DataValidation {
         return listValArr;
     }
 
-    private isValidationHandler(args: CheckCellValidArgs): { isValidate: boolean, errorMsg: string } {
-        const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        args.value = isNullOrUndefined(args.value) ? '' : args.value;
-        let isValidate: boolean;
-        let errorMsg: string;
+    private checkValidationHandler(args: CheckCellValidArgs, validation: ValidationModel): boolean {
         const enterValue: string | number = args.value.toString();
         const sheet: SheetModel = this.parent.sheets[args.sheetIdx];
-        let validation: ValidationModel;
         const cell: CellModel = getCell(args.range[0], args.range[1], sheet, null, true);
-        const column: ColumnModel = getColumn(sheet, args.range[1]);
-        if (cell.validation) {
-            validation = cell.validation;
-        } else if (checkColumnValidation(column, args.range[0], args.range[1])) {
-            validation = column.validation;
+        let value1: string | number = validation.value1;
+        if (value1 === undefined) {
+            return true;
         }
-        if (validation) {
-            let value1: string | number = validation.value1;
-            let value2: string | number = validation.value2;
-            if (!cell.validation) {
-                const currIdx: number[] = args.range;
-                const prevIdx: number[] = [0, args.range[1], 0, args.range[3]];
-                let updatedValue: string = getUpdatedFormula(currIdx, prevIdx, sheet, this.parent, { formula: value1 });
-                value1 = updatedValue;
-                if (!isNullOrUndefined(value2) && value2 !== '') {
-                    updatedValue = getUpdatedFormula(currIdx, prevIdx, sheet, this.parent, { formula: value2 });
-                    value2 = updatedValue;
+        let value2: string | number = validation.value2;
+        if (!cell.validation) {
+            const currIdx: number[] = args.range;
+            const prevIdx: number[] = [0, args.range[1], 0, args.range[3]];
+            if (checkIsFormula(value1)) {
+                value1 = getUpdatedFormula(currIdx, prevIdx, sheet, this.parent, { formula: value1 });
+            }
+            if (checkIsFormula(value2)) {
+                value2 = getUpdatedFormula(currIdx, prevIdx, sheet, this.parent, { formula: value2 });
+            }
+        }
+        if (validation.type !== 'List') {
+            if (checkIsFormula(value1)) {
+                const eventArgs1: { value: string } = { value: value1 };
+                this.parent.notify(commputeFormulaValue, eventArgs1);
+                value1 = eventArgs1.value;
+            }
+            if (checkIsFormula(value2)) {
+                const eventArgs2: { value: string } = { value: value2 };
+                this.parent.notify(commputeFormulaValue, eventArgs2);
+                value2 = eventArgs2.value;
+            }
+            if (checkIsFormula(args.value)) {
+                const eventArgs: { value: string } = { value: args.value };
+                this.parent.notify(commputeFormulaValue, eventArgs);
+                args.value = eventArgs.value;
+            }
+        }
+        let value: string | number = args.value;
+        const opt: string = validation.operator || 'Between';
+        const type: ValidationType = validation.type || 'WholeNumber';
+        const ignoreBlank: boolean = isNullOrUndefined(validation.ignoreBlank) ? true : validation.ignoreBlank;
+        if (ignoreBlank && enterValue === '') {
+            return true;
+        } else {
+            const isDateTimeType: boolean = type === 'Date' || type === 'Time';
+            if (args.value) {
+                if (isDateTimeType || validation.type === 'TextLength') {
+                    if (!isNumber(args.value)) {
+                        value = args.value = this.getDateAsNumber(args, args.value);
+                    }
+                } else {
+                    const numObj: LocaleNumericSettings = args.isEdit && <LocaleNumericSettings>getNumericObject(this.parent.locale);
+                    const numVal: string | number = this.parseValidationValue(args.value, numObj);
+                    if (numVal !== args.value && isNumber(numVal)) {
+                        value = args.value = numVal.toString();
+                    }
                 }
             }
-            if (validation.type !== 'List') {
-                if (checkIsFormula(value1)) {
-                    const eventArgs1: { value: string } = { value: value1 };
-                    this.parent.notify(commputeFormulaValue, eventArgs1);
-                    value1 = eventArgs1.value;
+            let isValid: boolean = this.formatValidation(args.value, type).isValid;
+            if (isValid) {
+                isValid = false;
+                if (isDateTimeType) {
+                    if (value1 && !isNumber(value1)) {
+                        value1 = this.getDateAsNumber(args, value1);
+                    }
+                    if (value2 && !isNumber(value2)) {
+                        value2 = this.getDateAsNumber(args, value2);
+                    }
+                } else if (validation.type === 'TextLength') {
+                    value = args.value.toString().length.toString();
                 }
-                if (checkIsFormula(value2)) {
-                    const eventArgs2: { value: string } = { value: value2 };
-                    this.parent.notify(commputeFormulaValue, eventArgs2);
-                    value2 = eventArgs2.value;
-                }
-                if (checkIsFormula(args.value)) {
-                    const eventArgs: { value: string } = { value: args.value };
-                    this.parent.notify(commputeFormulaValue, eventArgs);
-                    args.value = eventArgs.value;
-                }
-            }
-            let value: string | number = args.value;
-            const opt: string = validation.operator || 'Between';
-            const type: ValidationType = validation.type || 'WholeNumber';
-            const ignoreBlank: boolean = isNullOrUndefined(validation.ignoreBlank) ? true : validation.ignoreBlank;
-            if (ignoreBlank && enterValue === '') {
-                isValidate = true;
-            } else {
-                const isDateTimeType: boolean = type === 'Date' || type === 'Time';
-                if (args.value) {
-                    if (isDateTimeType || validation.type === 'TextLength') {
-                        if (!isNumber(args.value)) {
-                            value = args.value = this.getDateAsNumber(args, args.value);
+                if (type === 'List') {
+                    const val: string = args.value.toString();
+                    const isNumVal: boolean = isNumber(val);
+                    const numObj: LocaleNumericSettings = isNumVal && <LocaleNumericSettings>getNumericObject(this.parent.locale);
+                    if (value1.startsWith('=')) {
+                        let listVal: string;
+                        const data: { [key: string]: string }[] = this.getListDataSource(validation);
+                        for (let idx: number = 0; idx < data.length; idx++) {
+                            listVal = data[idx as number].text.toString();
+                            if (enterValue === listVal || val === listVal || (isNumVal &&
+                                val === this.parseValidationValue(listVal, numObj).toString())) {
+                                isValid = true;
+                                break;
+                            }
                         }
                     } else {
-                        const numObj: LocaleNumericSettings = args.isEdit && <LocaleNumericSettings>getNumericObject(this.parent.locale);
-                        const numVal: string | number = this.parseValidationValue(args.value, numObj);
-                        if (numVal !== args.value && isNumber(numVal)) {
-                            value = args.value = numVal.toString();
+                        const listValues: string[] = this.getListOfValues(value1);
+                        for (let idx: number = 0; idx < listValues.length; idx++) {
+                            if (enterValue === listValues[idx as number] || val === listValues[idx as number] || (isNumVal &&
+                                val === this.parseValidationValue(listValues[idx as number], numObj).toString())) {
+                                isValid = true;
+                                break;
+                            }
                         }
                     }
-                }
-                const formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
-                isValidate = formValidation.isValidate;
-                errorMsg = formValidation.errorMsg;
-                if (isValidate) {
-                    isValidate = false;
-                    if (isDateTimeType) {
-                        if (value1 && !isNumber(value1)) {
-                            value1 = this.getDateAsNumber(args, value1);
-                        }
-                        if (value2 && !isNumber(value2)) {
-                            value2 = this.getDateAsNumber(args, value2);
-                        }
-                    } else if (validation.type === 'TextLength') {
-                        value = args.value.toString().length.toString();
+                    if (!isValid && ignoreBlank && val === '') {
+                        isValid = true;
                     }
-                    if (type === 'List') {
-                        const val: string = args.value.toString();
-                        const isNumVal: boolean = isNumber(val);
-                        const numObj: LocaleNumericSettings = isNumVal && <LocaleNumericSettings>getNumericObject(this.parent.locale);
-                        if (value1.startsWith('=')) {
-                            let listVal: string;
-                            const data: { [key: string]: string }[] = this.getListDataSource(validation);
-                            for (let idx: number = 0; idx < data.length; idx++) {
-                                listVal = data[idx as number].text.toString();
-                                if (enterValue === listVal || val === listVal || (isNumVal &&
-                                    val === this.parseValidationValue(listVal, numObj).toString())) {
-                                    isValidate = true;
-                                    break;
-                                }
-                            }
+                } else if (type === 'Custom') {
+                    const numVal: number = parseFloat(value1.toString());
+                    if (isNumber(numVal)) {
+                        if (numVal === 0) {
+                            const cellRefVal: { value: string } = { value: validation.value1 };
+                            this.parent.notify(getCellRefValue, cellRefVal); // To consider empty cell references cases.
+                            isValid = cellRefVal.value !== '' ? false : true;
                         } else {
-                            const listValues: string[] = this.getListOfValues(value1);
-                            for (let idx: number = 0; idx < listValues.length; idx++) {
-                                if (enterValue === listValues[idx as number] || val === listValues[idx as number] || (isNumVal &&
-                                    val === this.parseValidationValue(listValues[idx as number], numObj).toString())) {
-                                    isValidate = true;
-                                    break;
-                                }
-                            }
+                            isValid = true;
                         }
-                        if (!isValidate && ignoreBlank && val === '') {
-                            isValidate = true;
-                        }
-                    } else if (type === 'Custom') {
-                        const numVal: number = parseFloat(value1.toString());
-                        if (isNumber(numVal)) {
-                            if (numVal === 0) {
-                                const cellRefVal: { value: string } = { value: validation.value1 };
-                                this.parent.notify(getCellRefValue, cellRefVal); // To consider empty cell references cases.
-                                isValidate = cellRefVal.value !== '' ? false : true;
-                            } else {
-                                isValidate = true;
-                            }
-                        } else if (value1.toUpperCase() === 'TRUE') {
-                            isValidate = true;
-                        } else {
-                            isValidate = false;
-                        }
-                        if (!isValidate && ignoreBlank && value1 === '') {
-                            isValidate = true;
-                        }
+                    } else if (value1.toUpperCase() === 'TRUE') {
+                        isValid = true;
                     } else {
-                        if (type === 'Decimal' || type === 'Time') {
-                            value = parseFloat(value.toString());
-                            value1 = parseFloat(value1.toString());
-                            value2 = value2 ? parseFloat(value2.toString()) : null;
-                        } else {
-                            value = parseInt(value.toString(), 10);
-                            value1 = parseInt(value1.toString(), 10);
-                            value2 = value2 ? parseInt(value2.toString(), 10) : null;
-                        }
-                        switch (opt) {
-                        case 'EqualTo':
-                            if (value === value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'NotEqualTo':
-                            if (value !== value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'Between':
-                            if (value >= value1 && value <= value2) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'NotBetween':
-                            if (value >= value1 && value <= value2) {
-                                isValidate = false;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = true;
-                            }
-                            break;
-                        case 'GreaterThan':
-                            if (value > value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'LessThan':
-                            if (value < value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'GreaterThanOrEqualTo':
-                            if (value >= value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'LessThanOrEqualTo':
-                            if (value <= value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        default:
-                            break;
-                        }
+                        isValid = false;
+                    }
+                    if (!isValid && ignoreBlank && value1 === '') {
+                        isValid = true;
+                    }
+                } else {
+                    if (type === 'Decimal' || type === 'Time') {
+                        value = parseFloat(value.toString());
+                        value1 = parseFloat(value1.toString());
+                        value2 = value2 ? parseFloat(value2.toString()) : null;
+                    } else {
+                        value = parseInt(value.toString(), 10);
+                        value1 = parseInt(value1.toString(), 10);
+                        value2 = value2 ? parseInt(value2.toString(), 10) : null;
+                    }
+                    switch (opt) {
+                    case 'EqualTo':
+                        isValid = value === value1;
+                        break;
+                    case 'NotEqualTo':
+                        isValid = value !== value1;
+                        break;
+                    case 'Between':
+                        isValid = value >= value1 && value <= value2;
+                        break;
+                    case 'NotBetween':
+                        isValid = !(value >= value1 && value <= value2);
+                        break;
+                    case 'GreaterThan':
+                        isValid = value > value1;
+                        break;
+                    case 'LessThan':
+                        isValid = value < value1;
+                        break;
+                    case 'GreaterThanOrEqualTo':
+                        isValid = value >= value1;
+                        break;
+                    case 'LessThanOrEqualTo':
+                        isValid = value <= value1;
+                        break;
+                    default:
+                        break;
                     }
                 }
             }
+            return isValid;
         }
-        errorMsg = l10n.getConstant('ValidationError');
-        if (isValidate && ((cell && cell.validation && cell.validation.isHighlighted) ||
-            (column && column.validation && column.validation.isHighlighted))) {
-            const style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
-            if (!isHiddenRow(sheet, args.range[0])) {
-                this.parent.notify(
-                    applyCellFormat, <CellFormatArgs>{ style: style, rowIdx: args.range[0], colIdx: args.range[1],
-                        isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: true, td: args.td });
-            }
-        }
-        return { isValidate: isValidate, errorMsg: errorMsg };
     }
 
     private parseValidationValue(val: string, numObj: LocaleNumericSettings): string | number {
@@ -1579,39 +1517,47 @@ export class DataValidation {
         return formatArgs.value;
     }
 
-    private checkDataValidation(args: CheckCellValidArgs): void {
-        const cell: CellModel = getCell(args.range[0], args.range[1], this.parent.getActiveSheet());
-        args.td = args.td || this.parent.getCell(args.range[0], args.range[1]);
-        args.sheetIdx = args.sheetIdx || this.parent.activeSheetIndex;
-        const formulaArgs : InvalidFormula = { skip: false, value: '' };
-        if (cell && cell.validation) {
-            if (checkIsFormula(cell.validation.value1) &&
-            !isCellReference(cell.validation.value1.substring(1, cell.validation.value1.length)) &&
-            cell.validation.value1.indexOf('(') > - 1) {
-                let val: string = cell.validation.value1;
+    private isValidCellHandler(args: CheckCellValidArgs): void {
+        const sheet: SheetModel = this.parent.sheets[args.sheetIdx];
+        const cell: CellModel = getCell(args.range[0], args.range[1], sheet);
+        const formulaArgs: InvalidFormula = { skip: false, value: '' };
+        let validation: ValidationModel = cell && cell.validation;
+        if (validation) {
+            if (checkIsFormula(validation.value1) && !isCellReference(validation.value1.substring(1, validation.value1.length)) &&
+                validation.value1.indexOf('(') > - 1) {
+                let val: string = validation.value1;
                 val = val.substring(val.indexOf('=') + 1, val.indexOf('('));
                 formulaArgs.value = val.toUpperCase();
                 this.parent.notify(formulaInValidation, formulaArgs);
             }
-            if (!formulaArgs.skip && checkIsFormula(cell.validation.value2) &&
-            !isCellReference(cell.validation.value2.substring(1, cell.validation.value2.length)) &&
-            cell.validation.value1.indexOf('(') > - 1) {
-                let val2: string = cell.validation.value2;
+            if (!formulaArgs.skip && checkIsFormula(validation.value2) &&
+                !isCellReference(validation.value2.substring(1, validation.value2.length)) && validation.value1.indexOf('(') > - 1) {
+                let val2: string = validation.value2;
                 val2 = val2.substring(val2.indexOf('=') + 1, val2.indexOf('('));
                 formulaArgs.value = val2.toUpperCase();
                 this.parent.notify(formulaInValidation, formulaArgs);
             }
         }
         if (!formulaArgs.skip) {
-            const isValid: { isValidate: boolean, errorMsg: string } = this.isValidationHandler(args);
-            if (!isValid.isValidate && args.isEdit) {
-                this.validationErrorHandler(isValid.errorMsg);
+            args.value = isNullOrUndefined(args.value) ? '' : args.value;
+            if (!validation && checkColumnValidation(sheet.columns[args.range[1]], args.range[0], args.range[1])) {
+                validation = sheet.columns[args.range[1]].validation;
             }
-            args.isValid = isValid.isValidate;
+            if (validation) {
+                args.isValid = this.checkValidationHandler(args, validation);
+                if (args.isValid) {
+                    if (validation.isHighlighted && !isHiddenRow(sheet, args.range[0]) && !isHiddenCol(sheet, args.range[1])) {
+                        this.updateHighlightHandler(
+                            { rowIdx: args.range[0], colIdx: args.range[1], isRemoveHighlightedData: true, isRemoveValidation: true });
+                    }
+                } else if (args.isEdit) {
+                    this.validationErrorHandler(this.parent.serviceLocator.getService<L10n>(locale).getConstant('ValidationError'));
+                }
+            }
         }
     }
 
-    private formatValidation(value: string, type: ValidationType, isDialogValidator?: boolean): { isValidate: boolean, errorMsg: string } {
+    private formatValidation(value: string, type: ValidationType, isDialogValidator?: boolean): { isValid: boolean, errorMsg: string } {
         const sheetPanel: HTMLElement = this.parent.element.getElementsByClassName('e-sheet-panel')[0] as HTMLElement;
         let errorMsg: string;
         const formEle: HTMLElement = this.parent.createElement('form', { id: 'formId', className: 'form-horizontal' });
@@ -1675,28 +1621,43 @@ export class DataValidation {
             break;
         }
         this.formObj = new FormValidator('#formId', options);
-        const isValidate: boolean = this.formObj.validate();
+        const isValid: boolean = this.formObj.validate();
         sheetPanel.removeChild(sheetPanel.getElementsByClassName('form-horizontal')[0]);
-        return { isValidate: isValidate, errorMsg: errorMsg };
+        return { isValid: isValid, errorMsg: errorMsg };
     }
 
-    private invalidElementHandler(
-        args: { isRemoveHighlightedData: boolean, rowIdx: number, colIdx: number, td?: HTMLElement }): void {
-        const rowIdx: number = args.rowIdx;
-        const colIdx: number = args.colIdx;
-        const isRemoveHighlightedData: boolean = args.isRemoveHighlightedData;
-        if (!isRemoveHighlightedData) {
-            this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx, td: args.td
-            });
-        } else if (isRemoveHighlightedData) {
-            const style: CellStyleModel =
-                this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]);
-            this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: style, rowIdx: rowIdx, colIdx: colIdx, td: args.td
-            });
+    private updateHighlightHandler(
+        args: {
+            rowIdx: number, colIdx: number, cell?: CellModel, validation?: ValidationModel, td?: HTMLElement, style?: CellStyleModel,
+            isRemoveHighlightedData?: boolean, isRemoveValidation?: boolean, removeOnValidData?: boolean
+        }): void {
+        let isValid: boolean;
+        if (!args.isRemoveValidation) {
+            const validEventArgs: CheckCellValidArgs = {
+                value: args.cell.value || <unknown>args.cell.value === 0 ? args.cell.value : '',
+                range: [args.rowIdx, args.colIdx], sheetIdx: this.parent.activeSheetIndex
+            };
+            isValid = this.checkValidationHandler(validEventArgs, args.validation);
         }
-
+        if (isValid) {
+            if (args.removeOnValidData) {
+                const cellEle: HTMLElement = this.parent.getCell(args.rowIdx, args.colIdx);
+                if (cellEle && cellEle.style.backgroundColor) {
+                    args.td = cellEle;
+                    args.style = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.rowIdx, args.colIdx]);
+                    this.parent.notify(applyCellFormat, <CellFormatArgs>args);
+                    args.td = null;
+                }
+            }
+        } else {
+            if (args.isRemoveHighlightedData) {
+                args.style = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.rowIdx, args.colIdx]);
+                this.parent.notify(applyCellFormat, <CellFormatArgs>args);
+            } else {
+                args.style = { backgroundColor: '#ffff00', color: '#ff0000' };
+                this.parent.notify(applyCellFormat, <CellFormatArgs>args);
+            }
+        }
     }
 
     private validationErrorHandler(error: string): void {

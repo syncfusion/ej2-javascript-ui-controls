@@ -2,6 +2,7 @@ import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { IRichTextEditor, IColorPickerEventArgs, IDropDownClickArgs } from '../base/interface';
 import { IAdvanceListItem } from '../../common';
+import { isSafari } from '../../common/util';
 
 /**
  * `ToolbarAction` module is used to toolbar click action
@@ -26,6 +27,11 @@ export class ToolbarAction {
     }
 
     private toolbarClick(args: IDropDownClickArgs): void {
+        if (isSafari() && this.parent.formatter.editorManager.nodeSelection &&
+            this.parent.formatter.editorManager.nodeSelection.get(this.parent.contentModule.getDocument()).rangeCount > 0 &&
+            !this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
+            this.parent.notify(events.selectionRestore, {});
+        }
         if (isNOU(args.item)) {
             return;
         }

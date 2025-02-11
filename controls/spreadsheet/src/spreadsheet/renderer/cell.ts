@@ -1,14 +1,14 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote } from '../common/index';
-import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue, createNoteIndicator } from '../common/index';
+import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, createNoteIndicator } from '../common/index';
 import { removeAllChildren, setRowEleHeight } from '../common/index';
-import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress, CheckCellValidArgs, isValidation, validationHighlight } from '../../workbook/common/index';
+import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, isImported } from '../../workbook/index';
-import { getRowHeight, setRowHeight, getCell, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
+import { getRowHeight, getCell, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
 import { addClass, attributes, extend, compile, isNullOrUndefined, detach, append } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, applyCF } from '../../workbook/common/index';
-import { getTypeFromFormat, activeCellMergedRange, getCellIndexes, updateView, skipHiddenIdx } from '../../workbook/index';
+import { getTypeFromFormat, activeCellMergedRange, updateHighlight, getCellIndexes, updateView, skipHiddenIdx } from '../../workbook/index';
 import { checkIsFormula, ApplyCFArgs, NumberFormatArgs, ExtendedCellModel, calculateFormula } from '../../workbook/common/index';
 import { isInMultipleRange, addListValidationDropdown } from './../../workbook/common/index';
 /**
@@ -269,22 +269,8 @@ export class CellRenderer implements ICellRenderer {
             sheet.columns[args.colIdx].validation);
         if (validation && (!validation.address || isInMultipleRange(validation.address, args.rowIdx, args.colIdx))) {
             if (validation.isHighlighted) {
-                const sheetIdx: number = this.parent.activeSheetIndex;
-                if (validation && this.parent.allowDataValidation) {
-                    const cValue: string = args.cell && (args.cell.value || <unknown>args.cell.value === 0) ? args.cell.value : '';
-                    const validEventArgs: CheckCellValidArgs = {
-                        value: cValue, range: [args.rowIdx, args.colIdx],
-                        sheetIdx: sheetIdx, td: args.td, isValid: true
-                    };
-                    this.parent.notify(isValidation, validEventArgs);
-                    if (!validEventArgs.isValid) {
-                        if (!isHiddenRow(sheet, args.rowIdx) && sheetIdx === this.parent.activeSheetIndex) {
-                            this.parent.notify(validationHighlight, {
-                                isRemoveHighlightedData: false, rowIdx: args.rowIdx, colIdx: args.colIdx, td: args.td
-                            });
-                        }
-                    }
-                }
+                args.validation = validation;
+                this.parent.notify(updateHighlight, args);
             }
             if (validation.type === 'List' && !args.isRefresh && args.address === sheet.activeCell) {
                 args.validation = validation;

@@ -26,6 +26,7 @@ export interface FormatOptions {
     dateSeperator?: string;
     isIslamic?: boolean;
     weekOfYear?: string;
+    firstDayOfWeek?: number;
 }
 const timeSetter: Object = {
     m: 'getMinutes',
@@ -74,6 +75,7 @@ export class DateFormat {
         const numObject: Object = getValue('parserObject.numbers', dependable);
         const dateObject: Object = dependable.dateObject;
         const formatOptions: FormatOptions = { isIslamic: base.islamicRegex.test(option.calendar) };
+        formatOptions.firstDayOfWeek = base.getWeekData(culture, cldr);
         if (isBlazor() && option.isServerRendered) {
             option = base.compareBlazorDateFormats(option, culture);
         }
@@ -249,7 +251,7 @@ export class DateFormat {
                 break;
             case 'W':
                 isNumber = true;
-                curval = base.getWeekOfYear(value);
+                curval = base.getWeekOfYear(value, options.firstDayOfWeek);
                 break;
             default:
                 ret += match;

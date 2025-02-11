@@ -105,6 +105,8 @@ export class CommandHandler {
     public diagram: Diagram;
     /** @private */
     public canUpdateTemplate: boolean = false;
+    /** @private */
+    public cloningInProgress: boolean = false;
 
     private childTable: {} = {};
     private objectStore: any = [];
@@ -1437,7 +1439,10 @@ export class CommandHandler {
                         if (copy.shape && copy.shape.type === 'Bpmn') {
                             (copy as Node).processId = '';
                         }
+                        //To indicate the node cloning which helps to avoid alignment of child nodes with flip.
+                        this.cloningInProgress = true;
                         const newNode: NodeModel = this.cloneNode(copy as NodeModel, multiSelect);
+                        this.cloningInProgress = false;
                         copiedObject.push(newNode);
                         //bpmn text annotations will not be pasted
                         if (newNode) {

@@ -813,4 +813,8 @@
   .e-device.e-image-editor .e-ie-drop-area .e-ie-drop-info {
     top: calc(50% + 60px);
   }
+
+  .e-image-editor.e-control.e-readonly {
+    opacity: 1 !important; /* stylelint-disable-line declaration-no-important */
+  }
 }

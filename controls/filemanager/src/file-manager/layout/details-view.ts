@@ -775,7 +775,10 @@ export class DetailsView {
     private removePathColumn(isRefresh: boolean): void {
         const len: number = this.gridObj.columns.length;
         const columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
-        if (columnData[len - 1].field && (columnData[len - 1].field === 'filterPath')) {
+        const filterPathInSettings: boolean = this.parent.detailsViewSettings.columns.some(
+            (col: ColumnModel) => col.field === 'filterPath'
+        );
+        if (columnData[len - 1].field && (columnData[len - 1].field === 'filterPath') && !filterPathInSettings) {
             /* istanbul ignore next */
             if (!isNullOrUndefined(this.gridObj.sortSettings.columns[0]) && this.gridObj.sortSettings.columns[0].field === 'filterPath') {
                 if (this.parent.sortOrder !== 'None') {

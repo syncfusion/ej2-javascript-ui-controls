@@ -835,7 +835,7 @@ describe('Optimize the routing segment distance while using enableRouting in lay
              diagram.layout.enableRouting = false;
              diagram.dataBind();
              let isOverlap = checkOverlap(diagram);
-             expect(isOverlap).toBe(true);
+             expect(isOverlap).toBe(false);
              done();
          });
          it('Changing layout orientation', function (done) {

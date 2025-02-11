@@ -61,7 +61,7 @@ import { SnapSettingsModel } from './diagram/grid-lines-model';
 import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel, UmlClassMethodModel, UmlClassAttributeModel, UmlEnumerationMemberModel, UmlClassModel, UmlClassifierShapeModel, BasicShapeModel, FlowShapeModel, PathModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType, TextAnnotationDirection, ConnectorConstraints, DecoratorShapes } from './enum/enum';
+import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType, TextAnnotationDirection, ConnectorConstraints, DecoratorShapes, FlipMode } from './enum/enum';
 import { RendererAction, State } from './enum/enum';
 import { BlazorAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
@@ -4569,7 +4569,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * getPathdata from path data storage to access the path elements points
      * @returns {PointModel[]} - Ruturns points of the path data
      * @param {string} key - Path data as key
-     * @public method
+     *
+     * @private
      */
     public getPathData(key: string): PointModel[] {
         // 930450: Diagram Taking Too Long to Load Due to Complex Hierarchical Tree Layout with Path Nodes
@@ -4586,7 +4587,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns {void} - Set Path data method
      * @param {string} key - Path data as key
      * @param {PointModel[]} data - Path data's points
-     * @public method
+     *
+     * @private
      */
     public setPathData(key: string, data: PointModel[]): void {
         // 930450: Diagram Taking Too Long to Load Due to Complex Hierarchical Tree Layout with Path Nodes
@@ -8269,8 +8271,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         const child: Node = this.nameTable[obj.children[i]];
                         this.updateStackProperty(obj, child, i); canvas.children.push(child.wrapper);
                         canvas.elementActions = canvas.elementActions | ElementAction.ElementIsGroup;
-                        child.wrapper.flip = child.wrapper.flip === 'None' ?
-                            obj.wrapper.flip : child.wrapper.flip;
+                        child.wrapper.flip = child.wrapper.flip ^= 
+                            obj.wrapper.flip;
                     }
                 }
             }
@@ -8320,8 +8322,44 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 canvas.arrange(canvas.desiredSize, true);
             } else { canvas.arrange(canvas.desiredSize); }
         }
-        if (obj.wrapper.flip !== 'None' && obj.wrapper.elementActions & ElementAction.ElementIsGroup) {
-            alignElement(obj.wrapper, obj.wrapper.offsetX, obj.wrapper.offsetY, this, obj.wrapper.flip);
+        if (obj.wrapper.flip !== FlipDirection.None) {
+            if (obj.children && obj.children.length > 0) {
+                for (let i: number = 0; i < obj.children.length; i++) {
+                    let node: NodeModel = this.nameTable[obj.children[i]];
+                    if (node) {
+                        if (!this.refreshing && !this.commandHandler.cloningInProgress && !(this.diagramActions & DiagramAction.UndoRedo)) {
+                            node.flip ^= obj.flip;
+                            node.flipMode = obj.flipMode;
+                        }
+                        if (node.flipMode !== 'None' && node.flipMode !== 'Label' && node.flipMode !== 'LabelText' && node.flipMode !== 'LabelAndLabelText') {
+                            this.updatePorts(node as Node, node.flip);
+                        } else {
+                            this.updatePorts(node as Node, FlipDirection.None);
+                        }
+                        this.applyWrapperFlip(node);
+                        node.wrapper.measure(new Size(node.wrapper.bounds.width, node.wrapper.bounds.height), node.id, this.onLoadImageSize.bind(this));
+                        node.wrapper.arrange(node.wrapper.desiredSize);
+                    }
+                }
+                let groupWrapperCanvas: any = obj.wrapper.children[obj.wrapper.children.length-1];
+                groupWrapperCanvas.flip = obj.wrapper.flip;
+                groupWrapperCanvas.flipMode = obj.wrapper.flipMode;
+                for(let j: number = 0; j < groupWrapperCanvas.children.length; j++){
+                    var wrapperChild = groupWrapperCanvas.children[j];
+                    if (wrapperChild instanceof TextElement) {
+                        if (obj.flipMode !== 'Port' && obj.flipMode !== 'None') {
+                            wrapperChild.flip = obj.wrapper.flip;
+                            wrapperChild.flipMode = obj.wrapper.flipMode;
+                        }
+                    }
+                }
+                if (!this.refreshing && !this.commandHandler.cloningInProgress && !(this.diagramActions & DiagramAction.UndoRedo)) {
+                    alignElement(obj.wrapper, obj.wrapper.offsetX, obj.wrapper.offsetY, this, obj.wrapper.flip, undefined, undefined, true);
+                }
+            } else {
+                //To apply flip and flip mode for the text elements of node.
+                this.applyWrapperFlip(obj);
+            }
         }
         if (obj.shape.type === 'Bpmn') {
             if ((obj.shape as BpmnShape).shape === 'TextAnnotation') {
@@ -8347,7 +8385,35 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.updateChildPosition(obj);
         }
     }
-
+    private applyWrapperFlip(obj: NodeModel) {
+        obj.wrapper.flip = obj.flip;
+        obj.wrapper.flipMode = obj.flipMode;
+        obj.wrapper.children[0].flip = obj.flip;
+        obj.wrapper.children[0].flipMode = obj.flipMode;
+        for (let i=0;i<obj.wrapper.children.length;i++) {
+            let wrapperChild = obj.wrapper.children[i];
+            if(wrapperChild instanceof Canvas) {
+                //To update the flip and flipmode for the node wrapper childs.
+                this.applyWrapperCanvasFlip(wrapperChild,obj);
+            }
+            else {
+                wrapperChild.flip = obj.flip;
+                wrapperChild.flipMode = obj.flipMode;
+            }
+        }
+    }
+    private applyWrapperCanvasFlip(wrapper: Canvas, obj: NodeModel){
+        for (let i: number = 0; i < wrapper.children.length; i++) {
+            var wrapperChild = wrapper.children[parseInt(i.toString(), 10)];
+            if(wrapperChild instanceof Canvas) {
+                this.applyWrapperCanvasFlip(wrapperChild,obj);
+            }
+            else if (obj.flipMode !== 'None') {
+                wrapperChild.flip = obj.flip;
+                wrapperChild.flipMode = obj.flipMode;
+            }
+        }
+    }
     private addBpmnAnnotationConnector(node: NodeModel, wrapper: Container) {
         if ((node as any).parentObj instanceof Diagram || (node as any).parentObj instanceof Lane) {
             let bpmnAnnotation: BpmnShape = (node.shape as BpmnShape);
@@ -10540,10 +10606,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         for (let i: number = 0; i < selectedItems.length; i++) {
             switch (flipValue) {
             case 'horizontal':
-                selectedItems[parseInt(i.toString(), 10)].flip = 'Horizontal';
+                selectedItems[parseInt(i.toString(), 10)].flip = FlipDirection.Horizontal;
                 break;
             case 'vertical':
-                selectedItems[parseInt(i.toString(), 10)].flip = 'Vertical';
+                selectedItems[parseInt(i.toString(), 10)].flip = FlipDirection.Vertical;
                 break;
             }
         }
@@ -11362,7 +11428,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (node.offsetX !== undefined) {
             oldBpmnOffsetX = oldObject.offsetX;
             newBpmnOffsetX = node.offsetX;
-            if (actualObject.wrapper.flip !== 'None') {
+            if (actualObject.wrapper.flip !== FlipDirection.None) {
                 if (actualObject.offsetX !== actualObject.wrapper.offsetX && oldObject.offsetX !== undefined) {
                     const offsetX = node.offsetX - oldObject.offsetX;
                     actualObject.wrapper.offsetX = actualObject.wrapper.offsetX + offsetX;
@@ -11381,7 +11447,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (node.offsetY !== undefined) {
             oldBpmnOffsetY = oldObject.offsetY;
             newBpmnOffsetY = node.offsetY;
-            if (actualObject.wrapper.flip !== 'None') {
+            if (actualObject.wrapper.flip !== FlipDirection.None) {
                 if (actualObject.offsetY !== actualObject.wrapper.offsetY && oldObject.offsetY !== undefined) {
                     const offsetY = node.offsetY - oldObject.offsetY;
                     actualObject.wrapper.offsetY = actualObject.wrapper.offsetY + offsetY;
@@ -11429,53 +11495,29 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             sizeChanged = true;
         }
         if (node.flip !== undefined) {
-            actualObject.wrapper.flip = node.flip;
+            const horizontal: boolean = ((node.flip & FlipDirection.Horizontal) ^
+                (actualObject.wrapper.flip & FlipDirection.Horizontal)) === FlipDirection.Horizontal;
+            const vertical: boolean = ((node.flip & FlipDirection.Vertical) ^
+                (actualObject.wrapper.flip & FlipDirection.Vertical)) === FlipDirection.Vertical;
+            if (horizontal) {
+                actualObject.wrapper.flip ^=  FlipDirection.Horizontal;
+            }
+            if (vertical) {
+                actualObject.wrapper.flip ^= FlipDirection.Vertical;
+            }
             update = true;
             updateConnector = true;
-            if (actualObject.wrapper.elementActions & ElementAction.ElementIsGroup) {
-                alignElement(actualObject.wrapper, actualObject.offsetX, actualObject.offsetY, this, node.flip);
-                if (actualObject && actualObject.children) {
-                    for (const child of actualObject.children) {
-                        const updateNode: Node = this.nameTable[`${child}`];
-                        updateNode.wrapper.flip = node.flip;
-                        this.updatePorts(updateNode, node.flip);
-                    }
-                }
-                //EJ2-826617 - Flip option for BPMN node
-                else {
-                    this.updatePorts(actualObject, actualObject.flip);
-                }
-            } else {
-                // flips the port according to node flip direction
-                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All' ||
-                    actualObject.flipMode === 'PortAndLabel' || actualObject.flipMode === 'PortAndLabelText')) {
-                    this.updatePorts(actualObject, node.flip);
-                }
-                //EJ2-826617 - Flip 'None' is not working properly
-                else if (actualObject.flip === 'None') {
-                    this.updatePorts(actualObject, node.flip);
-                }
-            }
+            alignElement(actualObject.wrapper, actualObject.offsetX, actualObject.offsetY, this, undefined, horizontal, vertical);
+            //To update the port and text wrapper element flip
+            this.updateWrapperChildFlip(actualObject);
         }
-        // EJ2-71981 - Flip mode "Port" is not working properly while dragging multiselected node
         if (node.flipMode !== undefined) {
-            actualObject.wrapper.flipMode = node.flipMode;
+            let changeFlipMode: string = '';
+            changeFlipMode = actualObject.wrapper.flipMode = node.flipMode;
             update = true;
             updateConnector = true;
-            // flips the port according to node flip direction
-            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All' ||
-                actualObject.flipMode === 'PortAndLabel' || actualObject.flipMode === 'PortAndLabelText')) {
-                this.updatePorts(actualObject, actualObject.flip);
-            }
-            //EJ2-826617 - Flip mode 'Label' does not triggers the port
-            else if (actualObject.flipMode === 'Label' || actualObject.flipMode === 'LabelText' ||
-                actualObject.flipMode === 'LabelAndLabelText') {
-                this.updatePorts(actualObject, 'None');
-            }
-            //EJ2-826617 - Flip mode 'None' is not working properly
-            else if (actualObject.flipMode === 'None') {
-                this.updatePorts(actualObject, actualObject.flipMode);
-            }
+            //To update the port and text wrapper element flip mode
+            this.updateWrapperChildFlip(actualObject, changeFlipMode as FlipMode);
         }
         if (node.rotateAngle !== undefined && (actualObject.constraints & NodeConstraints.Rotate)) {
             if (actualObject.children && rotate) {
@@ -11521,6 +11563,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 const index: number = Number(key); update = true; const changedObject: PointPortModel = node.ports[`${key}`];
                 const actualPort: PointPortModel = actualObject.ports[parseInt(index.toString(), 10)];
                 this.updatePort(changedObject, actualPort, actualObject.wrapper);
+                if(actualObject.flip !== FlipDirection.None) {
+                    if (actualObject.flipMode === 'Port' || actualObject.flipMode === 'PortAndLabel' || actualObject.flipMode === 'PortAndLabelText' || actualObject.flipMode === 'All') {
+                        this.updatePorts(actualObject,actualObject.flip);
+                    }
+                }
                 updateConnector = true;
             }
         }
@@ -11636,7 +11683,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateDocks(actualObject, this);
             }
-            if (!node.annotations || !actualObject.processId) {
+            if ((!node.annotations || !actualObject.processId) && node.flip === undefined) {
                 this.updateGroupOffset(actualObject);
             }
             // if (existingBounds.equals(existingBounds, actualObject.wrapper.outerBounds) === false) { this.updateQuad(actualObject); }
@@ -11725,6 +11772,63 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             };
             //Removed isBlazor code
             this.triggerEvent(DiagramEvent.propertyChange, args);
+        }
+    }
+    private updateWrapperChildFlip(actualObject: Node, changeFlipMode?: FlipMode){
+        if (actualObject && actualObject.children && actualObject.children.length > 0) {
+            for (let i: number = 0; i < actualObject.children.length; i++) {
+                const child: string = actualObject.children[parseInt(i.toString(), 10)];
+                const updateNode = this.nameTable[`${child}`];
+                let modifiedFlipMode: string = '';
+                if (!changeFlipMode) {
+                    modifiedFlipMode = updateNode.flipMode;
+                } else {
+                    modifiedFlipMode = changeFlipMode;
+                    updateNode.wrapper.flipMode = modifiedFlipMode;
+                    updateNode.flipMode = modifiedFlipMode;
+                }
+                if (modifiedFlipMode === 'None' || modifiedFlipMode === 'Label' || modifiedFlipMode === 'LabelText' || modifiedFlipMode === 'LabelAndLabelText') {
+                    this.updatePorts(updateNode, FlipDirection.None);
+                }
+                else {
+                    this.updatePorts(updateNode, updateNode.wrapper.flip);
+                }
+                //To update the wrapper of node with flip and flip mode.
+                this.updateWrapperFlip(updateNode.wrapper, updateNode);
+            }
+
+        }
+        changeFlipMode = actualObject.flipMode;
+        if (changeFlipMode === 'None' || changeFlipMode === 'Label' || changeFlipMode === 'LabelText' || changeFlipMode === 'LabelAndLabelText') {
+            this.updatePorts(actualObject, FlipDirection.None);
+        }
+        else {
+            this.updatePorts(actualObject, actualObject.wrapper.flip);
+        }
+        let wrapperCanvas: Canvas;
+        if (actualObject.children) {
+            wrapperCanvas = actualObject.wrapper.children[actualObject.wrapper.children.length-1] as Canvas;
+        } else {
+            wrapperCanvas = actualObject.wrapper as Canvas;
+        }
+        wrapperCanvas.flip = actualObject.wrapper.flip;
+        wrapperCanvas.flipMode = actualObject.flipMode;
+        //To update the wrapper of node with flip and flip mode.
+        this.updateWrapperFlip(wrapperCanvas, actualObject);
+    }
+    private updateWrapperFlip(wrapperCanvas: Canvas, obj: NodeModel) {
+        for (let k: number = 0; k < wrapperCanvas.children.length;k++) {
+            const wrapperChild: DiagramElement =  wrapperCanvas.children[parseInt(k.toString(), 10)];
+            if (wrapperChild instanceof TextElement) {
+                if (obj.flipMode !== 'None' && obj.flipMode !== 'Port') {
+                    wrapperChild.flip = obj.wrapper.flip;
+                    wrapperChild.flipMode = obj.flipMode;
+                } else {
+                    wrapperChild.flip = FlipDirection.None;
+                }
+            } else if (wrapperChild instanceof Canvas) {
+                this.applyWrapperCanvasFlip(wrapperChild, obj);
+            }
         }
     }
     //To update text annotation position while dragging the text annotation's parent node.
@@ -11836,6 +11940,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let portWrapper: DiagramElement = this.getWrapper(actualObject.wrapper, actualPort.id);
                 portWrapper = updatePortEdges(portWrapper, flip, actualPort);
                 portWrapper.relativeMode = 'Point';
+                if (actualObject.wrapper.measureChildren === undefined) {
+                    actualObject.wrapper.measureChildren = false;
+                }
                 portWrapper.measure(new Size(portWrapper.width, portWrapper.height));
                 portWrapper.arrange(portWrapper.desiredSize);
             }
@@ -11844,10 +11951,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private updateFlipOffset(element: Container, diffX: number, diffY: number, flip: FlipDirection): void {
         if (element.hasChildren()) {
             for (const child of element.children) {
-                if (flip === 'Horizontal' || flip === 'Both') {
+                if (flip === FlipDirection.Horizontal || flip === FlipDirection.Both) {
                     child.flipOffset.x = child.flipOffset.x + diffX;
                 }
-                if (flip === 'Vertical' || flip === 'Both') {
+                if (flip === FlipDirection.Vertical || flip === FlipDirection.Both) {
                     child.flipOffset.y = child.flipOffset.y + diffY;
                 }
                 if (child instanceof Canvas || child instanceof Container) {

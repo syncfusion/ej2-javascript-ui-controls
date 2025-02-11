@@ -55,7 +55,9 @@ export type Action =
     'columnstate' |
     'infiniteScroll' |
     'stringfilterrequest' |
-    'booleanfilterrequest';
+    'booleanfilterrequest' |
+    'batchDelete' |
+    'batchCancel';
 
 
 

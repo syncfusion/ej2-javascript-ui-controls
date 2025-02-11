@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.2.4 (2025-02-04)
+## 28.2.5 (2025-02-11)
+
+### AI AssistView
+
+#### Bug Fixes
+
+- `#I686430` - Now the issue with scrollbar position when loaded initially using the `messageTemplate` and `loadOnDemand` property enabled has been resolved.
+
+## 28.1.41 (2025-01-21)
 
 ### AI AssistView
 

@@ -15,63 +15,29 @@ export interface IParent {
     [key: string]: any;
 }
 
-/**
- * To get nameSpace value from the desired object.
- *
- * @param {string} nameSpace - String value to the get the inner object
- * @param {any} obj - Object to get the inner object value.
- * @returns {any} - To get nameSpace value from the desired object.
- * @private
- */
-export function getValue(nameSpace: string, obj: any): any {
-    /* eslint-disable  @typescript-eslint/no-explicit-any */
-    let value: any = obj;
-    const splits: string[] = nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
-
-    for (let j: number = 0; j < splits.length && !isUndefined(value); j++) {
-        value = value[splits[j as number]];
-    }
-    return value;
-}
-
-/**
- * To set value for the nameSpace in desired object.
- *
- * @param {string} nameSpace - String value to get the inner object
- * @param {any} value - Value that you need to set.
- * @param {any} obj - Object to get the inner object value.
- * @returns {void} - To set value for the nameSpace in desired object.
- * @private
- */
-export function setValue(nameSpace: string, value: any, obj: any): any {
-    const keyValues: string[] = nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
-    const start: any = obj || {};
-    let fromObj: any = start;
-    let j: number;
-    const length: number = keyValues.length;
-    let key: string;
-
-    for (j = 0; j < length; j++) {
-        key = keyValues[j as number];
-
-        if (j + 1 === length) {
-            fromObj[`${key}`] = value === undefined ? {} : value;
-        } else if (isNullOrUndefined(fromObj[`${key}`])) {
-            fromObj[`${key}`] = {};
-        }
-
-        fromObj = fromObj[`${key}`];
-    }
-
-    return start;
-}
-
 export class ModuleLoader {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private parent: any;
     private loadedModules: ModuleDeclaration[] = [];
     constructor(parent: IParent) {
         this.parent = parent;
+    }
+
+    private setModule(nameSpace: string, value: any, obj: any): any {
+        const keyValues: string[] = nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
+        const start: any = obj || {};
+        let fromObj: any = start;
+        let j: number;
+        const length: number = keyValues.length;
+        let key: string;
+        for (j = 0; j < length; j++) {
+            key = keyValues[j as number];
+            if (j + 1 === length) {
+                fromObj[`${key}`] = value === undefined ? {} : value;
+            }
+            fromObj = fromObj[`${key}`];
+        }
+        return start;
     }
 
     /**
@@ -98,11 +64,7 @@ export class ModuleLoader {
                 if (module.prototype.getModuleName() === modl.member && !this.isModuleLoaded(modName)) {
                     const moduleObject: Object = this.createInstance(module, modl.args);
                     const memberName: string = this.getMemberName(modName);
-                    if (modl.isProperty) {
-                        setValue(memberName, module, this.parent);
-                    } else {
-                        setValue(memberName, moduleObject, this.parent);
-                    }
+                    this.setModule(memberName, moduleObject, this.parent);
                     const loadedModule: ModuleDeclaration = modl;
                     loadedModule.member = memberName;
                     this.loadedModules.push(loadedModule);
@@ -125,6 +87,15 @@ export class ModuleLoader {
         return new (Function.prototype.bind.apply(classFunction, arrayParam));
     }
 
+    private getModule(nameSpace: string, obj: any): any {
+        /* eslint-disable  @typescript-eslint/no-explicit-any */
+        let value: any = obj;
+        const splits: string[] = nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
+        for (let j: number = 0; j < splits.length && !isUndefined(value); j++) {
+            value = value[splits[j as number]];
+        }
+        return value;
+    }
 
     /**
      * To remove the created object while control is destroyed
@@ -135,7 +106,7 @@ export class ModuleLoader {
     public clean(): void {
         for (const modules of this.loadedModules) {
             if (!modules.isProperty) {
-                getValue(modules.member, this.parent).destroy();
+                this.getModule(modules.member, this.parent).destroy();
             }
         }
         this.loadedModules = [];
@@ -154,7 +125,7 @@ export class ModuleLoader {
         });
         for (const moduleName of removeModule) {
             if (!moduleName.isProperty) {
-                getValue(moduleName.member, this.parent).destroy();
+                this.getModule(moduleName.member, this.parent).destroy();
             }
             this.loadedModules.splice(this.loadedModules.indexOf(moduleName), 1);
             this.deleteObject(this.parent, moduleName.member);

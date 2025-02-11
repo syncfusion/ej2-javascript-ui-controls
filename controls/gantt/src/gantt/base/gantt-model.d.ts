@@ -84,7 +84,6 @@ export interface GanttModel extends ComponentModel{
      * Specifies whether to auto calculate the start and end dates based on factors such as working time, holidays, weekends, and task dependencies.
      *
      * @default true
-     * @deprecated This method is deprecated. Use `updateOffsetOnTaskbarEdit` this property instead.
      */
     autoCalculateDateScheduling?: boolean;
 

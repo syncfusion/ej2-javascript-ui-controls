@@ -577,7 +577,7 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
      * @default "{color: 'transparent', width: 0}"
      */
 
-    @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
+    @Complex<BorderModel>({ color: '', width: 0 }, Border)
     public border: BorderModel;
 
     /**

@@ -44,8 +44,8 @@ export class ToolbarStatus {
         for (let index: number = 0; index < nodes.length; index++) {
             while (nodes[index as number].nodeType === 3 && range.startContainer.nodeType === 3 && nodes[index as number].parentNode &&
                 nodes[index as number].parentNode.lastElementChild && nodes[index as number].parentNode.lastElementChild.nodeName !== 'BR' &&
-                this.getImmediateBlockNode(nodes[index as number].parentNode as Node) &&
-                this.getImmediateBlockNode(nodes[index as number].parentNode as Node).textContent.replace(/\u200B/g, '').length === 0 &&
+                (this.getImmediateBlockNode(nodes[index as number].parentNode as Node)) &&
+                (this.getImmediateBlockNode(nodes[index as number].parentNode as Node)).textContent.replace(/\u200B/g, '').length === 0 &&
                 range.startContainer.textContent.replace(/\u200B/g, '').length === 0 &&
                 nodeSelection.get(docElement).toString().replace(/\u200B/g, '').length === 0) {
                 nodes[index as number] = nodes[index as number].parentNode.lastElementChild.firstChild;
@@ -382,9 +382,9 @@ export class ToolbarStatus {
             return 'Lower Roman';
         } else if (list === 'upper-roman') {
             return 'Upper Roman';
-        }else if (list === 'lower-greek') {
+        } else if (list === 'lower-greek') {
             return 'Lower Greek';
-        }else if (list === 'none') {
+        } else if (list === 'none' && this.isOrderedList(node)) {
             return 'None';
         } else if (this.isOrderedList(node)) {
             return true;
@@ -399,7 +399,7 @@ export class ToolbarStatus {
             return 'Circle';
         } else if (list === 'square') {
             return 'Square';
-        } else if (list === 'none') {
+        } else if (list === 'none' && this.isUnorderedList(node)) {
             return 'None';
         } else if (list === 'disc') {
             return 'Disc';

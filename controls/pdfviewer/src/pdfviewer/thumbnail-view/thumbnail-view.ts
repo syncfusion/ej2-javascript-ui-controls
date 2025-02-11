@@ -1,5 +1,6 @@
 import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
 import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
 
 /**
  * The `ThumbnailView` module is used to handle thumbnail view navigation of PDF viewer.
@@ -285,10 +286,10 @@ export class ThumbnailView {
             for (let count: number = proxy.startIndex; count < proxy.thumbnailLimit; count++) {
                 const currentPageImage: HTMLImageElement = this.getThumbnailImageElement(count);
                 if ((currentPageImage && currentPageImage.src === '') || (isNullOrUndefined(currentPageImage) && !isNullOrUndefined(this.pdfViewer.pageOrganizer))) {
-                    this.pdfViewerBase.pdfViewerRunner.postMessage({
+                    this.pdfViewerBase.pdfViewerRunner.addTask({
                         pageIndex: count,
                         message: 'renderThumbnail'
-                    });
+                    }, TaskPriorityLevel.Medium);
                 }
             }
             this.isThumbnailViewOpen();

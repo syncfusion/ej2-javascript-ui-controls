@@ -268,4 +268,31 @@ describe(' Inline Quick Toolbar - ', () => {
             destroy(rteObj);
         });
     });
+
+    describe('921263: Toolbar opens on Text selection when show on selection is set to false', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: '<span id="rte">RTE</span>'
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(' Test - enable as false the inline toolbar dynamically', (done) => {
+            rteObj.inlineMode.enable = false;
+            rteObj.dataBind();
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent(pEle, 'mouseup');
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(0);
+                done();
+            }, 200);
+        });
+    });
 });

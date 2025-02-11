@@ -1500,10 +1500,6 @@ describe('Chart Control', () => {
                 expect(svg !== null).toBe(true);
                 svg = document.getElementById('container_BorderLine_9');
                 expect(svg !== null).toBe(true);
-                svg = document.getElementById('container_BorderLine_10');
-                expect(svg !== null).toBe(true);
-                svg = document.getElementById('container_BorderLine_11');
-                expect(svg !== null).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

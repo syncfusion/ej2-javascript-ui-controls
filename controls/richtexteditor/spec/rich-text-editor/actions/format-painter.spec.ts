@@ -8,6 +8,7 @@ import { ActionBeginEventArgs, RichTextEditor } from '../../../src/rich-text-edi
 import { Button } from '@syncfusion/ej2-buttons';
 import { Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
+import { EditorManager } from '../../../src/editor-manager/index';
 
 
 const copyKeyBoardEventArgs: any = {
@@ -2586,4 +2587,50 @@ describe('Format Painter Module', () => {
             }, 400);
         });
     });
+    describe('924337: Script Error Occurs After Inserting Emoji Picker in Selected Clean Formatted Paragraph Text', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let editorObj: EditorManager;
+        let originalConsoleError: { (...data: any[]): void; (...data: any[]): void; };
+        let errorSpy: jasmine.Spy;
+        let innerHTML: string = `<div id="content-edit"><h1>Welcome to the Syncfusion Rich Text Editor</h1><p id="testing">The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p></div>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+                value: innerHTML
+              });
+              rteEle = rteObj.element;
+              editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+              originalConsoleError = console.error;
+              errorSpy = jasmine.createSpy('error');
+              console.error = errorSpy;
+        });
+        afterAll(() => {
+            console.error = originalConsoleError;
+            destroy(rteObj);
+        });
+        it('Check script error when applying emoji on a cleaned formatted text', (done) => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#testing');
+            editorObj.nodeSelection.setSelectionNode(document, start.childNodes[0]);
+            editorObj.execCommand("Formats", 'h1', null);
+            let changeNode: HTMLElement = elem.querySelector('#testing');
+            expect(changeNode.tagName.toLowerCase() === 'h1').toBe(true);
+            editorObj.nodeSelection.setSelectionNode(document, changeNode.childNodes[0]);
+            editorObj.execCommand("Clear", 'ClearFormat', null, null);
+            expect(start.childNodes[0].nodeName.toLowerCase()).toBe('span');
+            const emojiEle: HTMLElement = document.querySelectorAll('.e-toolbar-item')[0] as HTMLElement;
+            emojiEle.click();
+            (document.querySelector('.e-rte-emojipickerbtn-group [title="Grinning face"]') as HTMLElement).click();
+            setTimeout(() => {
+                expect(errorSpy).not.toHaveBeenCalled();
+                const innerHtml = '<div id="content-edit"><h1>Welcome to the Syncfusion Rich Text Editor</h1><div>😀</div></div>';
+                expect(rteObj.inputElement.innerHTML).toBe(innerHtml);
+                done();
+            }, 500);
+        });
+    });
 });
+

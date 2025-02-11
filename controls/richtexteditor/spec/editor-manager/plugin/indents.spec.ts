@@ -3,6 +3,7 @@
  */
 import { createElement, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
+import { setCursorPoint } from '../../rich-text-editor/render.spec';
 
 describe('Indents plugin', () => {
 
@@ -334,5 +335,70 @@ describe('Indents plugin', () => {
         afterAll(() => {
             detach(elem);
         });
+    });
+});
+describe(' apply Indents to Table element testing safari', () => {
+    let editorObj: EditorManager;
+
+    let elem: HTMLElement = createElement('div', {
+        id: 'dom-node', innerHTML: `
+        <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="rte-td" style="width: 33.3333%;">Syncfusion</td><td style="width: 33.3333%;" class="">Software</td><td style="width: 33.3333%;">RTE</td></tr></tbody></table><p><br/></p>
+        </div>
+        ` });
+    beforeAll(() => {
+        document.body.appendChild(elem);
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+    });
+
+    it(' increase indents format to list', () => {
+        let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+        let start: HTMLElement = elem.querySelector('.rte-td');
+        let end: HTMLElement = elem.querySelector('.rte-td');
+        editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 3);
+        editorObj.execCommand("Indents", 'Indent', null);
+        editorObj.execCommand("Indents", 'Indent', null);
+        editorObj.execCommand("Indents", 'Indent', null);
+    });
+
+    it(' Outdent format to list', () => {
+        let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+        let start: HTMLElement = elem.querySelector('.rte-td');
+        let end: HTMLElement = start;
+        editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 0);
+        editorObj.execCommand("Indents", 'Outdent', null);
+        editorObj.execCommand("Indents", 'Outdent', null);
+    });
+    afterAll(() => {
+        detach(elem);
+    });
+});
+describe('921976 -  Cursor moved to another area after increase or decrease indent the over all table', () => {
+    let editorObj: EditorManager;
+
+    let elem: HTMLElement = createElement('div', {
+        id: 'dom-node', innerHTML: `
+        <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p>
+        <table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table>
+        </div>
+        ` });
+    beforeAll(() => {
+        document.body.appendChild(elem);
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+    });
+
+    it('Increase indents format to table', () => {
+        let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+        let table: HTMLElement = elem.querySelector('table');
+        setCursorPoint(table, 0);
+        editorObj.execCommand("Indents", 'Indent', null);
+        editorObj.execCommand("Indents", 'Indent', null);
+        editorObj.execCommand("Indents", 'Indent', null);
+        expect(table.style.marginLeft === '60px').toBe(true);
+    });
+
+    afterAll(() => {
+        detach(elem);
     });
 });

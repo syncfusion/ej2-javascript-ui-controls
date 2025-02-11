@@ -30,44 +30,44 @@ Toolbar,
 }
 
 /**
- * Defines types of action to be done on a quick toolbar scroll.
+ * Defines the types of actions to perform on a quick toolbar scroll.
  */
 export type ActionOnScroll = 'hide' | 'none';
 
 /**
- * Defines types to be used as Toolbar.
+ * Enumerates the types of toolbars available.
  */
 export enum ToolbarType {
-/* eslint-disable */
-/** Defines ToolbarType as Standard */
-Expand = 'Expand',
-/** Defines ToolbarType as MultiRow */
+    /* eslint-disable */
+    /** Defines ToolbarType as Expand. */
+    Expand = 'Expand',
+    /** Defines ToolbarType as MultiRow. */
     MultiRow = 'MultiRow',
-/** Defines ToolbarType as Scrollable */
+    /** Defines ToolbarType as Scrollable. */
     Scrollable = 'Scrollable'
-/* eslint-enable */
+    /* eslint-enable */
 }
 
 /**
- * Defines the type of dialog, which open or close in the Rich Text Editor.
+ * Enumerates the types of dialogs that can be opened or closed in the Rich Text Editor.
  */
 export enum DialogType {
-/* eslint-disable */
-/** Defines ToolbarType as Standard */
+    /* eslint-disable */
+    /** Defines DialogType for inserting a link. */
     InsertLink = 'InsertLink',
-/** Defines ToolbarType as MultiRow */
+    /** Defines DialogType for inserting an image. */
     InsertImage = 'InsertImage',
-/** Defines DialogType as Audio*/
+    /** Defines DialogType for inserting audio. */
     InsertAudio = 'InsertAudio',
-/** Defines DialogType as Video*/
+    /** Defines DialogType for inserting video. */
     InsertVideo = 'InsertVideo',
-/** Defines ToolbarType as Scrollable */
+    /** Defines DialogType for inserting a table. */
     InsertTable = 'InsertTable'
-/* eslint-enable */
+    /* eslint-enable */
 }
 
 /**
- * Defines types to be used to configure the toolbar items.
+ * Specifies the types of items that can be used in the toolbar.
  */
 export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'justifyRight'
 | 'justifyFull' | 'fontName' | 'fontSize' | 'fontColor' | 'backgroundColor'
@@ -82,37 +82,37 @@ export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'jus
 | 'sourceCode' | 'preview' | 'viewSide' | 'insertCode' | 'blockquote' | 'tableHeader'
 | 'tableRemove' | 'tableRows' | 'tableColumns' | 'tableCellBackground'
 | 'tableCellHorizontalAlign' | 'tableCellVerticalAlign' | 'tableEditProperties'
-| 'styles' | 'removeLink'| 'merge' | 'InlineCode';
+| 'styles' | 'removeLink' | 'merge' | 'inlineCode';
 
 /**
- * Defines types to be used to configure the toolbarSettings items.
+ * Specifies the configuration items available for the toolbar settings.
  */
-export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft'| 'JustifyCenter' | 'JustifyRight'
+export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft' | 'JustifyCenter' | 'JustifyRight'
 | 'JustifyFull' | 'FontName' | 'FontSize' | 'FontColor' | 'BackgroundColor' | 'ImportWord' | 'ExportWord' | 'ExportPdf'
 | 'Bold' | 'Italic' | 'Underline' | 'StrikeThrough' | 'ClearFormat' | 'ClearAll'
-| 'Cut' | 'Copy' | 'Paste' | 'UnorderedList' | 'OrderedList' | 'Indent'| 'Outdent'
+| 'Cut' | 'Copy' | 'Paste' | 'UnorderedList' | 'OrderedList' | 'Indent' | 'Outdent'
 | 'Undo' | 'Redo' | 'SuperScript' | 'SubScript'
-| 'CreateLink'| 'Image' | 'CreateTable' |'InsertLink' |'FullScreen' | 'LowerCase'
-| 'UpperCase' | 'Print' | 'Formats'|'FormatPainter'|'EmojiPicker'|'UnderLine'|'ZoomOut'|'ZoomIn'
-| 'SourceCode' | 'Preview' | 'ViewSide' | 'InsertCode' | 'Blockquote' |'Audio'|'Video'|'NumberFormatList'
-|'BulletFormatList'|'FileManager'| '|'|'-'| 'InlineCode';
+| 'CreateLink' | 'Image' | 'CreateTable' | 'InsertLink' | 'FullScreen' | 'LowerCase'
+| 'UpperCase' | 'Print' | 'Formats' | 'FormatPainter' | 'EmojiPicker' | 'UnderLine' | 'ZoomOut' | 'ZoomIn'
+| 'SourceCode' | 'Preview' | 'ViewSide' | 'InsertCode' | 'Blockquote' | 'Audio' | 'Video' | 'NumberFormatList'
+| 'BulletFormatList' | 'FileManager' | '|' | '-' | 'InlineCode';
 
 /**
- * Defines types to be used as inserted image.
+ * Enumerates the sources for images to be inserted.
  */
 export enum ImageInputSource {
-    /** Defines ImageInputSource as Uploaded */
+    /** Defines ImageInputSource as Uploaded. */
     Uploaded = 'Uploaded',
-    /** Defines ImageInputSource as Dropped */
+    /** Defines ImageInputSource as Dropped. */
     Dropped = 'Dropped',
-    /** Defines ImageInputSource as Pasted */
+    /** Defines ImageInputSource as Pasted. */
     Pasted = 'Pasted'
 }
 
 /**
- * Defines the available items in the slash menu.
+ * Lists the items available in the slash menu.
  */
 export type SlashMenuItems = 'Heading 1' | 'Heading 2' | 'Heading 3' | 'Heading 4'
-| 'Paragraph'| 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'Table' | 'Image' |
-'Audio' | 'Video' | 'CodeBlock' | 'Emojipicker' | 'Link';
+| 'Paragraph' | 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'Table' | 'Image'
+| 'Audio' | 'Video' | 'CodeBlock' | 'Emojipicker' | 'Link';
 

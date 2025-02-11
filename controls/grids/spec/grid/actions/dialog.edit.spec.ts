@@ -943,4 +943,78 @@ describe('Dialog Editing module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-934120 - Focus Border Missing on Grid Cell After Adding Rows in Syncfusion EJ2 Grid => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true,
+                        mode: 'Dialog',
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                            validationRules: { required: true, number: true }, width: 140
+                        },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID',
+                            validationRules: { required: true }, width: 140
+                        },
+                    ],
+                }, done);
+        });
+
+        it('Edit first row', function (done: Function) {
+            gridObj.selectRow(0);
+            gridObj.startEdit();
+            done();
+        });
+        it('Clicks the save button', function (done: Function) {
+            let dlgEle: any = document.getElementById(gridObj.element.id + '_dialogEdit_wrapper');
+            dlgEle.querySelector('.e-footer-content').querySelector('.e-btn').click();
+            done();
+        });
+        
+        it('Check the border is applied to for the cell', function (done: Function) {
+            expect(gridObj.element.querySelectorAll('.e-rowcell')[0].classList.contains('e-focused')).toBe(true);
+            done();
+        });
+
+        it('Edit first row', function (done: Function) {
+            gridObj.startEdit();
+            done();
+        });
+        
+        it('Clicks the cancel button', function (done: Function) {
+            let dlgEle: any = document.getElementById(gridObj.element.id + '_dialogEdit_wrapper');
+            dlgEle.querySelector('.e-footer-content').querySelectorAll('.e-btn')[1].click();
+            done();
+        });
+
+        it('Check the border is applied to for the cell', function (done: Function) {
+            expect(gridObj.element.querySelectorAll('.e-rowcell')[0].classList.contains('e-focused')).toBe(true);
+            done();
+        });
+
+        it('Delete the selected first record', function (done: Function) {
+            gridObj.deleteRecord();
+            done();
+        });
+
+        it('Check the border is applied to for the cell', function (done: Function) {
+            expect(gridObj.element.querySelectorAll('.e-rowcell')[0].classList.contains('e-focused')).toBe(true);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

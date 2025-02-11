@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageSuccessEventArgs, ImageFailedEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, EmojiSettings, ImportWord, ExportWord, ExportPdf } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { ImportExport } from '../actions/import-export';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { scrollToCursor } from '../../common/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { FormatPainter } from '../actions/format-painter';import { EmojiPicker } from '../actions/emoji-picker';import { SlashMenuSettings } from '../models/slash-menu-settings';import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';import { SlashMenu} from '../renderer/slash-menu';import { mentionRestrictKeys } from '../../common/config';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageSuccessEventArgs, ImageFailedEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, EmojiSettings, ImportWord, ExportWord, ExportPdf } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { ImportExport } from '../actions/import-export';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { scrollToCursor } from '../../common/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { FormatPainter } from '../actions/format-painter';import { EmojiPicker } from '../actions/emoji-picker';import { SlashMenuSettings } from '../models/slash-menu-settings';import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';import { SlashMenu} from '../renderer/slash-menu';import { mentionRestrictKeys } from '../../common/config';import { isSafari } from '../../common/util';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -7,20 +7,28 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface RichTextEditorModel extends ComponentModel{
 
     /**
-     * Specifies the group of items aligned horizontally in the toolbar as well as defined the toolbar rendering type.
-     * By default, toolbar is float at the top of the RichTextEditor.
-     * When you scroll down, the toolbar will scroll along with the page on Rich Text Editor with the specified offset value.
-     * * enable: set boolean value to show or hide the toolbar.
-     * * enableFloating: Set Boolean value to enable or disable the floating toolbar.
-     * Preserves the toolbar at top of the Rich Text Editor on scrolling.
-     * * type: it has two possible options
-     * 1. Expand: Hide the overflowing toolbar items in the next row. Click the expand arrow to view overflowing toolbar items
-     * 2. MultiRow: The toolbar overflowing items wrapped in the next row.
-     * * items: Specifies the array of items aligned horizontally in the toolbar.
-     * > | and - can insert a vertical and horizontal separator lines in the toolbar.
-     * * itemConfigs: Modify the default toolbar item configuration like icon class.
+     * Specifies the configuration for the toolbar, including the alignment and rendering type.
+     * By default, the toolbar floats at the top of the RichTextEditor.
+     * When you scroll down, the toolbar will move with the page applying the specified offset.
      *
-     * > By default, The toolbar is rendered with scrollable in mobile devices and does not support the toolbar type.
+     * Properties:
+     *
+     * - enable: A boolean value to show or hide the toolbar.
+     *
+     * - enableFloating: A boolean value to enable or disable the floating toolbar.
+     *   This keeps the toolbar fixed at the top of the RichTextEditor during scrolling.
+     *
+     * - type: Defines the toolbar type, with the following options:
+     *   1. Expand: Overflowing toolbar items are hidden and can be accessed by clicking the expand arrow.
+     *   2. MultiRow: Overflowing toolbar items wrap into the next row.
+     *   3. Scrollable: Toolbar items are on a single line and can be scrolled horizontally if they overflow.
+     *
+     * - items: An array specifying the items aligned horizontally in the toolbar.
+     * > '|' and '-' can be used to insert vertical and horizontal separator lines in the toolbar.
+     *
+     * - itemConfigs: Allows the modification of the default toolbar item configuration, such as the icon class.
+     *
+     * > By default, the toolbar is rendered with a scrollable option on mobile devices and does not support other toolbar types.
      *
      * {% codeBlock src='rich-text-editor/toolbar-settings/index.md' %}{% endcodeBlock %}
      *
@@ -37,17 +45,18 @@ export interface RichTextEditorModel extends ComponentModel{
     toolbarSettings?: ToolbarSettingsModel;
 
     /**
-     * Specifies the list items in the mention popup.
-     * * enable- Specifies to enable or disable the slash menu in the Editor.
-     * * items- Specfies the items to be rendered in the slash menu.
-     * * popupWidth- Specifies the width of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
-     * * popupHeight- Specifies the height of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
+     * Configuration options for the slash menu feature in the Editor, used to display a mention popup.
+     * Properties:
+     * * enable: A boolean indicating whether the slash menu is enabled in the Editor.
+     * * items: An array specifying the list of items to be displayed in the slash menu.
+     * * popupWidth: Defines the width of the slash menu popup. Accepts values in pixels, numbers, or percentages. Numeric values are treated as pixels.
+     * * popupHeight: Defines the height of the slash menu popup. Accepts values in pixels, numbers, or percentages. Numeric values are treated as pixels.
      *
      * @default
      * {
      * enable: false,
-     * items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'OrderedList', 'UnorderedList'
-     * .'CodeBlock', 'BlockQuote'],
+     * items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'OrderedList', 'UnorderedList',
+     * 'CodeBlock', 'BlockQuote'],
      * popupWidth: '300px',
      * popupHeight: '320px'
      * }
@@ -55,16 +64,17 @@ export interface RichTextEditorModel extends ComponentModel{
     slashMenuSettings?: SlashMenuSettingsModel;
 
     /**
-     * Specifies the items to be rendered in quick toolbar based on the target element.
-     * * It has following fields:
-     * * enable - set boolean value to show or hide the quick toolbar
-     * * actionOnScroll - it has two possible options
-     * 1. hide: The quickToolbar is closed when the parent element is scrolled.
-     * 2. none: The quickToolbar cannot be closed even the parent element is scrolled.
-     * * link  - Specifies the items to be rendered in quick toolbar based on link element such as `Open`, `Edit`, and `UnLink`.
-     * * image - Specifies the items to be rendered in quick toolbar based on image element such as 'Replace',
-     * 'Align', 'Caption', 'Remove', 'InsertLink', 'Display', 'AltText', 'Dimension'.
-     * * text	 - Specifies the items to be rendered in quick toolbar based on text element such as 'Cut', 'Copy', 'Paste'.
+     * Specifies the items to be rendered in the quick toolbar based on the target element.
+     * Properties:
+     * * enable: Boolean to show or hide the quick toolbar.
+     * * actionOnScroll: Options for quick toolbar behavior on scroll:
+     *   1. hide: The quick toolbar closes when the parent element is scrolled.
+     *   2. none: The quick toolbar stays open even if the parent element is scrolled.
+     * * link: Specifies items in the quick toolbar for links ('Open', 'Edit', 'UnLink').
+     * * image: Specifies items in the quick toolbar for images ('Replace', 'Align', 'Caption', 'Remove', 'InsertLink', 'Display', 'AltText', 'Dimension').
+     * * text: Specifies items in the quick toolbar for text ('Cut', 'Copy', 'Paste').
+     * * audio: Specifies items for audio ('AudioReplace', 'AudioRemove', 'AudioLayoutOption').
+     * * video: Specifies items for video ('VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension').
      *
      * {% codeBlock src='rich-text-editor/quick-toolbar-settings/index.md' %}{% endcodeBlock %}
      *
@@ -81,13 +91,14 @@ export interface RichTextEditorModel extends ComponentModel{
     quickToolbarSettings?: QuickToolbarSettingsModel;
 
     /**
-     * Specifies the pasting options in Rich Text Editor component and control with the following properties.
-     * * prompt - Set boolean value to enable or disable the prompt when pasting.
-     * * deniedAttrs  -  Specifies the attributes to restrict when pasting in RTE.
-     * * allowedStyleProps  -  Specifies the allowed style properties when pasting in RTE.
-     * * deniedTags	 -  Specifies the tags to restrict when pasting in RTE.
-     * * keepFormat	 -   Set boolean value to keep or remove the from when pasting.
-     * * plainText	 -   Set boolean value to paste as plain text or not.
+     * Configures paste options in the Rich Text Editor.
+     * Properties:
+     * * prompt: Boolean to enable or disable paste prompt.
+     * * deniedAttrs: Attributes to restrict during paste.
+     * * allowedStyleProps: Style properties allowed when pasting.
+     * * deniedTags: Tags to restrict when pasting.
+     * * keepFormat: Boolean to keep or remove format when pasting.
+     * * plainText: Boolean to paste as plain text.
      *
      * {% codeBlock src='rich-text-editor/paste-cleanup-settings/index.md' %}{% endcodeBlock %}
      *
@@ -102,7 +113,7 @@ export interface RichTextEditorModel extends ComponentModel{
      * 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width',
      * 'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right',
      * 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-transform', 'text-indent',
-     * 'top', 'vertical-align', 'visibility', 'white-space', 'width'],
+     * 'top', 'vertical-align', 'visibility', 'white-space', 'width', 'flex-direction'],
      * deniedTags: null,
      * keepFormat: true,
      * plainText:  false
@@ -111,9 +122,10 @@ export interface RichTextEditorModel extends ComponentModel{
     pasteCleanupSettings?: PasteCleanupSettingsModel;
 
     /**
-     * Specifies the format painter options in Rich Text Editor with the following properties.
-     * * allowedFormats - Sets the tag name selectors  for elements from which the formats  can be copied.
-     * * deniedFormats - Sets the selectors  for elements from which formats  cannot be copied.
+     * Configures the format painter options in the Rich Text Editor.
+     * Properties:
+     * * allowedFormats: Tags selectors that allow format copying.
+     * * deniedFormats: Tag selectors that prevent format copying.
      *
      * {% codeBlock src='rich-text-editor/format-painter-settings/index.md' %}{% endcodeBlock %}
      *
@@ -123,26 +135,28 @@ export interface RichTextEditorModel extends ComponentModel{
      * deniedFormats: null
      * }
      */
-    formatPainterSettings?: FormatPainterSettingsModel
+    formatPainterSettings?: FormatPainterSettingsModel;
 
     /**
-     * Specifies the emoji picker options in Rich Text Editor with the following properties.
-     * * iconsSet – Specify an array of items representing emoji icons.
-     * * showSearchBox -  Enables or disables the search box in an emoji picker.
+     * Configures emoji picker options in the Rich Text Editor.
+     * Properties:
+     * * iconsSet: Array representing emoji icons.
+     * * showSearchBox: Enables/disables the search box.
      *
      *
      */
-    emojiPickerSettings?: EmojiSettingsModel
+    emojiPickerSettings?: EmojiSettingsModel;
 
     /**
-     * Specifies the items to be rendered in an iframe mode, and it has the following properties.
-     * * enable - Set Boolean value to enable, the editors content is placed in an iframe and isolated from the rest of the page.
-     * * attributes - Custom style to be used inside the iframe to display content. This style is added to the iframe body.
-     * * resources - we can add both styles and scripts to the iframe.
-     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content
-     * 2. scripts[] - An array of JS script files to inject inside the iframe
-     * * metaTags[] - An array of meta tags to inject inside the iframe's head for setting up various metadata like http-equiv, charset, etc.
-     * * sandbox - A string array defining the sandbox attribute for the iframe, which controls the security restrictions applied to the embedded content. By default, "allow-same-origin" is included in the Rich Text Editor's iframe sandbox.
+     * Configures iframe mode items in the Rich Text Editor.
+     * Properties:
+     * * enable: Boolean to place editor content in an iframe, isolating it from the page.
+     * * attributes: Custom style for displaying content inside the iframe. Applied to iframe body.
+     * * resources: Adds styles and scripts to the iframe.
+     *   1. styles[]: Array of CSS files for the iframe content.
+     *   2. scripts[]: Array of JS script files for the iframe.
+     * * metaTags[]: Array of meta tags for iframe's head, setting metadata (http-equiv, charset, etc.).
+     * * sandbox: String array defining iframe sandbox attributes, controlling security restrictions. Default includes "allow-same-origin".
      *
      * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
      *
@@ -158,297 +172,288 @@ export interface RichTextEditorModel extends ComponentModel{
     iframeSettings?: IFrameSettingsModel;
 
     /**
-     * Specifies the image insert options in Rich Text Editor component and control with the following properties.
-     * * allowedTypes - Specifies the extensions of the image types allowed to insert on bowering and
-     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
-     * * display - Sets the default display for an image when it is inserted in to the RichTextEditor.
-     * Possible options are: 'inline' and 'block'.
-     * * width - Sets the default width of the image when it is inserted in the RichTextEditor.
-     * * saveFormat - Specifies the format to store the image in the Rich Text Editor (Base64 or Blob).
-     * > If you want to insert a lot of tiny images in the editor and don't want a specific physical location for
-     * saving images, you can opt to save format as Base64.
-     * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
-     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
-     * * path - Specifies the path of the location to store the images and refer it to display the images.
+     * Specifies the options for inserting images in the Rich Text Editor. Includes properties such as:
+     * - `allowedTypes`: Specifies the allowed image file extensions as a comma-separated list (e.g., '.jpg', '.png').
+     * - `display`: Sets the default display mode for an inserted image, either 'inline' or 'block'.
+     * - `width`: Specifies the default width for an inserted image.
+     * - `saveFormat`: Indicates the format for storing images in the editor (Base64 or Blob).
+     *   > Select Base64 for numerous small images without a specific physical storage location.
+     * - `height`: Defines the default height for an inserted image.
+     * - `saveUrl`: Specifies the URL for the service that handles image upload and storage on the server.
+     * - `path`: Determines the storage location for images and their display path.
      *
      * {% codeBlock src='rich-text-editor/insert-image-settings/index.md' %}{% endcodeBlock %}
      *
      * @default
      * {
-     * allowedTypes: ['.jpeg', '.jpg', '.png'],
-     * display: 'inline',
-     * width: 'auto',
-     * height: 'auto',
-     * saveFormat: 'Blob'
-     * saveUrl: null,
-     * path: null,
+     *   allowedTypes: ['.jpeg', '.jpg', '.png'],
+     *   display: 'inline',
+     *   width: 'auto',
+     *   height: 'auto',
+     *   saveFormat: 'Blob',
+     *   saveUrl: null,
+     *   path: null
      * }
      */
     insertImageSettings?: ImageSettingsModel;
 
     /**
-     * Specifies the file insert options for the Rich Text Editor component, with the following property:
-     * * serviceUrl - Specifies the URL that will receive the uploaded files on the server.
+     * Configures the options for importing Word files in the Rich Text Editor component.
+     * The `serviceUrl` property specifies the server endpoint URL where the uploaded Word file will be processed.
      *
      * @default
      * {
-     * serviceUrl: null,
+     *   serviceUrl: null
      * }
      */
     importWord?: ImportWordModel;
 
     /**
-     * Specifies the file export options for the Rich Text Editor component, with the following properties:
-     * * serviceurl - Specifies the URL that will be used to export the Rich Text Editor content into Word files.
-     * * fileName - Specifies the name of the exported Word file.
-     * * stylesheet - Specifies the stylesheet to be applied to the exported Word file.
+     * Defines file export options for the Rich Text Editor with properties like:
+     * - `serviceurl`: The URL utilized for exporting editor content to Word files.
+     * - `fileName`: Designates the default name for exported Word files.
+     * - `stylesheet`: Applies a stylesheet to the exported Word file.
      *
      * @default
      * {
-     * serviceUrl:null,
-     * fileName:Sample.docx,
-     * stylesheet: null,
+     *   serviceUrl: null,
+     *   fileName: Sample.docx,
+     *   stylesheet: null
      * }
      */
     exportWord?: ExportWordModel;
 
     /**
-     * Specifies the file export options for the Rich Text Editor component, with the following properties:
-     * * serviceurl - Specifies the URL that will be used to export the Rich Text Editor content into PDF files.
-     * * fileName - Specifies the name of the exported PDF file.
-     * * stylesheet - Specifies the stylesheet to be applied to the exported PDF file.
+     * Describes file export options to PDF in the Rich Text Editor, such as:
+     * - `serviceurl`: URL used for exporting content to PDF format.
+     * - `fileName`: Specifies the default PDF file name upon export.
+     * - `stylesheet`: Applies a stylesheet to the exported PDF file.
      *
      * @default
      * {
-     * serviceUrl:null,
-     * fileName:Sample.pdf,
-     * stylesheet: null,
+     *   serviceUrl: null,
+     *   fileName: 'Sample.pdf',
+     *   stylesheet: null
      * }
      */
     exportPdf?: ExportPdfModel;
 
     /**
-     * Specifies the audio insert options in Rich Text Editor component and control with the following properties.
-     * * allowedTypes - Specifies the extensions of the audio types allowed to insert on bowering and
-     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
-     * * layoutOption - Sets the default display for an audio when it is inserted in to the RichTextEditor.
-     * Possible options are: 'Inline' and 'Break'.
-     * * saveFormat - Specifies the format to store the audio in the Rich Text Editor (Base64 or Blob).
-     * > If you want to insert a lot of tiny audios in the editor and don't want a specific physical location for
-     * saving audios, you can opt to save format as Base64.
-     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
-     * * path - Specifies the path of the location to store the audios and refer it to display the audios.
+     * Defines the options for inserting audio files in the Rich Text Editor, including properties such as:
+     * - `allowedTypes`: Specifies the file extensions for audio files allowed to be inserted, listed as a comma-separated string (e.g., '.wav', '.mp3').
+     * - `layoutOption`: Sets the default layout for audio files when inserted into the Rich Text Editor. The options are 'Inline' and 'Break'.
+     * - `saveFormat`: Determines the format used to store audio files in the Rich Text Editor, either 'Base64' or 'Blob'.
+     *   > Choose 'Base64' for frequently inserted small audio files without the need for a specific storage location.
+     * - `saveUrl`: Provides the service URL responsible for handling audio file uploads and storage on the server.
+     * - `path`: Specifies the storage path for audio files and the reference for displaying them.
      *
      * @default
      * {
-     * allowedTypes: ['.wav', '.mp3', '.m4a','.wma'],
-     * layoutOption: 'Inline',
-     * saveFormat: 'Blob'
-     * saveUrl: null,
-     * path: null,
+     *   allowedTypes: ['.wav', '.mp3', '.m4a', '.wma'],
+     *   layoutOption: 'Inline',
+     *   saveFormat: 'Blob',
+     *   saveUrl: null,
+     *   path: null
      * }
      */
     insertAudioSettings?: AudioSettingsModel;
 
     /**
-     * Specifies the video insert options in Rich Text Editor component and control with the following properties.
-     * * allowedTypes - Specifies the extensions of the video types allowed to insert on bowering and
-     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
-     * * layoutOption - Sets the default display for an video when it is inserted in to the RichTextEditor.
-     * Possible options are: 'Inline' and 'Break'.
-     * * width - Sets the default width of the video when it is inserted in the RichTextEditor.
-     * * saveFormat - Specifies the format to store the video in the Rich Text Editor (Base64 or Blob).
-     * > If you want to insert a lot of tiny videos in the editor and don't want a specific physical location for
-     * saving videos, you can opt to save format as Base64.
-     * * height - Sets the default height of the video when it is inserted in the RichTextEditor.
-     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
-     * * path - Specifies the path of the location to store the videos and refer it to display the videos.
+     * Specifies video insert options in the Rich Text Editor, detailing properties such as:
+     * - `allowedTypes`: Allowed video file extensions as a comma-separated list (e.g., '.mp4', '.mov').
+     * - `layoutOption`: Determines the display mode for videos ('Inline' or 'Break').
+     * - `width`: Sets default width for inserted videos.
+     * - `saveFormat`: Format for storing video files (Base64 or Blob).
+     *   > Select Base64 for numerous small video inserts without defined storage requirements.
+     * - `height`: Sets default height for inserted videos.
+     * - `saveUrl`: URL of the service for handling video uploads and server storage.
+     * - `path`: Identifies the path for storing and displaying videos.
      *
      * @default
      * {
-     * allowedTypes: ['.mp4', '.mov', '.wmv','.avi'],
-     * layoutOption: 'Inline',
-     * width: 'auto',
-     * height: 'auto',
-     * saveFormat: 'Blob'
-     * saveUrl: null,
-     * path: null,
+     *   allowedTypes: ['.mp4', '.mov', '.wmv', '.avi'],
+     *   layoutOption: 'Inline',
+     *   width: 'auto',
+     *   height: 'auto',
+     *   saveFormat: 'Blob',
+     *   saveUrl: null,
+     *   path: null
      * }
      */
     insertVideoSettings?: VideoSettingsModel;
 
     /**
-     * Specifies the table insert options in Rich Text Editor component and control with the following properties.
-     * * styles - Class name should be appended by default in table element.
-     * It helps to design the table in specific CSS styles always when inserting in editor.
-     * * width - Sets the default width of the table when it is inserted in the RichTextEditor.
-     * * minWidth - Sets the default minWidth of the table when it is inserted in the RichTextEditor.
-     * * maxWidth - Sets the default maxWidth of the table when it is inserted in the RichTextEditor.
-     * * resize - To enable resize the table.
+     * Specifies the options for inserting tables in the Rich Text Editor, featuring properties like:
+     * - `styles`: Automatically appends a CSS class to tables for consistent styling.
+     * - `width`: Defines default table width upon insertion.
+     * - `minWidth`: Sets the minimum width for inserted tables.
+     * - `maxWidth`: Indicates the maximum permissible width for tables.
+     * - `resize`: Enables or disables table resizing functionality.
      *
      * {% codeBlock src='rich-text-editor/table-settings/index.md' %}{% endcodeBlock %}
      *
      * @default
      * {
-     * width: '100%',
-     * styles: [{ text: 'Dashed Borders', class: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
-     * { text: 'Alternate Rows', class: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }],
-     * resize: true,
-     * minWidth: 0,
-     * maxWidth: null,
+     *   width: '100%',
+     *   styles: [
+     *     { text: 'Dashed Borders', class: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
+     *     { text: 'Alternate Rows', class: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
+     *   ],
+     *   resize: true,
+     *   minWidth: 0,
+     *   maxWidth: null
      * }
      */
     tableSettings?: TableSettingsModel;
 
     /**
-     * Preserves the toolbar at the top of the Rich Text Editor on scrolling and
-     * specifies the offset of the floating toolbar from documents top position
+     * Keeps the toolbar fixed at the top of the Rich Text Editor during scrolling and specifies the
+     * toolbar's offset from the document's top position.
      *
      * @default 0
      */
     floatingToolbarOffset?: number;
 
     /**
-     * Enable or disable the inline edit mode.
-     * * enable - set boolean value to enable or disable the inline edit mode.
-     * * onSelection - If its set to true, upon selecting the text, the toolbar is opened in inline.
-     * If its set to false, upon clicking to the target element, the toolbar is opened.
+     * Configures the inline edit mode for the Rich Text Editor with the following options:
+     * - `enable`: A boolean value to enable or disable the inline edit mode.
+     * - `onSelection`: Determines how the toolbar is activated:
+     *   - If set to `true`, the toolbar appears inline upon text selection.
+     *   - If set to `false`, the toolbar opens when clicking on the target element.
      *
      * {% codeBlock src='rich-text-editor/inline-mode/index.md' %}{% endcodeBlock %}
      *
      * @default
      * {
-     * enable: false,
-     * onSelection: true
+     *   enable: false,
+     *   onSelection: true
      * }
      */
     inlineMode?: InlineModeModel;
 
     /**
-     * Specifies the image manager options in Rich Text Editor component and control with the following properties.
-     * * enable - set boolean value to enable or disable the image manager.
-     * * ajaxSettings - Specifies the AJAX settings of the image manager.
-     * * contextMenuSettings - Specifies the context menu settings of the image manager.
-     * * navigationPaneSettings - Specifies the navigation pane settings of the image manager.
-     * * toolbarSettings - Specifies the group of items aligned horizontally in the toolbar.
-     * * uploadSettings - Specifies the upload settings for the image manager.
+     * Defines image manager options in the Rich Text Editor with the following attributes:
+     * - `enable`: Boolean to enable or disable the image manager.
+     * - `ajaxSettings`: Configures AJAX settings for image handling.
+     * - `contextMenuSettings`: Manages context menu availability and options.
+     * - `navigationPaneSettings`: Sets up the navigation pane display and contents.
+     * - `toolbarSettings`: Specifies toolbar configuration and visible items.
+     * - `uploadSettings`: Manages upload-specific configurations.
      *
      * @default
      * {
-     * enable: false,
-     * path: '/',
-     * ajaxSettings: { getImageUrl: null, url: null, uploadUrl: null },
-     * contextMenuSettings: {
-     * visible: true,
-     * file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
-     * folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
-     * layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll']
-     * },
-     * navigationPaneSettings: {
-     * visible: true,
-     * items: [
-     * 'NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download',
-     * 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'
-     * ]
-     * },
-     * toolbarSettings: { visible: true, items: ['Upload', 'NewFolder'] },
-     * uploadSettings: { autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }
+     *   enable: false,
+     *   path: '/',
+     *   ajaxSettings: { getImageUrl: null, url: null, uploadUrl: null },
+     *   contextMenuSettings: {
+     *     visible: true,
+     *     file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
+     *     folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
+     *     layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll']
+     *   },
+     *   navigationPaneSettings: {
+     *     visible: true,
+     *     items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download',
+     *       'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details']
+     *   },
+     *   toolbarSettings: { visible: true, items: ['Upload', 'NewFolder'] },
+     *   uploadSettings: { autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }
      * }
      */
     fileManagerSettings?: FileManagerSettingsModel;
 
     /**
-     * Specifies the width of the RichTextEditor.
+     * Specifies the width of the Rich Text Editor.
      *
      * @default '100%'
      */
     width?: string | number;
 
     /**
-     * Enables or disables the persisting component's state between page reloads.
-     * If enabled, the value of Rich Text Editor is persisted
+     * Enables or disables the persistence of the component's state between page reloads.
+     * If enabled, the value of the Rich Text Editor is retained.
      *
      * {% codeBlock src='rich-text-editor/enable-persistence/index.md' %}{% endcodeBlock %}
      *
-     * @default false.
+     * @default false
      */
     enablePersistence?: boolean;
 
     /**
-     * Specify the value whether tooltip will be displayed for the Rich Text Editor toolbar.
+     * Configures whether a tooltip should be displayed for the Rich Text Editor toolbar.
      *
-     * @default true.
+     * @default true
      */
     showTooltip?: boolean;
 
     /**
      * Enables or disables the resizing option in the editor.
-     * If enabled, the Rich Text Editor can be resized by dragging the resize icon in the bottom right corner.
+     * When enabled, the editor can be resized by dragging the resize icon in its bottom right corner.
      *
      * {% codeBlock src='rich-text-editor/enable-resize/index.md' %}{% endcodeBlock %}
      *
-     * @default false.
+     * @default false
      */
     enableResize?: boolean;
 
     /**
-     * Allows additional HTML attributes such as title, name, etc., and
-     * It will be accepts n number of attributes in a key-value pair format.
+     * Allows specifying additional HTML attributes like title, name, etc.
+     * Accepts multiple attributes in a key-value pair format.
      *
-     * @default {}.
+     * @default {}
      */
     htmlAttributes?: { [key: string]: string };
 
     /**
-     * Specifies the placeholder for the RichTextEditor’s content used when the Rich Text Editor body is empty.
+     * Specifies the placeholder text for the content area of the RichTextEditor when it is empty.
      *
-     * @default null.
+     * @default null
      */
     placeholder?: string;
 
     /**
-     * Enables or disables the auto-save option which performs the save action while in the idle state after typed content.
-     * If enabled, the Rich Text Editor will save the content on idle state with `saveInterval` property's value.
-     * The change event will be triggered if the content has changed from the last saved state.
+     * Enables or disables the auto-save option, which performs the save action during idle states after content changes.
+     * If enabled, the editor will save content in idle state based on the `saveInterval` property's value.
+     * The change event is triggered if the content has been modified since the last saved state.
      *
-     * @default false.
+     * @default false
      */
     autoSaveOnIdle?: boolean;
 
     /**
-     * The user interactions on the component are disabled, when set to true.
+     * Disables user interactions on the component when set to true.
      *
-     * @default false.
+     * @default false
      */
     readonly?: boolean;
 
     /**
-     * Specifies a value that indicates whether the component is enabled or not.
+     * Indicates whether the component is enabled or disabled.
      *
      * {% codeBlock src='rich-text-editor/enabled/index.md' %}{% endcodeBlock %}
      *
-     * @default true.
+     * @default true
      */
     enabled?: boolean;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Indicates whether to allow cross-site scripting (XSS) or not.
      *
      * @default true
      */
     enableHtmlSanitizer?: boolean;
 
     /**
-     * specifies the value whether the source code is displayed with encoded format.
+     * Determines if source code should be displayed in an encoded format.
      *
-     * @default false.
+     * @default false
      */
     enableHtmlEncode?: boolean;
 
     /**
-     * Specifies a value that indicates whether the xhtml is enabled or not.
+     * Indicates whether XHTML is enabled or not.
      *
-     * @default false.
+     * @default false
      */
     enableXhtml?: boolean;
 
@@ -460,16 +465,16 @@ export interface RichTextEditorModel extends ComponentModel{
     height?: string | number;
 
     /**
-     * Specifies the CSS class name appended with the root element of the RichTextEditor.
-     * One or more custom CSS classes can be added to a RichTextEditor.
+     * Specifies the CSS class name appended to the root element of the RichTextEditor.
+     * Multiple custom CSS classes can be added.
      *
      * @default null
      */
     cssClass?: string;
 
     /**
-     * Specifies the value displayed in the RichTextEditor's content area and it should be string.
-     * The content of Rich Text Editor can be loaded with dynamic data such as database, AJAX content, and more.
+     * Specifies the initial content to be displayed in the RichTextEditor's content area. It should be a string.
+     * The editor's content can also be dynamically loaded from a database, AJAX, etc.
      *
      * {% codeBlock src='rich-text-editor/value/index.md' %}{% endcodeBlock %}
      *
@@ -478,33 +483,29 @@ export interface RichTextEditorModel extends ComponentModel{
     value?: string;
 
     /**
-     * Specifies tag to be inserted when enter key is pressed.
+     * Specifies the tag to be inserted when the enter key is pressed.
      *
-     * - `P` - When the enter key is pressed a `p` tag will be inserted and the default value of the Rich Text Editor will be &lt;p&gt;&lt;br&gt;&lt;/p&gt;.
-     *
-     * - `DIV` - When the enter key is pressed a `div` tag will be inserted instead of the default `P` tag and the default value of the Rich Text Editor will be &lt;div&gt;&lt;br&gt;&lt;/div&gt;.
-     *
-     * - `BR` - When the enter key is pressed a `br` tag will be inserted instead of the default `P` tag and the default value of the Rich Text Editor will be &lt;br&gt;.
+     * - `P`: Pressing enter inserts a `p` tag. The default value will be `<p><br></p>`.
+     * - `DIV`: Inserts a `div` tag instead of the default `P` tag.
+     * - `BR`: Inserts a `br` tag instead of the default `P` tag.
      *
      * @default 'P'
      */
     enterKey?: EnterKey;
 
     /**
-     * Specifies tags to be inserted when shift+enter key is pressed.
+     * Specifies tags to be inserted when the Shift + Enter keys are pressed.
      *
-     * - `BR` - When the shift + enter key is pressed a `br` tag will be inserted which is the default behavior.
-     *
-     * - `P` - When the shift + enter key is pressed a `p` tag will be inserted instead of the default `br` tag.
-     *
-     * - `DIV` - When the shift + enter key is pressed a `div` tag will be inserted instead of the default `br` tag.
+     * - `BR` - When the Shift + Enter key is pressed, a `br` tag will be inserted, which is the default behavior.
+     * - `P` - When the Shift + Enter key is pressed, a `p` tag will be inserted instead of the default `br` tag.
+     * - `DIV` - When the Shift + Enter key is pressed, a `div` tag will be inserted instead of the default `br` tag.
      *
      * @default 'BR'
      */
     shiftEnterKey?: ShiftEnterKey;
 
     /**
-     * Specifies the count of undo history which is stored in undoRedoManager.
+     * Specifies the number of undo history steps stored in the undo/redo manager.
      *
      * {% codeBlock src='rich-text-editor/undo-redo-steps/index.md' %}{% endcodeBlock %}
      *
@@ -513,27 +514,26 @@ export interface RichTextEditorModel extends ComponentModel{
     undoRedoSteps?: number;
 
     /**
-     * Specifies the interval value in milliseconds that store actions in undoRedoManager. The minimum value is 300 milliseconds.
+     * Specifies the interval time in milliseconds for storing actions in the undo/redo manager.
+     * The minimum value is 300 milliseconds.
      *
      * @default 300
      */
     undoRedoTimer?: number;
 
     /**
-     * Specifies the editing mode of the RichTextEditor.
+     * Defines the mode of the RichTextEditor.
      *
-     * - `HTML` - Render Rich Text Editor as HTML editor using &lt;IFRAME&gt; element or content editable &lt;div&gt; element
-     * or &lt;textarea&gt; element.
-     *
-     * - `Markdown` - Render Rich Text Editor as markdown editor using &lt;textarea&gt;.
+     * - `HTML`: Render as an HTML editor using an `<IFRAME>`, content editable `<div>`, or `<textarea>`.
+     * - `Markdown`: Render as a Markdown editor using a `<textarea>`.
      *
      * @default 'HTML'
      */
     editorMode?: EditorMode;
 
     /**
-     * Customizes the key actions in RichTextEditor.
-     * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * Customizes key actions in the RichTextEditor.
+     * For example, German keyboard users can customize key actions using these shortcuts.
      *
      * {% codeBlock src='rich-text-editor/keyconfig/index.md' %}{% endcodeBlock %}
      *
@@ -542,7 +542,7 @@ export interface RichTextEditorModel extends ComponentModel{
     keyConfig?: { [key: string]: string };
 
     /**
-     * Sets Boolean value to enable or disable the display of the character counter.
+     * Enables or disables the display of the character counter.
      *
      * {% codeBlock src='rich-text-editor/show-char-count/index.md' %}{% endcodeBlock %}
      *
@@ -560,8 +560,8 @@ export interface RichTextEditorModel extends ComponentModel{
     enableTabKey?: boolean;
 
     /**
-     * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks, otherwise
-     * the given URL will automatically convert to absolute path URL by prefixing `https://` for hyperlinks.
+     * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks.
+     * Otherwise, the given URL will automatically convert to an absolute path URL by prefixing it with `https://` for hyperlinks.
      *
      * {% codeBlock src='rich-text-editor/enable-autourl/index.md' %}{% endcodeBlock %}
      *
@@ -570,7 +570,7 @@ export interface RichTextEditorModel extends ComponentModel{
     enableAutoUrl?: boolean;
 
     /**
-     * Specifies the maximum number of characters allowed in the Rich Text Editor component.
+     * Specifies the maximum number of characters allowed in the Rich Text Editor.
      *
      * {% codeBlock src='rich-text-editor/max-length/index.md' %}{% endcodeBlock %}
      *
@@ -579,7 +579,8 @@ export interface RichTextEditorModel extends ComponentModel{
     maxLength?: number;
 
     /**
-     * Predefine the collection of paragraph styles along with quote and code style that populate in format dropdown from the toolbar.
+     * Predefines a collection of paragraph styles along with quote and code styles
+     * that populate the format dropdown in the toolbar.
      *
      * {% codeBlock src='rich-text-editor/format/index.md' %}{% endcodeBlock %}
      *
@@ -595,14 +596,14 @@ export interface RichTextEditorModel extends ComponentModel{
      * { text: 'Heading 4', value: 'H4' },
      * { text: 'Heading 5', value: 'H5' },
      * { text: 'Heading 6', value: 'H6' },
-     * { text: 'Preformatted', value: 'Pre' },
+     * { text: 'Preformatted', value: 'Pre' }
      * ]
      * }
      */
     format?: FormatModel;
 
     /**
-     * Predefine the advanced list types that populate in the numberFormatList dropdown list from the toolbar.
+     * Predefines advanced list types that populate the numberFormatList dropdown in the toolbar.
      *
      * @default
      * {
@@ -613,14 +614,14 @@ export interface RichTextEditorModel extends ComponentModel{
      * { text: 'Lower Roman', value: 'lowerRoman' },
      * { text: 'Upper Alpha', value: 'upperAlpha' },
      * { text: 'Lower Alpha', value: 'lowerAlpha' },
-     * { text: 'Upper Roman', value: 'upperRoman' },
+     * { text: 'Upper Roman', value: 'upperRoman' }
      * ]
      * }
      */
     numberFormatList?: NumberFormatListModel;
 
     /**
-     * Predefine the advanced list types that populate in the bulletFormatList dropdown list from the toolbar.
+     * Predefines advanced list types that populate the bulletFormatList dropdown in the toolbar.
      *
      * @default
      * {
@@ -635,7 +636,7 @@ export interface RichTextEditorModel extends ComponentModel{
     bulletFormatList?: BulletFormatListModel;
 
     /**
-     * Predefine the font families that populate in font family dropdown list from the toolbar.
+     * Predefines font families that populate the font family dropdown in the toolbar.
      *
      * {% codeBlock src='rich-text-editor/font-family/index.md' %}{% endcodeBlock %}
      *
@@ -645,7 +646,7 @@ export interface RichTextEditorModel extends ComponentModel{
      * width: '65px',
      * items: [
      * { text: 'Segoe UI', value: 'Segoe UI' },
-     * { text: 'Arial',  value: 'Arial,Helvetica,sans-serif' },
+     * { text: 'Arial', value: 'Arial,Helvetica,sans-serif' },
      * { text: 'Courier New', value: 'Courier New,Courier,monospace' },
      * { text: 'Georgia', value: 'Georgia,serif' },
      * { text: 'Impact', value: 'Impact,Charcoal,sans-serif' },
@@ -660,7 +661,7 @@ export interface RichTextEditorModel extends ComponentModel{
     fontFamily?: FontFamilyModel;
 
     /**
-     * Predefine the font sizes that populate in font size dropdown list from the toolbar.
+     * Defines the predefined font sizes that populate the font size dropdown in the toolbar.
      *
      * {% codeBlock src='rich-text-editor/font-size/index.md' %}{% endcodeBlock %}
      *
@@ -682,7 +683,7 @@ export interface RichTextEditorModel extends ComponentModel{
     fontSize?: FontSizeModel;
 
     /**
-     * Predefine the color palette that can be rendered for font color toolbar command .
+     * Defines the color palette for the font color toolbar command.
      *
      * {% codeBlock src='rich-text-editor/font-color/index.md' %}{% endcodeBlock %}
      *
@@ -703,7 +704,7 @@ export interface RichTextEditorModel extends ComponentModel{
     fontColor?: FontColorModel;
 
     /**
-     * Predefine the color palette that can be rendered for background color (text highlighted color) toolbar command.
+     * Defines the color palette for the background color (text highlight color) toolbar command.
      *
      * {% codeBlock src='rich-text-editor/background-color/index.md' %}{% endcodeBlock %}
      *
@@ -720,9 +721,9 @@ export interface RichTextEditorModel extends ComponentModel{
     backgroundColor?: BackgroundColorModel;
 
     /**
-     * Accepts the template design and assigns it as RichTextEditor’s content.
-     * The built-in template engine which provides options to compile template string into a executable function.
-     * For EX: We have expression evolution as like ES6 expression string literals
+     * Accepts a template design and assigns it as the content of the Rich Text Editor.
+     * The built-in template engine provides options to compile a template string into an executable function.
+     * For example, it supports expression evaluation similar to ES6 template string literals.
      *
      * {% codeBlock src='rich-text-editor/value-template/index.md' %}{% endcodeBlock %}
      *
@@ -732,8 +733,8 @@ export interface RichTextEditorModel extends ComponentModel{
     valueTemplate?: string | Function;
 
     /**
-     * Specifies the saveInterval in milliseconds for autosave the value.
-     * The change event will be triggered if the content was changed from the last saved interval.
+     * Specifies the save interval in milliseconds for automatically saving the content.
+     * The change event is triggered if the content changes from the last saved interval.
      *
      * {% codeBlock src='rich-text-editor/save-interval/index.md' %}{% endcodeBlock %}
      *
@@ -742,77 +743,73 @@ export interface RichTextEditorModel extends ComponentModel{
     saveInterval?: number;
 
     /**
-     * Triggers before command execution using toolbar items or executeCommand method.
-     * If you cancel this event, the command cannot be executed.
-     * Set the cancel argument to true to cancel the command execution.
+     * This event triggers before executing a command via toolbar items.
+     * Cancel this event to prevent the command from executing by setting the `cancel` argument to `true`.
      *
      * @event 'actionBegin'
      */
     actionBegin?: EmitType<ActionBeginEventArgs>;
 
     /**
-     * Triggers after command execution using toolbar items or executeCommand method.
+     * This event triggers after executing a command via toolbar items.
      *
      * @event 'actionComplete'
      */
     actionComplete?: EmitType<ActionCompleteEventArgs>;
 
     /**
-     * Event triggers when the dialog is being opened.
-     * If you cancel this event, the dialog remains closed.
-     * Set the cancel argument to true to cancel the open of a dialog.
+     * This event triggers before a dialog is opened.
+     * Cancel this event to prevent the dialog from opening by setting the `cancel` argument to `true`.
      *
      * @event 'beforeDialogOpen'
      */
-
     beforeDialogOpen?: EmitType<BeforeOpenEventArgs>;
 
     /**
-     * Event triggers when a dialog is opened.
+     * This event triggers when a dialog is opened.
      *
      * @event 'dialogOpen'
      */
     dialogOpen?: EmitType<Object>;
 
     /**
-     * Event triggers when the dialog is being closed.
-     * If you cancel this event, the dialog remains opened.
-     * Set the cancel argument to true to prevent closing a dialog.
+     * This event triggers before a dialog is closed.
+     * Cancel this event to prevent the dialog from closing by setting the `cancel` argument to `true`.
      *
      * @event 'beforeDialogClose'
      */
     beforeDialogClose?: EmitType<BeforeCloseEventArgs>;
 
     /**
-     * Event triggers after the dialog has been closed.
+     * This event triggers after a dialog has been closed.
      *
      * @event 'dialogClose'
      */
     dialogClose?: EmitType<Object>;
 
     /**
-     * Event triggers when the quick toolbar is being opened.
+     * This event triggers before the quick toolbar opens.
      *
      * @event 'beforeQuickToolbarOpen'
      */
     beforeQuickToolbarOpen?: EmitType<BeforeQuickToolbarOpenArgs>;
 
     /**
-     * Event triggers when a quick toolbar is opened.
+     * This event triggers when the quick toolbar is opened.
      *
      * @event 'quickToolbarOpen'
      */
     quickToolbarOpen?: EmitType<Object>;
 
     /**
-     * Event triggers after the quick toolbar has been closed.
+     * This event triggers after the quick toolbar has been closed.
      *
      * @event 'quickToolbarClose'
      */
     quickToolbarClose?: EmitType<Object>;
 
     /**
-     * This event is deprecated and no longer works. Use `updatedToolbarStatus` event to get the undo and redo status.
+     * This event is deprecated and no longer works. Use the `updatedToolbarStatus` event for undo/redo status.
      *
      * @deprecated
      * @event 'toolbarStatusUpdate'
@@ -820,203 +817,204 @@ export interface RichTextEditorModel extends ComponentModel{
     toolbarStatusUpdate?: EmitType<Object>;
 
     /**
-     * Triggers when the toolbar items status is updated.
+     * This event triggers when the toolbar items status is updated.
      *
      * @event 'updatedToolbarStatus'
      */
     updatedToolbarStatus?: EmitType<ToolbarStatusEventArgs>;
 
     /**
-     * Event triggers when the image is selected or dragged into the insert image dialog.
+     * This event triggers when an image is selected or dragged into the insert image dialog.
      *
      * @event 'imageSelected'
      */
     imageSelected?: EmitType<SelectedEventArgs>;
 
     /**
-     * Event triggers before the image upload process.
+     * This event triggers before the image upload process starts.
      *
      * @event 'beforeImageUpload'
      */
     beforeImageUpload?: EmitType<BeforeUploadEventArgs>;
 
     /**
-     * Event triggers when the selected image begins to upload in the insert image dialog.
+     * This event triggers when an image upload begins in the insert image dialog.
+     * It provides access to the upload details through the event arguments.
      *
      * @event 'imageUploading'
      */
     imageUploading?: EmitType<UploadingEventArgs>;
 
     /**
-     * Event triggers when the image is successfully uploaded to the server side.
+     * This event triggers when an image has been successfully uploaded to the server side.
      *
      * @event 'imageUploadSuccess'
      */
     imageUploadSuccess?: EmitType<ImageSuccessEventArgs>;
 
     /**
-     * Event triggers when there is an error in the image upload.
+     * This event triggers when there is an error during image upload.
      *
      * @event 'imageUploadFailed'
      */
     imageUploadFailed?: EmitType<ImageFailedEventArgs>;
 
     /**
-     * Event triggers when the selected image is cleared from the insert image dialog.
+     * This event triggers when a selected image is removed from the insert image dialog.
      *
      * @event 'imageRemoving'
      */
     imageRemoving?: EmitType<RemovingEventArgs>;
 
     /**
-     * Event triggers when the selected image is cleared from the Rich Text Editor Content.
+     * This event triggers when a selected image is removed from the Rich Text Editor content.
      *
      * @event 'afterImageDelete'
      */
     afterImageDelete?: EmitType<AfterImageDeleteEventArgs>;
 
     /**
-     * Event triggers when the media is selected or dragged into the insert media audio/video dialog.
+     * This event triggers when media is selected or dragged into the insert media audio/video dialog.
      *
      * @event 'fileSelected'
      */
     fileSelected?: EmitType<SelectedEventArgs>;
 
     /**
-     * Event triggers before the media audio/video upload process.
+     * This event triggers before the media audio/video upload process starts.
      *
      * @event 'beforeFileUpload'
      */
     beforeFileUpload?: EmitType<BeforeUploadEventArgs>;
 
     /**
-     * Event triggers when the selected media begins to upload in the insert media audio/video dialog.
+     * This event triggers when media begins uploading in the insert media audio/video dialog.
      *
      * @event 'fileUploading'
      */
     fileUploading?: EmitType<UploadingEventArgs>;
 
     /**
-     * Event triggers when the media is successfully uploaded to the server side.
+     * This event triggers when media has been successfully uploaded to the server side.
      *
      * @event 'fileUploadSuccess'
      */
     fileUploadSuccess?: EmitType<Object>;
 
     /**
-     * Event triggers when there is an error in the media upload.
+     * This event triggers when there is an error during media upload.
      *
      * @event 'fileUploadFailed'
      */
     fileUploadFailed?: EmitType<Object>;
 
     /**
-     * Event triggers when the selected media is cleared from the insert audio/video dialog.
+     * This event triggers when selected media is removed from the insert audio/video dialog.
      *
      * @event 'fileRemoving'
      */
     fileRemoving?: EmitType<RemovingEventArgs>;
 
     /**
-     * Event triggers when the selected media is cleared from the Rich Text Editor Content.
+     * This event triggers when selected media is removed from the Rich Text Editor content.
      *
      * @event 'afterMediaDelete'
      */
     afterMediaDelete?: EmitType<AfterMediaDeleteEventArgs>;
 
     /**
-     * Triggers when the Rich Text Editor is rendered.
+     * This event triggers when the Rich Text Editor is rendered.
      *
      * @event 'created'
      */
     created?: EmitType<Object>;
 
     /**
-     * Triggers when the Rich Text Editor is destroyed.
+     * This event triggers when the Rich Text Editor is destroyed.
      *
      * @event 'destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
-     * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
+     * This event triggers before sanitizing the value. Applicable only when `editorMode` is `HTML`.
      *
      * @event 'beforeSanitizeHtml'
      */
     beforeSanitizeHtml?: EmitType<BeforeSanitizeHtmlArgs>;
 
     /**
-     * Triggers when Rich Text Editor is focused out.
+     * This event triggers when the Rich Text Editor loses focus.
      *
      * @event 'blur'
      */
     blur?: EmitType<Object>;
 
     /**
-     * Triggers when Rich Text Editor Toolbar items is clicked.
+     * This event triggers when a Rich Text Editor toolbar item is clicked.
      *
      * @event 'toolbarClick'
      */
     toolbarClick?: EmitType<Object>;
 
     /**
-     * Triggers when Rich Text Editor is focused in
+     * This event triggers when the Rich Text Editor gains focus.
      *
      * @event 'focus'
      */
     focus?: EmitType<Object>;
 
     /**
-     * Triggers only when Rich Text Editor is blurred and changes are done to the content.
+     * This event triggers when the Rich Text Editor loses focus and changes have been made to the content.
      *
      * @event 'change'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
-     * Triggers only when resizing the image.
+     * This event triggers when resizing elements such as tables, images, videos, and the overall Rich Text Editor.
      *
      * @event 'resizing'
      */
     resizing?: EmitType<ResizeArgs>;
 
     /**
-     * Triggers only when start resize the image.
+     * This event triggers when resizing starts for various elements including tables, images, videos, and the overall editor.
      *
      * @event 'resizeStart'
      */
     resizeStart?: EmitType<ResizeArgs>;
 
     /**
-     * Triggers only when stop resize the image.
+     * This event triggers when resizing stops for various elements including tables, images, videos, and the overall editor.
      *
      * @event 'resizeStop'
      */
     resizeStop?: EmitType<ResizeArgs>;
 
     /**
-     * Triggers before cleanup the copied content.
+     * This event triggers before cleaning up copied content.
      *
      * @event 'beforePasteCleanup'
      */
     beforePasteCleanup?: EmitType<PasteCleanupArgs>;
 
     /**
-     * Triggers after cleanup the copied content.
+     * This event triggers after cleaning up copied content.
      *
      * @event 'afterPasteCleanup'
      */
     afterPasteCleanup?: EmitType<object>;
 
     /**
-     * Triggers before drop the image.
+     * This event triggers before an image is dropped.
      *
      * @event 'beforeImageDrop'
      */
     beforeImageDrop?: EmitType<ImageDropEventArgs>;
 
     /**
-     * Customize keyCode to change the key value.
+     * Customize the `keyCode` to change the key value.
      *
      * {% codeBlock src='rich-text-editor/formatter/index.md' %}{% endcodeBlock %}
      *
@@ -1025,7 +1023,7 @@ export interface RichTextEditorModel extends ComponentModel{
     formatter?: IFormatter;
 
     /**
-     * Triggers when an slash menu item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
+     * This event triggers when a slash menu item in the popup is selected by the user using mouse, tap, or keyboard navigation.
      *
      * @event 'slashMenuItemSelect'
      */

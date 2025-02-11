@@ -35,6 +35,37 @@ let shiftkeyboarArgs = {
     action: 'enter',
     type: 'keydown'
 };
+describe('927528: Console error thrown when pressing enter at the beginning of text in the editor at firefox browser', () => {
+    let defaultUserAgent = navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode">hello</p>`
+        });
+        done();
+    });
+
+    it('Console error thrown when pressing enter key at the beginning of text at firefox browser', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode').childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<p><br></p><p><br></p><p class=\"focusNode\">hello</p>`).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+        Browser.userAgent = defaultUserAgent;
+    });
+});
 describe('841897 - Enter key press submits the form when Rich Text Editor control is used inside the Form element', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = {
@@ -110,6 +141,7 @@ describe('841897 - Enter key press submits the form when Rich Text Editor contro
         detach(element);
     });
 });
+
 describe('EJ2-59705 - Console error thrown when pressing enter key at firefox browser', () => {
     let defaultUserAgent= navigator.userAgent;
     let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
@@ -169,38 +201,6 @@ describe('927517: Link functionality breaks with enter action in Firefox browser
     afterAll(() => {
         destroy(rteObj);
         Browser.userAgent =defaultUserAgent;
-    });
-});
-
-describe('Bug 927528: Console error thrown when pressing enter at the beginning of text in the editor at firefox browser', () => {
-    let defaultUserAgent = navigator.userAgent;
-    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
-    let rteObj: RichTextEditor;
-    keyboardEventArgs.shiftKey = false;
-    beforeAll((done: Function) => {
-        Browser.userAgent = fireFox;
-        rteObj = renderRTE({
-            height: '200px',
-            enterKey: 'P',
-            value: `<p class="focusNode">hello</p>`
-        });
-        done();
-    });
-
-    it('Console error thrown when pressing enter key at the beginning of text at firefox browser', function (): void {
-        rteObj.dataBind();
-        rteObj.focusIn();
-        const startNode: any = rteObj.inputElement.querySelector('.focusNode').childNodes[0];
-        const sel: void = new NodeSelection().setSelectionText(
-            document, startNode, startNode, 0, 0);
-        (<any>rteObj).keyDown(keyboardEventArgs);
-        (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML === `<p><br></p><p><br></p><p class=\"focusNode\">hello</p>`).toBe(true);
-    });
-
-    afterAll(() => {
-        destroy(rteObj);
-        Browser.userAgent = defaultUserAgent;
     });
 });
 
@@ -488,7 +488,6 @@ describe('Bug 917790: Link disappears on pressing "Enter" with CSS "white-space:
         expect(rteObj.inputElement.textContent.includes('www.google.com')).toBe(true);
     });
 });
-
 describe('Bug 925863: When pressing Enter key after the link when text-wrap is applied, it removes the content in the editor', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = false;
@@ -550,7 +549,6 @@ describe('Bug 925863: When pressing Enter key after the link when text-wrap is a
         expect(rteObj.inputElement.textContent.includes('www.google.com')).toBe(true);
     });
 });
-
 describe('Enter key support - When `DIV` is configured', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = false;

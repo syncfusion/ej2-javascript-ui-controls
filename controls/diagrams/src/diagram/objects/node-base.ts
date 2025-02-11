@@ -78,7 +78,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      * @aspDefaultValueIgnore
      * @default None
      */
-    @Property('None')
+    @Property(FlipDirection.None)
     public flip: FlipDirection;
 
     /**

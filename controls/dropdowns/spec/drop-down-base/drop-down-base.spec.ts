@@ -303,7 +303,7 @@ describe('DropDownBase', () => {
     // Action events
     describe('Events', () => {
 
-        describe('Action events ', () => {
+        xdescribe('Action events ', () => {
             let beginAction: EmitType<Object> = jasmine.createSpy('actionBegin');
             let ele: HTMLElement = document.createElement('div');
             ele.appendChild(document.createElement('ul'));

@@ -4108,7 +4108,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 if (this.pagerModule.pagerObj.isAllPage) {
                     const count: number = this.dataSource instanceof DataManager ? (this.dataSource as DataManager).dataSource.json.length :
                         'result' in this.dataSource ? this.dataSource.count : (this.dataSource as Object[]).length;
-                    if ((this.pageSettings.pageSizes as Object[]).indexOf('All') === -1 && this.pageSettings.pageSize !== count) {
+                    const isAllPage: boolean = Array.isArray(this.pageSettings.pageSizes) &&
+                        (this.pageSettings.pageSizes as Object[]).indexOf('All') > -1 ? true : (this.pageSettings.pageSizes as boolean);
+                    if (!isAllPage && this.pageSettings.pageSize !== count) {
                         this.pagerModule.pagerObj.isAllPage = false;
                     } else {
                         this.setProperties({ pageSettings: { pageSize: count } }, true);

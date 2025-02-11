@@ -225,7 +225,7 @@ export function PdfiumRunner(): void {
             else if (event.data.message === 'extractText') {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const ImageData: any = event.data;
-                const data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null,
+                const data: object = firstPage.render('extractText', ImageData.zoomFactor, ImageData.isTextNeed, null, null,
                                                       ImageData.textDetailsId);
                 (data as any).message = 'textExtracted';
                 (data as any).isLayout = event.data.isLayout;
@@ -238,18 +238,15 @@ export function PdfiumRunner(): void {
             else if (event.data.message === 'renderThumbnail') {
                 // eslint-disable-next-line
                 const thumbnail: Promise<any> = new Promise((resolve, reject) => {
-                    // Simulate an asynchronous task
-                    setTimeout(() => {
-                        try {
-                            const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
-                            if (firstPage.processor !== null && firstPage.processor !== undefined) {
-                                const data: object = firstPage.render('thumbnail', null, false, null, null);
-                                resolve(data);
-                            }
-                        } catch (error) {
-                            reject(error);
+                    try {
+                        const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
+                        if (firstPage.processor !== null && firstPage.processor !== undefined) {
+                            const data: object = firstPage.render('thumbnail', null, false, null, null);
+                            resolve(data);
                         }
-                    }, 1000);
+                    } catch (error) {
+                        reject(error);
+                    }
                 });
 
                 thumbnail.then((results: any) => {
@@ -302,7 +299,9 @@ export function PdfiumRunner(): void {
                 }
             }
         }
-
+        if (event.data.message === 'unloadFPDF') {
+            ctx.postMessage({ message: '' });
+        }
     };
 
     class Page {
@@ -1065,7 +1064,15 @@ export function PdfiumRunner(): void {
                     newWidth = Math.round(this.pointerToPixelConverter(w) * zoomFactor);
                     newHeight = Math.round(this.pointerToPixelConverter(h) * zoomFactor);
                 }
-                const data: any = this.getPageRender(n, newWidth, newHeight, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect);
+                let data: any = null;
+                if (message === 'extractText') {
+                    const page: any = FPDF.LoadPage(this.wasmData.wasm, n);
+                    this.textExtraction(page, n, isTextNeed, cropBoxRect, mediaBoxRect);
+                    FPDF.ClosePage(page);
+                }
+                else {
+                    data = this.getPageRender(n, newWidth, newHeight, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect);
+                }
                 return { value: data, width: newWidth, height: newHeight, pageWidth: w, pageHeight: h, pageIndex: n, message: 'imageRendered', textBounds: this.TextBounds, textContent: this.TextContent, rotation: this.Rotation, pageText: this.PageText, characterBounds: this.CharacterBounds, zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId };
             }
         }

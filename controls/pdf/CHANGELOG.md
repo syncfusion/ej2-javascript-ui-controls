@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with preserving the position of the existing signature field when the flatten option is set to true.
+- Resolved an issue with preserving a stamp annotation when flattened with a rotation of 270 degrees.
+
 ## 28.2.4 (2025-02-04)
 
 ### PDF Parser

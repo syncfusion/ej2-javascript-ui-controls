@@ -94,8 +94,12 @@ export class VideoCommand {
             }
             if (videoClickElem) {
                 selectNode.parentElement.style.cssFloat = 'left';
+            } else if (selectNode.parentElement.nextElementSibling != null) {
+                addClass([selectNode], embededClass === '' ? [classes.CLASS_VIDEO, classes.CLASS_VIDEO_LEFT] : [classes.CLASS_VIDEO, classes.CLASS_VIDEO_LEFT, embededClass]);
+                (selectNode.parentElement.nextElementSibling as HTMLElement).style.clear = 'left';
+            } else {
+                addClass([selectNode], embededClass === '' ? [classes.CLASS_VIDEO, classes.CLASS_VIDEO_LEFT] : [classes.CLASS_VIDEO, classes.CLASS_VIDEO_LEFT, embededClass]);
             }
-            addClass([selectNode], embededClass === '' ? [classes.CLASS_VIDEO, classes.CLASS_VIDEO_LEFT] : [classes.CLASS_VIDEO, classes.CLASS_VIDEO_LEFT, embededClass]);
             this.callBack(e);
             break;
         case 'justifycenter':
@@ -116,8 +120,12 @@ export class VideoCommand {
             }
             if (videoClickElem) {
                 selectNode.parentElement.style.cssFloat = 'right';
+            } else if (selectNode.parentElement.nextElementSibling != null) {
+                addClass([selectNode], embededClass === '' ? [classes.CLASS_VIDEO, classes.CLASS_VIDEO_RIGHT] : [classes.CLASS_VIDEO, classes.CLASS_VIDEO_LEFT, embededClass]);
+                (selectNode.parentElement.nextElementSibling as HTMLElement).style.clear = 'right';
+            } else {
+                addClass([selectNode], embededClass === '' ? [classes.CLASS_VIDEO, classes.CLASS_VIDEO_RIGHT] : [classes.CLASS_VIDEO, classes.CLASS_VIDEO_RIGHT, embededClass]);
             }
-            addClass([selectNode], embededClass === '' ? [classes.CLASS_VIDEO, classes.CLASS_VIDEO_RIGHT] : [classes.CLASS_VIDEO, classes.CLASS_VIDEO_RIGHT, embededClass]);
             this.callBack(e);
             break;
         case 'videoremove':
@@ -214,7 +222,7 @@ export class VideoCommand {
                     videoElm = (e.item.selectParent[0] as Element).querySelector('iframe');
                 }
             } else {
-                videoElm = !e.item.isEmbedUrl ? (selectedNode as Element).lastElementChild : (selectedNode as Element).querySelector('iframe');
+                videoElm = !e.item.isEmbedUrl ? (selectedNode as Element).tagName === 'VIDEO' ? (selectedNode as Element) : (selectedNode as Element).lastElementChild : (selectedNode as Element).querySelector('iframe');
             }
             videoElm.addEventListener(videoElm.tagName !== 'IFRAME' ? 'loadeddata' : 'load', () => {
                 if (e.value !== 'VideoReplace' || !isReplaced) {
@@ -296,13 +304,9 @@ export class VideoCommand {
         selectNode.style.width = '';
         if (e.item.width !== 'auto') {
             selectNode.style.width =  formatUnit(e.item.width as number);
-        } else {
-            selectNode.removeAttribute('width');
         }
         if (e.item.height !== 'auto') {
             selectNode.style.height = formatUnit(e.item.height as number);
-        } else {
-            selectNode.removeAttribute('height');
         }
         this.callBack(e);
     }

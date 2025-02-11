@@ -285,11 +285,15 @@ export class ContextMenu {
         }
     }
 
-    private enableItems(items: string[], enable?: boolean, isUniqueId?: boolean): void {
+    public enableItems(items: string[], enable?: boolean, isUniqueId?: boolean): void {
+        if (enable) {
+            this.disabledItems = this.disabledItems.filter((item: string) => { return items.indexOf(item) === -1; });
+        }
         for (let i: number = 0; i < items.length; i++) {
-            if (this.checkValidItem(items[i as number]) === 1) {
+            const validItem: number = this.checkValidItem(items[i as number]);
+            if (validItem === 1) {
                 this.contextMenu.enableItems([this.getMenuId(items[i as number])], enable, isUniqueId);
-            } else if (this.checkValidItem(items[i as number]) === 2) {
+            } else if (validItem === 2) {
                 this.contextMenu.enableItems([items[i as number]], enable, isUniqueId);
             }
         }
@@ -367,13 +371,14 @@ export class ContextMenu {
     }
 
     private checkValidItem(nameEle: string): number {
-        if (!isNOU(select('#' + this.getMenuId(nameEle), this.currentElement))) {
-            return 1;
-        } else if (!isNOU(select('#' + nameEle, this.currentElement))) {
-            return 2;
-        } else {
-            return -1;
+        if (!isNOU(this.currentElement)) {
+            if (!isNOU(select('#' + this.getMenuId(nameEle), this.currentElement))) {
+                return 1;
+            } else if (!isNOU(select('#' + nameEle, this.currentElement))) {
+                return 2;
+            }
         }
+        return -1;
     }
 
     private getMenuItemData(): object {

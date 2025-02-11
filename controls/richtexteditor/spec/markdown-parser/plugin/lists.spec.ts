@@ -678,4 +678,30 @@ Line with more than one break line before
             detach(textArea);
         });
     });
+
+    describe('938234 - MAC: The Revert operation fails after pressing Enter on an empty list.', () => {
+        let editorObj: MarkdownParser;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:200px;height:200px'
+        });
+        let keyBoardEvent: any = { callBack: () => { }, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.value = '1. RichTextEditor\n2. \n';
+            textArea.focus();
+        });
+        it('should maintain the empty list item when Enter is pressed', (done) => {
+            editorObj.markdownSelection.setSelection(textArea,textArea.value.length,textArea.value.length);
+            editorObj.markdownSelection.save(textArea.value.length, textArea.value.length);
+            editorObj.markdownSelection.restore(textArea);
+            (editorObj as any).editorKeyUp(keyBoardEvent);
+            expect(textArea.value === '1. RichTextEditor\n2. \n').toBe(true);
+            done();
+        });
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
 });

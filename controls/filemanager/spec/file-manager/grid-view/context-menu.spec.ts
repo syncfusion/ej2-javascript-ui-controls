@@ -270,6 +270,22 @@ describe('FileManager control Grid view', () => {
                 }, 500);
             }, 100);
         });
+        it('for enableMenuItems', (done) => {
+            feObj.detailsviewModule.gridObj.selectRows([0]);
+            const li: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');
+            const el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            const sourceElement: ContextMenu = el.ej2_instances[0];
+            feObj.menuOpen = (args: MenuOpenEventArgs) => {
+                feObj.enableMenuItems(['Paste']);
+            };
+            const evt: MouseEvent = document.createEvent('MouseEvents');
+            evt.initEvent('contextmenu', true, true);
+            li[0].dispatchEvent(evt);
+            setTimeout(function () {
+                expect(sourceElement.element.querySelectorAll('li')[4].classList.contains('e-disabled')).toBe(false);
+                done();
+            }, 500);
+        });
     });
     describe('for Grid View', () => {
         let mouseEventArgs: any, tapEvent: any;

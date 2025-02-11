@@ -566,8 +566,32 @@ export class DropDownButtons {
 
     private onIframeMouseDown(): void {
         if (!isNullOrUndefined(this.parent.getToolbarElement()) && (this.parent.getToolbarElement().querySelectorAll('.e-rte-dropdown-btn[aria-expanded="true"]').length > 0 || this.parent.getToolbarElement().querySelectorAll('.e-dropdown-btn.e-rte-inline-dropdown[aria-expanded="true"]').length > 0)) {
-            dispatchEvent(document, 'mousedown');
+            this.closeOpenDropdowns();
         }
+    }
+
+    private closeOpenDropdowns(): void {
+        const dropdowns: DropDownButton[] = [
+            this.formatDropDown,
+            this.fontNameDropDown,
+            this.fontSizeDropDown,
+            this.alignDropDown,
+            this.imageAlignDropDown,
+            this.displayDropDown,
+            this.numberFormatListDropDown,
+            this.bulletFormatListDropDown,
+            this.tableRowsDropDown,
+            this.tableColumnsDropDown,
+            this.tableCellDropDown,
+            this.tableCellVerticalAlignDropDown,
+            this.parent.toolbarModule.colorPickerModule.fontColorDropDown,
+            this.parent.toolbarModule.colorPickerModule.backgroundColorDropDown
+        ];
+        dropdowns.forEach((dropdown: DropDownButton) => {
+            if (dropdown && dropdown.dropDown && dropdown.dropDown.element && dropdown.dropDown.element.classList.contains('e-popup-open')) {
+                dropdown.toggle();
+            }
+        });
     }
 
     protected removeEventListener(): void {

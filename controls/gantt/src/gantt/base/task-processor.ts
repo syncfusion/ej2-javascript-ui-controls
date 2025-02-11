@@ -2789,6 +2789,13 @@ export class TaskProcessor extends DateProcessor {
             this.updateTaskLeftWidth(data);
         }
     }
+
+    private shouldProcessUpdateWidth(): boolean {
+        return (!this.parent.autoCalculateDateScheduling ||
+               (this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
+                Boolean(this.parent.taskFields.hasChildMapping)));
+    }
+
     /**
      * Update all gantt data collection width, progress width and left value
      *
@@ -2798,31 +2805,28 @@ export class TaskProcessor extends DateProcessor {
      */
     private updateTaskLeftWidth(data: IGanttData): void {
         const task: ITaskData = data.ganttProperties;
-        if (!data.hasChildRecords || (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad &&
-            this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping))) {
+        if (!data.hasChildRecords || this.shouldProcessUpdateWidth()) {
             this.updateWidthLeft(data);
         }
         this.parent.setRecordValue('baselineLeft', this.calculateBaselineLeft(task), task, true);
         this.parent.setRecordValue('baselineWidth', this.calculateBaselineWidth(task), task, true);
-        let childData: IGanttData[] = [];
-        let parentItem: IGanttData;
-        if (data.parentItem) {
-            parentItem = this.parent.getParentTask(data.parentItem) as IGanttData;
-            childData = parentItem.childRecords as IGanttData[];
-        }
-        if (parentItem && childData.indexOf(data) === childData.length - 1 && !data.hasChildRecords && this.parent.enableValidation) {
-            if ((this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
-                this.parent.taskFields.hasChildMapping)) || this.parent.viewType === 'ResourceView') {
-                this.updateParentItems(parentItem);
-            }
-            if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
-                                                             this.parent.taskFields.hasChildMapping)) {
+        const parentItem: IGanttData = data.parentItem ? this.parent.getParentTask(data.parentItem) as IGanttData : null;
+        const isLastChild: boolean = parentItem && parentItem.childRecords.slice(-1)[0] === data;
+        if (parentItem) {
+            if (isLastChild && !data.hasChildRecords && this.parent.enableValidation) {
+                if ((this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
+                    this.parent.taskFields.hasChildMapping)) || this.parent.viewType === 'ResourceView') {
+                    this.updateParentItems(parentItem);
+                }
+                if (this.shouldProcessUpdateWidth()) {
+                    this.updateWidthLeft(parentItem);
+                }
+            } else if (parentItem && !this.parent.enableValidation) {
                 this.updateWidthLeft(parentItem);
             }
-        } else if (parentItem && !this.parent.enableValidation) {
-            this.updateWidthLeft(parentItem);
         }
     }
+
     /**
      * @returns {void} .
      * @private

@@ -3,7 +3,7 @@ import { PointModel } from './../primitives/point-model';
 import { pathSegmentCollection, getRectanglePath, processPathData } from './../utility/path-util';
 // import { overFlow } from './../utility/base-util';
 import { createHtmlElement } from './../utility/dom-util';
-import { PathSegment, StyleAttributes, ImageAttributes } from './canvas-interface';
+import { PathSegment, StyleAttributes, ImageAttributes, ImageEntry } from './canvas-interface';
 import { RectAttributes, PathAttributes, TextAttributes, SubTextElement, TextBounds } from './canvas-interface';
 import { DrawingElement } from '../core/elements/drawing-element';
 import { DrawingRenderer } from './renderer';
@@ -14,7 +14,8 @@ import { DrawingRenderer } from './renderer';
 
 /** @private */
 export class CanvasRenderer {
-
+     /** @private */
+    public imageList: Record<string, ImageEntry[]> = {};
     /**   @private  */
     public static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
         return canvas.getContext('2d');
@@ -388,11 +389,31 @@ export class CanvasRenderer {
             }
         } else {
             if (image.complete) {
-                ctx.clearRect(x, y, width, height);
+                const canvasId: string = ctx.canvas.id;
+                if (this.imageList[canvasId]) {                         
+                    const existingImageIndex: number = this.isExistingImage(canvasId, this.imageList, alignOptions);
+                    if (existingImageIndex !== -1) {
+                        this.updateImageList(existingImageIndex, this.imageList, canvasId);
+                    }
+                    this.updateCanvasList(this.imageList, canvasId);
+                }
+                //ctx.clearRect(x, y, width, height);
                 ctx.drawImage(image, x, y, width, height);
             } else {
+                const proxy: CanvasRenderer = this;
                 let transform: DOMMatrix = ctx.getTransform();
                 image.onload = null;
+                const canvasId: string = ctx.canvas.id;
+                if (!this.imageList[canvasId]) {
+                    this.imageList[canvasId] = [];
+                }       
+                const existingImageIndex = this.isExistingImage(canvasId, this.imageList, alignOptions);
+                const newImageEntry = { id: alignOptions.id, image: image, canvasId: canvasId };
+            
+                if (existingImageIndex !== -1) {
+                    this.updateImageList(existingImageIndex, this.imageList, canvasId);
+                }             
+                this.imageList[canvasId].push(newImageEntry);
                 image.onload = () => {
                     var annotationID:string = alignOptions.id.split('_content')[0];
                     var annotationObject: boolean = true; 
@@ -401,13 +422,37 @@ export class CanvasRenderer {
                     }
                     if (annotationObject) {
                     ctx.setTransform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f);
-                    ctx.clearRect(x, y, width, height);
-                    ctx.drawImage(image, x, y, width, height);
+                    //ctx.clearRect(x, y, width, height);
+                    //ctx.drawImage(image, x, y, width, height);
+                    const canvasIdValue: string = ctx.canvas.id;
+                    if (proxy.imageList[canvasIdValue]) {
+                        const existingImageIndex: number = proxy.isExistingImage(canvasIdValue, proxy.imageList, alignOptions);
+                        if (existingImageIndex !== -1) {
+                          proxy.updateImageList(existingImageIndex, proxy.imageList, canvasIdValue);
+                          ctx.drawImage(image, x, y, width, height);
+                        }
+                        proxy.updateCanvasList(proxy.imageList, canvasIdValue); 
+                      }
                     }
                 };
             }
         }
         ctx.closePath();
+    }
+
+    private isExistingImage(canvasId: string, imageList: Record<string, ImageEntry[]>, alignOptions: ImageAttributes): number {
+        return imageList[canvasId].findIndex(imageObject => imageObject.id === alignOptions.id);
+    }
+
+    private updateImageList(existingImageIndex: number, imageList: Record<string, ImageEntry[]>, canvasId: string): void {
+        imageList[canvasId][existingImageIndex].image.onload = null;
+        imageList[canvasId].splice(existingImageIndex, 1);
+    }
+
+    private updateCanvasList(imageList: Record<string, ImageEntry[]>, canvasId: string) {
+        if (imageList[canvasId] && imageList[canvasId].length === 0) {
+          delete imageList[canvasId];
+      }
     }
 
     // text utility

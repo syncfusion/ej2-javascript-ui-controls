@@ -466,7 +466,7 @@ export class Selection {
             return;
         }
         const frozenRow: number = this.parent.frozenRowCount(sheet);
-        if (!isFormulaEdit) { prevIndex = getCellIndexes(sheet.activeCell); }
+        if (!isFormulaEdit && !this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
         const isScrollDown: boolean = clientY > bottom && !this.isColSelected && rowIdx < sheet.rowCount;
         const isScrollUp: boolean = clientY < top && rowIdx >= 0 && !this.isColSelected &&
             !!verticalContent.scrollTop && (!frozenRow || prevIndex[0] >= frozenRow);

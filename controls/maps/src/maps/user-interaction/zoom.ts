@@ -117,7 +117,6 @@ export class Zoom {
         map.markerZoomedState = map.isMarkerZoomCompleted = false;
         map.zoomPersistence = map.enablePersistence;
         const prevLevel: number = map.tileZoomLevel;
-        const scale: number = map.previousScale = map.scale;
         const maxZoom: number = map.zoomSettings.maxZoom;
         const minZoom: number = map.zoomSettings.minZoom;
         newZoomFactor = maxZoom >= newZoomFactor ? newZoomFactor : maxZoom; let isToolbarPerform: boolean = true;
@@ -130,6 +129,7 @@ export class Zoom {
             break;
         }
         if (isToolbarPerform) {
+            const scale: number = map.previousScale = map.scale;
             const prevTilePoint: Point = map.tileTranslatePoint;
             if ((!map.isTileMap) && ((type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)
                 || map.isReset)) {

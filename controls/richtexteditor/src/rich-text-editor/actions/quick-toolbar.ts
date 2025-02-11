@@ -11,6 +11,7 @@ import { BaseToolbar } from './base-toolbar';
 import { PopupRenderer } from '../renderer/popup-renderer';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { CLS_INLINE_POP, CLS_INLINE, CLS_VID_CLICK_ELEM} from '../base/classes';
+import { BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * `Quick toolbar` module is used to handle Quick toolbar actions.
@@ -33,6 +34,7 @@ export class QuickToolbar {
     public debounceTimeout: number = 1000;
     private renderFactory: RendererFactory;
     public isDestroyed: boolean;
+    private escapeKeyPressed: boolean = false;
 
     public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
@@ -200,6 +202,7 @@ export class QuickToolbar {
         if (this.inlineQTBar && !hasClass(this.inlineQTBar.element, 'e-popup-close')) {
             this.inlineQTBar.hidePopup();
         }
+        this.escapeKeyPressed = false;
     }
 
     /**
@@ -264,7 +267,9 @@ export class QuickToolbar {
                     const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;
                     if ((isNOU(closest(startNode, 'A')) || isNOU(closest(endNode, 'A'))) && (!closest(target, 'td,th') || !range.collapsed) &&
                     (target.tagName !== 'IMG' || this.parent.getRange().startOffset !== this.parent.getRange().endOffset)) {
-                        if (this.parent.inlineMode.onSelection && range.collapsed) {
+                        const isCursor: boolean = range.startOffset === range.endOffset && range.startContainer === range.endContainer;
+                        if ((this.parent.inlineMode.onSelection && isCursor) ||
+                        (!this.parent.inlineMode.onSelection && !isCursor)) {
                             return;
                         }
                         this.target = target;
@@ -460,18 +465,19 @@ export class QuickToolbar {
         if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close')) {
             this.linkQTBar.hidePopup();
         }
-        if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) {
+        if (!this.escapeKeyPressed && this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) {
             this.imageQTBar.hidePopup();
         }
-        if (this.audioQTBar && !hasClass(this.audioQTBar.element, 'e-popup-close')) {
+        if (!this.escapeKeyPressed && this.audioQTBar && !hasClass(this.audioQTBar.element, 'e-popup-close')) {
             this.audioQTBar.hidePopup();
         }
-        if (this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close')) {
+        if (!this.escapeKeyPressed && this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close')) {
             this.videoQTBar.hidePopup();
         }
-        if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) {
+        if (!this.escapeKeyPressed && this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) {
             this.tableQTBar.hidePopup();
         }
+        this.escapeKeyPressed = false;
     }
     /**
      * addEventListener
@@ -499,6 +505,19 @@ export class QuickToolbar {
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.hidePopup, this.hideQuickToolbars, this);
+        this.parent.on(events.renderQuickToolbar, this.renderQuickToolbars, this);
+        this.parent.on(events.preventQuickToolbarClose, this.preventQuickToolbarClose, this);
+    }
+
+    private preventQuickToolbarClose(args: BeforeOpenCloseMenuEventArgs): void {
+        const editorBaseId: string = this.parent.getID();
+        const dropDownPopup: string[] = [editorBaseId + '_quick_Display-popup', editorBaseId + '_quick_Align-popup',
+            editorBaseId + '_quick_VideoLayoutOption-popup', editorBaseId + '_quick_VideoAlign-popup',
+            editorBaseId + '_quick_TableRows-popup', editorBaseId + '_quick_TableColumns-popup', editorBaseId + '_quick_TableCell-popup', editorBaseId + '_quick_TableCellVerticalAlign-popup', editorBaseId + '_quick_Styles-popup', editorBaseId + '_quick_Alignments-popup', editorBaseId + '_quick_BackgroundColor-popup',
+            editorBaseId + '_quick_AudioLayoutOption-popup'];
+        if (!isNOU(args.element) && !isNOU(args.element.parentElement) && dropDownPopup.indexOf(args.element.parentElement.id) > -1) {
+            this.escapeKeyPressed = true;
+        }
     }
 
     private onKeyDown(e: NotifyArgs): void {
@@ -597,7 +616,8 @@ export class QuickToolbar {
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.hidePopup, this.hideQuickToolbars);
-
+        this.parent.off(events.renderQuickToolbar, this.renderQuickToolbars);
+        this.parent.off(events.preventQuickToolbarClose, this.preventQuickToolbarClose);
     }
 
     /**

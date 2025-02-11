@@ -617,7 +617,7 @@ describe('Selection ->', () => {
         //         });
         //     });
         // });
-        describe('I308987, F162287 ->', () => {
+        describe('I308987, F162287, EJ2-935956 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({}, done);
             });
@@ -634,6 +634,25 @@ describe('Selection ->', () => {
                     helper.triggerKeyEvent('keydown', 40, null, null, true, helper.invoke('getCell', [0, 1]));
                     setTimeout((): void => {
                         expect(spreadsheet.sheets[0].selectedRange).toBe('A1:B2');
+                        done();
+                    });
+                });
+            });
+            it('Selection not working properly when selecting the columns with merged cells', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('selectRange', ['A1:E1']);
+                helper.invoke('merge');
+                const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent');
+                let headerCell: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[2];
+                let offset: DOMRect = headerCell.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, headerCell);
+                setTimeout((): void => {
+                    headerCell = helper.invoke('getColHeaderTable').rows[0].cells[3];
+                    offset = headerCell.getBoundingClientRect() as DOMRect;
+                    helper.getInstance().selectionModule.mouseMoveHandler({ target: headerCell, clientX: offset.left + 1, clientY: offset.top + 1 });
+                    helper.triggerMouseAction('mouseup', { x: offset.left + 10, y: offset.top + 5, offsetX: 10 }, document, colHdrPanel);
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].selectedRange).toBe('C1:D100');
                         done();
                     });
                 });

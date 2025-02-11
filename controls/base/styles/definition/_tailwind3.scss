@@ -1164,7 +1164,7 @@ $warning-shadow-focus: 0 0 0 4px rgba($warning-shadow, .5) !default;
 $keyboard-focus-shadow: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
 
 // fontfamily
-$font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'apple color emoji', 'Segoe UI emoji', 'Segoe UI Symbol', 'Noto color emoji' !default;
+$font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'apple color emoji', 'Segoe UI emoji', 'Segoe UI Symbol', 'Noto color emoji' !default;
 
 // default font Size
 $text-xxs: 10px !default;

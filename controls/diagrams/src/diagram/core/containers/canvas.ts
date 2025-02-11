@@ -5,11 +5,13 @@
 import { Container } from './container';
 import { DiagramElement } from '../elements/diagram-element';
 import { rotateSize } from '../../utility/base-util';
-import { Transform, ElementAction } from '../../enum/enum';
+import { Transform, ElementAction, FlipDirection } from '../../enum/enum';
 import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
 import { TextElement } from '../elements/text-element';
+import { ImageElement } from '../elements/image-element';
+import { PathElement } from '../elements/path-element';
 
 /**
  * Canvas module is used to define a plane(canvas) and to arrange the children based on margin
@@ -105,10 +107,12 @@ export class Canvas extends Container {
             for (const child of this.children) {
                 if ((child.transform & Transform.Parent) !== 0) {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
-                    if (this.flip !== 'None' || this.elementActions & ElementAction.ElementIsGroup) {
-                        // EJ2-911095 - Restrict negative rotate angle for the non flipped text
-                        child.parentTransform = ((this.flip === 'Horizontal' || this.flip === 'Vertical') && (!(child instanceof TextElement && (this.flipMode === 'Port' || this.flipMode === 'Label' || this.flipMode === 'PortAndLabel' || this.flipMode === 'None')))) ?
-                            -child.parentTransform : child.parentTransform;
+                    if (this.flip !== FlipDirection.None || this.elementActions & ElementAction.ElementIsGroup) {
+                        if ((this.flip === FlipDirection.Horizontal  || this.flip === FlipDirection.Vertical) &&
+                            !(child.elementActions & ElementAction.ElementIsPort)) {
+                            //To update parentTransform for the diargam elements based on the flip mode.
+                            this.setParentTransform(child);
+                        }
                     }
                     const childSize: Size = child.desiredSize.clone();
 
@@ -156,6 +160,40 @@ export class Canvas extends Container {
         return desiredSize;
     }
 
+    private setParentTransform (child: DiagramElement): void {
+        if (this.flipMode === 'All' || child instanceof ImageElement) {
+            if (child.parentTransform > 0) {
+                child.parentTransform = -child.parentTransform;
+            }
+        }
+        else if (!(child instanceof ImageElement || child instanceof TextElement || child instanceof PathElement)
+                   && child instanceof DiagramElement ) {
+            if (child.parentTransform > 0) {
+                child.parentTransform = -child.parentTransform;
+            }
+        }
+        else if (child instanceof TextElement && (child as any).position === undefined) {
+            child.parentTransform = -child.parentTransform;
+        }
+        else if (this.flipMode === 'None') {
+            if (!(child.elementActions & ElementAction.ElementIsPort) && child instanceof PathElement) {
+                if (child.parentTransform > 0) {
+                    child.parentTransform = -child.parentTransform;
+                }
+            }
+        }
+        else if (child instanceof PathElement) {
+            if (child.parentTransform > 0) {
+                child.parentTransform = -child.parentTransform;
+            }
+        } else if (this.flipMode === 'LabelText' || this.flipMode === 'LabelAndLabelText' || this.flipMode === 'PortAndLabelText') {
+            if (child instanceof TextElement) {
+                if (child.parentTransform > 0) {
+                    child.parentTransform = -child.parentTransform;
+                }
+            }
+        }
+    }
 
 
 

@@ -191,7 +191,7 @@ export class Table {
         case 'Dashed':
         case 'Alternate':
         case 'Custom':
-            this.tableStyles(args, item.subCommand);
+            this.tableStyles(args, e);
             break;
         case 'Merge':
         case 'VerticalSplit':
@@ -705,13 +705,14 @@ export class Table {
         }
     }
 
-    private tableStyles(args: ITableNotifyArgs, command: string): void {
+    private tableStyles(args: ITableNotifyArgs, e: ClickEventArgs): void {
+        const command: string = (e.item as IDropDownItemModel).subCommand;
         const table: HTMLTableElement = closest(args.selectParent[0], 'table') as HTMLTableElement;
         if (command === 'Dashed') {
             /* eslint-disable */
             (this.parent.element.classList.contains(classes.CLS_TB_DASH_BOR)) ?
                 removeClassWithAttr([this.parent.element],classes.CLS_TB_DASH_BOR) : this.parent.element.classList.add(classes.CLS_TB_DASH_BOR);
-            (table.classList.contains(classes.CLS_TB_DASH_BOR)) ? removeClassWithAttr([this.parent.element],classes.CLS_TB_DASH_BOR) :
+            (table.classList.contains(classes.CLS_TB_DASH_BOR)) ? removeClassWithAttr([table],classes.CLS_TB_DASH_BOR) :
                 table.classList.add(classes.CLS_TB_DASH_BOR);
         }
         if (command === 'Alternate') {
@@ -731,12 +732,13 @@ export class Table {
                 }
             }
         }
+        this.parent.formatter.process(this.parent, e, e, { subCommand: (e.item as IDropDownItemModel).subCommand });
         this.parent.formatter.saveData();
         this.hideTableQuickToolbar();
         this.parent.formatter.editorManager.nodeSelection.restore();
     }
     private insideList(range: Range): boolean {
-        const blockNodes: Element[] = <Element[]>(this.parent.formatter.editorManager as EditorManager).domNode.blockNodes();
+        const blockNodes: Element[] = this.getBlockNodesInSelection(range);
         const nodes: Element[] = [];
         for (let i: number = 0; i < blockNodes.length; i++) {
             if ((blockNodes[i as number].parentNode as Element).tagName === 'LI') {
@@ -755,6 +757,48 @@ export class Table {
             return false;
         }
     }
+
+    private getBlockNodesInSelection(range: Range): Element[] {
+        const blockTags: string[] = [
+            'DIV', 'SECTION', 'HEADER', 'FOOTER', 'ARTICLE', 'NAV',
+            'P', 'H1', 'H2', 'H3', 'BLOCKQUOTE', 'LI', 'PRE',
+            'TD', 'TH', 'FORM', 'FIELDSET', 'LEGEND', 'LABEL', 'TEXTAREA'
+        ];
+        const blockNodes: Set<Element> = new Set();
+        const treeWalker: TreeWalker = this.contentModule.getDocument().createTreeWalker(
+            range.commonAncestorContainer,
+            NodeFilter.SHOW_TEXT, {
+                acceptNode: (node: Node) => (range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT)
+            }
+        );
+        // If selection is collapsed, handle the case explicitly
+        if (range.collapsed) {
+            const blockNode: Element = this.getImmediateBlockNode(range.startContainer, blockTags);
+            if (blockNode) {
+                blockNodes.add(blockNode);
+            }
+        } else {
+            while (treeWalker.nextNode()) {
+                const blockNode: Element = this.getImmediateBlockNode(treeWalker.currentNode, blockTags);
+                if (blockNode) {
+                    blockNodes.add(blockNode);
+                }
+            }
+        }
+        return Array.from(blockNodes);
+    }
+    private getImmediateBlockNode(node: Node, blockTags: string[]): Element | null {
+        let parentNode: Node = node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+        while (parentNode && parentNode.nodeType === Node.ELEMENT_NODE) {
+            const element: Element = parentNode as Element;
+            if (blockTags.indexOf(element.tagName) > -1) {
+                return element;
+            }
+            parentNode = parentNode.parentNode;
+        }
+        return null;
+    }
+
     private removeEmptyTextNodes(element: HTMLTableRowElement): void {
         const children: NodeListOf<ChildNode> = element.childNodes;
         for (let i: number = children.length - 1; i >= 0; i--) {
@@ -816,12 +860,19 @@ export class Table {
                         (closest(ele, 'table').previousSibling.nodeName.toLowerCase() === 'td') ? closest(ele, 'table').previousSibling :
                             ele : ele);
             if (ele === prevElement && (ele as HTMLTableDataCellElement).cellIndex === 0 &&
-                (closest(ele, 'table') as HTMLTableElement).tHead) {
+                (closest(ele, 'table') as HTMLTableElement).tHead && ele.nodeName !== 'TH') {
                 const clsTble: HTMLTableElement = closest(ele, 'table') as HTMLTableElement;
                 prevElement = clsTble.rows[0].cells[clsTble.rows[0].cells.length - 1];
             }
             if (event.keyCode === 37 && ele === prevElement) {
                 prevElement = closest(ele, 'table').previousSibling;
+            }
+            if (!isNOU(prevElement) && (prevElement as HTMLElement).firstChild.nodeName === 'TABLE') {
+                let tableChild: Node = (prevElement as Node);
+                while (!isNOU(tableChild.firstChild) && tableChild.firstChild.nodeName === 'TABLE' && (tableChild.firstChild as HTMLTableElement).rows.length > 0 && (tableChild.firstChild as HTMLTableElement).rows[0].cells.length > 0) {
+                    tableChild = (tableChild.firstChild as HTMLTableElement).rows[0].cells[0];
+                }
+                prevElement = tableChild;
             }
             if (prevElement) {
                 // eslint-disable-next-line
@@ -870,6 +921,7 @@ export class Table {
         for (let i: number = 0; i < selectedCells.length; i++) {
             (selectedCells[i as number] as HTMLElement).style.backgroundColor = args.item.value;
         }
+        this.parent.formatter.process(this.parent, args, (args as IColorPickerEventArgs).originalEvent, args.item.value);
         this.parent.formatter.saveData();
         this.hideTableQuickToolbar();
     }
@@ -910,6 +962,9 @@ export class Table {
                 return;
             }
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+            if (!range.collapsed) {
+                return; // Should not open Table quick toolbar when collapsed is equal to false.
+            }
             const closestTable: Element = closest(target, 'table');
             const startNode: HTMLElement = this.parent.getRange().startContainer.parentElement;
             const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;

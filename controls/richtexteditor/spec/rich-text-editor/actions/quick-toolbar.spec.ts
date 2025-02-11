@@ -2013,7 +2013,7 @@ describe("Quick Toolbar - Actions Module", () => {
             };
             rteObj.quickToolbarModule.selectionChangeHandler(args); 
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(0);
                 done();
             }, 100);
         });
@@ -2048,11 +2048,11 @@ describe("Quick Toolbar - Actions Module", () => {
             };
             rteObj.quickToolbarModule.selectionChangeHandler(args); 
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(0);
                 rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 1);
                 rteObj.quickToolbarModule.selectionChangeHandler(args);
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                    expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(0);
                     done();
                 }, 100);
             }, 100);
@@ -2666,6 +2666,106 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(document.activeElement === editorObj.quickToolbarModule.imageQTBar.toolbarElement.querySelector('.e-toolbar-item'));
                 done();
             }, 200);
+        });
+    });
+
+    describe('937562 - MAC: The Quick toolbar closes when the Alt +F10 key is pressed to focus on the first icon of the toolbar.', () => {
+        let rteObj: any;
+        let QTBarModule: IRenderer;
+        let rteEle: HTMLElement;
+        let EnterkeyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: true,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 18,
+            keyCode: 18,
+            which: 18,
+            code: 'AltLeft',
+            action: 'AltLeft',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                enableTabKey: true,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>" + "<img id='imgTag' style='width: 200px' alt='Logo'" +
+                    " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' />",
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Should keep the image quick toolbar open when Alt and F10 keys are pressed", (done) => {
+            let target: HTMLElement = rteEle.querySelector('#imgTag');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            (<any>QTBarModule).renderQuickToolbars();
+            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
+            (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+            let imageQuickToolbar: HTMLElement = document.querySelector(".e-rte-quick-popup.e-rte-image-popup");
+            expect(imageQuickToolbar !== null).toBe(true);
+            EnterkeyboardEventArgs.code = "F10";
+            (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+            imageQuickToolbar = document.querySelector(".e-rte-quick-popup.e-rte-image-popup");
+            expect(imageQuickToolbar !== null).toBe(true);
+            done();
+        });
+    });
+
+    describe('936959 - MAC-After pressing the Escape key, both the dropdown popup and the quick toolbar are closing, although only the dropdown popup should close.', () => {
+        let rteObj: any;
+        let QTBarModule: IRenderer;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>" + "<img id='imgTag' style='width: 200px' alt='Logo'" +
+                    " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' />",
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Should close only dropdown popup on Escape key press, not the entire quick toolbar", (done) => {
+            let target: HTMLElement = rteEle.querySelector('#imgTag');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            (<any>QTBarModule).renderQuickToolbars();
+            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
+            (document.querySelectorAll(".e-rte-dropdown-btn")[1] as HTMLElement).click();
+            setTimeout(() => {
+                var escapeKeyDown = new KeyboardEvent('keydown', {
+                    key: 'Escape',
+                    code: 'Escape',
+                    keyCode: 27,
+                    bubbles: true,
+                    cancelable: true
+                } as KeyboardEventInit);
+                let dropDownElem = document.querySelector("#" + rteObj.getID() + '_quick_Display-popup');
+                dropDownElem.dispatchEvent(escapeKeyDown);
+                let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Escape', stopPropagation: () => { }, shiftKey: false, which: 27 };
+                (rteObj as any).keyUp(keyBoardEventDel);
+                expect(document.querySelector(".e-rte-quick-popup.e-rte-image-popup") != null).toBe(true);
+                expect(dropDownElem.childNodes.length == 0).toBe(true);
+                (rteObj).keyUp(keyBoardEventDel);
+                expect(document.querySelector("#" + rteObj.getID() + '_quick_Display-popup')).toBe(null);
+                done();
+            }, 0);
         });
     });
 

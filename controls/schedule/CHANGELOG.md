@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I682735`, `#I680637` -  An issue where the current time indicator in the Scheduler is rendered in the incorrect position in vertical views has been resolved.
+
+- `#F64855` - An issue where the selected date not maintained in Scheduler `MonthAgenda` view has been resolved.
+
 ## 28.2.4 (2025-02-04)
 
 ### Schedule

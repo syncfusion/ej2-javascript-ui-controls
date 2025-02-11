@@ -395,6 +395,46 @@ describe('Emoji picker module', () => {
             expect(rteObj.element.querySelector('.e-rte-emojisearch-btn button').innerHTML).toBe('👨');
         });
     });
+    describe('Emoji picker - Escape key focus fix', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+    
+        beforeEach((done: DoneFn) => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+    
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    
+        it('should close the emoji picker and return focus to the button when Escape key is pressed', (done: Function) => {
+            const emojiButton: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+            emojiButton.click();
+            expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).not.toBe(null);
+            const keyboardEventArgs: any = {
+                preventDefault: function () { },
+                keyCode: 27,
+                key: 'Escape',
+                type: 'keydown'
+            };
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
+            expect(document.activeElement).toBe(emojiButton);
+            done();
+        });
+    });
     describe('Emoji picker - iconcss property' , () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -1220,7 +1260,7 @@ describe('Emoji picker module', () => {
                 type: 'Enter',
                 target: emoji[0]
             };
-            (<any>rteObj).emojiPickerModule.onKeyDown({preventDefault: function () { },keyCode: 13, target: emoji[0]});
+            (<any>rteObj).emojiPickerModule.onKeyDown({preventDefault: function () { },keyCode: 13, target: emoji[0], type: 'keydown'});
             expect(document.activeElement.innerHTML).toBe('<p id="rte-p">Emoji picker : : : : : : 😀</p>');
         });
     });
@@ -1949,6 +1989,10 @@ describe('Emoji picker module', () => {
             }
             setTimeout(function () {
                 expect(isEmojiPickerTriggered).toBe(true);
+                element.click();
+                rteObj.emojiPickerModule.isPopupDestroyed = true;
+                element.click();
+                rteObj.emojiPickerModule.isPopupDestroyed = false;
                 done();
             }, 500); 
         });

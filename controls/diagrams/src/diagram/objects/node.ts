@@ -14,7 +14,7 @@ import { ShapeStyleModel, TextStyleModel, ShadowModel } from '../core/appearance
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
-import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction, TextAnnotationDirection } from '../enum/enum';
+import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction, TextAnnotationDirection, FlipDirection } from '../enum/enum';
 import { IElement } from './interface/IElement';
 import { Container } from '../core/containers/container';
 import { Canvas } from '../core/containers/canvas';
@@ -2749,7 +2749,7 @@ export class Node extends NodeBase implements IElement {
                 this.oldGradientValue = (this.style.gradient) ? cloneObject(this.style.gradient) : null;
             }
         }
-        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === 'Horizontal' || this.flip === 'Vertical') {
+        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === FlipDirection.Horizontal || this.flip === FlipDirection.Vertical) {
             content.flip = this.flip;
             content.flipMode = this.flipMode;
         }
@@ -2983,10 +2983,10 @@ export class Node extends NodeBase implements IElement {
         };
         portContent.horizontalAlignment = ports.horizontalAlignment;
         portContent.verticalAlignment = ports.verticalAlignment;
-        if (Node && Node.flipMode !== 'Label' && Node.flipMode !== 'None') {
+        if (this.flipMode !== 'None' && this.flipMode !== 'Label' && this.flipMode !== 'LabelText' && this.flipMode !== 'LabelAndLabelText') {
             portContent = updatePortEdges(portContent, this.flip, ports);
         } else {
-            portContent = updatePortEdges(portContent, 'None', ports);
+            portContent = updatePortEdges(portContent, FlipDirection.None, ports);
         }
         if (this.width !== undefined || this.height !== undefined) {
             portContent.float = true;

@@ -7,6 +7,7 @@ import { PdfPage } from './../pdf-page';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
 import { PdfWidgetAnnotation } from './../annotations/annotation';
 import { PdfDocument } from '../pdf-document';
+import { _PdfCatalog } from '../pdf-catalog';
 /**
  * Represents a PDF form.
  * ```typescript
@@ -318,6 +319,12 @@ export class PdfForm {
             this._reorderParsedAnnotations(index);
         }
         this._fields.splice(index, 1);
+        const document: PdfDocument = this._crossReference._document;
+        const catalog: _PdfCatalog = document._catalog;
+        if (this._fields.length === 0 && document && catalog && catalog._catalogDictionary) {
+            catalog._catalogDictionary._updated = true;
+            this._crossReference._allowCatalog = true;
+        }
         this._dictionary.set('Fields', this._fields);
         this._dictionary._updated = true;
     }

@@ -32,7 +32,7 @@ import { PdfiumRunner } from '../pdfium/pdfium-runner';
 import { PageOrganizer } from '../index';
 import { PageRenderer, PageRotation } from '../index';
 import { PdfPage, _getPageIndex } from '@syncfusion/ej2-pdf';
-import { PdfViewerSessionStorage } from './pdfviewer-utlis';
+import { PdfViewerSessionStorage, PdfiumTaskScheduler, TaskPriorityLevel } from './pdfviewer-utlis';
 
 /**
  * The `ISize` module is used to handle page size property of PDF viewer.
@@ -666,7 +666,7 @@ export class PdfViewerBase {
     /**
      * @private
      */
-    public pdfViewerRunner: Worker;
+    public pdfViewerRunner: PdfiumTaskScheduler;
     /**
      * @private
      */
@@ -945,7 +945,7 @@ export class PdfViewerBase {
      * @returns {void}
      */
     public initiatePageRender(documentData: any, password: string, isSkipDocumentId: boolean = true): void {
-        this.isPasswordProtected = (password || isNullOrUndefined(password)) ? true : false;
+        this.isPasswordProtected = (!isNullOrUndefined(password) && password !== '') ? true : false;
         if (this.clientSideRendering) {
             this.pdfViewer.unload();
         }
@@ -1792,19 +1792,19 @@ export class PdfViewerBase {
             const proxy: any = this;
             let fileByteArray: any = this.pdfViewer.fileByteArray;
             if (!isNullOrUndefined(fileByteArray) && fileByteArray.length > 0) {
-                this.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageCollection', password: this.passwordData, pageIndex: pageIndex, isZoomMode: isZoomMode });
+                this.pdfViewerRunner.addTask({ uploadedFile: fileByteArray, message: 'LoadPageCollection', password: this.passwordData, pageIndex: pageIndex, isZoomMode: isZoomMode }, TaskPriorityLevel.High);
                 fileByteArray = null;
             } else {
                 this.renderCorruptPopup(false);
             }
-            this.pdfViewerRunner.onmessage = function (event: any): void {
+            this.pdfViewerRunner.onMessage(function (event: any): void {
                 if (event.data.message === 'PageLoaded') {
                     proxy.initialPagesRendered(event.data.pageIndex, event.data.isZoomMode);
                 }
                 else if (event.data.message === 'LoadedStampForFormFields') {
                     proxy.initialPagesRenderedForSign(event.data);
                 }
-            };
+            });
         } else {
             this.initialPagesRendered(pageIndex, isZoomMode);
         }
@@ -8410,7 +8410,7 @@ export class PdfViewerBase {
                                         jsonData = JSON.parse(JSON.stringify(jsonObject));
                                         jsonData.action = 'pageRenderInitiate';
                                         proxy.pdfViewer.firePageRenderInitiate(jsonData);
-                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId, cropBoxRect: cropBoxRect, mediaBoxRect: mediaBoxRect });
+                                        this.pdfViewerRunner.addTask({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId, cropBoxRect: cropBoxRect, mediaBoxRect: mediaBoxRect }, TaskPriorityLevel.High);
                                     }
                                     else {
                                         this.showPageLoadingIndicator(pageIndex, true);
@@ -8420,7 +8420,7 @@ export class PdfViewerBase {
                                             jsonData.action = 'pageRenderInitiate';
                                             proxy.pdfViewer.firePageRenderInitiate(jsonData);
                                         }
-                                        this.pdfViewerRunner.postMessage({
+                                        this.pdfViewerRunner.addTask({
                                             pageIndex: pageIndex,
                                             message: 'renderImageAsTile',
                                             zoomFactor: zoomFactor,
@@ -8432,9 +8432,9 @@ export class PdfViewerBase {
                                             textDetailsId: textDetailsId,
                                             cropBoxRect: cropBoxRect,
                                             mediaBoxRect: mediaBoxRect
-                                        });
+                                        }, TaskPriorityLevel.High);
                                     }
-                                    this.pdfViewerRunner.onmessage = function (event: any): void {
+                                    this.pdfViewerRunner.onMessage(function (event: any): void {
                                         switch (event.data.message) {
                                         case 'imageRendered':
                                             if (event.data.message === 'imageRendered') {
@@ -8613,7 +8613,7 @@ export class PdfViewerBase {
                                             }
                                             break;
                                         }
-                                    };
+                                    });
                                 }
                             }
 
@@ -11299,7 +11299,7 @@ export class PdfViewerBase {
                                             now.getUTCMinutes(), now.getUTCSeconds());
             dateTime = new Date(nowUtc) as Date;
         }
-        const dateTimeValue: string = this.globalize.formatDate(dateTime, { format: this.pdfViewer.dateTimeFormat, type: 'dateTime' });
+        const dateTimeValue: string = this.globalize.formatDate(dateTime, { format: 'M/d/yyyy h:mm:ss a', type: 'dateTime' });
         return dateTimeValue;
     }
 
@@ -12105,8 +12105,15 @@ export class PdfViewerBase {
                 }
             }
             if (isRefreshRequired) {
-                const canvas: HTMLElement = this.getElement('_annotationCanvas_' + pageIndex);
-                this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageIndex);
+                // Both canvases need to be refresh. The 'blendAnnotationsIntoCanvas' method is used to highlight annotations.
+                const canvasIds: string[] = [
+                    '_annotationCanvas_' + pageIndex,
+                    '_blendAnnotationsIntoCanvas_' + pageIndex
+                ];
+                canvasIds.forEach((id: string) => {
+                    const canvas: HTMLElement = this.getElement(id);
+                    this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageIndex);
+                });
             }
         }
 

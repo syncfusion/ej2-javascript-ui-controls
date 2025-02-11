@@ -7,7 +7,7 @@ import { CommandName, ISlashMenuItem } from '../base';
  */
 export class SlashMenuSettings extends ChildProperty<SlashMenuSettings> {
     /**
-     * Specifies to enable or disable the slash menu in the Editor.
+     * Specifies whether to enable or disable the slash menu in the editor.
      *
      * @default false
      */
@@ -15,7 +15,7 @@ export class SlashMenuSettings extends ChildProperty<SlashMenuSettings> {
     public enable: boolean;
 
     /**
-     * Specfies the items to be rendered in the slash menu.
+     * Defines the items to be displayed in the slash menu.
      *
      * @default ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'OrderedList', 'UnorderedList', 'CodeBlock', 'Blockquote']
      */
@@ -23,25 +23,24 @@ export class SlashMenuSettings extends ChildProperty<SlashMenuSettings> {
     public items: (SlashMenuItems | ISlashMenuItem)[];
 
     /**
-     * Specifies the width of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
+     * Specifies the width of the slash menu popup. Can be defined in pixels, numbers, or percentages.
+     * A numeric value is treated as pixels.
      *
      * @default '300px'
      * @aspType string
-     *
      */
     @Property('300px')
     public popupWidth: string | number;
 
     /**
-     * Specifies the height of the slash menu popup in pixels/number/percentage. The number value is considered as pixels.
+     * Specifies the height of the slash menu popup. Can be defined in pixels, numbers, or percentages.
+     * A numeric value is treated as pixels.
      *
      * @default '320px'
      * @aspType string
-     *
      */
     @Property('320px')
     public popupHeight: string | number;
-
 }
 
 export interface ISlashMenuModel {

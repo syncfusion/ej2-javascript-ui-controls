@@ -2317,7 +2317,7 @@ export abstract class PdfAnnotation {
                     maxY = corners[Number.parseInt(i.toString(), 10)][1];
                 }
             }
-            return { x: bounds.x, y: bounds.y, width: maxX - minX, height: maxY - minY };
+            return { x: bounds.x, y: bounds.y, width: Math.round(maxX - minX), height: Math.round(maxY - minY) };
         }
         return bounds;
     }
@@ -3368,6 +3368,8 @@ export class PdfLineAnnotation extends PdfComment {
         if (isFlatten && this._appearanceTemplate) {
             const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
             this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
         if (!isFlatten && this._setAppearance && !this.measure) {
             let appearance: _PdfDictionary;
@@ -4193,6 +4195,8 @@ export class PdfCircleAnnotation extends PdfComment {
         if (isFlatten && this._appearanceTemplate) {
             const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
             this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
         if (!isFlatten && this._setAppearance && !this.measure) {
             let appearance: _PdfDictionary;
@@ -4457,6 +4461,8 @@ export class PdfEllipseAnnotation extends PdfComment {
         if (isFlatten && this._appearanceTemplate) {
             const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
             this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
         if (!isFlatten && this._setAppearance) {
             let appearance: _PdfDictionary;
@@ -4784,6 +4790,8 @@ export class PdfSquareAnnotation extends PdfComment {
         if (isFlatten && this._appearanceTemplate) {
             const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
             this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
         if (!isFlatten && this._setAppearance && !this.measure) {
             let appearance: _PdfDictionary;
@@ -5139,6 +5147,8 @@ export class PdfRectangleAnnotation extends PdfComment {
                                             this.bounds, this._appearanceTemplate)) {
                 this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
             }
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
         if (!isFlatten && this._setAppearance) {
             let appearance: _PdfDictionary;
@@ -6347,6 +6357,8 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
                 }
             }
             this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
     }
     _createAngleMeasureAppearance(): PdfTemplate {
@@ -6965,6 +6977,8 @@ export class PdfInkAnnotation extends PdfComment {
                 }
             }
             this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
         if (isFlatten && !this.flattenPopups && this._dictionary.has('Popup')) {
             const reference: _PdfReference = this._dictionary.getRaw('Popup');
@@ -9847,6 +9861,8 @@ export class PdfTextMarkupAnnotation extends PdfComment {
             } else if (!this._dictionary.has('AP') && this._appearanceTemplate) {
                 this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
             }
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
     }
     _createMarkupAppearance(): PdfTemplate {
@@ -10253,6 +10269,8 @@ export class PdfWatermarkAnnotation extends PdfAnnotation {
                 }
             }
             this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
     }
 }
@@ -10596,6 +10614,8 @@ export class PdfRubberStampAnnotation extends PdfComment {
             } else {
                 this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
             }
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
     }
     _parseStampAppearance(): boolean {
@@ -11519,6 +11539,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
                     this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
                 }
             }
+        } else if (isFlatten) {
+            this._page.annotations.remove(this);
         }
         if (this._dictionary.has('RC') && this._isContentUpdated) {
             this._updateStyle(this.font, this._textMarkUpColor, this.textAlignment);
@@ -12850,6 +12872,8 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
                     }
                 }
                 this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            } else if (isFlatten) {
+                this._page.annotations.remove(this);
             }
         }
     }

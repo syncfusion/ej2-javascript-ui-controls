@@ -220,7 +220,7 @@ export const focusChartBorder: string = 'focusChartBorder';
 /** @hidden */
 export const saveError: string = 'saveError';
 /** @hidden */
-export const validationHighlight: string = 'validationHighlight';
+export const updateHighlight: string = 'updateHighlight';
 /** @hidden */
 export const beforeInsert: string = 'beforeInsert';
 /** @hidden */

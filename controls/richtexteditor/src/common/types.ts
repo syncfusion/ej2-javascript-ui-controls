@@ -1,26 +1,31 @@
 
 /**
- * Defines types of editor mode in which the Rich Text Editor is rendered.
+ * Specifies the modes available for rendering the Rich Text Editor.
+ * Options are either in HTML or Markdown format.
  */
 export type EditorMode = 'HTML' | 'Markdown';
 
 /**
- * Defines types to be used to save the image.
+ * Specifies the formats available for saving images.
+ * Options include saving as Base64 or Blob.
  */
 export type SaveFormat = 'Base64' | 'Blob';
 
 /**
- * Defines types to be used to display the layout of the audio/video.
+ * Specifies the layout options for displaying audio or video content.
+ * Options are Inline or Break.
  */
 export type DisplayLayoutOptions = 'Inline' | 'Break';
 
 /**
- * Defines tag to be used when enter key is pressed.
+ * Specifies the HTML tag used when the enter key is pressed.
+ * Options include P, DIV, or BR.
  */
 export type EnterKey = 'P' | 'DIV' | 'BR';
 
 /**
- * Defines tag to be used when shift + enter key is pressed.
+ * Specifies the HTML tag used when shift + enter keys are pressed.
+ * Options include P, DIV, or BR.
  */
 export type ShiftEnterKey = 'P' | 'DIV' | 'BR';
 

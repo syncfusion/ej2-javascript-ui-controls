@@ -453,7 +453,9 @@ export class Audio {
         }
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         let selectNodeEle: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
-        selectNodeEle = [this.audEle];
+        if (this.audEle) {
+            selectNodeEle = [this.audEle];
+        }
         const args: IImageNotifyArgs = { args: e, selectNode: selectNodeEle };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
@@ -521,7 +523,9 @@ export class Audio {
                 if (isIDevice()) {
                     this.parent.notify(events.selectionSave, e);
                 }
-                target.querySelector('audio').style.outline = '2px solid #4a90e2';
+                if (target.querySelector('audio')) {
+                    target.querySelector('audio').style.outline = '2px solid #4a90e2';
+                }
                 this.showAudioQuickToolbar({ args: args, type: 'Audios', elements: [args.target as Element] } as IShowPopupArgs);
             } else {
                 this.hideAudioQuickToolbar();
@@ -777,6 +781,9 @@ export class Audio {
                 filesData = e.filesData;
                 this.parent.trigger(events.fileSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {
+                        if (isNOU(selectArgs.filesData[0])) {
+                            return;
+                        }
                         this.checkExtension(selectArgs.filesData[0]); fileName = selectArgs.filesData[0].name;
                         if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertAudioSettings.path)) {
                             const reader: FileReader = new FileReader();

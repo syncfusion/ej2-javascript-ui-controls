@@ -311,7 +311,7 @@ export function searchWordHandler(parent: IFileManager, value: string, isLayoutC
     if (isFileSystemData(parent)) {
         if (value === '') {
             parent.itemData = parent.fileSystemData;
-            read(parent, events.layoutChange, parent.path);
+            read(parent, isLayoutChange ? events.layoutChange : events.search, parent.path);
         }
         else {
             parent.searchSettings.filterType = isNOU(parent.searchSettings.filterType) ? 'contains' : parent.searchSettings.filterType;

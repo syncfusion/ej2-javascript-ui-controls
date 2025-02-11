@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.2.5 (2025-02-11)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F195633` - Now, the change event will trigger when `Cmd+Backspace` is performed on a Mac.
+
+- `#I687260` - Now, the issue with the toolbar action not being applied to the selected text in the Rich Text Editor when using keyboard actions in the Safari browser has now been resolved.
+
 ## 28.2.4 (2025-02-04)
 
 ### RichTextEditor

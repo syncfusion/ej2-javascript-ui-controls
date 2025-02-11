@@ -478,7 +478,8 @@ export class TextMarkupAnnotation {
      */
     public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number, isImportTextMarkup?: boolean,
                                              isAnnotOrderAction?: boolean): void {
-        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+        const canvasId: string = textMarkupAnnotations && textMarkupAnnotations.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
+        const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + pageNumber);
         if (isImportTextMarkup) {
             this.renderTextMarkupAnnotations(null, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
             this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor(), true);
@@ -489,7 +490,8 @@ export class TextMarkupAnnotation {
     }
 
     private renderTextMarkupAnnotations(textMarkupAnnotations: any, pageNumber: number, canvas: HTMLElement, factor: number,
-                                        isImportAction?: boolean, isAnnotOrderAction?: boolean): void {
+                                        isImportAction?: boolean, isAnnotOrderAction?: boolean): any {
+        let highlightCanvasContext: any = null;
         if (canvas) {
             const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
             context.setTransform(1, 0, 0, 1, 0, 0);
@@ -625,9 +627,13 @@ export class TextMarkupAnnotation {
                     if (annotation.textMarkupAnnotationType) {
                         isPrint = annotation.isPrint;
                     }
+                    if (type === 'Highlight' && isNullOrUndefined(highlightCanvasContext)) {
+                        highlightCanvasContext = this.getHighlightCanvasContext(this.isPrintCanvas(canvas), pageNumber);
+                    }
                     switch (type) {
                     case 'Highlight':
-                        this.renderHighlightAnnotation(annotBounds, opacity, color, context, factor, isPrint, pageNumber);
+                        this.renderHighlightAnnotation(annotBounds, opacity, color, highlightCanvasContext.context, factor,
+                                                       isPrint, pageNumber);
                         break;
                     case 'Strikethrough':
                         this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint,
@@ -657,7 +663,48 @@ export class TextMarkupAnnotation {
                     this.isAnnotationSelect = false;
                 }
             }
+            const annotImg: string = (canvas as HTMLCanvasElement).toDataURL();
+            let highlightImg: string;
+            if (highlightCanvasContext) {
+                highlightImg = (highlightCanvasContext.canvas as HTMLCanvasElement).toDataURL();
+            }
+            return { annotImg, highlightImg };
         }
+    }
+
+    private getHighlightCanvasContext(isPrintCanvas: boolean, pageNumber: number): any {
+        let canvas: HTMLElement;
+        if (!isPrintCanvas) {
+            canvas = this.pdfViewerBase.getElement('_blendAnnotationsIntoCanvas_' + pageNumber);
+            if (isNullOrUndefined(canvas)) {
+                const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageNumber);
+                canvas = this.pdfViewer.annotationModule.createBlendAnnotationsIntoCanvas(pageDiv,
+                                                                                          parseFloat(pageDiv.style.width),
+                                                                                          parseFloat(pageDiv.style.height),
+                                                                                          pageNumber);
+            }
+        } else {
+            canvas = this.pdfViewerBase.getElement(this.pdfViewer.element.id + '_print_blendAnnotations_canvas_' + pageNumber) as HTMLCanvasElement;
+            if (isNullOrUndefined(canvas)) {
+                canvas = createElement('canvas', { id: this.pdfViewer.element.id + '_print_blendAnnotations_canvas_' + pageNumber }) as HTMLCanvasElement;
+                canvas.style.width = 816 + 'px';
+                canvas.style.height = 1056 + 'px';
+                const pageWidth: number = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].width;
+                const pageHeight: number = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].height;
+                const zoom: number = this.pdfViewerBase.getZoomFactor();
+                const zoomRatio: number = this.pdfViewerBase.getZoomRatio(zoom);
+                (canvas as any).height = pageHeight * zoomRatio;
+                (canvas as any).width = pageWidth * zoomRatio;
+            }
+        }
+        const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.setLineDash([]);
+        return { context: context, canvas: canvas };
+    }
+
+    private isPrintCanvas(canvas: HTMLElement): any {
+        return canvas && canvas.id.indexOf('_print_annotation_layer_') !== -1 ? true : false;
     }
 
     /**
@@ -869,7 +916,8 @@ export class TextMarkupAnnotation {
                             }
                         }
                         if (!newcanvas) {
-                            newcanvas = this.pdfViewerBase.getElement('_annotationCanvas_' + newAnnotation.pageNumber);
+                            const canvasId: string = newAnnotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
+                            newcanvas = this.pdfViewerBase.getElement(canvasId + newAnnotation.pageNumber);
                         }
                         this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()),
                                                       this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()),
@@ -881,7 +929,8 @@ export class TextMarkupAnnotation {
                 }
                 if (this.pdfViewerBase.clientSideRendering) {
                     if (!newcanvas) {
-                        newcanvas = this.pdfViewerBase.getElement('_annotationCanvas_' + newAnnotation.pageNumber);
+                        const canvasId: string = newAnnotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
+                        newcanvas = this.pdfViewerBase.getElement(canvasId + newAnnotation.pageNumber);
                     }
                     this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()),
                                                   this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()),
@@ -1145,7 +1194,7 @@ export class TextMarkupAnnotation {
         this.isNewAnnotation = false;
         let author: string = 'Guest';
         let subject: string;
-        const context: CanvasRenderingContext2D = this.getPageContext(pageNumber);
+        let context: CanvasRenderingContext2D = (type === 'Highlight') ? this.getPageContext(pageNumber, '_blendAnnotationsIntoCanvas_') : this.getPageContext(pageNumber, '_annotationCanvas_');
         const modifiedDate: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         this.highlightColor = this.highlightColor ? this.highlightColor : this.pdfViewer.highlightSettings.color ? this.pdfViewer.highlightSettings.color : '#FFDF56';
         this.underlineColor = this.underlineColor ? this.underlineColor : this.pdfViewer.underlineSettings.color ? this.pdfViewer.underlineSettings.color : '#00ff00';
@@ -1158,6 +1207,15 @@ export class TextMarkupAnnotation {
         const pageDetails: ISize = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)];
         let annotationRotate: number = 0;
         const pageRotation: number = this.pdfViewerBase.getAngle(pageDetails.rotation);
+        if (isNullOrUndefined(context)) {
+            const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageNumber);
+            // If the 'blendAnnotationsIntoCanvas' is not implemented, it should be created to highlight annotations.
+            const canvas: HTMLElement = this.pdfViewer.annotationModule.createBlendAnnotationsIntoCanvas(pageDiv,
+                                                                                                         parseFloat(pageDiv.style.width),
+                                                                                                         parseFloat(pageDiv.style.height),
+                                                                                                         pageNumber);
+            context = (canvas as HTMLCanvasElement).getContext('2d');
+        }
         if (context) {
             context.setLineDash([]);
             switch (type) {
@@ -1297,10 +1355,11 @@ export class TextMarkupAnnotation {
             } else {
                 height = height - 1;
             }
-            if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
+            if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex ||
+                context.canvas.id === this.pdfViewer.element.id + '_print_blendAnnotations_canvas_' + pageIndex) {
                 if (isPrint) {
                     context.rect((x * zoomRatio), (y * zoomRatio), (width * zoomRatio), (height * zoomRatio));
-                    context.globalAlpha = opacity * 0.5;
+                    context.globalAlpha = opacity;
                     context.closePath();
                     context.fillStyle = color;
                     context.msFillRule = 'nonzero';
@@ -1308,7 +1367,7 @@ export class TextMarkupAnnotation {
                 }
             } else {
                 context.rect((x * zoomRatio), (y * zoomRatio), (width * zoomRatio), (height * zoomRatio));
-                context.globalAlpha = opacity * 0.5;
+                context.globalAlpha = opacity;
                 context.closePath();
                 context.fillStyle = color;
                 context.msFillRule = 'nonzero';
@@ -1474,8 +1533,8 @@ export class TextMarkupAnnotation {
      * @private
      * @returns {string} - string
      */
-    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any,
-                                      measureShapeData: any, stickyData: any, freeTextData: any): string {
+    public printAnnotationsInCanvas(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any,
+                                    measureShapeData: any, stickyData: any, freeTextData: any): string[] {
         const canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
         canvas.style.width = 816 + 'px';
         canvas.style.height = 1056 + 'px';
@@ -1498,13 +1557,7 @@ export class TextMarkupAnnotation {
             this.pdfViewer.annotation.stickyNotesAnnotationModule.renderStickyNotesAnnotations(stickyData, pageIndex, canvas);
         }
         const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
-        if (textMarkupannotations) {
-            this.renderTextMarkupAnnotations(null, pageIndex, canvas, zoomFactor);
-        } else {
-            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageIndex, canvas, zoomFactor);
-        }
-        const imageSource: string = (canvas as HTMLCanvasElement).toDataURL();
-        return imageSource;
+        return this.renderTextMarkupAnnotations(null, pageIndex, canvas, zoomFactor);
     }
 
     /**
@@ -2190,31 +2243,34 @@ export class TextMarkupAnnotation {
      * @returns {void}
      */
     public rerenderAnnotationsPinch(pageNumber: number): void {
-        let annotCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-        if (annotCanvas) {
-            const oldAnnotCanvas: HTMLElement = this.pdfViewerBase.getElement('_old_annotationCanvas_' + pageNumber);
-            if (oldAnnotCanvas) {
-                if (annotCanvas) {
-                    oldAnnotCanvas.id = annotCanvas.id;
-                    annotCanvas.parentElement.removeChild(annotCanvas);
-                } else {
-                    oldAnnotCanvas.id = this.pdfViewer.element.id + '_annotationCanvas_' + pageNumber;
+        // Need to be check both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+        ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'].forEach((id: string) => {
+            let annotCanvas: HTMLElement = this.pdfViewerBase.getElement(id + pageNumber);
+            if (annotCanvas) {
+                const oldAnnotCanvas: HTMLElement = this.pdfViewerBase.getElement('_old_annotationCanvas_' + pageNumber);
+                if (oldAnnotCanvas) {
+                    if (annotCanvas) {
+                        oldAnnotCanvas.id = annotCanvas.id;
+                        annotCanvas.parentElement.removeChild(annotCanvas);
+                    } else {
+                        oldAnnotCanvas.id = this.pdfViewer.element.id + '_annotationCanvas_' + pageNumber;
+                    }
+                    annotCanvas = oldAnnotCanvas;
                 }
-                annotCanvas = oldAnnotCanvas;
+                annotCanvas.style.width = '';
+                annotCanvas.style.height = '';
+                if (this.pdfViewer.restrictZoomRequest) {
+                    (annotCanvas as HTMLCanvasElement).style.width = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].width * this.pdfViewerBase.getZoomFactor() + 'px';
+                    (annotCanvas as HTMLCanvasElement).style.height = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].height * this.pdfViewerBase.getZoomFactor() + 'px';
+                } else {
+                    (annotCanvas as HTMLCanvasElement).width =
+                        this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].width * this.pdfViewerBase.getZoomFactor();
+                    (annotCanvas as HTMLCanvasElement).height =
+                        this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].height * this.pdfViewerBase.getZoomFactor();
+                }
+                this.renderTextMarkupAnnotations(null, pageNumber, annotCanvas, this.pdfViewerBase.getZoomFactor());
             }
-            annotCanvas.style.width = '';
-            annotCanvas.style.height = '';
-            if (this.pdfViewer.restrictZoomRequest) {
-                (annotCanvas as HTMLCanvasElement).style.width = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].width * this.pdfViewerBase.getZoomFactor() + 'px';
-                (annotCanvas as HTMLCanvasElement).style.height = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].height * this.pdfViewerBase.getZoomFactor() + 'px';
-            } else {
-                (annotCanvas as HTMLCanvasElement).width =
-                 this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].width * this.pdfViewerBase.getZoomFactor();
-                (annotCanvas as HTMLCanvasElement).height =
-                 this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)].height * this.pdfViewerBase.getZoomFactor();
-            }
-            this.renderTextMarkupAnnotations(null, pageNumber, annotCanvas, this.pdfViewerBase.getZoomFactor());
-        }
+        });
     }
 
     /**
@@ -2229,10 +2285,17 @@ export class TextMarkupAnnotation {
                 oldCanvasCollection[parseInt(i.toString(), 10)].parentElement.removeChild(oldCanvasCollection[parseInt(i.toString(), 10)]);
             }
         }
-        const newCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-        if (newCanvas) {
-            newCanvas.style.display = 'block';
-        }
+        // Styles need to be applied to both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+        const canvasIds: string[] = [
+            '_annotationCanvas_' + pageNumber,
+            '_blendAnnotationsIntoCanvas_' + pageNumber
+        ];
+        canvasIds.forEach((id: string) => {
+            const canvas: HTMLElement = this.pdfViewerBase.getElement(id);
+            if (canvas) {
+                canvas.style.display = 'block';
+            }
+        });
     }
 
     /**
@@ -2243,73 +2306,77 @@ export class TextMarkupAnnotation {
     public onTextMarkupAnnotationMouseUp(event: MouseEvent): void {
         const pageNumber: number = this.pdfViewer.annotationModule.getEventPageNumber(event);
         if (!isNullOrUndefined(pageNumber) && !isNaN(pageNumber)) {
-            const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-            if (this.currentTextMarkupAnnotation) {
-                this.selectedTextMarkup = this.currentTextMarkupAnnotation;
-            } else {
-                this.selectedTextMarkup = null;
-            }
-            this.clearCurrentSelectedAnnotation();
-            const currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageNumber, canvas);
-            if (currentAnnot && !window.getSelection().toString()) {
-                let isLock: boolean = false;
-                let isSelection: boolean = false;
-                if (currentAnnot.annotationSettings && currentAnnot.annotationSettings.isLock) {
-                    isLock = currentAnnot.annotationSettings.isLock;
-                    if (isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', currentAnnot)) {
-                        isLock = false;
-                        if (this.pdfViewer.annotationModule.checkAllowedInteractions('PropertyChange', currentAnnot)) {
-                            isSelection = false;
-                        } else {
-                            isSelection = true;
-                        }
-                    }
+            // Need to be check both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+            ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'].forEach((id: string) => {
+                const canvas: HTMLElement = this.pdfViewerBase.getElement(id + pageNumber);
+                if (this.currentTextMarkupAnnotation) {
+                    this.selectedTextMarkup = this.currentTextMarkupAnnotation;
+                } else {
+                    this.selectedTextMarkup = null;
                 }
-                if (!isLock) {
-                    const canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
-                    const leftClickPosition: number = event.clientX - canvasParentPosition.left;
-                    const topClickPosition: number = event.clientY - canvasParentPosition.top;
-                    this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
-                    this.selectAnnotation(currentAnnot, canvas, pageNumber, event);
-                    if (Browser.isDevice && !this.pdfViewer.enableDesktopMode && this.pdfViewer.enableToolbar &&
-                         this.pdfViewer.enableAnnotationToolbar) {
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.
-                            createPropertyTools(this.currentTextMarkupAnnotation.textMarkupAnnotationType);
-                    }
-                    this.currentTextMarkupAnnotation = currentAnnot;
-                    this.selectTextMarkupCurrentPage = pageNumber;
-                    if (!isSelection) {
-                        this.enableAnnotationPropertiesTool(true);
-                    }
-                    const commentPanelDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
-                    if (commentPanelDiv && commentPanelDiv.style.display === 'block') {
-                        const accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
-                        if (accordionExpand) {
-                            accordionExpand.ej2_instances[0].expandItem(true);
-                        }
-                        const comments: any = document.getElementById(currentAnnot.annotName);
-                        if (comments) {
-                            comments.firstChild.click();
+                this.clearCurrentSelectedAnnotation();
+                const currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageNumber,
+                                                                                            canvas);
+                if (currentAnnot && !window.getSelection().toString()) {
+                    let isLock: boolean = false;
+                    let isSelection: boolean = false;
+                    if (currentAnnot.annotationSettings && currentAnnot.annotationSettings.isLock) {
+                        isLock = currentAnnot.annotationSettings.isLock;
+                        if (isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', currentAnnot)) {
+                            isLock = false;
+                            if (this.pdfViewer.annotationModule.checkAllowedInteractions('PropertyChange', currentAnnot)) {
+                                isSelection = false;
+                            } else {
+                                isSelection = true;
+                            }
                         }
                     }
-                    if (!isBlazor()) {
-                        if (this.pdfViewer.toolbarModule && this.pdfViewer.enableAnnotationToolbar) {
-                            this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
+                    if (!isLock) {
+                        const canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
+                        const leftClickPosition: number = event.clientX - canvasParentPosition.left;
+                        const topClickPosition: number = event.clientY - canvasParentPosition.top;
+                        this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
+                        this.selectAnnotation(currentAnnot, canvas, pageNumber, event);
+                        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode && this.pdfViewer.enableToolbar &&
+                            this.pdfViewer.enableAnnotationToolbar) {
                             this.pdfViewer.toolbarModule.annotationToolbarModule.
-                                showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                                createPropertyTools(this.currentTextMarkupAnnotation.textMarkupAnnotationType);
+                        }
+                        this.currentTextMarkupAnnotation = currentAnnot;
+                        this.selectTextMarkupCurrentPage = pageNumber;
+                        if (!isSelection) {
+                            this.enableAnnotationPropertiesTool(true);
+                        }
+                        const commentPanelDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+                        if (commentPanelDiv && commentPanelDiv.style.display === 'block') {
+                            const accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
+                            if (accordionExpand) {
+                                accordionExpand.ej2_instances[0].expandItem(true);
+                            }
+                            const comments: any = document.getElementById(currentAnnot.annotName);
+                            if (comments) {
+                                comments.firstChild.click();
+                            }
+                        }
+                        if (!isBlazor()) {
+                            if (this.pdfViewer.toolbarModule && this.pdfViewer.enableAnnotationToolbar) {
+                                this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
+                                this.pdfViewer.toolbarModule.annotationToolbarModule.
+                                    showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                            }
                         }
                     }
+                } else {
+                    this.clearCurrentAnnotation();
                 }
-            } else {
-                this.clearCurrentAnnotation();
-            }
-            if (this.pdfViewer.isMaintainSelection && !this.pdfViewer.textSelectionModule.isTextSelection) {
-                if (currentAnnot) {
+                if (this.pdfViewer.isMaintainSelection && !this.pdfViewer.textSelectionModule.isTextSelection) {
+                    if (currentAnnot) {
+                        this.clearCurrentAnnotationSelection(pageNumber);
+                    }
+                } else {
                     this.clearCurrentAnnotationSelection(pageNumber);
                 }
-            } else {
-                this.clearCurrentAnnotationSelection(pageNumber);
-            }
+            });
         } else {
             if (!this.pdfViewerBase.isClickedOnScrollBar(event, true)) {
                 this.clearCurrentAnnotation();
@@ -2332,44 +2399,48 @@ export class TextMarkupAnnotation {
                 this.selectedTextMarkup = null;
             }
             this.clearCurrentAnnotationSelection(pageNumber);
-            const touchCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-            this.clearCurrentSelectedAnnotation();
-            const currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.touches[0].clientX,
-                                                                                        event.touches[0].clientY, pageNumber, touchCanvas);
-            if (currentAnnot) {
-                let isLock: boolean = false;
-                if (currentAnnot.annotationSettings && currentAnnot.annotationSettings.isLock) {
-                    isLock = currentAnnot.annotationSettings.isLock;
-                }
-                if (!isLock) {
-                    const canvasParentPosition: ClientRect = touchCanvas.parentElement.getBoundingClientRect();
-                    const leftClickPosition: number = event.touches[0].clientX - canvasParentPosition.left;
-                    const topClickPosition: number = event.touches[0].clientY - canvasParentPosition.top;
-                    this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
-                    this.selectAnnotation(currentAnnot, touchCanvas, pageNumber, event);
-                    if (Browser.isDevice && !this.pdfViewer.enableDesktopMode && this.pdfViewer.enableToolbar &&
-                         this.pdfViewer.enableAnnotationToolbar) {
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.
-                            createPropertyTools(this.currentTextMarkupAnnotation.textMarkupAnnotationType);
+            // Need to be check both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+            ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'].forEach((id: string) => {
+                const touchCanvas: HTMLElement = this.pdfViewerBase.getElement(id + pageNumber);
+                this.clearCurrentSelectedAnnotation();
+                const currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.touches[0].clientX,
+                                                                                            event.touches[0].clientY, pageNumber,
+                                                                                            touchCanvas);
+                if (currentAnnot) {
+                    let isLock: boolean = false;
+                    if (currentAnnot.annotationSettings && currentAnnot.annotationSettings.isLock) {
+                        isLock = currentAnnot.annotationSettings.isLock;
                     }
-                    this.currentTextMarkupAnnotation = currentAnnot;
-                    this.selectTextMarkupCurrentPage = pageNumber;
-                    this.enableAnnotationPropertiesTool(true);
-                    const accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
-                    if (accordionExpand) {
-                        accordionExpand.ej2_instances[0].expandItem(true);
-                    }
-                    const comments: any = document.getElementById(currentAnnot.annotName);
-                    if (comments) {
-                        if (!Browser.isDevice) {
-                            comments.firstChild.click();
+                    if (!isLock) {
+                        const canvasParentPosition: ClientRect = touchCanvas.parentElement.getBoundingClientRect();
+                        const leftClickPosition: number = event.touches[0].clientX - canvasParentPosition.left;
+                        const topClickPosition: number = event.touches[0].clientY - canvasParentPosition.top;
+                        this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
+                        this.selectAnnotation(currentAnnot, touchCanvas, pageNumber, event);
+                        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode && this.pdfViewer.enableToolbar &&
+                            this.pdfViewer.enableAnnotationToolbar) {
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.
+                                createPropertyTools(this.currentTextMarkupAnnotation.textMarkupAnnotationType);
+                        }
+                        this.currentTextMarkupAnnotation = currentAnnot;
+                        this.selectTextMarkupCurrentPage = pageNumber;
+                        this.enableAnnotationPropertiesTool(true);
+                        const accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
+                        if (accordionExpand) {
+                            accordionExpand.ej2_instances[0].expandItem(true);
+                        }
+                        const comments: any = document.getElementById(currentAnnot.annotName);
+                        if (comments) {
+                            if (!Browser.isDevice) {
+                                comments.firstChild.click();
+                            }
                         }
                     }
+                } else {
+                    this.clearCurrentAnnotation();
                 }
-            } else {
-                this.clearCurrentAnnotation();
-            }
-            this.clearCurrentAnnotationSelection(pageNumber);
+                this.clearCurrentAnnotationSelection(pageNumber);
+            });
         } else if (this.selectTextMarkupCurrentPage != null && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             const number: number = this.selectTextMarkupCurrentPage;
             this.selectTextMarkupCurrentPage = null;
@@ -2404,31 +2475,36 @@ export class TextMarkupAnnotation {
         let pageIndex: number = parseInt(eventTarget.id.split('_text_')[1], 10) || parseInt(eventTarget.id.split('_textLayer_')[1], 10) || parseInt(eventTarget.id.split('_annotationCanvas_')[1], 10);
         if (event.target && (eventTarget.id.indexOf('_text') > -1 || eventTarget.id.indexOf('_annotationCanvas') > -1 || eventTarget.classList.contains('e-pv-hyperlink')) && this.pdfViewer.annotation) {
             pageIndex = this.pdfViewer.annotation.getEventPageNumber(event);
-            const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageIndex);
-            const currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageIndex, canvas);
-            if (currentAnnot) {
-                eventTarget.style.cursor = 'pointer';
-                const currentPosition: any = this.pdfViewerBase.getMousePosition(event);
-                const relativePosition: any = this.pdfViewerBase.relativePosition(event);
-                const viewerPositions: any = { left: relativePosition.x, top: relativePosition.y };
-                const mousePositions: any = { left: currentPosition.x, top: currentPosition.y };
-                const annotationSettings: any = { opacity: currentAnnot.opacity, color: currentAnnot.color,
-                    author: currentAnnot.author, subject: currentAnnot.subject, modifiedDate: currentAnnot.modifiedDate };
-                this.pdfViewerBase.isMousedOver = true;
-                this.pdfViewer.fireAnnotationMouseover(currentAnnot.annotName, currentAnnot.pageNumber,
-                                                       currentAnnot.textMarkupAnnotationType as AnnotationType, currentAnnot.bounds,
-                                                       annotationSettings, mousePositions, viewerPositions);
-                // this.showPopupNote(event, currentAnnot);
-            } else {
-                this.pdfViewer.annotationModule.hidePopupNote();
-                if (this.pdfViewerBase.isPanMode && !this.pdfViewerBase.getAnnotationToolStatus()) {
-                    eventTarget.style.cursor = 'grab';
+            // Need to be check both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+            ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'].forEach((id: string) => {
+                const canvas: HTMLElement = this.pdfViewerBase.getElement(id + pageIndex);
+                const currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageIndex,
+                                                                                            canvas);
+                if (currentAnnot) {
+                    const eventTarget: HTMLElement = event.target as HTMLElement;
+                    eventTarget.style.cursor = 'pointer';
+                    const currentPosition: any = this.pdfViewerBase.getMousePosition(event);
+                    const relativePosition: any = this.pdfViewerBase.relativePosition(event);
+                    const viewerPositions: any = { left: relativePosition.x, top: relativePosition.y };
+                    const mousePositions: any = { left: currentPosition.x, top: currentPosition.y };
+                    const annotationSettings: any = { opacity: currentAnnot.opacity, color: currentAnnot.color,
+                        author: currentAnnot.author, subject: currentAnnot.subject, modifiedDate: currentAnnot.modifiedDate };
+                    this.pdfViewerBase.isMousedOver = true;
+                    this.pdfViewer.fireAnnotationMouseover(currentAnnot.annotName, currentAnnot.pageNumber,
+                                                           currentAnnot.textMarkupAnnotationType as AnnotationType, currentAnnot.bounds,
+                                                           annotationSettings, mousePositions, viewerPositions);
+                    // this.showPopupNote(event, currentAnnot);
+                } else {
+                    this.pdfViewer.annotationModule.hidePopupNote();
+                    if (this.pdfViewerBase.isPanMode && !this.pdfViewerBase.getAnnotationToolStatus()) {
+                        eventTarget.style.cursor = 'grab';
+                    }
+                    if (this.pdfViewerBase.isMousedOver && !this.pdfViewerBase.isFormFieldMousedOver) {
+                        this.pdfViewer.fireAnnotationMouseLeave(pageIndex);
+                        this.pdfViewerBase.isMousedOver = false;
+                    }
                 }
-                if (this.pdfViewerBase.isMousedOver && !this.pdfViewerBase.isFormFieldMousedOver) {
-                    this.pdfViewer.fireAnnotationMouseLeave(pageIndex);
-                    this.pdfViewerBase.isMousedOver = false;
-                }
-            }
+            });
         }
     }
 
@@ -2522,12 +2598,19 @@ export class TextMarkupAnnotation {
      * @returns {void}
      */
     public clearAnnotationSelection(pageNumber: number): void {
-        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-        if (canvas) {
-            const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
-            context.setLineDash([]);
-            this.pdfViewer.annotationModule.renderAnnotations(pageNumber, null, null, null);
-        }
+        // Styles need to be applied to both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
+        const canvasIds: string[] = [
+            '_annotationCanvas_' + pageNumber,
+            '_blendAnnotationsIntoCanvas_' + pageNumber
+        ];
+        canvasIds.forEach((id: string) => {
+            const canvas: HTMLElement = this.pdfViewerBase.getElement(id);
+            if (canvas) {
+                const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
+                context.setLineDash([]);
+                this.pdfViewer.annotationModule.renderAnnotations(pageNumber, null, null, null);
+            }
+        });
     }
 
     /**
@@ -2725,7 +2808,8 @@ export class TextMarkupAnnotation {
      */
     public maintainAnnotationSelection(): void {
         if (this.currentTextMarkupAnnotation) {
-            const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + this.selectTextMarkupCurrentPage);
+            const canvasId: string = this.currentTextMarkupAnnotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
+            const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + this.selectTextMarkupCurrentPage);
             if (canvas) {
                 this.selectAnnotation(this.currentTextMarkupAnnotation as ITextMarkupAnnotation, canvas, this.selectTextMarkupCurrentPage);
             }
@@ -2892,7 +2976,8 @@ export class TextMarkupAnnotation {
     }
 
     private annotationDivSelect(annotation: any, pageNumber: number): any {
-        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+        const canvasId: string = annotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
+        const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + pageNumber);
         this.selectAnnotation(annotation, canvas, pageNumber);
         if (this.pdfViewer.toolbarModule) {
             if (this.pdfViewer.toolbarModule.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
@@ -2923,8 +3008,8 @@ export class TextMarkupAnnotation {
         }
     }
 
-    private getPageContext(pageNumber: number): CanvasRenderingContext2D {
-        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+    private getPageContext(pageNumber: number, canvasId: string): CanvasRenderingContext2D {
+        const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + pageNumber);
         let context: CanvasRenderingContext2D = null;
         if (canvas) {
             context = (canvas as HTMLCanvasElement).getContext('2d');
@@ -3088,7 +3173,7 @@ export class TextMarkupAnnotation {
             annotallowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ?
                 this.pdfViewer.highlightSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             textMarkupAnnotationType = 'Highlight';
-            color = annotationObject.color ? annotationObject.color : '#ffff00';
+            color = annotationObject.color ? annotationObject.color : '#FFDF56';
         }
         else if (annotationType === 'Underline')
         {

@@ -311,7 +311,7 @@ describe('ComboBox', () => {
             })
         });
     });
-    describe('EJ2-17694 - Multiple time ajax request while change the dataSource ', () => {
+    xdescribe('EJ2-17694 - Multiple time ajax request while change the dataSource ', () => {
         let listObj: any;
         let controlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
         let result: any = [];

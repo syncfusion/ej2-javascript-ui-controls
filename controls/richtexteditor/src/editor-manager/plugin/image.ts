@@ -307,6 +307,9 @@ export class ImageCommand {
                 removeClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
                 addClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
                 addClass([selectNode], classes.CLASS_IMAGE_LEFT);
+            } else if (selectNode.parentElement.nextElementSibling != null) {
+                addClass([selectNode], classes.CLASS_IMAGE_LEFT);
+                (selectNode.parentElement.nextElementSibling as HTMLElement).style.clear = 'left';
             } else {
                 addClass([selectNode], classes.CLASS_IMAGE_LEFT);
             }
@@ -347,6 +350,9 @@ export class ImageCommand {
                 removeClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
                 addClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
                 addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
+            } else if (selectNode.parentElement.nextElementSibling != null) {
+                addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
+                (selectNode.parentElement.nextElementSibling as HTMLElement).style.clear = 'right';
             } else {
                 addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
             }

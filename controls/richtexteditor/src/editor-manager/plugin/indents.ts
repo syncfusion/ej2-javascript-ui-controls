@@ -104,8 +104,10 @@ export class Indents {
         if (isIDevice()) {
             setEditFrameFocus(editEle, e.selector);
         }
-        save = this.parent.domNode.saveMarker(save);
-        save.restore();
+        if (indentsNodes.length === 0 || indentsNodes[0] && indentsNodes[0].nodeName !== 'TABLE') {
+            save = this.parent.domNode.saveMarker(save);
+            save.restore();
+        }
         if (e.callBack) {
             e.callBack({
                 requestType: e.subCommand,

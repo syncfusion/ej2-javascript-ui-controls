@@ -4,7 +4,7 @@
 import { DateFormat } from '../../src/intl/date-formatter';
 import { DateParser } from '../../src/intl/date-parser';
 import { dateMatched, dupCulObject } from './date-parser.spec';
-import { loadCldr, cldrData } from '../../src/internationalization';
+import { loadCldr, cldrData, Internationalization  } from '../../src/internationalization';
 import { ParserBase } from '../../src/intl/parser-base';
 import {HijriParser} from '../../src/hijri-parser';
 loadCldr(dupCulObject, {});
@@ -617,6 +617,21 @@ describe('dateformat', () => {
             date.setMilliseconds(23);
             let iFormatter: string = DateFormat.dateFormat('en', { format:'dd/MMM/yyyy hh:mm:ss.fff' }, cldrData)(date);
             expect(iFormatter).not.toBe('16/Jul/2015 09:33:37 023');
+        });
+    });
+    describe('Week of Year Calculation with Cultural Considerations', () => {
+        it('calculates week number correctly for Dec 15, 2024, with en-US convention (starting Sunday)', () => {
+            const date = new Date(2024, 11, 15); // December 15, 2024
+            let globalize = new Internationalization('en-US');
+            const result = globalize.formatDate(date, { format: 'WW yyyy', type: 'dateTime', skeleton: 'yMd' }); // First day of week is Sunday
+            expect(result).toBe('51 2024');            
+        });
+
+        it('calculates week number correctly for Dec 15, 2024, with fr-CH convention (starting Monday)', () => {
+            const date = new Date(2024, 11, 15); // December 15, 2024
+            let globalize = new Internationalization('fr-CH');
+            const result = globalize.formatDate(date, { format: 'WW yyyy', type: 'dateTime', skeleton: 'yMd' }); // First day of week is Sunday
+            expect(result).toBe('51 2024');
         });
     });
 })

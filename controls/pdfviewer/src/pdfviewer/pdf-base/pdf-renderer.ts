@@ -3,6 +3,7 @@ import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataFormat, PdfAnnotationExportSettings, PdfBookmark, PdfBookmarkBase, PdfDocument, PdfPage, PdfRotationAngle, PdfTextStyle, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfDestination, PdfPermissionFlag, PdfFormFieldExportSettings, _bytesToString, _encode, PdfPageSettings, PdfSignatureField, PdfForm, PdfPageImportOptions, _decode } from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase } from '../index';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
+import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
 
 /**
  * PdfRenderer
@@ -1326,8 +1327,8 @@ export class PdfRenderer {
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner) && !isNullOrUndefined(this.loadedDocument)) {
                 size = !isNullOrUndefined(size) ? size : null;
-                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size });
-                this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any): void {
+                this.pdfViewerBase.pdfViewerRunner.addTask({ pageIndex: pageIndex, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size }, TaskPriorityLevel.High);
+                this.pdfViewerBase.pdfViewerRunner.onMessage(function (event: any): void {
                     if (event.data.message === 'imageExtracted') {
                         const canvas: HTMLCanvasElement = document.createElement('canvas');
                         const { value, width, height } = event.data;
@@ -1341,7 +1342,7 @@ export class PdfRenderer {
                         proxy.pdfViewerBase.releaseCanvas(canvas);
                         resolve(imageUrl);
                     }
-                };
+                });
             }
             else {
                 resolve(null);
@@ -1367,9 +1368,9 @@ export class PdfRenderer {
                 const imageUrls: string[] = [];
                 const count: number = endIndex - startIndex + 1;
                 for (let i: number = startIndex; i <= endIndex; i++) {
-                    this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: i, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size });
+                    this.pdfViewerBase.pdfViewerRunner.addTask({ pageIndex: i, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size }, TaskPriorityLevel.High);
                 }
-                this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any): void {
+                this.pdfViewerBase.pdfViewerRunner.onMessage(function (event: any): void {
                     if (event.data.message === 'imageExtracted') {
                         const canvas: HTMLCanvasElement = document.createElement('canvas');
                         const { value, width, height } = event.data;
@@ -1386,7 +1387,7 @@ export class PdfRenderer {
                             resolve(imageUrls);
                         }
                     }
-                };
+                });
             }
             else {
                 resolve(null);
@@ -1405,7 +1406,7 @@ export class PdfRenderer {
         this.documentTextCollection = [];
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner)) {
-                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractText', zoomFactor: this.pdfViewerBase.getZoomFactor(), isTextNeed: true, isRenderText: isRenderText, jsonObject: jsonObject, requestType: requestType, annotationObject: annotationObject });
+                this.pdfViewerBase.pdfViewerRunner.addTask({ pageIndex: pageIndex, message: 'extractText', zoomFactor: this.pdfViewerBase.getZoomFactor(), isTextNeed: true, isRenderText: isRenderText, jsonObject: jsonObject, requestType: requestType, annotationObject: annotationObject }, TaskPriorityLevel.Low);
             }
             else {
                 resolve(null);

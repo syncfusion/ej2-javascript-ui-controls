@@ -425,11 +425,21 @@ export class PdfAnnotationCollection {
         return true;
     }
     _doPostProcess(isFlatten: boolean): void {
-        for (let i: number = this.count - 1; i >= 0; i--) {
-            const annotation: PdfAnnotation = this.at(i);
+        let index: number = 0;
+        while (index < this.count) {
+            const annotation: PdfAnnotation = this.at(index);
             if (annotation) {
+                const flattenValue: boolean = annotation.flatten || isFlatten;
                 annotation._isExport = this._isExport;
-                annotation._doPostProcess(annotation.flatten || isFlatten);
+                if (flattenValue && this._annotations.lastIndexOf(annotation._ref) === -1) {
+                    index++;
+                }
+                annotation._doPostProcess(flattenValue);
+                if (!flattenValue) {
+                    index++;
+                }
+            } else {
+                index++;
             }
         }
     }

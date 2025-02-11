@@ -5,7 +5,7 @@ import { isNullOrUndefined, Browser, createElement } from '@syncfusion/ej2-base'
 import { DialogType, RichTextEditor } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
-import { BACKSPACE_EVENT_INIT } from '../../constant.spec';
+import { BACKSPACE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../../constant.spec';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -97,7 +97,7 @@ describe('Link Module', () => {
             (<any>rteObj).formatter.editorManager.linkObj.openLink(args);
         });
 
-        it('show link quick toolbar testing', () => {
+        it('show link quick toolbar testing', (done: Function) => {
             let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
             let event: any = { preventDefault: function () { } };
             let range: any = new NodeSelection().getRange(document);
@@ -111,12 +111,15 @@ describe('Link Module', () => {
             };
             let eventArgs: any = { args: evnArg, isNotify: true, type: 'Links', elements: [document.querySelector('.e-toolbar-item'), document.body] };
             (<any>rteObj).linkModule.showLinkQuickToolbar(eventArgs);
-            expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
-            (<any>rteObj).linkModule.editAreaClickHandler({ args: evnArg });
-            expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+                (<any>rteObj).linkModule.editAreaClickHandler({ args: evnArg });
+                expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+                done();
+            },500);
         });
 
-        it('show link quick toolbar with touch event arguments testing', () => {
+        it('show link quick toolbar with touch event arguments testing', (done: Function) => {
             let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
             let event: any = { preventDefault: function () { } };
             let range: any = new NodeSelection().getRange(document);
@@ -130,12 +133,15 @@ describe('Link Module', () => {
             };
             let eventArgs: any = { args: evnArg, isNotify: true, type: 'Links', elements: [document.querySelector('.e-toolbar-item'), document.body] };
             (<any>rteObj).linkModule.showLinkQuickToolbar(eventArgs);
-            expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
-            (<any>rteObj).linkModule.editAreaClickHandler({ args: evnArg });
-            expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+                (<any>rteObj).linkModule.editAreaClickHandler({ args: evnArg });
+                expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+                done();
+            },500);
         });
 
-        it('iframe - show link quick toolbar testing', () => {
+        it('iframe - show link quick toolbar testing', (done: Function) => {
             destroy(rteObj);
             rteObj = undefined;
             rteObj = renderRTE({
@@ -157,7 +163,10 @@ describe('Link Module', () => {
             dispatchEvent(rteObj.inputElement, 'mouseup');
             let eventArgs: any = { args: evnArg, isNotify: true, type: 'Links', elements: [document.querySelector('.e-toolbar-item'), document.body] };
            (<any>rteObj).linkModule.showLinkQuickToolbar(eventArgs);
+           setTimeout(() => {
             expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+            done();
+       },500);
         });
     });
 
@@ -1624,7 +1633,7 @@ describe('Link Module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-        it('insert link, editlink, openlink', () => {
+        it('insert link, editlink, openlink', (done: Function) => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let clickEvent: any = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", false, true);
@@ -1635,19 +1644,24 @@ describe('Link Module', () => {
             (rteEle.querySelector('.e-rte-link-dialog .e-insertLink.e-primary') as HTMLButtonElement).click();
             expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(1);
             expect((rteEle.querySelector('.e-rte-content .e-content a') as HTMLAnchorElement).href).toBe('https://www.test.com/');
-            let quickPop: any = document.querySelector('.e-rte-quick-popup');
-            expect(isNullOrUndefined(quickPop)).toBe(false);
-            (quickPop.querySelectorAll('.e-toolbar-item button')[1] as HTMLElement).click();
-            (rteEle.querySelector('.e-rte-link-dialog .e-rte-linkurl') as HTMLInputElement).value = 'https://www.testing.com';
-            (rteEle.querySelector('.e-rte-link-dialog .e-insertLink.e-primary') as HTMLButtonElement).click();
-            expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(1);
-            expect((rteEle.querySelector('.e-rte-content .e-content a') as HTMLAnchorElement).href).toBe('https://www.testing.com/');
-            quickPop = document.querySelector('.e-rte-quick-popup');
-            expect(isNullOrUndefined(quickPop)).toBe(false);
-            (quickPop.querySelectorAll('.e-toolbar-item button')[2] as HTMLElement).click();
-            quickPop = document.querySelector('.e-rte-quick-popup');
-            expect(isNullOrUndefined(quickPop)).toBe(true);
-            expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(0);
+            setTimeout(() => {
+                let quickPop: any = document.querySelector('.e-rte-quick-popup');
+                expect(isNullOrUndefined(quickPop)).toBe(false);
+                (quickPop.querySelectorAll('.e-toolbar-item button')[1] as HTMLElement).click();
+                (rteEle.querySelector('.e-rte-link-dialog .e-rte-linkurl') as HTMLInputElement).value = 'https://www.testing.com';
+                (rteEle.querySelector('.e-rte-link-dialog .e-insertLink.e-primary') as HTMLButtonElement).click();
+                setTimeout(() => {
+                    expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(1);
+                    expect((rteEle.querySelector('.e-rte-content .e-content a') as HTMLAnchorElement).href).toBe('https://www.testing.com/');
+                    quickPop = document.querySelector('.e-rte-quick-popup');
+                    expect(isNullOrUndefined(quickPop)).toBe(false);
+                    (quickPop.querySelectorAll('.e-toolbar-item button')[2] as HTMLElement).click();
+                    quickPop = document.querySelector('.e-rte-quick-popup');
+                    expect(isNullOrUndefined(quickPop)).toBe(true);
+                    expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(0);
+                    done();
+                }, 500);
+            },600);
         });
     });
     
@@ -2238,4 +2252,40 @@ describe('After clicking on outside, link dialog still open state', function () 
             done();
         })
     })
+
+    describe('913697: After inserting the link by pressing the enter key, the quick toolbar did not open', () => {
+        let rteObj: RichTextEditor;
+        let keyDownEvent: any = { preventDefault: function () { }, key: 'Enter', stopPropagation: function () { }, shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, which: 13 };
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateLink']
+                },
+                value: '<p><br></p>'
+            });
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Checking the quick toolbar', (done: Function) => {
+            rteObj.focusIn();
+            let clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            rteObj.contentModule.getEditPanel().dispatchEvent(clickEvent);
+            let link = document.querySelector('#' + rteObj.element.id + '_toolbar_CreateLink') as HTMLElement;
+            link.click();
+            let input = rteObj.element.querySelector('.e-rte-linkurl') as HTMLInputElement;
+            input.value = 'https://www.syncfusion.com';
+            const enterKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            input.dispatchEvent(enterKeyDownEvent);
+            const enterKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT);
+            input.dispatchEvent(enterKeyUpEvent);
+            setTimeout(() => {
+                expect(document.querySelector('.e-rte-quick-popup')).not.toBe(null);
+                done();
+            },500);
+        });
+    });
 });

@@ -657,7 +657,8 @@ describe('ChatUI Component', () => {
         it('Suggestions click', () => {
             const suggestionList = ['How are you?', 'Nice to meet you', 'What\'s up?'];
             chatUI = new ChatUI({
-                suggestions: suggestionList
+                suggestions: suggestionList,
+                user: { user: 'Albert', id: 'user1' }
             });
             chatUI.appendTo('#chatUI');
             const suggestionElements: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-suggestion-list li');
@@ -847,6 +848,45 @@ describe('ChatUI Component', () => {
                 expect(messageWrapper.scrollTop).not.toBe(0);
                 done();
             }, 100);
+        });
+        it('should scroll to bottom immediately if not Angular or React', () => {
+            chatUI = new ChatUI({
+                messages: messages,
+                height: '300px',
+            });
+            chatUI.appendTo('#chatUI');
+            const spyScrollToBottom = spyOn(chatUI, 'scrollToBottom').and.callThrough();
+            (chatUI as any).updateScrollPosition(false, 0);
+            expect(spyScrollToBottom).toHaveBeenCalled();
+        });
+        
+        it('should call handleAutoScroll in setTimeout for Angular/React if it is method call', (done: DoneFn) => {
+            chatUI = new ChatUI({
+                messages: messages,
+                height: '300px',
+            });
+            chatUI.isAngular = true;
+            chatUI.appendTo('#chatUI');
+            const spyHandleAutoScroll = spyOn<any>(chatUI, 'handleAutoScroll').and.callThrough();
+            (chatUI as any).updateScrollPosition(true, 5);
+            setTimeout(() => {
+                expect(spyHandleAutoScroll).toHaveBeenCalled();
+                done();
+            }, 20);
+        });
+        it('should call scrollToBottom in setTimeout for Angular/React', (done: DoneFn) => {
+            chatUI = new ChatUI({
+                messages: messages,
+                height: '300px',
+            });
+            chatUI.isAngular = true;
+            chatUI.appendTo('#chatUI');
+            const spyHandleAutoScroll = spyOn<any>(chatUI, 'scrollToBottom').and.callThrough();
+            (chatUI as any).updateScrollPosition(true, 5);
+            setTimeout(() => {
+                expect(spyHandleAutoScroll).toHaveBeenCalled();
+                done();
+            }, 20);
         });
     });
 

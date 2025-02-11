@@ -1099,6 +1099,11 @@ export class FocusStrategy {
         }
         this.firstHeaderCellClick = true;
         this.addFocus(this.getContent().getFocusInfo());
+        const requestTypes: string[] = ['add', 'save', 'delete', 'cancel', 'batchsave', 'batchDelete', 'batchCancel'];
+        const focusInfo: FocusInfo = this.getContent().getFocusInfo();
+        if (arg && requestTypes.indexOf(arg.requestType) > -1  && focusInfo && focusInfo.elementToFocus && focusInfo.elementToFocus.matches('.e-rowcell.e-focus')) {
+            addClass([focusInfo.elementToFocus], ['e-focused', 'e-focus']);
+        }
     }
 
     public restoreFocusWithAction(e: NotifyArgs): void {

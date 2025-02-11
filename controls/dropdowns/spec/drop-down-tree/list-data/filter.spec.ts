@@ -1931,6 +1931,43 @@ describe('filter list data testing', () => {
                 done();
             },350);
         });
+        it('should maintain selection after filter, select node and reset value', (done) => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                showSelectAll : true,
+                allowMultiSelection : true,
+                showCheckBox : true,
+                allowFiltering : true,
+                value: ['2','4'],
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'Victoria';
+            filterObj.value = 'Victoria';
+            let eventArgs: any = { value: 'Victoria', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(() => {
+                let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+                let checkEle: Element = li[1];
+                let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle.querySelector('.e-frame').dispatchEvent(e);
+                ddtreeObj.hidePopup();
+                setTimeout(() => {
+                    ddtreeObj.value = ['2','4'];
+                    ddtreeObj.dataBind(); 
+                    ddtreeObj.showPopup();
+                    expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                    done();
+                }, 350);
+            }, 350);
+        });
     });
 });
 

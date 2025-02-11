@@ -597,11 +597,20 @@ export type LegendShape =
     'Diamond' |
     /** Render a Cross. */
     'Cross' |
-    /** Render a Cross. */
+    /**
+     * Render a multiply sign.
+     * This shape is specifically applicable for bullet charts.
+     */
     'Multiply' |
-    /** Render a actual bar. */
+    /**
+     * Render a bar representing actual values.
+     * This shape is specifically applicable for bullet charts.
+     */
     'ActualRect' |
-    /** Render a target bar. */
+    /**
+     * Render a bar indicating target values.
+     * This shape is used to represent goal or benchmark levels.
+     */
     'TargetRect' |
     /** Render a HorizontalLine. */
     'HorizontalLine' |

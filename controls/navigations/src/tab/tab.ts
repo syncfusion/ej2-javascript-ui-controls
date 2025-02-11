@@ -1417,9 +1417,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
             }
         }
-        if (this.prevIndex !== this.selectedItem) {
-            ele.classList.remove(CLS_ACTIVE);
-        }
     }
 
     private loadContentElement(): void {
@@ -1481,6 +1478,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.getContent(ele, this.items[0].content, 'render', 0);
                 }
                 this.loadContentInitMode(ele);
+                if (this.prevIndex !== this.selectedItem) {
+                    ele.classList.remove(CLS_ACTIVE);
+                } 
             }
             setStyle(this.cntEle, { 'height': this.maxHeight + 'px' });
         } else {

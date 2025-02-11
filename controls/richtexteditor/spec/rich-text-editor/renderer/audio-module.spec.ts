@@ -203,6 +203,48 @@ describe('Audio Module', () => {
         });
     });
 
+    describe('Audio Element Deletion Test', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let mediaRemovingSpy: jasmine.Spy = jasmine.createSpy('onFileRemoving');
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                fileRemoving: mediaRemovingSpy,
+                toolbarSettings: {
+                    items: ['Audio']
+                },
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it('should upload and delete audio element, removing it from the DOM', (done: DoneFn) => {
+            const rteEle: HTMLElement = rteObj.element;
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            const toolbarItem: HTMLElement = rteEle.querySelectorAll('.e-toolbar-item')[0] as HTMLElement;
+            toolbarItem.click();
+            const dialogEle: HTMLElement | null = rteObj.element.querySelector('.e-dialog');
+            expect(dialogEle).not.toBeNull();
+            const audioUrlInput: HTMLInputElement = dialogEle!.querySelector('.e-audio-url') as HTMLInputElement;
+            audioUrlInput.value = `${window.origin}/base/spec/content/audio/RTE-Audio.mp3`;
+            const fileObj: File = new File(['Horse'], 'horse.mp3', { lastModified: 0, type: 'audio/mpeg' });
+            const eventArgs = {
+                type: 'click',
+                target: { files: [fileObj] },
+                preventDefault: (): void => {}
+            };
+            (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
+            expect(rteObj.audioModule.uploadObj.fileList.length).toEqual(1);
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const removeButton: HTMLElement | null = document.querySelector('.e-icons.e-file-remove-btn');
+            expect(removeButton).not.toBeNull();
+            removeButton!.click();
+            expect(rteObj.audioModule.uploadObj.fileList.length).toEqual(0);
+            done();
+        });
+    });
 
     describe('Inserting audio and applying heading in IE11', () => {
         let rteEle: HTMLElement;
@@ -2460,6 +2502,50 @@ describe('Audio Module', () => {
             },100);
         });
      });
+     describe('921776-Script error occurs after changing display to break for audio file in insert media sample ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `
+            <p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                iframeSettings:{
+                    enable:true
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('921776-Script error occurs after changing display to break for audio file in insert media sample', (done: Function) => {
+            let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
+            let target:HTMLElement=iframeBody.querySelector('.e-audio-wrap');
+            dispatchEvent(target,'mousedown');
+            target.click();
+            dispatchEvent(target,'mouseup');
+            expect(target.classList.contains('e-audio-wrap')).toBe(true);
+            var eventArgs={pageX:50,pageY:300,target:target};
+            (<any>rteObj).audioModule.editAreaClickHandler({ args: eventArgs });
+            (<any>rteObj).audioModule.audEle = rteObj.contentModule.getEditPanel().querySelector('.e-audio-wrap audio');
+            setTimeout(function () {
+                let commandArgs = {
+                    item: { command: 'Audios', subCommand: 'Inline' }
+                };
+                let audio: HTMLElement = iframeBody.querySelector('.e-rte-audio') as HTMLElement;
+                (<any>rteObj).audioModule.alignmentSelect(commandArgs);
+                expect(audio.classList.contains('e-audio-inline')).toBe(true);
+                done();
+            }, 200);
+        });
+    });
 
  });
  

@@ -331,7 +331,7 @@ export class MDLists {
             start = start + prefix.length + tabSpace.length;
             addedLength += prefix.length + tabSpace.length;
         } else if (this.currentAction === 'UL' && (prevLine && regex.test(prevLine.trim())) &&
-        prevLine.trim().replace(regex, '') !== '' ||  this.currentAction === 'OL' && !listFormat) {
+            prevLine.trim().replace(regex, '') !== '' || this.currentAction === 'OL' && !listFormat && prevLineSplit[1] !== '') {
             const tabSpace: string = this.getTabSpace(prevLine);
             const prefix: string = this.syntax[this.currentAction];
             parents[0].text = tabSpace + prefix + parents[0].text +

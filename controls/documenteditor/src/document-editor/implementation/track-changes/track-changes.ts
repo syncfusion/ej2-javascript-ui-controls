@@ -436,8 +436,9 @@ export class Revision {
     private updateRevisionID(): void {
         this.owner.editorModule.addRemovedNodes(this.revisionID);
         while (this.range.length > 0) {
-            this.removeRangeRevisionForItem(this.range[0]);
+            this.removeRangeRevisionForItem(this.range[0], true);
         }
+        this.owner.trackChangesPane.updateCurrentTrackChanges(this);
     }
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -464,13 +465,15 @@ export class Revision {
      * @returns {void}
      */
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    public removeRangeRevisionForItem(item: any): void {
+    public removeRangeRevisionForItem(item: any, skipUpdate?: boolean): void {
         let revisionIndex: number = item.revisions.indexOf(this);
         if (revisionIndex >= 0) {
             item.revisions.splice(revisionIndex, 1);
             let rangeIndex: number = this.range.indexOf(item);
             this.range.splice(rangeIndex, 1);
-            this.owner.trackChangesPane.updateCurrentTrackChanges(this);
+            if (!skipUpdate) {
+                this.owner.trackChangesPane.updateCurrentTrackChanges(this);
+            }
         }
     }
     /**

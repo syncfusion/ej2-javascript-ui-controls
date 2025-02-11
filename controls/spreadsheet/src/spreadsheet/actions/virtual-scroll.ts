@@ -325,7 +325,7 @@ export class VirtualScroll {
         let diff: number = 0;
         if (this.parent.scrollSettings.isFinite) {
             const sheet: SheetModel = this.parent.getActiveSheet();
-            const count: number = skipHiddenIdx(sheet, (sheet[layout + 'Count'] - 1), false);
+            const count: number = skipHiddenIdx(sheet, (sheet[layout + 'Count'] - 1), false, layout === 'col' ? 'columns' : 'rows');
             if (idx > count) {
                 diff = idx - count; idx = count;
             }

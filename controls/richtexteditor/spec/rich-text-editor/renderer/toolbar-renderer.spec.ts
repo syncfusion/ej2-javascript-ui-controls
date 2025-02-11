@@ -306,6 +306,82 @@ describe('Toolbar - Renderer', () => {
             destroy(rteObj);
         });
     });
+
+    describe('914425: The number and bullet format lists are not works properly in the overview and iframe samples', function () {
+        let rteObj : any;
+        let rteEle : any;
+        let defaultUA: string = navigator.userAgent;
+        let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
+        beforeAll(function () {
+            Object.defineProperty(navigator, 'userAgent', {
+                value: safari,
+                configurable: true
+            });
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList']
+                },
+                value: `<ol><li class="startFocus">List 1</li><li>List 2</li><li>List 3</li><li class="endFocus">List 4</li></ol>`
+            });
+            rteEle = rteObj.element;
+        });
+        it('Check the active state of the list dropdown ', function (done: DoneFn) {
+            let startNode = rteObj.contentModule.getDocument().querySelector('.startFocus');
+            let endNode = rteObj.contentModule.getDocument().querySelector('.endFocus');
+            let selection = new NodeSelection();
+            selection.setSelectionText(rteObj.contentModule.getDocument(), startNode.childNodes[0], endNode.childNodes[0], 0, 3);
+            let saveSelection: NodeSelection;
+            let ranges: Range;
+            ranges = selection.getRange(document);
+            saveSelection = selection.save(ranges, document);
+            rteObj.htmlEditorModule.onSelectionSave();
+            let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[0];
+            (trgEle.firstElementChild as HTMLElement).click();
+            dispatchEvent(trgEle.firstElementChild, 'mousedown');
+            setTimeout(() => {
+                expect((document.querySelector('.e-dropdown-popup .e-active') as HTMLElement).innerText === `Number`).toBe(true);
+                done();
+            }, 100);
+        });
+        afterAll(function () {
+            Browser.userAgent = defaultUA;
+            destroy(rteObj);
+        });
+    });
+    describe('926936 - Toolbarclick cancel event not working', function () {
+        let rteObj: any;
+        beforeAll(function (done: DoneFn) {
+            rteObj = renderRTE({
+                value: `<p>Rich Text Editor</p>`,
+                toolbarClick: function (args: any) {
+                    args.cancel = true;
+                }
+            });
+            done();
+        });
+        it('Clicked the toolbar item when args.cancel was set to true in the toolbarClick event.', function (done: DoneFn) {
+            rteObj.focusIn();
+            var trgEle: HTMLElement = rteObj.element.querySelectorAll(".e-toolbar-item")[0];
+            (trgEle.firstElementChild as HTMLElement).click();
+            expect(rteObj.inputElement.innerHTML === "<p>Rich Text Editor</p>").toBe(true);
+            var trgEle1 = rteObj.element.querySelectorAll(".e-toolbar-item")[1];
+            (trgEle1.firstElementChild as HTMLElement).click();
+            expect(rteObj.inputElement.innerHTML === "<p>Rich Text Editor</p>").toBe(true);
+            var trgEle2 = rteObj.element.querySelectorAll(".e-toolbar-item")[1];
+            (trgEle2.firstElementChild as HTMLElement).click();
+            expect(rteObj.inputElement.innerHTML === "<p>Rich Text Editor</p>").toBe(true);
+            rteObj.readonly = true;
+            rteObj.dataBind();
+            var trgEle3 = rteObj.element.querySelectorAll(".e-toolbar-item")[0];
+            (trgEle3.firstElementChild as HTMLElement).click();
+            expect(rteObj.inputElement.innerHTML === "<p>Rich Text Editor</p>").toBe(true);
+            done();
+        });
+        afterAll(function (done: DoneFn) {
+            destroy(rteObj);
+            done();
+        });
+    });
     describe('927099: Applying background colors without focusing on the editor leads to a console error.', function () {
         let rteObj : any;
         let rteEle : any;

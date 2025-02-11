@@ -44,9 +44,11 @@ export class AudioCommand {
      */
     public audioCommand(e: IHtmlItem): void {
         let selectNode: HTMLElement;
+        let audiowrapper: HTMLElement;
         const value: string = e.value.toString().toLowerCase();
         if (value === 'inline' || value === 'break' || value === 'audioremove') {
             selectNode = e.item.selectNode[0] as HTMLElement;
+            audiowrapper = selectNode.closest('.' + classes.CLASS_AUDIO_WRAP) as HTMLElement;
         }
         switch (value) {
         case 'audio':
@@ -55,18 +57,22 @@ export class AudioCommand {
             break;
         case 'inline':
             selectNode.removeAttribute('class');
-            (selectNode.closest('.' + classes.CLASS_AUDIO_WRAP) as HTMLElement).style.display = 'inline-block';
+            audiowrapper.style.display = 'inline-block';
             addClass([selectNode], [classes.CLASS_AUDIO, classes.CLASS_AUDIO_INLINE, classes.CLASS_AUDIO_FOCUS]);
             this.callBack(e);
             break;
         case 'break':
             selectNode.removeAttribute('class');
-            (selectNode.closest('.' + classes.CLASS_AUDIO_WRAP) as HTMLElement).style.display = 'block';
+            audiowrapper.style.display = 'block';
             addClass([selectNode], [classes.CLASS_AUDIO_BREAK, classes.CLASS_AUDIO, classes.CLASS_AUDIO_FOCUS]);
             this.callBack(e);
             break;
         case 'audioremove':
-            detach(selectNode);
+            if (audiowrapper) {
+                detach(audiowrapper);
+            } else {
+                detach(selectNode);
+            }
             this.callBack(e);
             break;
         }

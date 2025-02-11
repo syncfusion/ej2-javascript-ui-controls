@@ -1670,6 +1670,48 @@ describe('850066 - Font color does not applied not properly', () => {
     });
 });
 
+describe('930869 - Inconsistent Font Color Reset When Applying "No Color" to Multiple List Items', function () {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<ol><li class="li1">FristLI<ol><li class="li2">SecondLI<ol><li class="li3">ThirdLI</li><li class="li4">FourthLI<ol><li class="li5">FIfthLI<ol><li class="li6">SixthLI</li></ol></li></ol></li></ol></li></ol></li></ol>`,
+            toolbarSettings: {
+                items: ['FontColor']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Test for font color for select all text node', function () {
+        var range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.li1').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('.li6').childNodes[0], 7);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', null, 'rgb(255, 0, 0)');
+        var fristLI = rteObj.element.querySelector('.li1');
+        expect(fristLI.style.color === 'rgb(255, 0, 0)').toEqual(true);
+        var lastLI = rteObj.element.querySelector('.li6');
+        expect(lastLI.style.color === 'rgb(255, 0, 0)').toEqual(true);
+        let rteEle = rteObj.element;
+        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        fontColorPicker.click();
+        let blackItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item").nextElementSibling;
+        blackItem.click();
+        SelectionCommands.applyFormat(
+            document,
+            'fontcolor',
+            rteObj.element.querySelector('.e-content'),
+            'P',
+            null,
+            '' 
+        );
+        expect(fristLI.style.color).toEqual('');
+        expect(lastLI.style.color).toEqual('');
+
+    });
+});
 describe('872185 - Font family does not applied properly in nested list', () => {   
     let rteObj: any;
     let domSelection: NodeSelection = new NodeSelection();
@@ -1789,7 +1831,6 @@ describe('876813 - Font color did not apply all lists properly', () => {
         expect(fourthLI.style.fontSize === '18pt').toEqual(true);
     });
 });
-
 describe("876837: Bold format not applied to the list number when already bold content is present in the list content.", () => {
     let rteEle: HTMLElement;
     let rteObj: any;
@@ -2097,6 +2138,87 @@ describe(' - feature for code format using execCommand', () => {
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode, focusNode, 0, 1);
         document.getElementById('custom_tbar').click();
         expect((rteObj as any).inputElement.innerHTML).toBe(`<p><code>Hello world this is the sample for code feature .</code></p>`);
+        done();
+    });
+});
+
+describe('876813 - Apply and revert font size for nested list', () => {
+    let rteObj: any;   
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            value: `<ul><li class=\"li1\">First item<ul><li class=\"li2\">Second item<ul><li class=\"li3\">Third item</li><li class=\"li4\">Fourth item<ul><li class=\"li5\">Fifth item<ul><li class=\"li6\">Sixth item</li></ul></li></ul></li></ul></li></ul></li></ul>`,
+            toolbarSettings: {
+                items: ['FontSize']
+            }
+        });
+        done();
+    });
+    
+    afterEach((done: DoneFn) => {
+        destroy(rteObj);
+        done();
+    });
+    it('Test for applying and reverting font size for inline styles in a nested list', (done) => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.li1').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('.li6').childNodes[0], 10);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', null, '18pt');
+        const liElements = rteObj.element.querySelectorAll('li');
+        liElements.forEach((li: HTMLElement) => {
+            expect(li.style.fontSize).toEqual('18pt');
+        });
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', null, '');
+        liElements.forEach((li: HTMLElement) => {
+            expect(li.style.fontSize).toEqual('');
+        });
+        done();
+    });
+});
+
+describe('938238 - MAC - Safari - Selection not maintaiend when bold format reverted', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    let defaultUA: string = navigator.userAgent;
+    let defaultVendor: string = navigator.vendor;
+    let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
+    let safariVendor: string = "Apple Computer, Inc.";
+    beforeEach((done: Function) => {
+        Object.defineProperty(navigator, 'userAgent', {
+            value: safari,
+            configurable: true
+        });
+        Object.defineProperty(navigator, 'vendor', {
+            value: safariVendor,
+            configurable: true
+        });
+        rteObj = renderRTE({
+            value: `<p><strong class="startNode">The</strong> Rich <span style="text-decoration: underline;" class="endNode">Text</span> Editor</p>`,
+            toolbarSettings: {
+                items: ['FontSize']
+            }
+        });
+        done();
+    });
+
+    afterEach((done: DoneFn) => {
+        destroy(rteObj);
+        Browser.userAgent = defaultUA;
+        Object.defineProperty(navigator, 'vendor', {
+            value: defaultVendor,
+            configurable: true
+        });
+        done();
+    });
+    it('Safari - Testing selection is restored when bold format is reverted', (done) => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.startNode').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('.endNode').childNodes[0], 4);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
+        expect(rteObj.element.querySelector('.e-content').innerHTML).toBe('<p>The Rich <span style="text-decoration: underline;" class="endNode">Text</span> Editor</p>');
+        expect(window.getSelection().getRangeAt(0).startContainer.textContent === 'The').toBe(true);
         done();
     });
 });

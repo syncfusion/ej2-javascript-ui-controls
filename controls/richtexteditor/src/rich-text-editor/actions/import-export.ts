@@ -21,7 +21,8 @@ export class ImportExport {
     }
     private onImport(): void {
         const actionBegin: ActionBeginEventArgs = {
-            cancel: false
+            cancel: false,
+            requestType: 'Import'
         };
         this.parent.trigger(events.actionBegin, actionBegin, (actionBeginArgs: ActionBeginEventArgs) => {
             if (!actionBeginArgs.cancel) {

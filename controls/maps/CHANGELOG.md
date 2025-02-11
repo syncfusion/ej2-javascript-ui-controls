@@ -8,7 +8,16 @@
 
 ## [Unreleased]
 
-## 28.2.4 (2025-02-04)
+## 28.2.5 (2025-02-11)
+
+### Maps
+
+#### Bug fixes
+
+- `#I681991` - Now, the marker will not be translated for the maximum zoomed-out layers.
+- `#I686422` - Now, the marker cluster expands properly when clicked.
+
+## 28.2.3 (2025-01-29)
 
 ### Maps
 

@@ -169,10 +169,5 @@ export function isHiddenCol(sheet: SheetModel, index: number): boolean {
  * @returns {boolean} - Specifies boolean values by checking column validation or not.
  */
 export function checkColumnValidation(column: ColumnModel, rowIndex: number, colIndex: number): boolean {
-    if (column && column.validation) {
-        if (!column.validation.address || (column.validation.address && isInMultipleRange(column.validation.address, rowIndex, colIndex))) {
-            return true;
-        }
-    }
-    return false;
+    return column && column.validation && (!column.validation.address || isInMultipleRange(column.validation.address, rowIndex, colIndex));
 }

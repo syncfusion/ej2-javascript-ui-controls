@@ -292,8 +292,7 @@ export class HtmlEditor {
                     parentElement.removeChild(tempSpanToRemove);
                     tempSpanToRemove = null;
                 }
-                const currentElement: Element | null = this.parent.inputElement.querySelector('.currentStartMark');
-                const currentChildNode: NodeListOf<ChildNode> | [] = currentElement ? currentElement.childNodes : [];
+                const currentChildNode : NodeListOf<ChildNode> = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
                 if (currentChildNode.length > 1) {
                     for (let i: number = 0; i < currentChildNode.length; i++) {
                         if (currentChildNode[i as number].nodeName === '#text' && currentChildNode[i as number].textContent.length === 0) {
@@ -591,8 +590,9 @@ export class HtmlEditor {
                     if (prevSibling.lastChild.nodeName === 'BR') {
                         prevSibling.removeChild(prevSibling.lastChild);
                     }
-                    const cursorpointer: number = prevSibling.lastChild.textContent.length;
-                    const lastChild: HTMLElement = prevSibling.lastChild as HTMLElement;
+                    const lastPosition: { node: Node; offset: number } | null = this.findLastTextPosition(prevSibling);
+                    const cursorpointer: number = lastPosition.offset;
+                    const lastChild: Element = lastPosition.node as Element;
                     const childNodes: Node[] = Array.from(currentElement.childNodes);
                     for (let i: number = 0; i < childNodes.length; i++) {
                         prevSibling.appendChild(childNodes[i as number].cloneNode(true));
@@ -657,6 +657,18 @@ export class HtmlEditor {
                 }
             }
         }
+    }
+    private findLastTextPosition(element: Node): { node: Node; offset: number } | null {
+        if (element.nodeType === Node.TEXT_NODE) {
+            return { node: element, offset: element.textContent ? element.textContent.length : 0 };
+        }
+        for (let i: number = element.childNodes.length - 1; i >= 0; i--) {
+            const lastPosition: { node: Node; offset: number } | null = this.findLastTextPosition(element.childNodes[i as number]);
+            if (lastPosition) {
+                return lastPosition;
+            }
+        }
+        return null;
     }
     private deleteCleanup(e: NotifyArgs, currentRange: Range): void {
         let isLiElement: boolean = false;
@@ -1015,6 +1027,12 @@ export class HtmlEditor {
                 default:
                     this.parent.formatter.process(this.parent, args, args.originalEvent, null);
                     break;
+                }
+                if (!isNOU(this.parent.quickToolbarModule) && ((isNOU(this.parent.quickToolbarModule.imageQTBar) && item.subCommand === 'Image') ||
+                    (isNOU(this.parent.quickToolbarModule.audioQTBar) && item.subCommand === 'Audio') ||
+                    (isNOU(this.parent.quickToolbarModule.videoQTBar) && item.subCommand === 'Video') ||
+                    (isNOU(this.parent.quickToolbarModule.linkQTBar) && item.subCommand === 'CreateLink'))) {
+                    this.parent.notify(events.renderQuickToolbar, {});
                 }
             }
         } else{

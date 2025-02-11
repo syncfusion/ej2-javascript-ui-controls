@@ -558,5 +558,12 @@ describe('DropDown Tree control List datasource', () => {
             expect(li[0].classList.contains('e-node-focus')).toBe(false);
             expect(li[3].classList.contains('e-node-focus')).toBe(true);
         });
+        it('Check tabindex for disabled Dropdown tree', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", expanded: 'expanded', child: "child" }, enabled: false }, '#ddtree');
+            keyboardEventArgs.action = 'tab';
+            ddtreeObj.keyActionHandler(keyboardEventArgs);
+            expect(ddtreeObj.inputWrapper.classList.contains('e-disabled')).toBe(true);
+            expect(ddtreeObj.element.getAttribute("tabindex")).toBe('-1');
+        });
     });
 });

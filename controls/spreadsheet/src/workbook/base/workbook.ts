@@ -21,7 +21,7 @@ import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilt
 import { WorkbookChart } from '../integrations/index';
 import { WorkbookNumberFormat, getFormatFromType } from '../integrations/number-format';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet, WorkbookAutoFill } from '../actions/index';
-import { WorkbookDataValidation, WorkbookMerge, addListValidationDropdown } from '../index';
+import { WorkbookDataValidation, WorkbookMerge, addListValidationDropdown, checkColumnValidation } from '../index';
 import { ServiceLocator } from '../services/index';
 import { setLinkModel, setImage, setChart, setAutoFill, BeforeCellUpdateArgs, updateCell, isNumber } from '../common/index';
 import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event';
@@ -526,6 +526,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * @hidden
+     * @deprecated
      */
     public dataValidationRange: string = '';
 
@@ -1438,14 +1439,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     public removeDataValidation(range?: string): void {
-        this.notify(events.cellValidation, { range: range, isRemoveValidation: true });
+        this.notify(events.cellValidation, { range: range || this.getActiveSheet().selectedRange, isRemoveValidation: true });
     }
 
-    public addInvalidHighlight(range: string): void {
+    public addInvalidHighlight(range?: string): void {
         this.notify(events.addHighlight, { range: range });
     }
 
-    public removeInvalidHighlight(range: string): void {
+    public removeInvalidHighlight(range?: string): void {
         this.notify(events.removeHighlight, { range: range });
     }
 
@@ -1456,12 +1457,20 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {boolean} - It return true if the cell value is valid; otherwise, false.
      */
     public isValidCell(cellAddress?: string): boolean {
-        const sheet: SheetModel = this.getActiveSheet();
-        const range: number[] = getCellIndexes(cellAddress ? cellAddress : sheet.activeCell);
+        let sheet: SheetModel; let sheetIdx: number; let range: number[];
+        if (cellAddress) {
+            const addressInfo: { sheetIndex: number, indices: number[] } = getAddressInfo(this, cellAddress);
+            sheetIdx = addressInfo.sheetIndex;
+            range = addressInfo.indices;
+            sheet = getSheet(this, sheetIdx);
+        } else {
+            sheet = this.getActiveSheet();
+            range = getCellIndexes(sheet.activeCell);
+            sheetIdx = this.activeSheetIndex;
+        }
         const cell: CellModel = getCell(range[0], range[1], sheet);
-        if ((cell && cell.validation) || (sheet.columns && sheet.columns[range[1]] && sheet.columns[range[1]].validation)) {
+        if ((cell && cell.validation) || checkColumnValidation(sheet.columns[range[1]], range[0], range[1])) {
             const value: string = cell.value ? cell.value : '';
-            const sheetIdx: number = this.activeSheetIndex;
             const validEventArgs: CheckCellValidArgs = { value, range, sheetIdx, td: null, isValid: true };
             this.notify(events.isValidation, validEventArgs);
             return validEventArgs.isValid;

@@ -369,6 +369,12 @@
               @else {
                 box-shadow: $tbar-ext-btn-focus-box-shadow;
               }
+              @if $skin-name == 'bootstrap5.3' {
+                .e-tbar-btn-text,
+                .e-icons.e-btn-icon {
+                  color: $tbar-default-icon-color;
+                }
+              }
             }
 
             @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
@@ -392,6 +398,13 @@
               border-color: $tbar-ext-btn-hover-border-color;
               border-style: $tbar-border-nav-type;
               border-width: $tbar-btn-hover-border-size;
+
+              @if $skin-name == 'bootstrap5.3' {
+                .e-tbar-btn-text,
+                .e-icons.e-btn-icon {
+                  color: $tbar-btn-text-focus-color;
+                }
+              }
             }
   
             &:active {
