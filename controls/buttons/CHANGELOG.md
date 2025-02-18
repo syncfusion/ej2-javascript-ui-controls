@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.2.5 (2025-02-11)
+## 28.2.6 (2025-02-18)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I688698`- Provided the tab index attribute support to the checkbox element.
+
+## 28.1.39 (2024-01-14)
 
 ### Switch
 

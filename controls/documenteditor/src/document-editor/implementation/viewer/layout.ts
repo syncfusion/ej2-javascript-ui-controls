@@ -2259,6 +2259,19 @@ export class Layout {
             }
             }
             if (element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox) {
+                if (element instanceof EditRangeStartElementBox) {
+                    const user: string = element.user !== '' ? element.user : element.group;
+                    if (this.documentHelper.editRanges.containsKey(user)) {
+                        let editStartCollection: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(user);
+                        if (editStartCollection.indexOf(element) === -1) {
+                            editStartCollection.push(element);
+                        }
+                    } else {
+                        let newEditStartCollection: EditRangeStartElementBox[] = [];
+                        newEditStartCollection.push(element);
+                        this.documentHelper.editRanges.add(user, newEditStartCollection);
+                    }
+                }
                 if (element instanceof EditRangeStartElementBox && (this.documentHelper.owner.currentUser === element.user || (element.group === "Everyone" && element.user === ""))) {
                     if (element.columnFirst != -1 && element.columnLast != -1) {
                         let row = element.paragraph.associatedCell.ownerRow;
@@ -6549,7 +6562,7 @@ export class Layout {
             if (elementBox instanceof TextElementBox && (elementBox as TextElementBox).text === '\t') {
                 return width;
             } else {
-                width = width + elementBox.width;
+                width = (elementBox instanceof ShapeElementBox && elementBox.textWrappingStyle !== "Inline") ? width : width + elementBox.width;
             }
             elementBox = elementBox.nextNode;
         }

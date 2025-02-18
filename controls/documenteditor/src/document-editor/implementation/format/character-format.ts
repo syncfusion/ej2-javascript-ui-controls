@@ -316,7 +316,11 @@ export class WCharacterFormat {
         while (!isNullOrUndefined(baseStyle)) {
             if (baseStyle.characterFormat.hasValue(property)) {
                 break;
-            } else {
+            } else if (!isNullOrUndefined(baseStyle.link) && isNullOrUndefined(baseStyle.basedOn) && baseStyle.link.type == 'Character' && baseStyle.link.characterFormat.hasValue(property) && baseStyle.name != "Normal") {
+                baseStyle = baseStyle.link;
+                break;
+            }
+            else {
                 baseStyle = baseStyle.basedOn;
             }
         }

@@ -33,6 +33,7 @@ export abstract class PdfFont {
     _pdfFontInternals: _PdfDictionary;
     _fontMetrics: _PdfFontMetrics;
     _reference: _PdfReference;
+    _key: string;
     /**
      * Gets the size of the PDF font.
      *

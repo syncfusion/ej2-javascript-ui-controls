@@ -214,7 +214,11 @@ export class Table {
         case 'escape':
             break;
         case 'insert-table':
-            this.openDialog(true, e);
+            if (this.parent.editorMode === 'HTML') {
+                this.openDialog(true, e);
+            } else if (this.parent.editorMode === 'Markdown') {
+                this.parent.formatter.process(this.parent, null, event);
+            }
             event.preventDefault();
             break;
         }
@@ -1910,12 +1914,14 @@ export class Table {
                     this.createTableButton = null;
                 }
                 this.parent.isBlur = false;
+                this.popupObj.element.parentElement.style.zIndex = '';
                 this.popupObj.destroy();
                 detach(this.popupObj.element);
                 this.popupObj = null;
             }
         });
         addClass([this.popupObj.element], 'e-popup-open');
+        this.popupObj.element.parentElement.style.zIndex = '11';
         if (!isNOU(this.parent.cssClass)) {
             addClass([this.popupObj.element], this.parent.getCssClass());
         }

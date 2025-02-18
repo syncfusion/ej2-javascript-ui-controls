@@ -1466,16 +1466,18 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     private selectItems(): void {
-        this.dragSelectedItems = [];
         const dragRect: DOMRect = this.dragSelectElement.getBoundingClientRect() as DOMRect;
+        if (dragRect.height > 0 && dragRect.width > 0) {
+            this.dragSelectedItems = [];
+            removeClass(selectAll('.e-active', this.viewElem), ['e-active', 'e-focus']);
+            removeClass(selectAll('.e-check', this.viewElem), ['e-check']);
+        }
         const allItems: HTMLElement[] = selectAll(this.viewElem.classList.contains('e-large-icons') ? '.e-list-item' : '.e-row', this.viewElem);
-        removeClass(selectAll('.e-active', this.viewElem), ['e-active', 'e-focus']);
-        removeClass(selectAll('.e-check', this.viewElem), ['e-check']);
         for (const item of allItems) {
             const itemRect: DOMRect = item.getBoundingClientRect() as DOMRect;
             if (!(dragRect.right < itemRect.left || dragRect.left > itemRect.right
                 || dragRect.bottom < itemRect.top || dragRect.top > itemRect.bottom)
-                && (this.dragSelectElement.clientHeight > 0 && this.dragSelectElement.clientWidth > 0)) {
+                && (dragRect.height > 0 && dragRect.width > 0)) {
                 if (this.viewElem.classList.contains('e-large-icons')) {
                     item.classList.add('e-active');
                     this.dragSelectedItems.push(item.getAttribute('title'));

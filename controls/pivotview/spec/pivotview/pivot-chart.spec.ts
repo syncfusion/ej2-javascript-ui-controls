@@ -77,9 +77,9 @@ describe('Chart - ', () => {
         it('Check initial render 2', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + United States');
-                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_5')[0].textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart1_AxisLabel_5')[0].textContent).toBe('$500.00');
                 expect(document.querySelectorAll('#PivotView_chart_AxisTitle_0')[0].textContent).toBe('Country / State');
-                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Sum of Amount');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_1')[0].textContent).toBe('Sum of Amount');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005');
                 done();
             }, 1000);
@@ -94,7 +94,7 @@ describe('Chart - ', () => {
         it('chart type changed to column', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Column';
             setTimeout(() => {
-                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_5')[0].textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart1_AxisLabel_5')[0].textContent).toBe('$500.00');
                 done();
             }, 1000);
         });
@@ -200,7 +200,7 @@ describe('Chart - ', () => {
         });
         it('empty rows3', (done: Function) => {
             setTimeout(function () {
-                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Sum of Amount');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_1')[0].textContent).toBe('Sum of Amount');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
                 done();
@@ -209,14 +209,14 @@ describe('Chart - ', () => {
         it('chart type changed to stackingarea100 1', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'StackingArea100';
             setTimeout(() => {
-                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_1')[0].textContent).toBe('50%');
+                expect(document.querySelectorAll('#PivotView_chart1_AxisLabel_1')[0].textContent).toBe('50%');
                 done();
             }, 1000);
         });
         it('chart type changed to column 1', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Column';
             setTimeout(() => {
-                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_1')[0].textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart1_AxisLabel_1')[0].textContent).toBe('$500.00');
                 done();
             }, 1000);
         });
@@ -373,9 +373,9 @@ describe('Chart - ', () => {
         it('Check initial render 2', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + United States');
-                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_5')[0].textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart1_AxisLabel_5')[0].textContent).toBe('$500.00');
                 expect(document.querySelectorAll('#PivotView_chart_AxisTitle_0')[0].textContent).toBe('X axis title');
-                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Y axis title');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_1')[0].textContent).toBe('Y axis title');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2008');
                 done();

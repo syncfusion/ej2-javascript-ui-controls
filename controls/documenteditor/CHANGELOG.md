@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I682967` - Fixed a script error that occurred when deleting content inside an edit region.
+- `#I684112` - Fixed a script issue when opening a line-marker chart in Document Editor.
+- `#I683052` - Fixed a bookmark insertion issue when spell check is enabled.
+
 ## 28.2.5 (2025-02-11)
 
 ### DocumentEditor

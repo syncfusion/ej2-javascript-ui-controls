@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.1.39 (2024-01-14)
+## 28.2.6 (2025-02-18)
+
+### MultiColumn ComboBox
+
+#### Bug Fixes
+
+- `#I685573` - Now the issue with MultiColumn ComboBox popup not rendered properly when placed inside the Dialog has been resolved.
+
+## 28.2.3 (2025-01-29)
 
 ### MultiColumn ComboBox
 

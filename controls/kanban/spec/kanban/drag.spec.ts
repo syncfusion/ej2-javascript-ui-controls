@@ -192,6 +192,7 @@ describe('Drag module', () => {
             const ele: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1) as HTMLElement;
             util.triggerMouseEvent(ele, 'mousemove', 250, 140);
             expect(ele.firstElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
+            util.triggerMouseEvent(ele.lastElementChild, 'mousemove', 250, 240);
         });
 
         it('Created Dropped clone on column bottom testing', () => {
@@ -345,6 +346,7 @@ describe('Drag module', () => {
             const ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card-wrapper').item(1) as HTMLElement;
             util.triggerMouseEvent(ele, 'mousemove', 250, 140);
             expect(ele.firstElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
+            util.triggerMouseEvent(ele.lastElementChild, 'mousemove', 250, 240);
         });
 
         it('Created Dropped clone on column bottom testing', () => {
@@ -488,6 +490,7 @@ describe('Drag module', () => {
             const ele: Element = kanbanObj.element.querySelectorAll('.e-card-wrapper').item(1);
             util.triggerMouseEvent(ele, 'mousemove', 250, 140);
             expect(ele.firstElementChild.classList.contains('e-target-dropped-clone')).toEqual(true);
+            util.triggerMouseEvent(ele.lastElementChild, 'mousemove', 250, 240);
         });
 
         it('Created Dropped clone on column bottom testing', () => {
@@ -763,10 +766,10 @@ describe('Drag module', () => {
             util.triggerMouseEvent(draggedElement, 'mousedown');
             expect(key).toEqual('InProgress');
             util.triggerMouseEvent(draggedElement, 'mousemove', 100, 100);
-            util.triggerMouseEvent(draggedElement, 'mousemove');
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(draggedElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
+            util.triggerMouseEvent(draggedElement, 'mousemove');
         });
 
         it('Dropped clone behavior testing with multiple key testing', () => {
@@ -844,10 +847,10 @@ describe('Drag module', () => {
             util.triggerMouseEvent(draggedElement, 'mousedown');
             util.triggerMouseEvent(draggedElement, 'mousemove', 500, 100);
             expect(key).toEqual('Testing');
-            util.triggerMouseEvent(draggedElement, 'mousemove');
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(draggedElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
+            util.triggerMouseEvent(draggedElement, 'mousemove');
         });
 
         it('Dropped clone behavior testing with multiple key testing', () => {
@@ -949,10 +952,10 @@ describe('Drag module', () => {
             util.triggerMouseEvent(draggedElement, 'mousedown');
             expect(key).toEqual('InProgress');
             util.triggerMouseEvent(draggedElement, 'mousemove', 100, 100);
-            util.triggerMouseEvent(draggedElement, 'mousemove');
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(draggedElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
+            util.triggerMouseEvent(draggedElement, 'mousemove');
         });
 
         it('Dropped clone behavior testing with multiple key testing', () => {
@@ -1779,6 +1782,330 @@ describe('835740 - The drop is not working on the empty column in the Kanban com
             util.triggerMouseEvent(element, 'mouseup', 20, 70);
             const droppedElem: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="4"]') as NodeListOf<Element>).item(0) as HTMLElement;
             expect(droppedElem.parentElement.parentElement.getAttribute('data-key')).toEqual('Open');
+            done();
+        }, 1000);
+    });
+});
+describe('925005 - Unable to Drop a Card at the Top of Another Column When Swimlane Enabled.', () => {
+    let kanbanObj: Kanban;
+    beforeAll((done: DoneFn) => {
+        let kanbanData: Record<string, any>[] = [
+            {
+                'Id': 1,
+                'Status': 'Open',
+                'Summary': 'Analyze the new requirements gathered from the customer.',
+                'Type': 'Story',
+                'Priority': 'Low',
+                'Tags': 'Analyze,Customer',
+                'Estimate': 3.5,
+                'Assignee': 'Nancy Davloio',
+                'RankId': 1
+            },
+            {
+                'Id': 2,
+                'Status': 'InProgress',
+                'Summary': 'Improve application performance',
+                'Type': 'Improvement',
+                'Priority': 'Normal',
+                'Tags': 'Improvement',
+                'Estimate': 6,
+                'Assignee': 'Andrew Fuller',
+                'RankId': 1
+            },
+            {
+                'Id': 3,
+                'Status': 'Open',
+                'Summary': 'Arrange a web meeting with the customer to get new requirements.',
+                'Type': 'Others',
+                'Priority': 'Critical',
+                'Tags': 'Meeting',
+                'Estimate': 5.5,
+                'Assignee': 'Janet Leverling',
+                'RankId': 2
+            },
+            {
+                'Id': 4,
+                'Status': 'InProgress',
+                'Summary': 'Fix the issues reported in the IE browser.',
+                'Type': 'Bug',
+                'Priority': 'Release Breaker',
+                'Tags': 'IE',
+                'Estimate': 2.5,
+                'Assignee': 'Janet Leverling',
+                'RankId': 2
+            },
+            {
+                'Id': 5,
+                'Status': 'Testing',
+                'Summary': 'Fix the issues reported by the customer.',
+                'Type': 'Bug',
+                'Priority': 'Low',
+                'Tags': 'Customer',
+                'Estimate': '3.5',
+                'Assignee': 'Steven walker',
+                'RankId': 1
+            },
+            {
+                'Id': 6,
+                'Status': 'Close',
+                'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
+                'Type': 'Others',
+                'Priority': 'Low',
+                'Tags': 'Meeting',
+                'Estimate': 2,
+                'Assignee': 'Michael Suyama',
+                'RankId': 1
+            },
+            {
+                'Id': 7,
+                'Status': 'Validate',
+                'Summary': 'Validate new requirements',
+                'Type': 'Improvement',
+                'Priority': 'Low',
+                'Tags': 'Validation',
+                'Estimate': 1.5,
+                'Assignee': 'Robert King',
+                'RankId': 1
+            },
+            {
+                'Id': 8,
+                'Status': 'Close',
+                'Summary': 'Login page validation',
+                'Type': 'Story',
+                'Priority': 'Release Breaker',
+                'Tags': 'Validation,Fix',
+                'Estimate': 2.5,
+                'Assignee': 'Laura Callahan',
+                'RankId': 2
+            },
+            {
+                'Id': 9,
+                'Status': 'Testing',
+                'Summary': 'Fix the issues reported in Safari browser.',
+                'Type': 'Bug',
+                'Priority': 'Release Breaker',
+                'Tags': 'Fix,Safari',
+                'Estimate': 1.5,
+                'Assignee': 'Nancy Davloio',
+                'RankId': 2
+            },
+            {
+                'Id': 10,
+                'Status': 'Close',
+                'Summary': 'Test the application in the IE browser.',
+                'Type': 'Story',
+                'Priority': 'Low',
+                'Tags': 'Testing,IE',
+                'Estimate': 5.5,
+                'Assignee': 'Margaret hamilt',
+                'RankId': 3
+            },
+            {
+                'Id': 11,
+                'Status': 'Validate',
+                'Summary': 'Validate the issues reported by the customer.',
+                'Type': 'Story',
+                'Priority': 'High',
+                'Tags': 'Validation,Fix',
+                'Estimate': 1,
+                'Assignee': 'Steven walker',
+                'RankId': 1
+            },
+            {
+                'Id': 12,
+                'Status': 'Testing',
+                'Summary': 'Check Login page validation.',
+                'Type': 'Story',
+                'Priority': 'Release Breaker',
+                'Tags': 'Testing',
+                'Estimate': 0.5,
+                'Assignee': 'Michael Suyama',
+                'RankId': 3
+            },
+            {
+                'Id': 13,
+                'Status': 'Open',
+                'Summary': 'API improvements.',
+                'Type': 'Improvement',
+                'Priority': 'High',
+                'Tags': 'Grid,API',
+                'Estimate': 3.5,
+                'Assignee': 'Robert King',
+                'RankId': 3
+            },
+            {
+                'Id': 14,
+                'Status': 'InProgress',
+                'Summary': 'Add responsive support to application',
+                'Type': 'Epic',
+                'Priority': 'Critical',
+                'Tags': 'Responsive',
+                'Estimate': 6,
+                'Assignee': 'Laura Callahan',
+                'RankId': 3
+            },
+            {
+                'Id': 15,
+                'Status': 'Open',
+                'Summary': 'Show the retrieved data from the server in grid control.',
+                'Type': 'Story',
+                'Priority': 'High',
+                'Tags': 'Database,SQL',
+                'Estimate': 5.5,
+                'Assignee': 'Margaret hamilt',
+                'RankId': 4
+            },
+            {
+                'Id': 16,
+                'Status': 'InProgress',
+                'Summary': 'Fix cannot open user’s default database SQL error.',
+                'Priority': 'Critical',
+                'Type': 'Bug',
+                'Tags': 'Database,Sql2008',
+                'Estimate': 2.5,
+                'Assignee': 'Janet Leverling',
+                'RankId': 4
+            },
+            {
+                'Id': 17,
+                'Status': 'Testing',
+                'Summary': 'Fix the issues reported in data binding.',
+                'Type': 'Story',
+                'Priority': 'Normal',
+                'Tags': 'Databinding',
+                'Estimate': '3.5',
+                'Assignee': 'Janet Leverling',
+                'RankId': 4
+            },
+            {
+                'Id': 18,
+                'Status': 'Close',
+                'Summary': 'Analyze SQL server 2008 connection.',
+                'Type': 'Story',
+                'Priority': 'Release Breaker',
+                'Tags': 'Grid,Sql',
+                'Estimate': 2,
+                'Assignee': 'Andrew Fuller',
+                'RankId': 4
+            },
+            {
+                'Id': 19,
+                'Status': 'Validate',
+                'Summary': 'Validate databinding issues.',
+                'Type': 'Story',
+                'Priority': 'Low',
+                'Tags': 'Validation',
+                'Estimate': 1.5,
+                'Assignee': 'Margaret hamilt',
+                'RankId': 1
+            },
+            {
+                'Id': 20,
+                'Status': 'Close',
+                'Summary': 'Analyze grid control.',
+                'Type': 'Story',
+                'Priority': 'High',
+                'Tags': 'Analyze',
+                'Estimate': 2.5,
+                'Assignee': 'Margaret hamilt',
+                'RankId': 5
+            },
+            {
+                'Id': 21,
+                'Status': 'Close',
+                'Summary': 'Stored procedure for initial data binding of the grid.',
+                'Type': 'Others',
+                'Priority': 'Release Breaker',
+                'Tags': 'Databinding',
+                'Estimate': 1.5,
+                'Assignee': 'Steven walker',
+                'RankId': 6
+            },
+            {
+                'Id': 22,
+                'Status': 'Close',
+                'Summary': 'Analyze stored procedures.',
+                'Type': 'Story',
+                'Priority': 'Release Breaker',
+                'Tags': 'Procedures',
+                'Estimate': 5.5,
+                'Assignee': 'Janet Leverling',
+                'RankId': 7
+            },
+            {
+                'Id': 23,
+                'Status': 'Validate',
+                'Summary': 'Validate editing issues.',
+                'Type': 'Story',
+                'Priority': 'Critical',
+                'Tags': 'Editing',
+                'Estimate': 1,
+                'Assignee': 'Nancy Davloio',
+                'RankId': 1
+            },
+            {
+                'Id': 24,
+                'Status': 'Testing',
+                'Summary': 'Test editing functionality.',
+                'Type': 'Story',
+                'Priority': 'Normal',
+                'Tags': 'Editing,Test',
+                'Estimate': 0.5,
+                'Assignee': 'Nancy Davloio',
+                'RankId': 5
+            },
+            {
+                'Id': 25,
+                'Status': 'Open',
+                'Summary': 'Enhance editing functionality.',
+                'Type': 'Improvement',
+                'Priority': 'Low',
+                'Tags': 'Editing',
+                'Estimate': 3.5,
+                'Assignee': 'Andrew Fuller',
+                'RankId': 5
+            }
+        ];
+        const model: KanbanModel = {
+            dataSource: kanbanData,
+            keyField: 'Status',
+            columns: [
+                { headerText: 'Backlog', keyField: 'Open' },
+                { headerText: 'In Progress', keyField: 'InProgress' },
+                { headerText: 'Testing', keyField: 'Testing' },
+                { headerText: 'Done', keyField: 'Close' }
+            ],
+            cardSettings: {
+                contentField: 'Summary',
+                headerField: 'Id'
+            },
+            swimlaneSettings: {
+                keyField: 'Assignee'
+            }
+        };
+        kanbanObj = util.createKanban(model, kanbanData, done, createElement('div', { id: 'Kanban1' }));
+    });
+
+    afterAll(() => {
+        util.destroy(kanbanObj);
+    });
+    it('- Unable to Drop a Card at the Top of Another Column When Swimlane Enabled. ', (done: Function) => {
+        setTimeout(() => {
+            window.scrollTo(0, document.body.scrollHeight);
+            const dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="24"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 313, 58);
+            expect(dragElement.closest('.e-content-cells').classList.contains('e-dragged-column')).toBe(true);
+            done();
+        }, 1000);
+    });
+    it(' - Unable to Drop a Card at the Top of Another Column When Swimlane Enabled. ', function (done) {
+        setTimeout(function () {
+            const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="9"]').item(0);
+            util.triggerMouseEvent(element, 'mousemove', 312, 57);
+            util.triggerMouseEvent(element, 'mouseup', 312, 57);
+            const droppedElem: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="24"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            expect(droppedElem.parentElement.childNodes[0]).toEqual(droppedElem);
             done();
         }, 1000);
     });

@@ -2117,3 +2117,36 @@ describe('When we press the enter key insert the emoji in IFrame' , () => {
         expect((rteObj as any).inputElement.ownerDocument.activeElement.innerHTML).toBe('<p id="rte-p">Emoji picker : : : : : : 😀</p>');
     });
 });
+describe('936848: Add Table Popup Gets Hidden Under the Lower Rich Text Editor’s Toolbar', () => {
+    let rteObjOne : RichTextEditor;
+    let rteObjTwo : RichTextEditor;
+    beforeAll(() => {
+        rteObjOne = renderRTE({
+            toolbarSettings: {
+                items: ['EmojiPicker'],
+            },
+            value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;">Rich Text Editor 1</td><td style="width: 50%;" class="">Rich Text Editor 1</td></tr><tr><td style="width: 50%;" class="">Rich Text Editor 1</td><td style="width: 50%;" class="e-cell-select">Rich Text Editor 1<p class="tdElement"><br></p></td></tr></tbody></table><p><br></p>`
+        }
+        );
+        rteObjTwo = renderRTE({
+            toolbarSettings: {
+                items: ['EmojiPicker'],
+            },
+            value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;">Rich Text Editor 1</td><td style="width: 50%;" class="">Rich Text Editor 1</td></tr><tr><td style="width: 50%;" class="">Rich Text Editor 1</td><td style="width: 50%;" class="e-cell-select">Rich Text Editor 1<p class="tdElement"><br></p></td></tr></tbody></table><p><br></p>`
+        }
+        );
+    });
+    afterAll(() => {
+        destroy(rteObjOne);
+        destroy(rteObjTwo);
+    });
+    it("936848: Add Table Popup Gets Hidden Under the Lower Rich Text Editor’s Toolbar", () => {
+        expect(rteObjOne.element.querySelectorAll('.e-rte-content').length).toBe(1);
+        expect(rteObjTwo.element.querySelectorAll('.e-rte-content').length).toBe(1);
+        (<HTMLElement>rteObjOne.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        expect(rteObjOne.element.querySelectorAll('.e-popup').length === 1).toBe(true);
+        expect((<HTMLElement>rteObjOne.element.querySelector(".e-toolbar-wrapper") as HTMLElement).style.zIndex === '11').toBe(true);
+        (<HTMLElement>rteObjOne.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        expect((<HTMLElement>rteObjOne.element.querySelector(".e-toolbar-wrapper") as HTMLElement).style.zIndex === '').toBe(true);
+    });
+});

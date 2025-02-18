@@ -1128,13 +1128,6 @@ export class BaseHistoryInfo {
                         this.editorHistory.currentHistoryInfo.action === 'PageBreak')) {
                         lastNode = deletedNodes[1];
                     }
-                    if(lastNode instanceof WCharacterFormat) {
-                        const newParagraph = new ParagraphWidget();
-                        newParagraph.characterFormat = lastNode;
-                        this.owner.editorModule.insertNewParagraphWidget(newParagraph, true);
-                        deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
-                        block = newParagraph;
-                    }
                     let skipinsert: boolean = false;
                     if (!isNullOrUndefined(this.isAcceptOrReject)) {
                         skipinsert = true;
@@ -1298,7 +1291,18 @@ export class BaseHistoryInfo {
                         wiget.characterFormat.removedIds = node.removedIds.slice();
                         this.owner.editorModule.constructRevisionFromID(wiget.characterFormat, true);
                     } else if (wiget.characterFormat.revisions.length > 0) {
-                        wiget.characterFormat = node.cloneFormat();
+                        for (let i: number = 0; i < wiget.characterFormat.revisions.length; i++) {
+                            let currentRevision: Revision = wiget.characterFormat.revisions[i];
+                            const index: number = currentRevision.range.indexOf(wiget.characterFormat);
+                            if (index !== -1) {
+                                currentRevision.range.splice(index, 1);
+                                if (currentRevision.range.length === 0) {
+                                    this.owner.revisions.remove(currentRevision);
+                                }
+                            }
+                        }
+                        node.ownerBase = wiget;
+                        wiget.characterFormat = node;
                     }
                 }
             } else if (node instanceof BodyWidget) {

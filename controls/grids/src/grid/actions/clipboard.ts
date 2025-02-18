@@ -183,71 +183,96 @@ export class Clipboard implements IAction {
         if (window.getSelection().toString() === '') {
             this.clipBoardTextArea.value = this.copyContent = '';
             const rows: Element[] = this.parent.getDataRows();
-            if (this.parent.selectionSettings.mode !== 'Cell') {
-                let selectedIndexes: Object[] = this.parent.getSelectedRowIndexes().sort((a: number, b: number) => { return a - b; });
+            if (this.parent.selectionSettings && this.parent.selectionSettings.allowColumnSelection && this.parent.selectionModule &&
+                this.parent.selectionModule.selectedColumnsIndexes.length) {
                 if (withHeader) {
-                    const headerTextArray: string[] = [];
-                    for (let i: number = 0; i < this.parent.getVisibleColumns().length; i++) {
-                        headerTextArray[parseInt(i.toString(), 10)] = this.parent
-                            .getVisibleColumns()[parseInt(i.toString(), 10)].headerText;
+                    const selectedColumns: number[] = this.parent.selectionModule.selectedColumnsIndexes;
+                    const headerColumns: HTMLElement[] = [];
+                    for (let i: number = 0; i < selectedColumns.length; i++) {
+                        const colIndex: number = selectedColumns[parseInt(i.toString(), 10)];
+                        const headerCell: HTMLElement = this.parent.getColumnHeaderByIndex(colIndex) as HTMLElement;
+                        if (headerCell && !headerCell.classList.contains('e-hide')) {
+                            headerColumns.push(headerCell);
+                        }
                     }
-                    this.getCopyData(headerTextArray, false, '\t', withHeader);
+                    this.getCopyData(headerColumns, false, '\t', withHeader);
                     this.copyContent += '\n';
                 }
-                if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) && selectedIndexes.length > rows.length) {
-                    selectedIndexes = [];
-                    for (let i: number = 0; i < rows.length; i++) {
-                        const row: Element = rows[parseInt(i.toString(), 10)] as HTMLTableRowElement;
-                        if (row.getAttribute('aria-selected') === 'true') {
-                            selectedIndexes.push(parseInt(row.getAttribute('data-rowindex'), 10));
-                        }
-                    }
-                }
-                for (let i: number = 0; i < selectedIndexes.length; i++) {
-                    if (i > 0) {
+                for (let j: number = 0; j < rows.length; j++) {
+                    const columnCells: HTMLElement[] = [];
+                    if (j > 0) {
                         this.copyContent += '\n';
                     }
-                    const leftCols: HTMLElement[] = [];
-                    let idx: number = selectedIndexes[parseInt(i.toString(), 10)] as number;
-                    if (!isGroupAdaptive(this.parent) && (this.parent.enableVirtualization ||
-                        (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) ||
-                        (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading))) {
-                        idx = rows.map((m: Element) => m.getAttribute('data-rowindex')).indexOf(
-                            selectedIndexes[parseInt(i.toString(), 10)].toString());
-                    }
-                    const currentRow: Element = rows[parseInt(idx.toString(), 10)];
-                    if (!(isNullOrUndefined(currentRow))) {
-                        leftCols.push(...[].slice.call(currentRow.querySelectorAll('.e-rowcell:not(.e-hide)')));
-                        this.getCopyData(leftCols, false, '\t', withHeader);
-                    }
+                    columnCells.push(...[].slice.call(rows[parseInt(j.toString(), 10)].querySelectorAll('.e-columnselection:not(.e-hide)')));
+                    this.getCopyData(columnCells, false, '\t', withHeader);
                 }
             } else {
-                const obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = this.checkBoxSelection();
-                if (obj.status) {
+                if (this.parent.selectionSettings.mode !== 'Cell') {
+                    let selectedIndexes: Object[] = this.parent.getSelectedRowIndexes().sort((a: number, b: number) => { return a - b; });
                     if (withHeader) {
-                        const headers: HTMLElement[] = [];
-                        for (let i: number = 0; i < obj.colIndexes.length; i++) {
-                            const colHeader: HTMLElement = this.parent
-                                .getColumnHeaderByIndex(obj.colIndexes[parseInt(i.toString(), 10)]) as HTMLElement;
-                            if (!colHeader.classList.contains('e-hide')) {
-                                headers.push(colHeader);
-                            }
+                        const headerTextArray: string[] = [];
+                        for (let i: number = 0; i < this.parent.getVisibleColumns().length; i++) {
+                            headerTextArray[parseInt(i.toString(), 10)] = this.parent
+                                .getVisibleColumns()[parseInt(i.toString(), 10)].headerText;
                         }
-                        this.getCopyData(headers, false, '\t', withHeader);
+                        this.getCopyData(headerTextArray, false, '\t', withHeader);
                         this.copyContent += '\n';
                     }
-                    for (let i: number = 0; i < obj.rowIndexes.length; i++) {
+                    if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) && selectedIndexes.length > rows.length) {
+                        selectedIndexes = [];
+                        for (let i: number = 0; i < rows.length; i++) {
+                            const row: Element = rows[parseInt(i.toString(), 10)] as HTMLTableRowElement;
+                            if (row.getAttribute('aria-selected') === 'true') {
+                                selectedIndexes.push(parseInt(row.getAttribute('data-rowindex'), 10));
+                            }
+                        }
+                    }
+                    for (let i: number = 0; i < selectedIndexes.length; i++) {
                         if (i > 0) {
                             this.copyContent += '\n';
                         }
-                        const cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[parseInt(i.toString(), 10)] as number].
-                            querySelectorAll('.e-cellselectionbackground:not(.e-hide)'));
-                        this.getCopyData(cells, false, '\t', withHeader);
+                        const leftCols: HTMLElement[] = [];
+                        let idx: number = selectedIndexes[parseInt(i.toString(), 10)] as number;
+                        if (!isGroupAdaptive(this.parent) && (this.parent.enableVirtualization ||
+                            (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) ||
+                            (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading))) {
+                            idx = rows.map((m: Element) => m.getAttribute('data-rowindex')).indexOf(
+                                selectedIndexes[parseInt(i.toString(), 10)].toString());
+                        }
+                        const currentRow: Element = rows[parseInt(idx.toString(), 10)];
+                        if (!(isNullOrUndefined(currentRow))) {
+                            leftCols.push(...[].slice.call(currentRow.querySelectorAll('.e-rowcell:not(.e-hide)')));
+                            this.getCopyData(leftCols, false, '\t', withHeader);
+                        }
                     }
                 } else {
-                    this.getCopyData(
-                        [].slice.call(this.parent.element.getElementsByClassName('e-cellselectionbackground')),
-                        true, '\n', withHeader);
+                    const obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = this.checkBoxSelection();
+                    if (obj.status) {
+                        if (withHeader) {
+                            const headers: HTMLElement[] = [];
+                            for (let i: number = 0; i < obj.colIndexes.length; i++) {
+                                const colHeader: HTMLElement = this.parent
+                                    .getColumnHeaderByIndex(obj.colIndexes[parseInt(i.toString(), 10)]) as HTMLElement;
+                                if (!colHeader.classList.contains('e-hide')) {
+                                    headers.push(colHeader);
+                                }
+                            }
+                            this.getCopyData(headers, false, '\t', withHeader);
+                            this.copyContent += '\n';
+                        }
+                        for (let i: number = 0; i < obj.rowIndexes.length; i++) {
+                            if (i > 0) {
+                                this.copyContent += '\n';
+                            }
+                            const cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[parseInt(i.toString(), 10)] as number].
+                                querySelectorAll('.e-cellselectionbackground:not(.e-hide)'));
+                            this.getCopyData(cells, false, '\t', withHeader);
+                        }
+                    } else {
+                        this.getCopyData(
+                            [].slice.call(this.parent.element.getElementsByClassName('e-cellselectionbackground')),
+                            true, '\n', withHeader);
+                    }
                 }
             }
             const args: BeforeCopyEventArgs = {

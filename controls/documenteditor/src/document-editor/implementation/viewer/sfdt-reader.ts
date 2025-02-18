@@ -544,20 +544,23 @@ export class SfdtReader {
                     if (isNullOrUndefined(linkStyle)) {
                         //Construct the CharacterStyle string
                         const charaStyle: any = {};
-                        charaStyle.characterFormat = style[characterFormatProperty[this.keywordIndex]];
-                        charaStyle.name = style[nameProperty[this.keywordIndex]] + ' Char';
-                        charaStyle.type = 'Character';
+                        charaStyle[characterFormatProperty[this.keywordIndex]] = style[characterFormatProperty[this.keywordIndex]];
+                        charaStyle[nameProperty[this.keywordIndex]] = style[nameProperty[this.keywordIndex]] + ' Char';
+                        charaStyle[typeProperty[this.keywordIndex]] = 'Character';
                         //TODO: Implement basedOn
-                        charaStyle.basedOn = style[basedOnProperty[this.keywordIndex]] === 'Normal' ? 'Default Paragraph Font' : (style[basedOnProperty[this.keywordIndex]] + ' Char');
+                        charaStyle[basedOnProperty[this.keywordIndex]] = style[basedOnProperty[this.keywordIndex]] === 'Normal' ? 'Default Paragraph Font' : (style[basedOnProperty[this.keywordIndex]] + ' Char');
                         styleString = charaStyle;
                     } else {
                         styleString = linkStyle;
                     }
                     this.parseStyle(data, styleString, styles);
+                    let linkedStyle: Object;
                     if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
-                        wStyle.link = isNullOrUndefined(this.documentHelper.styles.findByName(styleString.name)) ? style[linkProperty[this.keywordIndex]] : this.documentHelper.styles.findByName(styleString.name);
+                        linkedStyle = this.documentHelper.styles.findByName(styleString[nameProperty[this.keywordIndex]]);
+                        wStyle.link = isNullOrUndefined(linkedStyle) ? style[linkProperty[this.keywordIndex]] : linkedStyle;
                     } else {
-                        wStyle.link = isNullOrUndefined(styles.findByName(styleString.name)) ? style[linkProperty[this.keywordIndex]] : styles.findByName(styleString.name);
+                        linkedStyle = styles.findByName(styleString[nameProperty[this.keywordIndex]]);
+                        wStyle.link = isNullOrUndefined(linkedStyle) ? style[linkProperty[this.keywordIndex]] : linkedStyle;
                     }
                 } else {
                     wStyle.link = link;

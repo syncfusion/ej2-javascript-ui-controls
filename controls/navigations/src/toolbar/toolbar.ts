@@ -1125,9 +1125,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         } else if (scrollNav) {
             navEleWidth = this.isVertical ? (scrollNav.offsetHeight * (2)) : (scrollNav.offsetWidth * 2);
         }
-        if (itemWidth > eleWidth - navEleWidth) {
+        if (eleWidth >= itemWidth && scrollNav) {
+            return false;
+        }
+        else if (itemWidth > eleWidth - navEleWidth) {
             return true;
-        } else {
+        }
+        else {
             return false;
         }
     }

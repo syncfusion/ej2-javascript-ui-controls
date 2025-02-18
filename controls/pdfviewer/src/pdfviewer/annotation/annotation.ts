@@ -162,7 +162,7 @@ export class Annotation {
      * @private
      * It is used to store the non render page selected annotation.
      */
-    private nonRenderSelectedAnnotation: any = {};
+    private nonRenderSelectedAnnotation: any = null;
     /**
      * @private
      */
@@ -538,9 +538,10 @@ export class Annotation {
                 }
             }
         }
-        else if (this.nonRenderSelectedAnnotation && this.isAnnotDeletionApiCall) {
+        else if (this.nonRenderSelectedAnnotation && this.nonRenderSelectedAnnotation.annotationId && this.isAnnotDeletionApiCall) {
             const annotationId: string = this.nonRenderSelectedAnnotation.annotationId;
-            const pageIndex: number = this.nonRenderSelectedAnnotation.pageNumber;
+            const pageIndex: number = this.nonRenderSelectedAnnotation.pageNumber ? this.nonRenderSelectedAnnotation.pageNumber :
+                this.nonRenderSelectedAnnotation.pageIndex;
             const collections: any = this.updateCollectionForNonRenderedPages(this.nonRenderSelectedAnnotation, annotationId, pageIndex);
             collections.pageIndex = pageIndex;
             this.pdfViewer.annotation.addAction(pageIndex, null, collections, 'Delete', '', collections, collections);
@@ -4788,7 +4789,7 @@ export class Annotation {
             if (annotation && annotation.isCommentLock === true) {
                 currentAnnotation.isCommentLock = annotation.isCommentLock;
             }
-            if (annotation && currentAnnotation.annotationSelectorSettings !== annotation.annotationSelectorSettings && ((!isNullOrUndefined(annotation.type) && annotation.type !== 'TextMarkup') || (!isNullOrUndefined(annotation.shapeAnnotationType) && annotation.shapeAnnotationType !== 'textMarkup'))) {
+            if (annotation && JSON.stringify(currentAnnotation.annotationSelectorSettings) !== JSON.stringify(annotation.annotationSelectorSettings) && ((!isNullOrUndefined(annotation.type) && annotation.type !== 'TextMarkup') || (!isNullOrUndefined(annotation.shapeAnnotationType) && annotation.shapeAnnotationType !== 'textMarkup'))) {
                 currentAnnotation.annotationSelectorSettings = annotation.annotationSelectorSettings;
                 redoClonedObject.annotationSelectorSettings = annotation.annotationSelectorSettings;
                 this.pdfViewer.nodePropertyChange(currentAnnotation, { annotationSelectorSettings: annotation.annotationSelectorSettings });
@@ -4883,6 +4884,7 @@ export class Annotation {
                 if (currentAnnotation.data !== annotation.stampAnnotationPath) {
                     currentAnnotation.data = annotation.stampAnnotationPath;
                     currentAnnotation.wrapper.children[0].imageSource = annotation.stampAnnotationPath;
+                    this.pdfViewer.renderDrawing(null , pageNumber);
                 }
                 if (!(isNullOrUndefined(annotation.opacity)) && currentAnnotation.opacity !== annotation.opacity) {
                     redoClonedObject.opacity = annotation.opacity;

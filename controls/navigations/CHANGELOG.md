@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I686672` - An issue with the toolbar scrollable arrows not removing after resizing page to full width, has been resolved.
+
+### Carousel
+
+#### Bug Fixes
+
+- `#I688740` - An issue with the carousel item moving when trying to navigate using the tab key has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I682127` - Resolved an issue where the checkbox state was not maintained properly during custom filtering operations in the `DropdownTree` component.
+
 ## 28.2.5 (2025-02-11)
 
 ### Tab

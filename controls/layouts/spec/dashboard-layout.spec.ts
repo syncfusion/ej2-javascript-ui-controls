@@ -768,7 +768,23 @@ describe('GridLayout', () => {
             expect(gridLayOut.element.children[0].offsetHeight).toBe(101);
             expect(gridLayOut.element.offsetHeight).toBe(gridLayOut.element.children[0].offsetHeight);
         });
-
+        it('root element height with remove panel test case ', () => {
+            let content = generateTemplate('0');
+            gridLayOut = new DashboardLayout({
+                columns: 12,
+                cellAspectRatio: 1,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                panels: [],
+                mediaQuery: null
+            });
+            gridLayOut.appendTo('#gridlayout');
+            expect(gridLayOut.element.style.height).toBe('');
+            gridLayOut.addPanel({ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, content: content });
+            expect(gridLayOut.element.style.height).toBe(gridLayOut.element.querySelector('.e-panel').style.height);
+            gridLayOut.removePanel('0');
+            expect(gridLayOut.element.style.height).toBe('');
+        });
         it('Columns less than panels value with space available', () => {
             gridLayOut = new DashboardLayout({
                 columns: 2,

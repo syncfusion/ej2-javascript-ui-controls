@@ -33,7 +33,7 @@ export class ClearFormat {
      */
     public static clear(docElement: Document, endNode: Node, enterAction: string, selector?: string, command?: string): void {
         this.domNode = new DOMNode((endNode as HTMLElement), docElement);
-        this.defaultTag = enterAction === 'P' ? this.defaultTag : 'div';
+        this.defaultTag = enterAction === 'P' ? 'p' : 'div';
         const nodeSelection: NodeSelection = new NodeSelection(endNode as HTMLElement);
         const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
@@ -198,6 +198,9 @@ export class ClearFormat {
 
     private static unWrap(docElement: Document, parentNodes: Node[], nodeCutter: NodeCutter, nodeSelection: NodeSelection): void {
         for (let index1: number = 0; index1 < parentNodes.length; index1++) {
+            parentNodes[index1 as number] = (closest(parentNodes[index1 as number], 'li') && parentNodes[index1 as number].nodeName !== 'UL' && parentNodes[index1 as number].nodeName !== 'OL')
+                ? closest(parentNodes[index1 as number], 'li')
+                : parentNodes[index1 as number];
             if (this.NONVALID_TAGS.indexOf(parentNodes[index1 as number].nodeName.toLowerCase()) > -1
             && parentNodes[index1 as number].parentNode
             && this.NONVALID_PARENT_TAGS.indexOf(parentNodes[index1 as number].parentNode.nodeName.toLowerCase()) > -1) {

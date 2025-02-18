@@ -2682,6 +2682,7 @@ export interface SwapInfo {
  */
 export interface KeyboardEventArgs extends KeyboardEvent {
     cancel?: boolean;
+    action?: string;
 }
 
 /**

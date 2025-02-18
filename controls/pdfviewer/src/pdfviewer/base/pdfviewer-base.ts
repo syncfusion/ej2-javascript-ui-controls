@@ -1,6 +1,6 @@
 import { createElement, Browser, isNullOrUndefined, isBlazor, Internationalization, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { PdfViewer, TextLayer, ContextMenu, Signature, AnnotationType, TileRenderingSettingsModel, PdfFormFieldBase, AccessibilityTags, KeyboardCommand, PdfAnnotationBase, PdfRenderedFields } from '../index';
+import { PdfViewer, TextLayer, ContextMenu, Signature, AnnotationType, TileRenderingSettingsModel, PdfFormFieldBase, AccessibilityTags, KeyboardCommand, PdfAnnotationBase, PdfRenderedFields, ISignAnnotation } from '../index';
 import { NavigationPane } from './navigation-pane';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { TextMarkupAnnotation, StampAnnotation, IPageAnnotations, Annotation, IPoint } from '../annotation';
@@ -4505,11 +4505,6 @@ export class PdfViewerBase {
                         break;
                     }
                 }
-                if (event.ctrlKey) {
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
-                        this.pdfViewer.annotationModule.setAnnotationMode('None');
-                    }
-                }
                 switch (event.keyCode) {
                 case 79: // o key
                     if (this.pdfViewer.toolbarModule && this.pdfViewer.enableToolbar &&
@@ -4552,6 +4547,10 @@ export class PdfViewerBase {
                 case 90: //z key
                     if (!(this.pdfViewer.textSearchModule && this.isTextSearchBoxOpen())) {
                         if (this.pdfViewer.annotationModule && this.focusOnViewerContainer()) {
+                            if (!isNullOrUndefined(this.pdfViewer.annotationModule) &&
+                                this.pdfViewer.toolbarModule.annotationToolbarModule.inkAnnotationSelected) {
+                                this.pdfViewer.annotationModule.setAnnotationMode('None');
+                            }
                             this.pdfViewer.annotationModule.undo();
                         }
                     }
@@ -12750,6 +12749,7 @@ export class PdfViewerBase {
     public deleteAnnotations(): void {
         if (this.pdfViewer.annotationModule) {
             this.updateAnnotationsUndoRedo();
+            this.updateSignatureUndoRedo();
             this.pdfViewer.annotations = [];
             this.pdfViewer.zIndexTable = [];
             this.pdfViewer.annotationCollection = [];
@@ -12873,6 +12873,37 @@ export class PdfViewerBase {
                         manageAnnotations(stickyNoteAnnotations, currentAnnotation.pageIndex, 'sticky');
                 }
             }
+        }
+    }
+
+    private updateSignatureUndoRedo(): void
+    {
+        for (let i: number = 0; i < this.pdfViewer.signatureCollection.length; i++) {
+            // eslint-disable-next-line
+            const proxy: any = this;
+            let currentAnnotation: any;
+            if (proxy.pdfViewer.signatureCollection[parseInt(i.toString(), 10)].shapeAnnotationType === 'HandWrittenSignature' || proxy.pdfViewer.signatureCollection[parseInt(i.toString(), 10)].shapeAnnotationType === 'SignatureText' || proxy.pdfViewer.signatureCollection[parseInt(i.toString(), 10)].shapeAnnotationType === 'SignatureImage') {
+                currentAnnotation = proxy.pdfViewer.signatureCollection[parseInt(i.toString(), 10)];
+                const pageAnnotations: ISignAnnotation[] = proxy.signatureModule.getAnnotations(currentAnnotation.pageNumber, null);
+                for (const annotation of pageAnnotations) {
+                    if (annotation.id === currentAnnotation.uniqueKey) {
+                        currentAnnotation = annotation;
+                        break;
+                    }
+                }
+                let undoElement: any = proxy.pdfViewer.annotation.modifyInCollections(currentAnnotation, 'delete');
+                if (isNullOrUndefined(undoElement)) {
+                    undoElement = proxy.pdfViewer.signatureCollection[parseInt(i.toString(), 10)];
+                    undoElement.annotName = proxy.pdfViewer.signatureCollection[parseInt(i.toString(), 10)].annotationId;
+                    delete undoElement.annotationId;
+                }
+                proxy.pdfViewer.annotation.undoCommentsElement.push(undoElement);
+                proxy.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Delete', '', undoElement, currentAnnotation);
+                if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature' || currentAnnotation.shapeAnnotationType === 'SignatureText' || currentAnnotation.shapeAnnotationType === 'SignatureImage') {
+                    proxy.signatureModule.manageAnnotations(currentAnnotation, currentAnnotation.pageNumber);
+                }
+            }
+            i--;
         }
     }
 

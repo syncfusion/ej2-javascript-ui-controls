@@ -850,7 +850,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     protected getSkeletonCount(retainSkeleton?: boolean): void {
         this.virtualListHeight = this.listContainerHeight != null ? parseInt(this.listContainerHeight, 10) : this.virtualListHeight;
-        const actualCount: number = this.virtualListHeight > 0 ? Math.floor(this.virtualListHeight / this.listItemHeight) : 0;
+        const actualCount: number = this.virtualListHeight > 0 && this.listItemHeight > 0 ?
+            Math.floor(this.virtualListHeight / this.listItemHeight) : 0;
         this.skeletonCount = actualCount * 4 < this.itemCount ? this.itemCount : actualCount * 4;
         this.itemCount = retainSkeleton ? this.itemCount : this.skeletonCount;
         this.virtualItemCount = this.itemCount;

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### Maps
+
+#### Bug fixes
+
+- `#I686420` - Now, the legend renders properly regardless of the letter casing of latitude and longitude.
+
 ## 28.2.5 (2025-02-11)
 
 ### Maps

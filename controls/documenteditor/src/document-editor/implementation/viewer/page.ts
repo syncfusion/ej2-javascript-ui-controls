@@ -7312,6 +7312,9 @@ export class EditRangeEndElementBox extends ElementBox {
      */
     public clone(): EditRangeEndElementBox {
         let end: EditRangeEndElementBox = new EditRangeEndElementBox();
+        if (this.editRangeStart) {
+            this.editRangeStart.editRangeEnd = end;
+        }
         end.editRangeStart = this.editRangeStart;
         end.editRangeId = this.editRangeId;
         return end;
@@ -7402,6 +7405,9 @@ export class EditRangeStartElementBox extends ElementBox {
         start.columnLast = this.columnLast;
         start.user = this.user;
         start.group = this.group;
+        if (this.editRangeEnd) {
+            this.editRangeEnd.editRangeStart = start;
+        }
         start.editRangeEnd = this.editRangeEnd;
         start.editRangeId = this.editRangeId;
         return start;

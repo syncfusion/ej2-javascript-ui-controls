@@ -1534,7 +1534,9 @@ export class Legend {
                 let imageSrc: string = null;
                 const showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
                     data[this.maps.legendSettings.showLegendPath];
-                if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
+                const latitude: boolean = !isNullOrUndefined(data['latitude']) || !isNullOrUndefined(data['Latitude']) || !isNullOrUndefined(data[marker.latitudeValuePath]);
+                const longitude: boolean = !isNullOrUndefined(data['longitude']) || !isNullOrUndefined(data['Longitude']) || !isNullOrUndefined(data[marker.longitudeValuePath]);
+                if (marker.visible && showLegend && latitude && longitude) {
                     if (marker.template) {
                         templateFn = getTemplateFunction(marker.template, this.maps);
                         const templateElement: Element = templateFn(this.maps);

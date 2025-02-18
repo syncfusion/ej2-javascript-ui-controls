@@ -758,6 +758,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (isClone) {
             itemEle.classList.add(CLS_CLONED);
         }
+        if (!(this.selectedIndex === index && !isClone)) {
+            itemEle.setAttribute('inert', 'true');
+        }
         if (!isNullOrUndefined(item.htmlAttributes)) {
             this.setHtmlAttributes(item.htmlAttributes, itemEle);
         }
@@ -1037,7 +1040,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.setProperties({ selectedIndex: currentIndex }, true);
             attributes(args.currentSlide, { 'aria-hidden': 'true' });
+            args.currentSlide.setAttribute('inert', 'true');
             attributes(args.nextSlide, { 'aria-hidden': 'false' });
+            args.nextSlide.removeAttribute('inert');
             this.refreshIndicators(activeIndex, currentIndex);
             this.slideChangedEventArgs = {
                 currentIndex: args.nextIndex,

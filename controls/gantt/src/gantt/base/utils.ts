@@ -65,7 +65,17 @@ export function getSwapKey(obj: Object): object {
     }
     return temp;
 }
-
+/**
+ * @param {object} obj .
+ * @returns {boolean} .
+ * @hidden
+ */
+export function isEmptyObject(obj: object): boolean {
+    if (isNullOrUndefined(obj) || typeof obj !== 'object') {
+        return false;
+    }
+    return Object.keys(obj).length === 0;
+}
 /**
  * @param {object} dataSource .
  * @returns {boolean} .

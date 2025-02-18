@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I685085` - Now, the Rich Text Editor works properly when pressing the backspace key within list elements, and the list structure no longer collapses.
+
+- `#I682872` - Now, pressing `Shift + Enter` after selecting a video will no longer create a duplicate video in the Rich Text Editor.
+
+- `#F195768` - Now, the font size will be preserved for numbered and bulleted lists in the Rich Text Editor.
+
+- `#F195933` - Now, the Add Table popup works properly when using two Rich Text Editors.
+
 ## 28.2.5 (2025-02-11)
 
 ### RichTextEditor

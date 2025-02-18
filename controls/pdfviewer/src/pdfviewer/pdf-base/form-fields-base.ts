@@ -589,7 +589,8 @@ export class FormFieldsBase {
         textbox._dictionary.set('FontStyle', pdfFontStyle);
         // eslint-disable-next-line
         const hasUnicode: boolean = /[^\u0000-\u007F]/.test(textbox.text);
-        textbox.font = new PdfStandardFont(this.getFontFamily(formFieldAttributes.FontFamily),
+        const fontFamily: string = formFieldAttributes.FontFamily ? formFieldAttributes.FontFamily : formFieldAttributes.fontFamily;
+        textbox.font = new PdfStandardFont(this.getFontFamily(fontFamily),
                                            this.convertPixelToPoint(formFieldAttributes.fontSize), pdfFontStyle);
         if (!isNullOrUndefined(textbox.text.toString())) {
             const textFont: any = this.pdfViewer.pdfRenderer.FallbackFontCollection;
@@ -635,7 +636,8 @@ export class FormFieldsBase {
         comboBox.textAlignment = this.getTextAlignment(formFieldAttributes.textAlign);
         const pdfFontStyle: PdfFontStyle = this.getFontStyle(formFieldAttributes);
         comboBox._dictionary.set('FontStyle', pdfFontStyle);
-        comboBox.font = new PdfStandardFont(this.getFontFamily(formFieldAttributes.FontFamily),
+        const fontFamily: string = formFieldAttributes.FontFamily ? formFieldAttributes.FontFamily : formFieldAttributes.fontFamily;
+        comboBox.font = new PdfStandardFont(this.getFontFamily(fontFamily),
                                             this.convertPixelToPoint(formFieldAttributes.fontSize), pdfFontStyle);
         for (let i: number = 0; i < formFieldAttributes.option.length; i++) {
             const comboBoxText: string = formFieldAttributes.option[parseInt(i.toString(), 10)].itemName.toString();
@@ -791,7 +793,8 @@ export class FormFieldsBase {
         listBox.border.width = formFieldAttributes.thickness;
         const pdfFontStyle: PdfFontStyle = this.getFontStyle(formFieldAttributes);
         listBox._dictionary.set('FontStyle', pdfFontStyle);
-        listBox.font = new PdfStandardFont(this.getFontFamily(formFieldAttributes.FontFamily),
+        const fontFamily: string = formFieldAttributes.FontFamily ? formFieldAttributes.FontFamily : formFieldAttributes.fontFamily;
+        listBox.font = new PdfStandardFont(this.getFontFamily(fontFamily),
                                            this.convertPixelToPoint(formFieldAttributes.fontSize), pdfFontStyle);
         for (let i: number = 0; i < formFieldAttributes.option.length; i++) {
             const listBoxText: string = formFieldAttributes.option[parseInt(i.toString(), 10)].itemName.toString();
@@ -2241,7 +2244,7 @@ export class FormFieldsBase {
         case PdfFontFamily.helvetica:
             return 'Helvetica';
         case PdfFontFamily.timesRoman:
-            return 'TimesRoman';
+            return 'Times New Roman';
         case PdfFontFamily.courier:
             return 'Courier';
         case PdfFontFamily.symbol:

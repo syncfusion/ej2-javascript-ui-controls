@@ -4559,7 +4559,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             (this.mode === 'Box' || this.mode === 'Default'))) ||
                         (this.enableVirtualization && value != null && text != null && !isCustomData)) {
                         const currentText: string[] = [];
-                        const textValues: string = this.isDynamicRemoteVirtualData && text != null && text !== '' ? text : this.text != null && this.text !== '' ? this.text + this.delimiterChar + text : text;
+                        const textValues: string = this.isDynamicRemoteVirtualData && text != null && text !== '' ? text : this.text != null && this.text !== '' && !(this.text as any).includes(text) ? this.text + this.delimiterChar + text : text;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
                         this.addChip(text, value);

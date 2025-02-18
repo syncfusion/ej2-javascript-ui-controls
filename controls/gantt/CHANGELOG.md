@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I684077` - The console error that occurred while updating a record with start and end dates as strings using the `updateRecordByID` method has been resolved.
+- `#I668559` - Event marker and weekends are rendering incorrect place while using `warsaw` timezone issue has been fixed.
+- `#I683525` - Resource was not included the second time when using edit in column issue has been fixed.
+
 ## 28.2.5 (2025-02-11)
 
 ### GanttChart

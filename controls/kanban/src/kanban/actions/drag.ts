@@ -191,11 +191,15 @@ export class DragAndDrop {
                         : target.previousElementSibling;
                     this.insertClone = 'afterend';
                     if (isNoU(element)) {
-                        const pageY: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? (this.dragObj.pageY / 2) :
+                        let pageY: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? (this.dragObj.pageY / 2) :
                             this.dragObj.pageY;
                         const height: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? target.offsetHeight :
                             (target.offsetHeight / 2);
-                        if ((pageY - (this.kanbanObj.element.getBoundingClientRect().top + target.offsetTop)) < height) {
+                        const kanbanTop: number = this.kanbanObj.element.getBoundingClientRect().top + window.scrollY;
+                        const targetTop: number = target.getBoundingClientRect().top + window.scrollY;
+                        const relativeTop: number = targetTop - kanbanTop;
+                        pageY = pageY - kanbanTop;
+                        if ((pageY - relativeTop) < height) {
                             this.insertClone = 'beforebegin';
                         }
                     }

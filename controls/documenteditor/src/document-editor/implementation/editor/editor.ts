@@ -4328,8 +4328,8 @@ export class Editor {
         return false;
     }
 
-    private checkToCombineRevisionWithPrevPara(elementBox: ElementBox, revisionType: RevisionType): boolean {
-        let prevPara: ParagraphWidget = elementBox.paragraph.previousRenderedWidget as ParagraphWidget;
+    private checkToCombineRevisionWithPrevPara(widget: ElementBox | ParagraphWidget, revisionType: RevisionType, newParagraph?: ParagraphWidget): boolean {
+        let prevPara: ParagraphWidget = widget instanceof ElementBox ? (widget as ElementBox).paragraph.previousRenderedWidget as ParagraphWidget : widget;
         if (prevPara instanceof TableWidget) {
             return false;
         }
@@ -4352,7 +4352,7 @@ export class Editor {
             // if (lastElement.revisions.length > 0) {
             let mappedRevisions: Revision[] = this.getMatchedRevisionsToCombine(prevPara.characterFormat.revisions, revisionType);
             if (mappedRevisions.length > 0) {
-                this.mapMatchedRevisions(mappedRevisions, prevPara.characterFormat, elementBox, false);
+                this.mapMatchedRevisions(mappedRevisions, prevPara.characterFormat, widget instanceof ElementBox ? widget : newParagraph.characterFormat, false);
                 return true;
             }
             // }
@@ -5665,11 +5665,7 @@ export class Editor {
         let lineIndex: number = element.line.paragraph.childWidgets.indexOf(element.line);
         let spanIndex: number = (element.line as LineWidget).children.indexOf(element);
         spanObj.characterFormat.copyFormat(element.characterFormat);
-        if (element instanceof EditRangeEndElementBox || element instanceof BookmarkElementBox) {
-            (element.line as LineWidget).children.splice(spanIndex, 0, spanObj);
-        } else {
-            (element.line as LineWidget).children.splice(spanIndex + 1, 0, spanObj);
-        }
+        (element.line as LineWidget).children.splice(spanIndex + 1, 0, spanObj);
         spanObj.line = element.line;
         this.documentHelper.layout.reLayoutParagraph(element.line.paragraph, lineIndex, spanIndex);
     }
@@ -10651,19 +10647,19 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public removeFieldInWidget(widget: Widget, isBookmark?: boolean, isContentControl?: boolean): void {
+    public removeFieldInWidget(widget: Widget, isBookmark?: boolean, isContentControl?: boolean, isEditRange?: boolean): void {
         if (isNullOrUndefined(isBookmark)) {
             isBookmark = false;
         }
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
-            this.removeFieldInBlock(widget.childWidgets[i] as BlockWidget, isBookmark, isContentControl);
+            this.removeFieldInBlock(widget.childWidgets[i] as BlockWidget, isBookmark, isContentControl, isEditRange);
         }
     }
     /**
      * @private
      * @returns {void}
      */
-    public removeFieldInBlock(block: BlockWidget, isBookmark?: boolean, isContentControl?: boolean): void {
+    public removeFieldInBlock(block: BlockWidget, isBookmark?: boolean, isContentControl?: boolean, isEditRange?: boolean): void {
         if (block instanceof TableWidget) {
             if (block.wrapTextAround && !isNullOrUndefined(block.bodyWidget)) {
                 let index: number = block.bodyWidget.floatingElements.indexOf(block);
@@ -10671,21 +10667,21 @@ export class Editor {
                     block.bodyWidget.floatingElements.splice(index, 1);
                 }
             }
-            this.removeFieldTable(block, isBookmark, isContentControl);
+            this.removeFieldTable(block, isBookmark, isContentControl, isEditRange);
         } else if (block instanceof TableRowWidget) {
             for (let i: number = 0; i < block.childWidgets.length; i++) {
-                this.removeFieldInWidget(block.childWidgets[i] as Widget, isBookmark, isContentControl);
+                this.removeFieldInWidget(block.childWidgets[i] as Widget, isBookmark, isContentControl, isEditRange);
             }
         } else {
-            this.removeField(block as ParagraphWidget, isBookmark, isContentControl);
+            this.removeField(block as ParagraphWidget, isBookmark, isContentControl,isEditRange);
         }
     }
 
-    private removeFieldTable(table: TableWidget, isBookmark?: boolean, isContentControl?: boolean): void {
+    private removeFieldTable(table: TableWidget, isBookmark?: boolean, isContentControl?: boolean, isEditRange?: boolean): void {
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
-                this.removeFieldInWidget(row.childWidgets[j] as Widget, isBookmark, isContentControl);
+                this.removeFieldInWidget(row.childWidgets[j] as Widget, isBookmark, isContentControl, isEditRange);
             }
         }
     }
@@ -14240,8 +14236,8 @@ export class Editor {
         let startPosition: TextPosition = this.documentHelper.selection.start;
         let endPosition: TextPosition = this.documentHelper.selection.end;
         if (startPosition.isExistAfter(endPosition)) {
-            startPosition = this.documentHelper.selection.end;
-            endPosition = this.documentHelper.selection.start;
+            startPosition = this.documentHelper.selection.end.clone();
+            endPosition = this.documentHelper.selection.start.clone();
         }
         if (this.owner.layoutType == 'Continuous' && (this.documentHelper.selection.isinEndnote || this.documentHelper.selection.isinFootnote)) {
             this.documentHelper.selection.footnoteReferenceElement(startPosition, endPosition);
@@ -15829,6 +15825,7 @@ export class Editor {
             this.removeFieldInBlock(block);
             this.removeFieldInBlock(block, true);
             this.removeFieldInBlock(block, undefined, true);
+            this.removeFieldInBlock(block, undefined, undefined, true);
             this.removeCommentsInBlock(block);
         }
         
@@ -15996,55 +15993,72 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public removeField(block: BlockWidget, isBookmark?: boolean, isContentControl?: boolean): void {
-        let collection: FieldElementBox[] | string[] | ContentControl[] = this.documentHelper.fields;
-        if (isBookmark) {
-            collection = this.documentHelper.bookmarks.keys;
-        } else if (isContentControl) {
-            collection = this.documentHelper.contentControlCollection;
-        }
-        if ((block as ParagraphWidget).floatingElements.length > 0) {
-            for (let z: number = 0; z < (block as ParagraphWidget).floatingElements.length; z++) {
-                let inline: ShapeBase = (block as ParagraphWidget).floatingElements[z];
-                if (inline instanceof ShapeElementBox && inline.textFrame && inline.textFrame.childWidgets.length > 0) {
-                    for (let i: number = 0; i < inline.textFrame.childWidgets.length; i++) {
-                        const block: BlockWidget = inline.textFrame.childWidgets[i] as BlockWidget;
-                        this.removeFieldInBlock(block, isBookmark, isContentControl);
+    public removeField(block: BlockWidget, isBookmark?: boolean, isContentControl?: boolean, isEditRange?: boolean): void {
+        if (isEditRange) {
+            let editRangeCollection: string[] = this.documentHelper.editRanges.keys;
+            for (let i: number = 0; i < editRangeCollection.length; i++) {
+                let editRangeElements = this.documentHelper.editRanges.get(editRangeCollection[i]);
+                for (let j: number = 0; j < editRangeElements.length; j++) {
+                    let element = editRangeElements[j];
+                    if (element.line.paragraph === block) {
+                        editRangeElements.splice(j, 1);
+                        j--;
                     }
                 }
-                this.removeAutoShape(inline);
-                z--;
+                if (editRangeElements.length === 0) {
+                    this.documentHelper.editRanges.remove(editRangeCollection[i]);
+                    i--;
+                }
             }
-        }
-
-        for (let i: number = 0; i < collection.length; i++) {
-            let element: FieldElementBox | BookmarkElementBox = isBookmark ?
-                this.documentHelper.bookmarks.get(collection[i] as string) : collection[i] as FieldElementBox;
-            if (element.line.paragraph === block || (element instanceof BookmarkElementBox && !isNullOrUndefined(element.reference) && element.reference.line.paragraph === block)) {
-                if (isBookmark) {
-                    this.documentHelper.bookmarks.remove(collection[i] as string);
-                    element.line.children.splice(element.indexInOwner, 1);
-                    if(!isNullOrUndefined(element.line.paragraph.associatedCell)) {
-                        const cell = element.line.paragraph.associatedCell;
-                        cell.isRenderBookmarkStart ? cell.isRenderBookmarkStart = false : cell.isRenderBookmarkEnd = false;
+        } else {
+            let collection: FieldElementBox[] | string[] | ContentControl[] = this.documentHelper.fields;
+            if (isBookmark) {
+                collection = this.documentHelper.bookmarks.keys;
+            } else if (isContentControl) {
+                collection = this.documentHelper.contentControlCollection;
+            }
+            if ((block as ParagraphWidget).floatingElements.length > 0) {
+                for (let z: number = 0; z < (block as ParagraphWidget).floatingElements.length; z++) {
+                    let inline: ShapeBase = (block as ParagraphWidget).floatingElements[z];
+                    if (inline instanceof ShapeElementBox && inline.textFrame && inline.textFrame.childWidgets.length > 0) {
+                        for (let i: number = 0; i < inline.textFrame.childWidgets.length; i++) {
+                            const block: BlockWidget = inline.textFrame.childWidgets[i] as BlockWidget;
+                            this.removeFieldInBlock(block, isBookmark, isContentControl);
+                        }
                     }
-                    const endBookMarkElement = (element as BookmarkElementBox).reference;
-                    if (endBookMarkElement) {
-                        endBookMarkElement.line.children.splice(endBookMarkElement.indexInOwner, 1);
-                    }
-                    if(endBookMarkElement && !isNullOrUndefined(endBookMarkElement.line.paragraph.associatedCell)) {
-                        const cell = endBookMarkElement.line.paragraph.associatedCell;
-                        cell.isRenderBookmarkStart ? cell.isRenderBookmarkStart = false : cell.isRenderBookmarkEnd = false;
-                    }
-                } else if (isContentControl) {
-                    this.documentHelper.contentControlCollection.splice(i, 1);
-                } else {
-                    this.documentHelper.fields.splice(i, 1);
-                    if (this.documentHelper.formFields.indexOf(element as FieldElementBox) !== -1) {
-                        this.documentHelper.formFields.splice(this.documentHelper.formFields.indexOf(element as FieldElementBox), 1);
-                    }
+                    this.removeAutoShape(inline);
+                    z--;
                 }
-                i--;
+            }
+            for (let i: number = 0; i < collection.length; i++) {
+                let element: FieldElementBox | BookmarkElementBox = isBookmark ?
+                    this.documentHelper.bookmarks.get(collection[i] as string) : collection[i] as FieldElementBox;
+                if (element.line.paragraph === block || (element instanceof BookmarkElementBox && !isNullOrUndefined(element.reference) && element.reference.line.paragraph === block)) {
+                    if (isBookmark) {
+                        this.documentHelper.bookmarks.remove(collection[i] as string);
+                        element.line.children.splice(element.indexInOwner, 1);
+                        if (!isNullOrUndefined(element.line.paragraph.associatedCell)) {
+                            const cell = element.line.paragraph.associatedCell;
+                            cell.isRenderBookmarkStart ? cell.isRenderBookmarkStart = false : cell.isRenderBookmarkEnd = false;
+                        }
+                        const endBookMarkElement = (element as BookmarkElementBox).reference;
+                        if (endBookMarkElement) {
+                            endBookMarkElement.line.children.splice(endBookMarkElement.indexInOwner, 1);
+                        }
+                        if (endBookMarkElement && !isNullOrUndefined(endBookMarkElement.line.paragraph.associatedCell)) {
+                            const cell = endBookMarkElement.line.paragraph.associatedCell;
+                            cell.isRenderBookmarkStart ? cell.isRenderBookmarkStart = false : cell.isRenderBookmarkEnd = false;
+                        }
+                    } else if (isContentControl) {
+                        this.documentHelper.contentControlCollection.splice(i, 1);
+                    } else {
+                        this.documentHelper.fields.splice(i, 1);
+                        if (this.documentHelper.formFields.indexOf(element as FieldElementBox) !== -1) {
+                            this.documentHelper.formFields.splice(this.documentHelper.formFields.indexOf(element as FieldElementBox), 1);
+                        }
+                    }
+                    i--;
+                }
             }
         }
         if (this.documentHelper.footnoteCollection.length > 0) {
@@ -17263,7 +17277,8 @@ export class Editor {
         // As per MSWord behaviour, when we select the bookmark whole content except bookmark start and end, then bookmark should be removed.
         let previousElementInfo: ElementInfo = this.selection.getElementInfo(startPosition.currentWidget, this.selection.isForward ? startPosition.offset : startPosition.offset + 1);
         let nextElementInfo: ElementInfo = this.selection.getElementInfo(endPosition.currentWidget, this.selection.isForward ? endPosition.offset + 1 : endPosition.offset);
-        if (!this.selection.isExcludeBookmarkStartEnd && !this.isInsertingText && !(this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === "Insert") && !isNullOrUndefined(previousElementInfo) && !isNullOrUndefined(nextElementInfo) && previousElementInfo.element &&
+        const skipHistroy: boolean = isNullOrUndefined(this.editorHistory) ? false : (this.editorHistory.isUndoing || this.editorHistory.isRedoing);
+        if (!this.selection.isExcludeBookmarkStartEnd && !skipHistroy && !this.isInsertingText && !(this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === "Insert") && !isNullOrUndefined(previousElementInfo) && !isNullOrUndefined(nextElementInfo) && previousElementInfo.element &&
             nextElementInfo.element && previousElementInfo.element instanceof BookmarkElementBox && nextElementInfo.element instanceof BookmarkElementBox &&
             previousElementInfo.element.name === nextElementInfo.element.name && !(!isNullOrUndefined(previousElementInfo.element.nextElement) && !isNullOrUndefined(nextElementInfo.element.previousElement) && previousElementInfo.element.nextElement instanceof BookmarkElementBox && nextElementInfo.element.previousElement instanceof BookmarkElementBox && previousElementInfo.element.nextElement.name === nextElementInfo.element.previousElement.name) &&
             !(!isNullOrUndefined(previousElementInfo.element.nextElement) && !isNullOrUndefined(nextElementInfo.element.previousElement) && previousElementInfo.element.nextElement instanceof FieldElementBox && nextElementInfo.element.previousElement instanceof FieldElementBox)) {
@@ -17479,12 +17494,16 @@ export class Editor {
                         this.addRemovedNodes(inline);
                     }
                     if (inline instanceof EditRangeStartElementBox) {
-                        this.removedEditRangeStartElements.push(inline);
+                        if (!(this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing))) {
+                            this.removedEditRangeStartElements.push(inline);
+                        }
                         if (inline.columnFirst != -1 && inline.columnLast != -1) {
                             this.removeEditRangeFromCollection(inline);
                         }
                     } else if (inline instanceof EditRangeEndElementBox) {
-                        this.removedEditRangeEndElements.push(inline);
+                        if (!(this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing))) {
+                            this.removedEditRangeEndElements.push(inline);
+                        }
                     } else if (inline instanceof ContentControl && !this.isInsertingTOC) {
                         this.removedContentControlElements.push(inline);
                     }
@@ -18278,7 +18297,9 @@ export class Editor {
                         //ensure whether para mark can be combined with element revision
                         if (!isNullOrUndefined(lastElement) && !this.checkParaMarkMatchedWithElement(lastElement, paragraphAdv.characterFormat, false, 'Insertion')) {
                             if (isAddRevToNxtPara) {
-                                this.insertParaRevision(paragraph);
+                                if (!this.checkToCombineRevisionWithPrevPara(paragraphAdv, 'Insertion', paragraph)) {
+                                    this.insertParaRevision(paragraph);
+                                }
                             } else {
                                 this.insertParaRevision(paragraphAdv);
                             }
@@ -19309,13 +19330,13 @@ export class Editor {
                 // }
                 if (this.owner.enableTrackChanges && paragraph.previousRenderedWidget != undefined && paragraph.previousRenderedWidget.characterFormat.revisions.length == 0) {
                     if (!this.checkToMatchEmptyParaMarkBack(previousParagraph)) {
+                        const characterFormat = previousParagraph.characterFormat.cloneFormat();
                         this.insertRevision(previousParagraph.characterFormat, 'Deletion');
                         let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
                         let previousIndex: number = previousParagraph.childWidgets.length - 1;
                         this.documentHelper.layout.reLayoutParagraph(previousParagraph, previousIndex, 0);
                         selection.selects(previousParagraph.childWidgets[previousIndex] as LineWidget, endOffset, true);
-                        this.addRemovedNodes(paragraph);
-
+                        this.addRemovedNodes(characterFormat);
                     } else {
                         let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
                         let previousIndex: number = previousParagraph.childWidgets.length - 1;
@@ -20348,7 +20369,7 @@ export class Editor {
                     } else {
                         this.removePrevParaMarkRevision(paragraph, true);
                         this.deleteParagraphMark(currentParagraph, selection, 0, true);
-                        this.addRemovedNodes(paragraph);
+                        this.addRemovedNodes(paragraph.characterFormat);
                         this.setPositionForCurrentIndex(selection.start, selection.editPosition);
                         selection.selects(nextParagraph.childWidgets[nextIndex] as LineWidget, startingOffset, true);
                     }
@@ -23806,7 +23827,9 @@ export class Editor {
      */
     public updateRangeCollection(editStart: EditRangeStartElementBox, user: string): void {
         if (this.documentHelper.editRanges.length > 0 && this.documentHelper.editRanges.containsKey(user)) {
-            this.documentHelper.editRanges.get(user).push(editStart);
+            if (this.documentHelper.editRanges.get(user).indexOf(editStart) === -1) {
+                this.documentHelper.editRanges.get(user).push(editStart);
+            }
         } else {
             const collection: EditRangeStartElementBox[] = [];
             collection.push(editStart);

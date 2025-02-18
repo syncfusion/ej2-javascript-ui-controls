@@ -425,7 +425,7 @@ export class NormalEdit {
                 // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const thisRef: NormalEdit = this;
                 rows = rows.filter(function (data: Row<Column>): boolean {
-                    const flag: boolean = data.isDataRow && data !== dragRowObject;
+                    const flag: boolean = data.isDataRow && data !== dragRowObject && !isNullOrUndefined(data.data);
                     if (flag) {
                         const groupedColumn: string[] = thisRef.parent.groupSettings.columns[parseInt(i.toString(), 10)].split('.');
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -194,6 +194,7 @@ export class Edit {
      * @returns {void} .
      */
     private updateResourceColumnEditor(column: ColumnModel): void {
+        this.parent.treeGridModule.currentEditRow = {};
         if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
             column.editType = 'dropdownedit';
             column.edit = this.getResourceEditor();
@@ -534,6 +535,12 @@ export class Edit {
                             tempDate = ganttData.ganttProperties.endDate;
                         }
                         ganttObj.setRecordValue(ganttPropByMapping[key as string], tempDate, ganttData.ganttProperties, true);
+                        if (ganttData[tasks.startDate] && !(ganttData[tasks.startDate] instanceof Date)) {
+                            ganttData[tasks.startDate] = new Date(ganttData[tasks.startDate]);
+                        }
+                        if (ganttData[tasks.endDate] && !(ganttData[tasks.endDate] instanceof Date)) {
+                            ganttData[tasks.endDate] = new Date(ganttData[tasks.endDate]);
+                        }
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key as string]);
                     }
                 } else {
@@ -661,6 +668,12 @@ export class Edit {
                         'baselineWidth', ganttObj.dataOperation.calculateBaselineWidth(
                             ganttData.ganttProperties),
                         ganttData.ganttProperties, true);
+                    if (ganttData[tasks.baselineStartDate] && !(ganttData[tasks.baselineStartDate] instanceof Date)) {
+                        ganttData[tasks.baselineStartDate] = new Date(ganttData[tasks.baselineStartDate]);
+                    }
+                    if (ganttData[tasks.baselineEndDate]  && !(ganttData[tasks.baselineEndDate] instanceof Date)) {
+                        ganttData[tasks.baselineEndDate] = new Date(ganttData[tasks.baselineEndDate]);
+                    }
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 /* eslint-disable-next-line */

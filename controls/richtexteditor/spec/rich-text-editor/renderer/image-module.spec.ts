@@ -3759,7 +3759,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 destroy(rteObj);
                 done();
-            }, 100);
+            }, 2000);
         });
         it(" insert image & caption", (done: Function) => {
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
@@ -6174,5 +6174,73 @@ client side. Customer easy to edit the contents and get the HTML content for
             },200);
         });
 
+    });
+    
+    describe('924317 -Both oroiginal and the replaced image displayed while replacing the image && Incorrect display style after applying the break style to the image ',function(){
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                iframeSettings: {
+                    enable: true
+                }
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll((done:Function) => { 
+            setTimeout(() => {
+            destroy(rteObj);
+            done();
+        }, 2000);
+        });
+        it(" insert image , caption and Display break and replace the image", () => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+            item.click();
+            setTimeout(() => {
+                let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
+                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+                (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                let trg = (iframeBody.querySelector('.e-rte-image') as HTMLElement);
+                expect(!isNullOrUndefined(trg)).toBe(true);
+                expect(iframeBody.querySelectorAll('img').length).toBe(1);
+                expect((iframeBody.querySelector('img') as HTMLImageElement).src).toBe('https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png');
+                (iframeBody.querySelector('img') as HTMLImageElement).style.width = '100px';
+                (iframeBody.querySelector('img') as HTMLImageElement).style.height = '100px';
+                (rteObj.contentModule.getPanel() as HTMLElement).focus();
+                dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+                dispatchEvent((iframeBody.querySelector('img') as HTMLElement), 'mouseup');
+                setTimeout(() => {
+                    (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[2] as HTMLElement).click();
+                    expect(!isNullOrUndefined(iframeBody.querySelector('.e-img-caption'))).toBe(true);
+                    (rteObj.contentModule.getPanel() as HTMLElement).focus();
+                    dispatchEvent((rteObj.contentModule.getPanel() as HTMLElement), 'mousedown');
+                    dispatchEvent((iframeBody.querySelector('img') as HTMLElement), 'mouseup');
+                    setTimeout(()=>{
+                        (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[8] as HTMLElement).click();
+                        (document.querySelector('.e-break') as HTMLElement).click();
+                        (rteObj.contentModule.getPanel() as HTMLElement).focus();
+                        dispatchEvent((rteObj.contentModule.getPanel() as HTMLElement), 'mousedown');
+                        dispatchEvent((iframeBody.querySelector('img') as HTMLElement), 'mouseup');
+                    setTimeout(() => {
+                        (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                        dialogEle = rteObj.element.querySelector('.e-dialog');
+                        (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
+                        (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                        expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+                        (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                        expect((iframeBody.querySelector('img') as HTMLImageElement).src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
+                        expect((iframeBody.querySelectorAll('img').length)).toBe(1);
+                        expect((iframeBody.querySelector('img').classList.contains('e-imgbreak'))).toBe(true);
+                    }, 200);
+                }, 200);
+            }, 200);
+        }, 200);
+        });
     });
 });

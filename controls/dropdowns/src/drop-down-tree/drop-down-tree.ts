@@ -2480,11 +2480,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 removeClass([this.popupEle], DDTHIDEICON);
                 this.updatePopupHeight();
                 this.popupObj.refreshPosition();
-                if (this.showSelectAll && !this.allowFiltering) {
-                    this.checkAllParent.focus();
-                }
-                if ((!this.popupDiv.classList.contains(NODATA) && this.treeItems.length > 0)) {
-                    let focusedElement: HTMLElement = this.value != null || this.text != null ? this.treeObj.element.querySelector('[data-uid="' + this.value[0] + '"]') : null;
+                if (!(this.showSelectAll || this.allowFiltering) && (!this.popupDiv.classList.contains(NODATA)
+                    && this.treeItems.length > 0)) {
+                    let focusedElement: HTMLElement = this.value != null && this.text != null ? this.treeObj.element.querySelector('[data-uid="' + this.value[0] + '"]') : null;
                     if (focusedElement) {
                         this.treeObj.element.querySelector('li').setAttribute('tabindex', '-1');
                         focusedElement.setAttribute('tabindex', '0');
@@ -2493,17 +2491,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                         const oldFocussedNode: HTMLElement = this.treeObj.element.querySelector('.e-node-focus');
                         focusedElement = this.treeObj.element.querySelector('li[tabindex="0"]:not(.e-disable)') ||
                                          this.treeObj.element.querySelector('li:not(.e-disable)');
-                        if (oldFocussedNode && oldFocussedNode !== focusedElement) {
-                            oldFocussedNode.setAttribute('tabindex', '-1');
-                            removeClass([oldFocussedNode], 'e-node-focus');
-                        }
+                        this.removeFocus(focusedElement, oldFocussedNode);
                     }
-                    if (!isNOU(focusedElement)) {
-                        if (!this.allowFiltering) {
-                            focusedElement.focus();
-                        }
-                        addClass([focusedElement], ['e-node-focus']);
-                    }
+                    this.updateFocus(focusedElement);
                 }
                 if (this.treeObj.checkedNodes.length > 0 && !this.isFilterRestore) {
                     const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
@@ -2514,6 +2504,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                         this.checkSelectAll = false;
                     }
                 }
+                if (this.showSelectAll && !this.allowFiltering) {
+                    const oldFocussedNode: HTMLElement = this.treeObj.element.querySelector('.e-node-focus');
+                    const focusedElement: HTMLElement =  this.popupEle.querySelector('.e-selectall-parent');
+                    this.removeFocus(focusedElement, oldFocussedNode);
+                    this.updateFocus(focusedElement);
+                }
                 if (this.allowFiltering) {
                     removeClass([this.inputWrapper], [INPUTFOCUS]);
                     this.filterObj.element.focus();
@@ -2522,6 +2518,20 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.trigger('open', eventArgs);
             }
         });
+    }
+
+    private removeFocus(focusedElement: HTMLElement, oldFocusedElement: HTMLElement): void {
+        if (oldFocusedElement && oldFocusedElement !== focusedElement) {
+            oldFocusedElement.setAttribute('tabindex', '-1');
+            removeClass([oldFocusedElement], 'e-node-focus');
+        }
+    }
+
+    private updateFocus(focusedElement: HTMLElement): void {
+        if (!isNOU(focusedElement)) {
+            focusedElement.focus();
+            addClass([focusedElement], ['e-node-focus']);
+        }
     }
 
     private reactCallBack(): void {

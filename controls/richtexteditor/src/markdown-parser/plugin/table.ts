@@ -3,7 +3,7 @@ import { MarkdownSelection } from './../plugin/markdown-selection';
 import * as CONSTANT from './../base/constant';
 import { IMarkdownItem } from '../index';
 import { IMDTable, MarkdownTableFormat } from './../base/interface';
-import { extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 /**
  * Link internal component
@@ -249,6 +249,9 @@ export class MDTable {
         this.selection.save(start, end);
         this.selection.restore(this.element);
         if (event && event.callBack) {
+            if (isNullOrUndefined(event.subCommand) && 'action' in (event.event as KeyboardEventArgs) && (event.event as KeyboardEventArgs).action === 'insert-table') {
+                event.subCommand = 'CreateTable';
+            }
             event.callBack({
                 requestType: event.subCommand,
                 selectedText: this.selection.getSelectedText(this.element),

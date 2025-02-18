@@ -216,24 +216,25 @@ export class QuickToolbar {
         if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close') && document.body.contains(this.linkQTBar.element)) {
             this.linkQTBar.hidePopup();
         }
-        if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close') && document.body.contains(this.textQTBar.element)) {
+        if (!this.escapeKeyPressed && this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close') && document.body.contains(this.textQTBar.element)) {
             this.textQTBar.hidePopup();
         }
-        if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close') && document.body.contains(this.imageQTBar.element)) {
+        if (!this.escapeKeyPressed && this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close') && document.body.contains(this.imageQTBar.element)) {
             this.imageQTBar.hidePopup();
         }
-        if (this.audioQTBar && !hasClass(this.audioQTBar.element, 'e-popup-close') && document.body.contains(this.audioQTBar.element)) {
+        if (!this.escapeKeyPressed && this.audioQTBar && !hasClass(this.audioQTBar.element, 'e-popup-close') && document.body.contains(this.audioQTBar.element)) {
             this.audioQTBar.hidePopup();
         }
-        if (this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close') && document.body.contains(this.videoQTBar.element)) {
+        if (!this.escapeKeyPressed && this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close') && document.body.contains(this.videoQTBar.element)) {
             this.videoQTBar.hidePopup();
         }
-        if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close') && document.body.contains(this.tableQTBar.element)) {
+        if (!this.escapeKeyPressed && this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close') && document.body.contains(this.tableQTBar.element)) {
             this.tableQTBar.hidePopup();
         }
-        if (!isNOU(this.parent) && this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
+        if (!this.escapeKeyPressed && !isNOU(this.parent) && this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             this.hideInlineQTBar();
         }
+        this.escapeKeyPressed = false;
     }
 
     private deBounce(x: number, y: number, target: HTMLElement): void {
@@ -514,7 +515,8 @@ export class QuickToolbar {
         const dropDownPopup: string[] = [editorBaseId + '_quick_Display-popup', editorBaseId + '_quick_Align-popup',
             editorBaseId + '_quick_VideoLayoutOption-popup', editorBaseId + '_quick_VideoAlign-popup',
             editorBaseId + '_quick_TableRows-popup', editorBaseId + '_quick_TableColumns-popup', editorBaseId + '_quick_TableCell-popup', editorBaseId + '_quick_TableCellVerticalAlign-popup', editorBaseId + '_quick_Styles-popup', editorBaseId + '_quick_Alignments-popup', editorBaseId + '_quick_BackgroundColor-popup',
-            editorBaseId + '_quick_AudioLayoutOption-popup'];
+            editorBaseId + '_quick_AudioLayoutOption-popup', editorBaseId + '_quick_FontSize-popup', editorBaseId + '_quick_FontName-popup', editorBaseId + '_quick_FontColor-popup', editorBaseId + '_quick_BackgroundColor-popup',
+            editorBaseId + '_quick_Formats-popup', editorBaseId + '_quick_Alignments-popup', editorBaseId + '_quick_NumberFormatList-popup', editorBaseId + '_quick_BulletFormatList-popup'];
         if (!isNOU(args.element) && !isNOU(args.element.parentElement) && dropDownPopup.indexOf(args.element.parentElement.id) > -1) {
             this.escapeKeyPressed = true;
         }

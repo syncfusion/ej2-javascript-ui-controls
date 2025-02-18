@@ -2507,7 +2507,8 @@ export class WordExport {
             const format: string = chart[chartPrimaryCategoryAxisProperty[this.keywordIndex]][numberFormatProperty[this.keywordIndex]];
             const categoryName: string = category[categoryXNameProperty[this.keywordIndex]];
             const isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
-            if (isString || format === 'm/d/yyyy') {
+            const dateRegex: RegExp = /^(((0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4})|((0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4})|((\d{4})\/(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])))/;
+            if (dateRegex.test(categoryName) || isString || format === 'm/d/yyyy') {
                 chartSharedString.push(category[categoryXNameProperty[this.keywordIndex]]);
                 this.chartStringCount++;
             }
@@ -2562,7 +2563,8 @@ export class WordExport {
                     category = chart[chartCategoryProperty[this.keywordIndex]][row - 1];
                     const categoryName: string = category[categoryXNameProperty[this.keywordIndex]];
                     const isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
-                    if (isNullOrUndefined(isString) && format === 'm/d/yyyy') {
+                    const dateRegex: RegExp = /^(((0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4})|((0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4})|((\d{4})\/(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])))/;
+                    if (dateRegex.test(categoryName) || isNullOrUndefined(isString) && format === 'm/d/yyyy') {
                         type = 's';
                     } else if (!isString || isScatterType) {
                         type = 'n';

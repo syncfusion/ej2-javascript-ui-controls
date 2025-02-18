@@ -77,7 +77,9 @@ export class RestrictEditing {
             this.addUserCollection();
         } else {
             this.closePane();
-            this.documentHelper.updateFocus();
+            if (this.documentHelper.owner.enableAutoFocus) {
+                this.documentHelper.updateFocus();
+            }
         }
         this.documentHelper.owner.triggerResize();
     }

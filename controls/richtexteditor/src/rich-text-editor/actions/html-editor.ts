@@ -394,23 +394,12 @@ export class HtmlEditor {
                             this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
                         }
                     } else {
-                        if (!args.shiftKey) {
-                            if (selection.startOffset !== selection.endOffset && selection.startOffset === 0) {
-                                this.marginTabAdd(args.shiftKey, alignmentNodes);
-                            }
-                            else {
-                                InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
-                                this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
-                            }
-                        } else if (this.rangeCollection.length > 0 &&
-                            this.rangeCollection[this.rangeCollection.length - 1].startContainer.textContent.length === 4) {
-                            const textCont: Node = this.rangeCollection[this.rangeCollection.length - 1].startContainer;
-                            this.nodeSelectionObj.setSelectionText(
-                                this.contentRenderer.getDocument(), textCont, textCont, 0, textCont.textContent.length);
-                            InsertHtml.Insert(this.contentRenderer.getDocument(), document.createTextNode(''));
-                            this.rangeCollection.pop();
-                        } else {
+                        if (selection.startOffset !== selection.endOffset && selection.startOffset === 0) {
                             this.marginTabAdd(args.shiftKey, alignmentNodes);
+                        }
+                        else {
+                            InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
+                            this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
                         }
                     }
                 }

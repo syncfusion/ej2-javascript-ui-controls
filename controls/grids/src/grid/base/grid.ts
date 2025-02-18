@@ -7579,7 +7579,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private keyPressHandler(e: KeyboardEventArgs): void {
         const presskey: KeyboardEventArgs = <KeyboardEventArgs>extend(e, { cancel: false });
         this.trigger('keyPressed', presskey);
-        if (presskey.cancel === true) {
+        if (presskey.cancel === true || (this.isEdit && e && parentsUntil((e.target as Element), 'e-gridform') &&
+            parentsUntil((e.target as Element), 'e-ddl') && e.action === 'open' && e.altKey === true && e.code === 'ArrowDown')) {
             e.stopImmediatePropagation();
         }
     }

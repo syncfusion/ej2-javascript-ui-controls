@@ -293,9 +293,6 @@
       textarea::-webkit-scrollbar {
         width: 4px;
       }
-      .hide-scrollbar textarea {
-        scrollbar-width: none;
-      }
       &:has(.e-rtl):not(.e-footer-template) .e-assist-send {
         right: unset;
         left: 20px;
@@ -327,6 +324,9 @@
         }
       }
       &:not(.e-footer-template) {
+        .e-textarea {
+          max-height: 280px;
+        }
         .e-assist-send {
           position: absolute;
           right: 20px;

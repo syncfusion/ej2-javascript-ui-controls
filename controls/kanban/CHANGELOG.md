@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.1.39 (2024-01-14)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I660067` - Now, the card drop functionality works properly at the top of another column when `SwimlaneSettings` is enabled in the Kanban.
+
 ## 28.1.37 (2024-12-31)
 
 ### Kanban

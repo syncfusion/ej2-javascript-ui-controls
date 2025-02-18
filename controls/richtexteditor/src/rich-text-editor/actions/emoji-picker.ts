@@ -178,6 +178,7 @@ export class EmojiPicker {
             actionOnScroll: 'hide',
             close: () => {
                 this.parent.isBlur = false;
+                this.popupObj.element.parentElement.style.zIndex = '';
                 this.childDestroy();
                 detach(this.popupObj.element);
                 this.popupObj = null;
@@ -187,6 +188,7 @@ export class EmojiPicker {
         });
         this.isPopupDestroyed = false;
         addClass([this.popupObj.element], 'e-popup-open');
+        this.popupObj.element.parentElement.style.zIndex = '11';
         this.popupObj.refreshPosition(target);
         // header search element
         if ((!isNOU((args as NotifyArgs).args as ClickEventArgs) || (isNOU(args.x) && isNOU(args.y))) &&

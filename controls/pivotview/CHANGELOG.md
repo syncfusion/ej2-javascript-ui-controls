@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 28.2.5 (2025-02-11)
+## 28.2.6 (2025-02-18)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I683197` - The Drillthrough popup will now display the date field with the correct formatting in the pivot table.
+- `#I675848` - The pivot table scrollbar will now be displayed correctly during the initial rendering, even when its width is not explicitly specified.
+
+## 28.2.4 (2025-02-04)
 
 ### Pivot Table
 

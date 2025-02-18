@@ -2180,6 +2180,18 @@
       padding-top: 40px;
     }
 
+    & .e-mainfilterdiv {
+      @if $grid-skin == 'fabric' or $grid-skin == 'fabric-dark' or $grid-skin == 'highcontrast' or $grid-skin == 'material' or $grid-skin == 'material-dark' {
+        padding-top: 30px;
+      }
+      @else if $grid-skin == 'material3' or $grid-skin == 'material3-dark' {
+        padding-top: 0;
+      }
+      @else {
+        padding-top: 16px;
+      }
+    }
+
     & .e-filtersetdiv {
       float: right;
       margin-right: 1%;

@@ -188,8 +188,7 @@ export class NonWorkingDay {
                             this.parent.timelineModule.bottomTier === 'Minutes' &&
                             (this.parent.timelineModule.customTimelineSettings.bottomTier.count === 30 ||
                                 this.parent.timelineModule.customTimelineSettings.bottomTier.count === 15));
-                    if (sDateOffset !== this.parent.timelineModule.timelineStartDate.getTimezoneOffset() &&
-                        !this.weekendWidthUpdated) {
+                    if (!this.weekendWidthUpdated) {
                         if (isHourTimeline && sDateOffset < dubDateOffset) {
                             width = width - (this.parent.perDayWidth / 24);
                             this.weekendWidthUpdated = true;

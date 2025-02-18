@@ -164,6 +164,11 @@ describe('CheckBox', () => {
             const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
+
+        it('Checking the tab index attribute support in checkbox', () => {
+            checkbox = new CheckBox({ label: 'checkbox' }, '#checkbox');
+            expect(checkbox.element.getAttribute('tabindex')).toEqual('0');
+        });
     });
 
     describe('Property', () => {

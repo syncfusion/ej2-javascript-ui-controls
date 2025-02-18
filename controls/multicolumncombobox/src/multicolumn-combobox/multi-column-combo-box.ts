@@ -1704,7 +1704,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         exactData: { [key: string]: Object }[] } {
         const data: { [key: string]: Object }[] = dataSource.filter((item: { [key: string]: Object }) => {
             const fieldText: string = this.updateFieldValue(this.fields.text, item);
-            return fieldText.toLowerCase().startsWith(inputValue.toLowerCase());
+            return inputValue && fieldText.toLowerCase().startsWith(inputValue.toLowerCase());
         });
         const exactData: { [key: string]: Object }[] = dataSource.filter((item: { [key: string]: Object }) => {
             const fieldText: string = this.updateFieldValue(this.fields.text, item);
@@ -1881,7 +1881,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             if (!target.closest('.e-multicolumn-list')) { this.focusOut(); }
             return;
         }
-        if ((target.classList.contains('e-multicolumn-list-icon') || closest(target, '.e-popup'))) { e.preventDefault(); }
+        if ((target.classList.contains('e-multicolumn-list-icon') || closest(target, '.e-multicolumn-list.e-popup'))) { e.preventDefault(); }
         else {
             if (!target.classList.contains('e-multicolumncombobox') && !target.classList.contains('e-clear-icon')) {
                 if (!isNOU(this.text)) { this.updateInputValue(this.text); }
@@ -1898,21 +1898,19 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         if (!val) { this.inputEle.value = this.value = this.index = this.text = null; }
         this.hidePopup(e);
         if (this.matchedRowEle && !isClearValues && val) {
-            setTimeout((): void => {
-                const prevOnChange: boolean = this.isProtectedOnChange;
-                this.isProtectedOnChange = true;
-                const fieldText: string = this.updateFieldValue(this.fields.text, this.matchedContent);
-                const fieldValue: string = this.updateFieldValue(this.fields.value, this.matchedContent);
-                this.inputEle.value = fieldText;
-                this.value = fieldValue;
-                const selectIndex: number = this.findIndex(this.gridObj.currentViewData, this.matchedContent);
-                this.index = selectIndex;
-                this.text = fieldText;
-                this.gridObj.selectRow(selectIndex);
-                this.selectedGridRow(this.gridObj.getRowByIndex(selectIndex), e);
-                this.previousItemElement = this.gridObj.getSelectedRows()[0] as HTMLElement;
-                this.isProtectedOnChange = prevOnChange;
-            }, 100);
+            const prevOnChange: boolean = this.isProtectedOnChange;
+            this.isProtectedOnChange = true;
+            const fieldText: string = this.updateFieldValue(this.fields.text, this.matchedContent);
+            const fieldValue: string = this.updateFieldValue(this.fields.value, this.matchedContent);
+            this.inputEle.value = fieldText;
+            this.value = fieldValue;
+            const selectIndex: number = this.findIndex(this.gridObj.currentViewData, this.matchedContent);
+            this.index = selectIndex;
+            this.text = fieldText;
+            this.gridObj.selectRow(selectIndex);
+            this.selectedGridRow(this.gridObj.getRowByIndex(selectIndex), e);
+            this.previousItemElement = this.gridObj.getSelectedRows()[0] as HTMLElement;
+            this.isProtectedOnChange = prevOnChange;
         }
         else {
             if (this.isDataFiltered) {
@@ -2146,7 +2144,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                         this.remoteDataLength = (e as any).result.length;
                     });
                 }
-                this.popupObj.show(new Animation(eventArgs.animation), this.popupEle);
+                this.popupObj.show(new Animation(eventArgs.animation), this.popupEle.firstElementChild as HTMLElement);
             }
         });
     }

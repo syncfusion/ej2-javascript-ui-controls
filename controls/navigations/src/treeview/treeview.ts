@@ -2042,16 +2042,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     private getSelectedChildNodeDetails(dataUid: string): { [key: string]: Object }[][] {
+        const childKey: string = typeof this.fields.child === 'string' ? this.fields.child : null;
+        const dataId: string = this.fields.id;
+        const parentKey: string = this.fields.parentID;
         return this.checkedNodes
             .map((checkedNodeId: string | number): { [key: string]: any }[] => {
                 return <{ [key: string]: Object }[]> new DataManager(this.DDTTreeData)
                     .executeLocal(new Query().where('id', 'equal', checkedNodeId, true))[0];
             })
             .filter((childNode: object | null | undefined): boolean => {
-                if (childNode && typeof childNode === 'object' && 'pid' in childNode) {
-                    const childNodePid: string = (childNode as { pid: string }).pid;
-                    if (!isNOU(childNodePid)) {
-                        return childNodePid.toString() === dataUid;
+                if (childNode && typeof childNode === 'object' && (parentKey in childNode || childKey in childNode)) {
+                    if (!isNOU(childKey) && childKey in childNode && Array.isArray(childNode[childKey as keyof typeof childNode])) {
+                        const matchNode: string = childNode[dataId as keyof typeof childNode];
+                        if (!isNOU(matchNode)) {
+                            return matchNode.toString() === dataUid;
+                        }
+                    } else {
+                        const childNodePid: string = childNode[parentKey as keyof typeof childNode];
+                        if (!isNOU(childNodePid)) {
+                            return childNodePid.toString() === dataUid;
+                        }
                     }
                 }
                 return false;
@@ -2174,13 +2184,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const checkBoxes: HTMLElement[] = selectAll('.' + CHECKBOXWRAP, this.element);
             if (this.loadOnDemand) {
                 for (let index: number = 0; index < checkBoxes.length; index++) {
+                    const liEle: Element = closest(checkBoxes[parseInt(index.toString(), 10)], '.' + LISTITEM);
                     this.updateFieldChecked(checkBoxes[parseInt(index.toString(), 10)], doCheck);
                     this.changeState(checkBoxes[parseInt(index.toString(), 10)], doCheck ? 'check' : 'uncheck', null, null, null, doCheck);
+                    this.updateOldCheckedData([this.getNodeData(liEle)]);
                 }
             } else {
                 for (let index: number = 0; index < checkBoxes.length; index++) {
+                    const liEle: Element = closest(checkBoxes[parseInt(index.toString(), 10)], '.' + LISTITEM);
                     this.updateFieldChecked(checkBoxes[parseInt(index.toString(), 10)], doCheck);
                     this.changeState(checkBoxes[parseInt(index.toString(), 10)], doCheck ? 'check' : 'uncheck');
+                    this.updateOldCheckedData([this.getNodeData(liEle)]);
                 }
             }
         }

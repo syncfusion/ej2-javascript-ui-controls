@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### AI AssistView
+
+#### Bug Fixes
+
+- `#I689424` - Now the issue with TextArea doesn't adjust the height dynamically when the text exceeds the current height has been resolved.
+
 ## 28.2.5 (2025-02-11)
 
 ### AI AssistView

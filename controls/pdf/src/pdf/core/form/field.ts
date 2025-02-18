@@ -1592,15 +1592,34 @@ export abstract class PdfField {
             fontDict = new _PdfDictionary(this._crossReference);
             resource.update('Font', fontDict);
         }
-        const keyName: _PdfName = _PdfName.get(_getNewGuidString());
-        const reference: _PdfReference = this._crossReference._getNextReference();
-        if (font instanceof PdfTrueTypeFont) {
-            if (this._font._pdfFontInternals) {
-                this._crossReference._cacheMap.set(reference, this._font._pdfFontInternals);
+        let keyName: _PdfName;
+        let reference: _PdfReference;
+        let hasFont: boolean = false;
+        if (this._font && (this._font._key !== null && typeof this._font._key !== 'undefined') && this._font._reference) {
+            keyName = _PdfName.get(this._font._key);
+            reference = this._font._reference;
+            hasFont = true;
+        } else {
+            keyName = _PdfName.get(_getNewGuidString());
+            reference = this._crossReference._getNextReference();
+            if (this._font) {
+                this._font._key = keyName.name;
                 this._font._reference = reference;
             }
-        } else if (this._font._dictionary) {
-            this._crossReference._cacheMap.set(reference, this._font._dictionary);
+        }
+        if (reference && !hasFont) {
+            if (font instanceof PdfTrueTypeFont) {
+                if (this._font._pdfFontInternals) {
+                    this._crossReference._cacheMap.set(reference, this._font._pdfFontInternals);
+                    this._font._reference = reference;
+                }
+            } else if (this._font._dictionary) {
+                this._crossReference._cacheMap.set(reference, this._font._dictionary);
+                fontDict.update(keyName.name, reference);
+                resource._updated = true;
+                document.form._dictionary.update('DR', resource);
+                document.form._dictionary._updated = true;
+            }
         }
         fontDict.update(keyName.name, reference);
         resource._updated = true;

@@ -1638,8 +1638,14 @@ describe('MultiColumnComboBox control', () => {
                 element.dispatchEvent(event);
                 setTimeout(() => {
                     expect(multiColObj.gridObj.element.querySelectorAll('.e-row')[0].classList.contains('e-row-focus')).toBe(true);
-                    done();
-                }, 1600);
+                    // for coverage
+                    keyEventArgs.action = 'end';
+                    multiColObj.keyActionHandler(keyEventArgs);
+                    setTimeout(() => {
+                        expect(multiColObj.gridObj.element.querySelectorAll('.e-row')[0].classList.contains('e-row-focus')).toBe(false);
+                        done();
+                    }, 1600);
+                }, 1000);
             });
         });
               

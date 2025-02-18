@@ -1367,7 +1367,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected setHeightWidth(): void {
         let heightValue: string;
-        if (isNullOrUndefined(this.cellSpacing)) { return; }
+        if (isNullOrUndefined(this.cellSpacing) || (this.panels.length === 0 && this.panelCollection.length === 0)) { return; }
         if (this.checkMediaQuery()) {
             let entirePanelsY: number = 0;
             for (let i: number = 0; i < this.panels.length; i++) {
@@ -1385,6 +1385,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         setStyle(this.element, { 'height': heightValue });
         const widthValue: string = window.getComputedStyle(this.element).width;
         setStyle(this.element, { 'width': widthValue });
+    }
+
+    private setEmptyLayoutHeight(): void {
+        this.element.style.removeProperty('height');
+        this.element.style.removeProperty('width');
     }
 
     protected setHeightAndWidth(panelElement: HTMLElement, panelModel: PanelModel): void {
@@ -2888,6 +2893,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updateCloneArrayObject();
         this.checkForChanges(false, null, clonedPanels);
         this.removeAllCalled = false;
+        this.setEmptyLayoutHeight();
     }
 
     /**
@@ -2928,6 +2934,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         });
         this.updateCloneArrayObject();
         this.checkForChanges(false, null, [removedPanel]);
+        if (this.panels.length === 0 && this.panelCollection.length === 0) {
+            this.setEmptyLayoutHeight();
+        }
     }
 
     constructor(options?: DashboardLayoutModel, element?: string | HTMLElement) {

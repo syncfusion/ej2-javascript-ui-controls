@@ -2550,11 +2550,15 @@ export class TextSearch {
         const top: any = startBound.Y;
         let width: number = 0;
         let height: any = startBound.Height;
+        let lastRight: number = 0;
         for (let k: number = 0; k < searchText.length; k++) {
             const currentBound: any = characterBounds[parseInt((matchIndex + k).toString(), 10)].Bounds;
-            width += currentBound.Width;
             height = Math.max(height, currentBound.Height);
+            if (k === searchText.length - 1){
+                lastRight = currentBound.Right;
+            }
         }
+        width = lastRight - left;
         return {
             x: left,
             y: top,

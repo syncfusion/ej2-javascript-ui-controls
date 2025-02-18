@@ -317,6 +317,10 @@ export class Lists {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private firstListBackSpace(range: Range, _e: IHtmlKeyboardEvent): void {
         const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        const listItem: Element = startNode.closest('LI');
+        if (!isNOU(listItem) && !this.isAtListStart(listItem, range)) {
+            return;
+        }
         if (!isNOU(startNode.closest('OL'))) {
             this.commonLIParent = startNode.closest('OL');
         } else if (!isNOU(startNode.closest('UL'))) {
@@ -332,7 +336,26 @@ export class Lists {
             this.commonLIParent.parentElement.insertBefore(currentElem, this.commonLIParent);
         }
     }
-
+    private isAtListStart(startNode: Element, range: Range): boolean {
+        if (startNode.nodeName !== 'LI') {
+            return false;
+        }
+        const listItem: HTMLLIElement = startNode as HTMLLIElement;
+        const firstTextNode: Node | null = this.getFirstTextNode(listItem);
+        return firstTextNode === range.startContainer && range.startOffset === 0;
+    }
+    private getFirstTextNode(element: Node): Node | null {
+        if (element.nodeType === Node.TEXT_NODE) {
+            return element;
+        }
+        for (let i: number = 0; i < element.childNodes.length; i++) {
+            const firstTextNode: Node = this.getFirstTextNode(element.childNodes[i as number]);
+            if (firstTextNode) {
+                return firstTextNode;
+            }
+        }
+        return null;
+    }
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
         if (e.event.which === 13) {
             this.enterList(e);
@@ -377,7 +400,7 @@ export class Lists {
                 CONSTANT.IGNORE_BLOCK_TAGS.indexOf((startNode.parentNode as Element).tagName.toLocaleLowerCase()) >= 0)) {
                 return;
             } else {
-                if (!(e.event.action && (e.event.action === 'indent' || this.listTabIndentation))) {
+                if (!(e.event.action && (e.event.action === 'indent')) && !this.listTabIndentation) {
                     this.domNode.setMarker(this.saveSelection);
                 }
                 blockNodes = <Element[]>this.domNode.blockNodes();
@@ -400,7 +423,7 @@ export class Lists {
                 e.event.preventDefault();
                 e.event.stopPropagation();
                 this.currentAction = this.getAction(nodes[0]);
-                if (e.event.shiftKey) {
+                if (e.event.shiftKey && (!e.enableTabKey || (e.enableTabKey && !this.listTabIndentation))) {
                     this.revertList(nodes as HTMLElement[], e);
                     this.revertClean();
                 } else if (!e.enableTabKey || (e.enableTabKey && !this.listTabIndentation)) {
@@ -410,7 +433,7 @@ export class Lists {
                     this.cleanNode();
                     (this.parent.editableElement as HTMLElement).focus({ preventScroll: true });
                 }
-                if (!(e.event.action && (e.event.action === 'indent' || this.listTabIndentation))) {
+                if (!(e.event.action && (e.event.action === 'indent')) && !this.listTabIndentation) {
                     this.saveSelection = this.domNode.saveMarker(this.saveSelection);
                     this.saveSelection.restore();
                     if (e.callBack) {
@@ -424,7 +447,7 @@ export class Lists {
                     }
                 }
             } else {
-                if (!(e.event.action && (e.event.action === 'indent' || this.listTabIndentation))) {
+                if (!(e.event.action && (e.event.action === 'indent')) && !this.listTabIndentation) {
                     if (e.event && e.event.shiftKey && e.event.key === 'Tab') {
                         e.event.action = 'tab';
                     }
@@ -762,7 +785,8 @@ export class Lists {
                     const newTag: string = 'li' + elemAtt;
                     const replaceHTML: string = (elements[i as number].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG ?
                         elements[i as number].innerHTML : elements[i as number].outerHTML);
-                    const innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
+                    let innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
+                    innerHTML = this.setStyle(innerHTML);
                     const collectionString: string = openTag + innerHTML + closeTag;
                     this.domNode.replaceWith(elements[i as number], collectionString);
                 }
@@ -798,6 +822,44 @@ export class Lists {
         }
         this.saveSelection = this.domNode.saveMarker(this.saveSelection);
         this.saveSelection.restore();
+    }
+
+    private setStyle(innerHTML: string): string {
+        const tempDiv: HTMLElement = document.createElement('div');
+        tempDiv.innerHTML = innerHTML.trim(); // Convert string to DOM elements
+        let liElement: HTMLElement = tempDiv.querySelector('li');
+        const styleElement: HTMLElement = liElement;
+        if (liElement && liElement.children.length === 1) {
+            while (liElement && liElement.children.length === 1 && liElement.firstChild &&
+                liElement.firstChild.nodeType !== Node.TEXT_NODE) {
+                const childElement: HTMLElement = liElement.firstChild as HTMLElement;
+                if (childElement && (childElement.style.cssText || childElement.tagName.toUpperCase() === 'B' || childElement.tagName.toUpperCase() === 'STRONG' || childElement.tagName.toUpperCase() === 'I' || childElement.tagName.toUpperCase() === 'EM')) {
+                    // Extract styles, filter out background-color, and merge
+                    const allowedStyles: string[] = ['font-size', 'font-family', 'color', 'font-weight'];
+                    let filteredStyles: string = childElement.style.cssText.split(';')
+                        .map((style: string) => style.trim())
+                        .filter((style: string) => {
+                            const styleName: string = !isNOU(style.split(':')[0]) ? style.split(':')[0].trim() : '';
+                            return styleName && allowedStyles.indexOf(styleName) !== -1;
+                        })
+                        .join(';');
+                    if (filteredStyles) {
+                        styleElement.style.cssText += (styleElement.style.cssText ? ';' : '') + filteredStyles;
+                    }
+                    else if (childElement.tagName.toUpperCase() === 'B' || childElement.tagName.toUpperCase() === 'STRONG') {
+                        filteredStyles = 'font-weight: bold;';
+                        styleElement.style.cssText += (styleElement.style.cssText ? ';' : '') + filteredStyles;
+                    }
+                    else if (childElement.tagName.toUpperCase() === 'I' || childElement.tagName.toUpperCase() === 'EM') {
+                        filteredStyles = 'font-style: italic;';
+                        styleElement.style.cssText += (styleElement.style.cssText ? ';' : '') + filteredStyles;
+                    }
+                }
+                liElement = childElement;
+            }
+            innerHTML = tempDiv.innerHTML;
+        }
+        return innerHTML;
     }
     private removeEmptyListElements(): void {
         const listElem: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('ol, ul');

@@ -3631,7 +3631,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                         <td style="width: 20%;"><ol><li><br></li></ol></td>
                     </tr>
                 </tbody>
-            </table><ol><li><b>Test1</b></li><li><b>Test2</b></li></ol>`);
+            </table><ol><li style="font-weight: bold;"><b>Test1</b></li><li style="font-weight: bold;"><b>Test2</b></li></ol>`);
                 done();
             }, 500);
         });
@@ -3649,7 +3649,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                         <td style="width: 20%;"><ul><li><br></li></ul></td>
                     </tr>
                 </tbody>
-            </table><ul><li><b>Test1</b></li><li><b>Test2</b></li></ul>`);
+            </table><ul><li style="font-weight: bold;"><b>Test1</b></li><li style="font-weight: bold;"><b>Test2</b></li></ul>`);
                 done();
             }, 500);
         });
@@ -7252,6 +7252,44 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe('937247: Keyboard shortcut for creating tables in the Markdown editor is not functioning', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                editorMode: 'Markdown'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should insert a table using Ctrl+Shift+E shortcut', (done: DoneFn) => {
+            rteObj.focusIn();
+            const keyEvent = new KeyboardEvent("keydown", {
+                key: "E",
+                code: "KeyE",
+                which: 69,
+                keyCode: 69,
+                ctrlKey: true,
+                shiftKey: true,
+                bubbles: true,
+                cancelable: true
+            } as KeyboardEventInit);
+            rteObj.inputElement.dispatchEvent(keyEvent);
+            setTimeout(() => {
+                const panel = rteObj.contentModule.getEditPanel() as HTMLInputElement;
+                const markdownValue = panel.value;
+                expect(markdownValue).toBe('|Heading 1|Heading 2|\n|---------|---------|\n|Col A1|Col A2|\n|Col B1|Col B2|\n\n');
+                done();
+            }, 100);
+        });
+    });
+
     describe('935060 - Cursor Does Not Navigate to the Previous Line in a Table Cell When Pressing the Left Arrow Key.', () => {
         let editor: RichTextEditor;
         beforeEach((done: DoneFn) => {
@@ -7387,5 +7425,39 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 100);
         })
+    });
+
+    describe('936848: Add Table Popup Gets Hidden Under the Lower Rich Text Editor’s Toolbar', () => {
+        let rteObjOne : RichTextEditor;
+        let rteObjTwo : RichTextEditor;
+        beforeAll(() => {
+            rteObjOne = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;">Rich Text Editor 1</td><td style="width: 50%;" class="">Rich Text Editor 1</td></tr><tr><td style="width: 50%;" class="">Rich Text Editor 1</td><td style="width: 50%;" class="e-cell-select">Rich Text Editor 1<p class="tdElement"><br></p></td></tr></tbody></table><p><br></p>`
+            }
+            );
+            rteObjTwo = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;">Rich Text Editor 1</td><td style="width: 50%;" class="">Rich Text Editor 1</td></tr><tr><td style="width: 50%;" class="">Rich Text Editor 1</td><td style="width: 50%;" class="e-cell-select">Rich Text Editor 1<p class="tdElement"><br></p></td></tr></tbody></table><p><br></p>`
+            }
+            );
+        });
+        afterAll(() => {
+            destroy(rteObjOne);
+            destroy(rteObjTwo);
+        });
+        it("936848: Add Table Popup Gets Hidden Under the Lower Rich Text Editor’s Toolbar", () => {
+            expect(rteObjOne.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            expect(rteObjTwo.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteObjOne.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObjOne.element.querySelectorAll('.e-popup').length === 1).toBe(true);
+            expect((<HTMLElement>rteObjOne.element.querySelector(".e-toolbar-wrapper") as HTMLElement).style.zIndex === '11').toBe(true);
+            (<HTMLElement>rteObjOne.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect((<HTMLElement>rteObjOne.element.querySelector(".e-toolbar-wrapper") as HTMLElement).style.zIndex === '').toBe(true);
+        });
     });
 });

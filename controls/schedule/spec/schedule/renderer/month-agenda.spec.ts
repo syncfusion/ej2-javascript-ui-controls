@@ -830,6 +830,18 @@ describe('Month-agenda view rendering', () => {
             const selectedCellDate = parseInt(selectedCell.getAttribute('data-date'), 10);
             expect(selectedDateTime).toEqual(selectedCellDate);
         });
+
+        it('should check selected cells in all other View after cell selected in the Month Agenda view', () => {
+            expect(schObj.viewCollections.length).toEqual(2);
+            schObj.changeView('MonthAgenda');
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month-agenda');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            const selectedCell = schObj.element.querySelector('.e-selected-cell');
+            const selectedCellDate = parseInt(selectedCell.getAttribute('data-date'), 10);
+            schObj.changeView('Day');
+            const selectedDateTime = schObj.selectedDate.getTime();
+            expect(selectedDateTime).toEqual(selectedCellDate);
+        });
     });
 
     it('memory leak', () => {

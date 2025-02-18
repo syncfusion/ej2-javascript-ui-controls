@@ -316,6 +316,9 @@ export class FormDesigner {
                 'class': 'foreign-object'
             };
             const htmlElement: HTMLElement = this.createHtmlElement('div', HtmlElementAttribute);
+            if (drawingObject.fontFamily === 'TimesRoman') {
+                drawingObject.fontFamily = 'Times New Roman';
+            }
             if (formFieldAnnotationType === 'SignatureField' || formFieldAnnotationType === 'InitialField') {
                 element.template = htmlElement.appendChild(this.createSignatureDialog(commandHandler, drawingObject));
             } else if (formFieldAnnotationType === 'DropdownList') {

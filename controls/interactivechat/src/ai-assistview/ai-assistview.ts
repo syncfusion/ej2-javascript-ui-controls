@@ -619,6 +619,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.setDimension(this.element, this.width, this.height);
         this.renderViews();
         this.renderToolbar();
+        this.updateTextAreaObject();
         this.wireEvents();
     }
 
@@ -877,7 +878,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
 
     private renderAssistViewFooter(): void {
         this.textareaObj = this.renderFooterContent(this.footerTemplate, this.footer, this.prompt,
-                                                    this.promptPlaceholder, this.showClearButton, this.getRowCount(this.prompt), 'e-assist-textarea');
+                                                    this.promptPlaceholder, this.showClearButton, this.getRowCount(''), 'e-assist-textarea');
         const sendIconClass: string = 'e-assist-send e-icons disabled';
         if (!this.footerTemplate) { this.sendIcon = this.renderSendIcon(sendIconClass, this.footer); }
         if (this.textareaObj) {
@@ -892,7 +893,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.prompt = args.value;
         this.isProtectedOnChange = prevOnChange;
         this.activateSendIcon(args.value.length);
-        this.updateTextAreaObject(args.value);
+        this.updateTextAreaObject();
         const eventArgs: PromptChangedEventArgs = {
             value: args.value,
             previousValue: args.previousValue,
@@ -902,10 +903,11 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.trigger('promptChanged', eventArgs);
     }
 
-    private updateTextAreaObject(textValue: string): void {
-        const rowCount: number = this.getRowCount(textValue);
-        this.textareaObj.rows = rowCount;
-        this.textareaObj.cssClass = (rowCount >= 10) ? 'show-scrollbar' : 'hide-scrollbar';
+    private updateTextAreaObject(): void {
+        if (isNOU(this.textareaObj)) { return; }
+        const textarea: HTMLElement = this.textareaObj.element;
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
     }
 
     private getRowCount(textValue: string): number {
@@ -932,6 +934,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             EventHandler.add(this.stopResponding, 'click', this.respondingStopper, this);
             EventHandler.add(this.stopResponding, 'keydown', this.stopResponseKeyHandler, this);
         }
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.updateTextAreaObject, this);
     }
 
     private unWireEvents(): void {
@@ -940,6 +943,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             EventHandler.remove(this.stopResponding, 'click', this.respondingStopper);
             EventHandler.remove(this.stopResponding, 'keydown', this.stopResponseKeyHandler);
         }
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.updateTextAreaObject);
         this.detachCodeCopyEventHandler();
     }
 
@@ -957,8 +961,6 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             case 'footer':
                 event.preventDefault();
                 if (!this.isResponseRequested) {
-                    this.textareaObj.value = '';
-                    this.updateTextAreaObject(this.textareaObj.value);
                     this.onSendIconClick();
                 }
                 break;
@@ -1007,8 +1009,9 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
             this.prompt = this.textareaObj.value = '';
+            this.textareaObj.dataBind();
             this.isProtectedOnChange = prevOnChange;
-            this.updateTextAreaObject(this.textareaObj.value);
+            this.updateTextAreaObject();
             this.activateSendIcon(this.textareaObj.value.length);
         }
         this.trigger('promptRequest', eventArgs);
@@ -1394,7 +1397,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
             this.textareaObj.value = this.prompt = this.prompts[parseInt(promptIndex.toString(), 10)].prompt;
-            this.updateTextAreaObject(this.textareaObj.value);
+            this.textareaObj.dataBind();
+            this.updateTextAreaObject();
             this.textareaObj.focusIn();
             this.isProtectedOnChange = prevOnChange;
             this.activateSendIcon(this.prompt.length);
@@ -1626,6 +1630,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             case 'prompt':
                 if (!this.footerTemplate) {
                     this.textareaObj.value = this.prompt;
+                    this.textareaObj.dataBind();
+                    this.updateTextAreaObject();
                 }
                 break;
             case 'locale':

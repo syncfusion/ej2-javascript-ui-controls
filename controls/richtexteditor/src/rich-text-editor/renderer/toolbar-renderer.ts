@@ -249,8 +249,7 @@ export class ToolbarRenderer implements IRenderer {
                     args.cancel = true;
                     return;
                 }
-                if (isSafari() && args.event.type === 'keydown' &&  this.parent.formatter.editorManager.nodeSelection &&
-                    this.parent.formatter.editorManager.nodeSelection.get(this.parent.contentModule.getDocument()).rangeCount > 0 &&
+                if (isSafari() && args.event.type === 'keydown' && this.parent.formatter.editorManager.nodeSelection &&
                     !this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
                     this.parent.notify(events.selectionRestore, args);
                 }

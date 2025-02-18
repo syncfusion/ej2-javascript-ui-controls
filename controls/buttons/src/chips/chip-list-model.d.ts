@@ -9,6 +9,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * This chips property helps to render ChipList component.
+     *
      * {% codeBlock src='chips/chips/index.md' %}{% endcodeBlock %}
      *
      * @default []
@@ -18,6 +19,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Specifies the text content for the chip.
+     *
      * {% codeBlock src='chips/text/index.md' %}{% endcodeBlock %}
      *
      * @default ''
@@ -26,6 +28,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Specifies the customized text value for the avatar in the chip.
+     *
      * {% codeBlock src='chips/avatarText/index.md' %}{% endcodeBlock %}
      *
      * @default ''
@@ -34,6 +37,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Specifies the icon CSS class for the avatar in the chip.
+     *
      * {% codeBlock src='chips/avatarIconCss/index.md' %}{% endcodeBlock %}
      *
      * @default ''
@@ -43,6 +47,7 @@ export interface ChipListModel extends ComponentModel{
     /**
      * Allows additional HTML attributes such as aria labels, title, name, etc., and
      * accepts n number of attributes in a key-value pair format.
+     *
      * {% codeBlock src='chiplist/htmlAttributes/index.md' %}{% endcodeBlock %}
      *
      * @default {}
@@ -51,6 +56,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Specifies the leading icon CSS class for the chip.
+     *
      * {% codeBlock src='chips/leadingIconCss/index.md' %}{% endcodeBlock %}
      *
      * @default ''
@@ -59,6 +65,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Specifies the trailing icon CSS class for the chip.
+     *
      * {% codeBlock src='chips/trailingIconCss/index.md' %}{% endcodeBlock %}
      *
      * @default ''
@@ -81,6 +88,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
+     *
      * {% codeBlock src='chips/cssClass/index.md' %}{% endcodeBlock %}
      *
      * @default ''
@@ -96,6 +104,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Sets or gets the selected chip items in the chip list.
+     *
      * {% codeBlock src='chips/selectedChips/index.md' %}{% endcodeBlock %}
      *
      * @default []
@@ -115,6 +124,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Enables or disables the delete functionality of a chip.
+     *
      * {% codeBlock src='chips/enableDelete/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -123,6 +133,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Triggers when the component is created successfully.
+     *
      * {% codeBlock src='chips/created/index.md' %}{% endcodeBlock %}
      *
      * @event created
@@ -131,6 +142,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Triggers when a chip is clicked.
+     *
      * {% codeBlock src='chips/click/index.md' %}{% endcodeBlock %}
      *
      * @event click
@@ -149,6 +161,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Fires before removing the chip element.
+     *
      * {% codeBlock src='chips/delete/index.md' %}{% endcodeBlock %}
      *
      * @event delete
@@ -157,6 +170,7 @@ export interface ChipListModel extends ComponentModel{
 
     /**
      * Triggers when the chip item is removed.
+     *
      * {% codeBlock src='chips/deleted/index.md' %}{% endcodeBlock %}
      *
      * @event deleted

@@ -266,8 +266,10 @@ export class InsertHtml {
                     // Get the index of the start container among its siblings
                     const startIndex: number = Array.prototype.indexOf.call(startContainerParent.childNodes, (Browser.userAgent.indexOf('Firefox') !== -1 && editNode === range.startContainer) ? range.startContainer.firstChild : range.startContainer);
                     range.deleteContents();
-                    range.setStart(startContainerParent, startIndex);
-                    range.setEnd(startContainerParent, startIndex);
+                    if (startIndex !== -1) {
+                        range.setStart(startContainerParent, startIndex);
+                        range.setEnd(startContainerParent, startIndex);
+                    }
                     if (!isNOU(lasNode) && lasNode !== editNode) {
                         detach(lasNode);
                         this.removeEmptyElements(editNode as HTMLElement, true);
@@ -699,26 +701,37 @@ export class InsertHtml {
         }
         return removableElement;
     }
+
     private static removeEmptyElements(element: HTMLElement, ignoreBlockNodes: boolean = false): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
-        const nonSvgEmptyElements: Element[] = Array.from(emptyElements).filter((element: Element) => {
-            // Check if the element is an SVG element or an ancestor of an SVG element
-            return !element.closest('svg') && !element.closest('canvas');
+        const filteredEmptyElements: Element[] = Array.from(emptyElements).filter((element: Element) => {
+            const tagName: string = element.tagName.toLowerCase();
+            // Some empty tags suc as TD TH convey a meaning and hence should not be removed.
+            const meaningfulEmptyTags: string[] = ['td', 'th', 'textarea', 'input', 'img', 'video', 'audio', 'br', 'hr', 'iframe'];
+            return !element.closest('svg') && !element.closest('canvas') && !(meaningfulEmptyTags.indexOf(tagName) > -1);
         });
-        for (let i: number = 0; i < nonSvgEmptyElements.length; i++) {
+
+        for (let i: number = 0; i < filteredEmptyElements.length; i++) {
             let lineWithDiv: boolean = true;
-            if (nonSvgEmptyElements[i as number].tagName === 'DIV') {
-                lineWithDiv =  (nonSvgEmptyElements[i as number] as HTMLElement).style.borderBottom === 'none' ||
-                (nonSvgEmptyElements[i as number] as HTMLElement).style.borderBottom === '' ? true : false;
+            const currentEmptyElem: HTMLElement = filteredEmptyElements[i as number] as HTMLElement;
+            if (currentEmptyElem.tagName === 'DIV') {
+                lineWithDiv = (currentEmptyElem as HTMLElement).style.borderBottom === 'none' ||
+                currentEmptyElem.style.borderBottom === '' ? true : false;
             }
-            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(nonSvgEmptyElements[i as number].tagName.toLowerCase()) < 0 && lineWithDiv) {
-                const detachableElement: HTMLElement = this.findDetachEmptyElem(nonSvgEmptyElements[i as number], ignoreBlockNodes);
+            if (currentEmptyElem.nodeName === 'COL') {
+                const colGroup: HTMLElement = currentEmptyElem.parentElement as HTMLElement;
+                detach(colGroup);
+                continue;
+            }
+            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(currentEmptyElem.tagName.toLowerCase()) < 0 && lineWithDiv) {
+                const detachableElement: HTMLElement = this.findDetachEmptyElem(currentEmptyElem, ignoreBlockNodes);
                 if (!isNOU(detachableElement) && !(detachableElement.nodeType === Node.ELEMENT_NODE && detachableElement.nodeName.toUpperCase() === 'TEXTAREA')) {
                     detach(detachableElement);
                 }
             }
         }
     }
+
     private static closestEle(element: Element | Node, editNode: Element): Element {
         let el: Element = <Element>element;
         if (closest(el, 'li')) {

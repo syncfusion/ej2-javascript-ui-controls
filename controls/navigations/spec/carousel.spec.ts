@@ -2864,6 +2864,34 @@ describe('Carousel Testing', () => {
         });
     });
 
+    describe('test case for checking inert attribute', () => {
+        beforeEach((): void => {
+            const carouselElement: HTMLElement = document.createElement('div');
+            carouselElement.id = 'carousel';
+            document.body.appendChild(carouselElement);
+            jasmine.clock().install();
+        });
+        afterEach(() => {
+            carousel.destroy();
+            carousel.element.remove();
+            carousel = null;
+            jasmine.clock().uninstall();
+        });
+        it('test case for inert attribute', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({ items: items, animationEffect: 'None' }, carouselElement);
+            const carouselItems: NodeListOf<Element> = carouselElement.querySelectorAll('.e-carousel-item');
+            expect(carouselItems[1].classList.contains('e-active')).toBe(true);
+            expect(carouselItems[1].getAttribute('inert')).toBe(null);
+            expect(carouselItems[2].getAttribute('inert')).toBe('true');
+            (carouselElement.querySelector('.e-next-icon') as HTMLElement).click();
+            jasmine.clock().tick(1500);
+            expect(carouselItems[1].getAttribute('inert')).toBe('true');
+            expect(carouselItems[2].getAttribute('inert')).toBe(null);
+            expect(carouselItems[3].getAttribute('inert')).toBe('true');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

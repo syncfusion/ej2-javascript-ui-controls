@@ -28,7 +28,6 @@ export class ToolbarAction {
 
     private toolbarClick(args: IDropDownClickArgs): void {
         if (isSafari() && this.parent.formatter.editorManager.nodeSelection &&
-            this.parent.formatter.editorManager.nodeSelection.get(this.parent.contentModule.getDocument()).rangeCount > 0 &&
             !this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
             this.parent.notify(events.selectionRestore, {});
         }

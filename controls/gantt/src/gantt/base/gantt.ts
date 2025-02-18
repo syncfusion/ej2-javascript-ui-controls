@@ -2134,7 +2134,6 @@ export class Gantt extends Component<HTMLElement>
     public isInDst(date: Date): boolean {
         return date.getTimezoneOffset() < this.getDefaultTZOffset();
     }
-
     /**
      * Method to map resource fields.
      *

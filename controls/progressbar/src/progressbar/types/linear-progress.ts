@@ -310,6 +310,9 @@ export class Linear {
                         (progress.progressRect.x + progressWidth / 2);
                     pos = (progress.enableRtl) ? (center <= defaultPos) : (center >= defaultPos);
                     posX = (progressWidth < textSize.width / 2) ? defaultPos : center;
+                    if (!progressWidth && !progress.enableRtl && posX / 2 < progress.progressRect.x + padding) {
+                        posX += padding;
+                    }
                 } else {
                     far = (progress.enableRtl) ?
                         ((progress.progressRect.x + progress.progressRect.width - progressWidth) + textSize.width / 2) :
@@ -320,6 +323,9 @@ export class Linear {
                         posX = far;
                     } else {
                         posX = defaultPos;
+                    }
+                    if (!progressWidth && !progress.enableRtl && posX / 2 < progress.progressRect.x + padding) {
+                        posX += padding;
                     }
                 }
             } else {

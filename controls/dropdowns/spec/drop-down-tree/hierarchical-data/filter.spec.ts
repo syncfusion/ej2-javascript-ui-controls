@@ -2074,6 +2074,79 @@ describe('Hierarchial data filter testing', () => {
                     done();
                 }, 350);
             }, 350);
+        });
+        it('Filter with SelectAll in inital rendering', function (done) {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true, expandOn: 'Auto' },
+                showCheckBox: true,
+                allowMultiSelection: true,
+                showSelectAll: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            var parentNode = document.querySelector('.e-selectall-parent');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(24);
+            expect(ddtreeObj.treeObj.checkedNodes.length).toBe(24);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'vic';
+            filterObj.value = 'vic';
+            let eventArgs: any = { value: 'vic', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(() => {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(2);
+                expect(ddtreeObj.value.indexOf('1') !== -1).toBe(true);
+                expect(ddtreeObj.value.indexOf('3') !== -1).toBe(true);
+                expect(ddtreeObj.treeObj.selectedNodes.length).toBe(2);
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(2);
+                done();
+            }, 350);
+        });
+        it('Filter with SelectAll in inital rendering on loadOnDemand true', function (done) {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true, expandOn: 'Auto', loadOnDemand: true },
+                showCheckBox: true,
+                allowMultiSelection: true,
+                showSelectAll: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            var parentNode = document.querySelector('.e-selectall-parent');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            expect(ddtreeObj.treeObj.checkedNodes.length).toBe(24);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'vic';
+            filterObj.value = 'vic';
+            let eventArgs: any = { value: 'vic', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(() => {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(2);
+                expect(ddtreeObj.value.indexOf('1') !== -1).toBe(true);
+                expect(ddtreeObj.value.indexOf('3') !== -1).toBe(true);
+                expect(ddtreeObj.treeObj.selectedNodes.length).toBe(2);
+                done();
+            }, 350);
         });  
     });
 });

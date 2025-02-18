@@ -3519,6 +3519,9 @@ export class AnnotationToolbar {
             }
             this.pdfViewer.clearSelection(this.pdfViewer.currentPageNumber - 1);
             if (this.pdfViewer.annotationModule.inkAnnotationModule) {
+                if (!Browser.isDevice) {
+                    this.updateInteractionTools();
+                }
                 const currentPageNumber: string = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
                 if (currentPageNumber && currentPageNumber !== '') {
                     this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber, 10));

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I664230` - Now , the signature annotation will appear in UI upon import when deleted programmatically.
+- `#I683048` - Now , the custom stamp image will appear in UI when changing the image source dynamically.
+- `#I686411` - Now, the pan mode is not disabled when the Ctrl key is pressed.
+- `#I686925`, `#686758` - Now, the `findText` method properly returns the width value for the searched text.
+- `#I689347` - Now, the script error no longer occurs when deleting the text markup annotation using the `deleteAnnotationById` method.
+
 ## 28.2.5 (2025-02-11)
 
 ### PDF Viewer

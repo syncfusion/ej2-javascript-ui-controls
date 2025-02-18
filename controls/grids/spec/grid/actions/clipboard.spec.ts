@@ -509,3 +509,33 @@ describe('EJ2-900673 - Script error occurs while perform Control+A and Control+C
        gridObj = null;
     });
 });
+
+describe('EJ2-936849 - Script error thrown when copying with column selection in cell selection mode => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 10),
+                selectionSettings: { type: 'Multiple', allowColumnSelection: true },
+                height: 400,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120},
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd'},
+                    { field: 'Freight', width: 120}
+                ]
+            }, done);
+    });
+
+    it('Copy the data in column selection', (done: Function) => {
+        gridObj.selectionModule.selectColumn(0);
+        gridObj.copy(true);
+        expect((gridObj as any).clipboardModule.clipBoardTextArea.value !== '').toBeTruthy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

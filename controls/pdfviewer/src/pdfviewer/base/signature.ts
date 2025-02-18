@@ -2626,7 +2626,13 @@ export class Signature {
         }
     }
 
-    private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
+    /**
+     * @param {number} pageIndex - This is current page number
+     * @param {any[]}  shapeAnnotations - This is annotations
+     * @private
+     * @returns {any[]}
+     */
+    public getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
         let annotationCollection: any[];
         let storeObject: string = null;
         if (this.pdfViewerBase.isStorageExceed){
@@ -2648,7 +2654,13 @@ export class Signature {
         return annotationCollection;
     }
 
-    private manageAnnotations(pageAnnotations: ISignAnnotation[], pageNumber: number): void {
+    /**
+     * @param {ISignAnnotation[]} pageAnnotations - This is annotation
+     * @param {number}  pageNumber - This is current page number
+     * @private
+     * @returns {void}
+     */
+    public manageAnnotations(pageAnnotations: ISignAnnotation[], pageNumber: number): void {
         let storeObject: string = null;
         if (this.pdfViewerBase.isStorageExceed) {
             storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sign'];
@@ -2659,7 +2671,7 @@ export class Signature {
             const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             PdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_sign');
             const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (annotObject[parseInt(index.toString(), 10)]) {
+            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
                 annotObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
             }
             const annotationStringified: string = JSON.stringify(annotObject);

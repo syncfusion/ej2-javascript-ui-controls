@@ -612,7 +612,7 @@ export class Data implements IDataProcessor {
         if ((args.requestType !== undefined || (this.parent.groupSettings.disablePageWiseAggregates && query.queries.some((query: { fn: string; }) => query.fn === 'onGroup')))
          && this.dataState.isDataChanged !== false) {
             state.action = <{}>args;
-            if (args.requestType === 'save' || args.requestType === 'delete') {
+            if (args.requestType === 'save' || args.requestType === 'delete' || args.requestType === 'batchsave') {
                 const editArgs: DataSourceChangedEventArgs = args;
                 editArgs.key = key;
                 const promise: string = 'promise';

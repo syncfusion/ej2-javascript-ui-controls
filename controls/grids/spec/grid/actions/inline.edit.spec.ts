@@ -5082,3 +5082,47 @@ describe('922786 - Unable to navigate to editTemplate with keyboard while adding
         gridObj = null;
     });
 });
+
+describe('EJ2-936148: The dropdownlist popup does not open with "alt + down arrow" using remote data binding when editing the row =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+    gridObj = createGrid(
+        {
+            dataSource: data,
+            editSettings: {
+            allowEditing: true,
+            allowAdding: true,
+            allowDeleting: true,
+            },
+            toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                    validationRules: { required: true, number: true }, width: 140
+                },
+                {
+                    field: 'CustomerID', headerText: 'Customer ID',
+                    validationRules: { required: true }, width: 140
+                },
+                {
+                    field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150 }
+            ],
+        }, done);
+    });
+
+    it('Edit the row', function (done: Function) {
+        (gridObj as any).dblClickHandler({ target: (gridObj.element.querySelectorAll('.e-row')[3] as any).cells[2] });
+        done();
+    });
+
+    it('Keypress handler', function (done: Function) {
+        let e: any = { action: 'open', altKey: true, code: 'ArrowDown', target: gridObj.element.querySelectorAll('.e-row')[3].querySelector('.e-ddl'), stopImmediatePropagation: () => {} };
+        (gridObj as any).keyPressHandler(e);
+        done();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

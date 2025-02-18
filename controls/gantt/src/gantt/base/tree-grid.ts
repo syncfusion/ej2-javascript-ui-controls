@@ -10,7 +10,7 @@ import { ITaskData, IGanttData } from './interface';
 import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '@syncfusion/ej2-grids';
-import { isCountRequired } from './utils';
+import { isCountRequired, isEmptyObject } from './utils';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 
 /** @hidden */
@@ -499,7 +499,7 @@ export class GanttTreeGrid {
                         this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
                     }
                 }
-                if (isNullOrUndefined(this.currentEditRow) && args['column'] && args['column'].edit && args['column'].field === this.parent.taskFields.resourceInfo) {
+                if (isEmptyObject(this.currentEditRow) && args['column'] && args['column'].edit && args['column'].field === this.parent.taskFields.resourceInfo) {
                     const field: string = this.parent.taskFields.resourceInfo;
                     this.currentEditRow = { [field]: data['resources'] };
                 }

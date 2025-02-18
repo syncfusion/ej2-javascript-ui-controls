@@ -341,7 +341,7 @@ export class TocProperties {
         }
         this.enableDisableInsertButton(this.documentEditor.selectionModule.isPlainContentControl());
         this.documentEditor.resize();
-        if (isShow) {
+        if (isShow && this.documentEditor.enableAutoFocus) {
             this.updateBtn.element.focus();
         }
     }

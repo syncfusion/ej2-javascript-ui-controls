@@ -853,9 +853,9 @@ describe('Classic layout spec', () => {
         it('Check initial render 2', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + United States');
-                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_5')[0].textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart1_AxisLabel_5')[0].textContent).toBe('$500.00');
                 expect(document.querySelectorAll('#PivotView_chart_AxisTitle_0')[0].textContent).toBe('X axis title');
-                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Y axis title');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_1')[0].textContent).toBe('Y axis title');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2008');
                 done();

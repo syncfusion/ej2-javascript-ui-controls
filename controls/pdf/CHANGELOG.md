@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with preserving the line measurement annotation in browsers when updating the measure dictionary as a custom entry.
+- Resolved an issue where multiple text box fields were not preserving flattening when applying a globally initialized font.
+
 ## 28.2.5 (2025-02-11)
 
 ### PDF Parser

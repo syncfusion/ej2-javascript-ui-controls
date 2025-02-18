@@ -1690,7 +1690,7 @@ export class Image {
         const previousSubCommand: string = ((this as IImageNotifyArgs).args as ActionBeginEventArgs).item.subCommand;
         ((this as IImageNotifyArgs).args as ActionBeginEventArgs).item.subCommand = (e.target as HTMLElement).innerHTML === 'Update' ? 'Replace' : ((this as IImageNotifyArgs).args as ActionBeginEventArgs).item.subCommand;
         if (!isNOU(proxy.uploadUrl) && proxy.uploadUrl.url !== '') {
-            proxy.uploadUrl.cssClass = (proxy.parent.insertImageSettings.display === 'inline' ?
+            proxy.uploadUrl.cssClass = (((this as IImageNotifyArgs).selectParent && ((this as IImageNotifyArgs).selectParent[0] as HTMLElement).classList.contains('e-imgbreak') === true)) ? classes.CLS_IMGBREAK : (proxy.parent.insertImageSettings.display === 'inline' ?
                 classes.CLS_IMGINLINE : classes.CLS_IMGBREAK);
             proxy.dialogObj.hide({ returnValue: false } as Event);
             if (proxy.dialogObj !== null) {
@@ -1709,7 +1709,11 @@ export class Image {
                 closest(
                     // eslint-disable-next-line
                     (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" + ']'))) {
-                (proxy.contentModule.getEditPanel() as HTMLElement).focus();
+                if (proxy.contentModule.getPanel().tagName === 'IFRAME' && ((this as IImageNotifyArgs).args as ActionBeginEventArgs).item.subCommand === 'Replace') {
+                    (proxy.contentModule.getPanel() as HTMLElement);
+                } else {
+                    (proxy.contentModule.getEditPanel() as HTMLElement);
+                }
                 const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
                 (this as IImageNotifyArgs).selection = proxy.parent.formatter.editorManager.nodeSelection.save(
                     range, proxy.contentModule.getDocument());
@@ -1718,7 +1722,7 @@ export class Image {
             const regex: RegExp = /[\w-]+.(jpg|png|jpeg|gif)/g;
             const matchUrl: string = (!isNOU(url.match(regex)) && proxy.parent.editorMode === 'HTML') ? url.match(regex)[0] : '';
             const value: IImageCommandsArgs = {
-                cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
+                cssClass: (((this as IImageNotifyArgs).selectParent && ((this as IImageNotifyArgs).selectParent[0] as HTMLElement).classList.contains('e-imgbreak') === true)) ? classes.CLS_IMGBREAK : (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
                 url: url, selection: (this as IImageNotifyArgs).selection, altText: matchUrl,
                 selectParent: (this as IImageNotifyArgs).selectParent, width: {
                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,

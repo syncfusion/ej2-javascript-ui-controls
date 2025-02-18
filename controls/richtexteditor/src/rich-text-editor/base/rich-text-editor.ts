@@ -2174,15 +2174,20 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.inputElement.contains(this.getRange().startContainer)) {
                         this.notify(events.selectionSave, {});
                     }
+                    let toolbarFocusType: string = 'toolbar' ;
                     let firstActiveItem: HTMLElement = this.getToolbarElement().querySelector('.e-toolbar-item:not(.e-overlay)[title]');
                     const quickToolbarElem: HTMLElement | null = this.getRenderedQuickToolbarElem();
                     if (quickToolbarElem) {
                         firstActiveItem = quickToolbarElem.querySelector('.e-toolbar-item:not(.e-overlay)[title]');
+                        toolbarFocusType = 'quickToolbar';
                     }
                     if (firstActiveItem) {
                         const firstChild: HTMLElement = firstActiveItem.firstElementChild as HTMLElement;
                         firstChild.removeAttribute('tabindex');
                         firstChild.focus();
+                        if (quickToolbarElem && quickToolbarElem.classList.contains('e-rte-image-popup') && toolbarFocusType === 'quickToolbar' && isSafari()) {
+                            this.inputElement.ownerDocument.getSelection().removeAllRanges();
+                        }
                     }
                 }
                 break;

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.2.5 (2025-02-11)
+## 28.2.6 (2025-02-18)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I558909` - The progress bar label position is now correct when the progress value is zero.
+
+## 28.2.4 (2025-02-04)
 
 ### ProgressBar
 

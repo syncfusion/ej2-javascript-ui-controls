@@ -235,13 +235,13 @@
   --color-sf-appbar-bg-color-alt1: var(--color-sf-content-bg-color-alt1);
   --color-sf-appbar-color-alt1: var(--color-sf-content-text-color);
   --color-sf-appbar-border-color-alt1: var(--color-sf-appbar-bg-color-alt1);
-  --color-sf-appbar-hover-bg-color-alt1: $transparent;
+  --color-sf-appbar-hover-bg-color-alt1: transparent;
 
   //dark
   --color-sf-appbar-bg-color-alt2: #212529;
   --color-sf-appbar-color-alt2: #fff;
   --color-sf-appbar-border-color-alt2: var(--color-sf-appbar-bg-color-alt2);
-  --color-sf-appbar-hover-bg-color-alt2: $transparent;
+  --color-sf-appbar-hover-bg-color-alt2: transparent;
 
   //diagram Palette color
   --color-sf-diagram-palette-background: #fff;
@@ -262,7 +262,7 @@
   --color-sf-msg-bg-color: #e2e3e5;
   --color-sf-msg-border-color: #c4c8cb;
   --color-sf-msg-color-alt1: var(--color-sf-msg-color);
-  --color-sf-msg-bg-color-alt1: $transparent;
+  --color-sf-msg-bg-color-alt1: transparent;
   --color-sf-msg-border-color-alt1: var(--color-sf-msg-border-color);
   --color-sf-msg-color-alt2: #fff;
   --color-sf-msg-bg-color-alt2: #6c757d;
@@ -279,7 +279,7 @@
   --color-sf-msg-danger-bg-color: #f8d7da;
   --color-sf-msg-danger-border-color: #f1aeb5;
   --color-sf-msg-danger-color-alt1: var(--color-sf-msg-danger-color);
-  --color-sf-msg-danger-bg-color-alt1: $transparent;
+  --color-sf-msg-danger-bg-color-alt1: transparent;
   --color-sf-msg-danger-border-color-alt1: var(--color-sf-msg-danger-border-color);
   --color-sf-msg-danger-color-alt2: #fff;
   --color-sf-msg-danger-bg-color-alt2: #dc3545;
@@ -296,7 +296,7 @@
   --color-sf-msg-success-bg-color: #d1e7dd;
   --color-sf-msg-success-border-color: #a3cfbb;
   --color-sf-msg-success-color-alt1: var(--color-sf-msg-success-color);
-  --color-sf-msg-success-bg-color-alt1: $transparent;
+  --color-sf-msg-success-bg-color-alt1: transparent;
   --color-sf-msg-success-border-color-alt1: var(--color-sf-msg-success-border-color);
   --color-sf-msg-success-color-alt2: #fff;
   --color-sf-msg-success-bg-color-alt2: #198754;
@@ -313,7 +313,7 @@
   --color-sf-msg-warning-bg-color: #fff3cd;
   --color-sf-msg-warning-border-color: #ffe69c;
   --color-sf-msg-warning-color-alt1: var(--color-sf-msg-warning-color);
-  --color-sf-msg-warning-bg-color-alt1: $transparent;
+  --color-sf-msg-warning-bg-color-alt1: transparent;
   --color-sf-msg-warning-border-color-alt1: var(--color-sf-msg-warning-border-color);
   --color-sf-msg-warning-color-alt2: #212529;
   --color-sf-msg-warning-bg-color-alt2: #ffc107;
@@ -330,7 +330,7 @@
   --color-sf-msg-info-bg-color: #cff4fc;
   --color-sf-msg-info-border-color: #9eeaf9;
   --color-sf-msg-info-color-alt1: var(--color-sf-msg-info-color);
-  --color-sf-msg-info-bg-color-alt1: $transparent;
+  --color-sf-msg-info-bg-color-alt1: transparent;
   --color-sf-msg-info-border-color-alt1: var(--color-sf-msg-info-border-color);
   --color-sf-msg-info-color-alt2: #212529;
   --color-sf-msg-info-bg-color-alt2: #0dcaf0;
@@ -583,13 +583,13 @@
   --color-sf-appbar-bg-color-alt1: var(--color-sf-content-bg-color-alt1);
   --color-sf-appbar-color-alt1: var(--color-sf-content-text-color);
   --color-sf-appbar-border-color-alt1: var(--color-sf-appbar-bg-color-alt1);
-  --color-sf-appbar-hover-bg-color-alt1: $transparent;
+  --color-sf-appbar-hover-bg-color-alt1: transparent;
 
   //dark
   --color-sf-appbar-bg-color-alt2: #dee2e6;
   --color-sf-appbar-color-alt2: #212529;
   --color-sf-appbar-border-color-alt2: var(--color-sf-appbar-bg-color-alt2);
-  --color-sf-appbar-hover-bg-color-alt2: $transparent;
+  --color-sf-appbar-hover-bg-color-alt2: transparent;
 
   //diagram Palette color
   --color-sf-diagram-palette-background: #dee2e6;
@@ -609,7 +609,7 @@
   --color-sf-msg-bg-color: #161719;
   --color-sf-msg-border-color: #41464b;
   --color-sf-msg-color-alt1: var(--color-sf-msg-color);
-  --color-sf-msg-bg-color-alt1: $transparent;
+  --color-sf-msg-bg-color-alt1: transparent;
   --color-sf-msg-border-color-alt1: var(--color-sf-msg-border-color);
   --color-sf-msg-color-alt2: #fff;
   --color-sf-msg-bg-color-alt2: #6c757d;
@@ -626,7 +626,7 @@
   --color-sf-msg-danger-bg-color: #2c0b0e;
   --color-sf-msg-danger-border-color: #842029;
   --color-sf-msg-danger-color-alt1: var(--color-sf-msg-danger-color);
-  --color-sf-msg-danger-bg-color-alt1: $transparent;
+  --color-sf-msg-danger-bg-color-alt1: transparent;
   --color-sf-msg-danger-border-color-alt1: var(--color-sf-msg-danger-border-color);
   --color-sf-msg-danger-color-alt2: #fff;
   --color-sf-msg-danger-bg-color-alt2: #dc3545;
@@ -643,7 +643,7 @@
   --color-sf-msg-success-bg-color: #051b11;
   --color-sf-msg-success-border-color: #0f5132;
   --color-sf-msg-success-color-alt1: var(--color-sf-msg-success-color);
-  --color-sf-msg-success-bg-color-alt1: $transparent;
+  --color-sf-msg-success-bg-color-alt1: transparent;
   --color-sf-msg-success-border-color-alt1: var(--color-sf-msg-success-border-color);
   --color-sf-msg-success-color-alt2: #fff;
   --color-sf-msg-success-bg-color-alt2: #198754;
@@ -660,7 +660,7 @@
   --color-sf-msg-warning-bg-color: #332701;
   --color-sf-msg-warning-border-color: #997404;
   --color-sf-msg-warning-color-alt1: var(--color-sf-msg-warning-color);
-  --color-sf-msg-warning-bg-color-alt1: $transparent;
+  --color-sf-msg-warning-bg-color-alt1: transparent;
   --color-sf-msg-warning-border-color-alt1: var(--color-sf-msg-warning-border-color);
   --color-sf-msg-warning-color-alt2: #212529;
   --color-sf-msg-warning-bg-color-alt2: #ffc107;
@@ -677,7 +677,7 @@
   --color-sf-msg-info-bg-color: #032830;
   --color-sf-msg-info-border-color: #087990;
   --color-sf-msg-info-color-alt1: var(--color-sf-msg-info-color);
-  --color-sf-msg-info-bg-color-alt1: $transparent;
+  --color-sf-msg-info-bg-color-alt1: transparent;
   --color-sf-msg-info-border-color-alt1: var(--color-sf-msg-info-border-color);
   --color-sf-msg-info-color-alt2: #212529;
   --color-sf-msg-info-bg-color-alt2: #0dcaf0;

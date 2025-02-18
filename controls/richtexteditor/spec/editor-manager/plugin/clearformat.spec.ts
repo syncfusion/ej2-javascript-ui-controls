@@ -322,7 +322,7 @@ describe('Bug 907771: BlockQuote Applied Paragraphs Convert to Single Paragraph 
         let node2: Node = document.getElementById('divElement').childNodes[0].childNodes[1].childNodes[0];
         domSelection.setSelectionText(document, node1, node2, 0, node1.textContent.length);
         ClearFormat.clear(document, divElement, 'P');
-        expect(document.getElementById('divElement').children[0].childElementCount).toBe(2);
+        expect(document.getElementById('divElement').childElementCount).toBe(2);
     });
     it(' - double line with h1 tags and blockquote', () => {
         divElement.innerHTML = `<blockquote><h1>Testing 1</h1><h1>Testing 2</h1></blockquote>`;

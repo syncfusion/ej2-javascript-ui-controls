@@ -127,6 +127,7 @@ export class Render {
             if (this.parent.isScrolling) {
                 this.parent.resizeInfo = {};
             }
+            this.parent.grid.width = this.calculateGridWidth();
             this.parent.grid.refreshColumns();
             if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
                 this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
@@ -139,7 +140,6 @@ export class Render {
             }
             const e: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_CLASS) as HTMLElement;
             e.querySelector('colGroup').innerHTML = this.parent.grid.getHeaderContent().querySelector('colgroup').innerHTML;
-            this.parent.grid.width = this.calculateGridWidth();
             if (!this.gridSettings.allowAutoResizing && this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                 this.parent.groupingBarModule.refreshUI();
             }

@@ -108,6 +108,7 @@ export class MonthAgenda extends Month {
         this.onEventRender(filterData, event.startTime);
         this.parent.notify(events.eventsLoaded, {});
         this.monthAgendaDate = new Date('' + event.startTime);
+        this.parent.setProperties({ selectedDate: this.monthAgendaDate }, true);
     }
 
     private onEventRender(events: Record<string, any>[], date?: Date): void {

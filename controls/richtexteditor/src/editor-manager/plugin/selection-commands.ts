@@ -13,6 +13,7 @@ import { FormatPainterValue, ITableSelection } from '../base/interface';
 export class SelectionCommands {
     public static enterAction: string = 'P';
     public static isUnwrapped: boolean = false;
+    public static isWrapped: boolean = false;
     /**
      * applyFormat method
      *
@@ -43,6 +44,7 @@ export class SelectionCommands {
             const nodeCutter: NodeCutter = new NodeCutter();
             const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
+            let counter: number = 0;
             const currentAnchorNode: HTMLElement = range.startContainer.parentElement;
             if (range.collapsed && !isNOU(currentAnchorNode) &&
             currentAnchorNode.tagName === 'A' &&
@@ -179,6 +181,10 @@ export class SelectionCommands {
                         painterValues,
                         domNode,
                         endNode);
+                    counter++;
+                }
+                if (nodes.length === counter) {
+                    this.isWrapped = true;
                 }
                 if (!isTableSelect) {
                     domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
@@ -188,10 +194,11 @@ export class SelectionCommands {
                 setEditFrameFocus(endNode as Element, selector);
             }
             if (!preventRestore && !isTableSelect) {
-                if (this.isSafari() && !range.collapsed && this.isUnwrapped) {
+                if (this.isSafari() && !range.collapsed && (this.isUnwrapped || this.isWrapped)) {
                     const range: Range = save.range.cloneRange();
                     this.restoreSelectionForSafari(range, docElement, domSelection);
                     this.isUnwrapped = false;
+                    this.isWrapped = false;
                 } else {
                     save.restore();
                 }
@@ -556,9 +563,11 @@ export class SelectionCommands {
             for (let num: number = 0; num < child.length; num++) {
                 if (child[num as number].nodeType !== 3 || (child[num as number].textContent &&
                      child[num as number].textContent.trim().length > 0)) {
-                    child[num as number] = InsertMethods.Wrap(
-                        child[num as number] as HTMLElement,
-                        this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
+                    if (value !== '') {
+                        child[num as number] = InsertMethods.Wrap(
+                            child[num as number] as HTMLElement,
+                            this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
+                    }
                     let liElement: HTMLElement = nodes[index as number].parentElement;
                     if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
                         liElement = closest(liElement, 'li') as HTMLElement;
@@ -571,7 +580,7 @@ export class SelectionCommands {
                     }
                     if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
                         && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
-                        SelectionCommands.conCatenateTextNode(liElement, format, liElement.textContent, format, value);
+                        liElement.style.fontFamily = value;
                     }
                     if (child[num as number].textContent === startText) {
                         if (num === 0) {
@@ -590,7 +599,7 @@ export class SelectionCommands {
             if (!isNOU(bgStyle) && bgStyle !== '') {
                 currentNodeElem.style.backgroundColor = bgStyle;
             }
-            if (format === 'fontsize' || format === 'fontcolor') {
+            if (format === 'fontsize' || format === 'fontcolor' || format === 'fontname') {
                 let liElement: HTMLElement = nodes[index as number].parentElement;
                 let parentElement: HTMLElement = nodes[index as number].parentElement;
                 while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
@@ -620,7 +629,10 @@ export class SelectionCommands {
                     liElement.textContent.split('\u200B').join('').trim() === liChildContent.split('\u200B').join('').trim()) {
                     if (format === 'fontsize') {
                         liElement.style.fontSize = value;
-                    } else {
+                    } else if (format === 'fontname') {
+                        liElement.removeAttribute('style');
+                    }
+                    else {
                         liElement.style.color = value;
                         liElement.style.textDecoration = 'inherit';
                     }
@@ -636,11 +648,13 @@ export class SelectionCommands {
                     if (isNestedListItem) {
                         for (let num : number = 0; num < liElement.childNodes.length; num++) {
                             if (liElement.childNodes[num as number].nodeName === 'OL' || liElement.childNodes[num as number].nodeName === 'UL') {
-                                (liElement.childNodes[num as number] as HTMLElement).style.fontSize = '';
+                                (liElement.childNodes[num as number] as HTMLElement).removeAttribute('style');
                             }
                         }
                         if (format === 'fontsize') {
                             liElement.style.fontSize = value;
+                        } else if (format === 'fontname') {
+                            liElement.removeAttribute('style');
                         }
                         else {
                             liElement.style.color = value;

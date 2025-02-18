@@ -345,6 +345,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
+        this.element.setAttribute('tabindex', '0');
         if (this.value) {
             this.element.setAttribute('value', this.value);
             if (this.isVue && typeof this.value === 'boolean' && this.value === true) {

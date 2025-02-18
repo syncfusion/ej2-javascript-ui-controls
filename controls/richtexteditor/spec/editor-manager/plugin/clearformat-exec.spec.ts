@@ -4,6 +4,8 @@
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
 import { NodeSelection } from '../../../src/selection/selection';
+import { RichTextEditor } from '../../../src';
+import { renderRTE, destroy } from '../../rich-text-editor/render.spec';
 
 describe('Clear Format Exec plugin', () => {
 
@@ -74,5 +76,44 @@ describe('Clear Format Exec plugin', () => {
         afterAll(() => {
             detach(elem);
         });
+    });
+});
+
+describe('924318 - Clear Formatting Fails on Ordered List with Bold Text in IFrame Mode', () => {
+    let rteObj: RichTextEditor;
+    let controlId: string;
+    let rteElement: HTMLElement;
+    const value = `<p>The Rich Text Editor component is a WYSIWYG ("what you see is what you get") editor that provides the best user experience to create and update the content. Users can format their content using standard toolbar commands.</p><p>Key features:</p><ol><li><p>Provides IFRAME and DIV modes</p></li><li><p>Capable of handling markdown editing.</p></li></ol>`;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: value,
+            toolbarSettings: {
+                items: ['Bold', 'ClearFormat', 'Formats', 'Alignments', 'Indent', 'Outdent', 'OrderedList', 'UnorderedList']
+            }
+        });
+        controlId = rteObj.element.id;
+        rteElement = rteObj.element;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Apply bold to the first list item and then clear format', (done) => {
+        const firstListItem = rteElement.querySelector('li') as HTMLElement;
+        const range = document.createRange();
+        range.selectNodeContents(firstListItem);
+        const sel = document.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        let boldButton = rteElement.querySelector(`#${controlId}_toolbar_Bold`) as HTMLElement;
+        let boldMouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+        boldButton.dispatchEvent(boldMouseEvent);
+        boldButton.click();
+        expect(firstListItem.querySelector('strong')).not.toBeNull();
+        const clearFormatButton = rteElement.querySelector(`#${controlId}_toolbar_ClearFormat`) as HTMLElement;
+        let mouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+        clearFormatButton.dispatchEvent(mouseEvent);
+        clearFormatButton.click();
+        expect(rteObj.inputElement.innerHTML).toEqual(`<p>The Rich Text Editor component is a WYSIWYG ("what you see is what you get") editor that provides the best user experience to create and update the content. Users can format their content using standard toolbar commands.</p><p>Key features:</p><p>Provides IFRAME and DIV modes</p><ol><li><p>Capable of handling markdown editing.</p></li></ol>`);
+        done();
     });
 });

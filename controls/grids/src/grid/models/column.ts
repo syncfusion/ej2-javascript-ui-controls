@@ -652,6 +652,10 @@ export class Column {
                     this.parent.refreshReactHeaderTemplateByUid(this.uid);
                 } else if (keys[parseInt(i.toString(), 10)] === 'editTemplate') {
                     this.editTemplateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);
+                } else if (keys[parseInt(i.toString(), 10)] === 'filterTemplate') {
+                    this.filterTemplateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);
+                } else if (keys[parseInt(i.toString(), 10)] === 'commandsTemplate') {
+                    this.templateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);
                 }
             }
         }

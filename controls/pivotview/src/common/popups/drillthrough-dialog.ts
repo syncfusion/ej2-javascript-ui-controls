@@ -488,16 +488,23 @@ export class DrillThroughDialog {
             for (const key of keys) {
                 if (this.engine.fieldList[key as string].aggregateType !== 'CalculatedField') {
                     let editType: string = '';
+                    let type: string | null = null;
                     const isDateField: boolean = ((this.engine.fieldList[key as string].type === 'date' || this.engine.fieldList[key as string].type === 'datetime')
                         && (this.isDateFieldExist(key) || (rawData[0] && rawData[0][key as string] && rawData[0][key as string].toString().indexOf(' ') === -1))) ? true : false;
                     if (this.engine.fieldList[key as string].type === 'number') {
                         editType = 'numericedit';
+                        type = 'number';
                     } else if (this.engine.fieldList[key as string].type === 'date' && isDateField) {
                         editType = 'datepickeredit';
+                        type = 'date';
                     } else if (this.engine.fieldList[key as string].type === 'datetime' && isDateField) {
                         editType = 'datetimepickeredit';
+                        type = 'date';
                     } else {
                         editType = 'defaultedit';
+                    }
+                    if (this.parent.engineModule.formatFields[key as string]) {
+                        type = this.parent.engineModule.formatFields[key as string].type;
                     }
                     const caption: string = this.parent.enableHtmlSanitizer ?
                         SanitizeHtmlHelper.sanitize(this.engine.fieldList[key as string].caption)
@@ -510,7 +517,7 @@ export class DrillThroughDialog {
                         validationRules: { required: true },
                         editType: editType,
                         format: !isNullOrUndefined(formatList[key as string]) ? formatList[key as string] : undefined,
-                        type: !isNullOrUndefined(formatList[key as string]) ? null : 'string'
+                        type: !isNullOrUndefined(formatList[key as string]) ? type : 'string'
                     });
                 }
             }

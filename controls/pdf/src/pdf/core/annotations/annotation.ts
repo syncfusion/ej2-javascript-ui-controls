@@ -3371,8 +3371,8 @@ export class PdfLineAnnotation extends PdfComment {
         } else if (isFlatten) {
             this._page.annotations.remove(this);
         }
+        let appearance: _PdfDictionary;
         if (!isFlatten && this._setAppearance && !this.measure) {
-            let appearance: _PdfDictionary;
             if (this._dictionary.has('AP')) {
                 appearance = this._dictionary.get('AP');
             } else {
@@ -3381,6 +3381,13 @@ export class PdfLineAnnotation extends PdfComment {
                 this._crossReference._cacheMap.set(reference, appearance);
                 this._dictionary.update('AP', reference);
             }
+        } else if (this.measure && this._setAppearance && !this._dictionary.has('AP')) {
+            const reference: _PdfReference = this._crossReference._getNextReference();
+            appearance = new _PdfDictionary(this._crossReference);
+            this._crossReference._cacheMap.set(reference, appearance);
+            this._dictionary.update('AP', reference);
+        }
+        if (appearance && this._appearanceTemplate && this._appearanceTemplate._content) {
             _removeDuplicateReference(appearance, this._crossReference, 'N');
             const reference: _PdfReference = this._crossReference._getNextReference();
             this._crossReference._cacheMap.set(reference, this._appearanceTemplate._content);

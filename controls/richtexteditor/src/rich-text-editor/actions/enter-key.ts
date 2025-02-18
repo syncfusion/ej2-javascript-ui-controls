@@ -84,7 +84,7 @@ export class EnterKeyAction {
                         }
                         if (!(this.range.startOffset === this.range.endOffset && this.range.startContainer === this.range.endContainer)) {
                             if (!(this.range.startContainer.nodeName === 'SPAN' && ((this.range.startContainer as HTMLElement).classList.contains('e-video-wrap') ||
-                            (this.range.startContainer as HTMLElement).classList.contains('e-audio-wrap')))) {
+                                (this.range.startContainer as HTMLElement).classList.contains('e-audio-wrap')))) {
                                 this.range.deleteContents();
                             }
                             if (this.range.startContainer.nodeName === '#text' && this.range.startContainer.textContent.length === 0 &&
@@ -270,7 +270,14 @@ export class EnterKeyAction {
                                     while (newElem.firstChild) {
                                         insertElem.appendChild(newElem.firstChild);
                                     }
-                                    nearBlockNode.parentElement.insertBefore(insertElem, nearBlockNode);
+                                    const isAudioVideo: boolean = this.range.startContainer !== nearBlockNode && (nearBlockNode.querySelector('.e-video-wrap') ||
+                                    nearBlockNode.querySelector('.e-audio-wrap') && (this.range.startContainer as HTMLElement).classList.contains('e-clickelem')) ? true : false;
+                                    if (isAudioVideo) {
+                                        this.parent.formatter.editorManager.domNode.insertAfter(insertElem as Element, nearBlockNode);
+                                    }
+                                    else {
+                                        nearBlockNode.parentElement.insertBefore(insertElem, nearBlockNode);
+                                    }
                                     if (!isNearBlockLengthZero) {
                                         let currentFocusElem: Node = insertElem;
                                         let finalFocusElem: Node;
@@ -288,9 +295,16 @@ export class EnterKeyAction {
                                             detach(nearBlockNode);
                                         }
                                     }
-                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                        this.parent.contentModule.getDocument(), (insertElem as Element).nextElementSibling,
-                                        0);
+                                    if (isAudioVideo) {
+                                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                            this.parent.contentModule.getDocument(), (insertElem as Element),
+                                            0);
+                                    }
+                                    else {
+                                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                            this.parent.contentModule.getDocument(), (insertElem as Element).nextElementSibling,
+                                            0);
+                                    }
                                 } else if (nearBlockNode !== this.parent.inputElement && nearBlockNode.textContent.length === 0 && !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG' ||
                                     (nearBlockNode.querySelectorAll('video').length > 0) || (nearBlockNode.querySelectorAll('audio').length > 0) || (nearBlockNode.querySelectorAll('img').length > 0))) {
                                     if (!isNOU(nearBlockNode.children[0]) && nearBlockNode.children[0].tagName !== 'BR') {
@@ -499,7 +513,8 @@ export class EnterKeyAction {
                             } else if (!isNOU(currentParent) && currentParent !== this.parent.inputElement && currentParent.nodeName !== 'BR') {
                                 if (currentParent.textContent.trim().length === 0 || (currentParent.textContent.trim().length === 1 &&
                                     currentParent.textContent.charCodeAt(0) === 8203)) {
-                                    if (currentParent.childElementCount > 1 && currentParent.lastElementChild.nodeName === 'IMG') {
+                                    if ((currentParent.childElementCount > 1 && currentParent.lastElementChild.nodeName === 'IMG') || !isNOU(currentParent.firstElementChild) &&
+                                    (currentParent.querySelector('.e-video-wrap') || currentParent.querySelector('.e-audio-wrap'))) {
                                         this.insertBRElement();
                                     } else {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
@@ -585,6 +600,14 @@ export class EnterKeyAction {
             }
             if (findAnchorElement) {
                 this.parent.formatter.editorManager.domNode.insertAfter(brElm, this.startNode);
+            }
+            else if (this.startNode.tagName === 'SPAN' && (this.startNode.classList.contains('e-video-wrap') || this.startNode.classList.contains('e-audio-wrap'))) {
+                this.startNode.parentElement.insertBefore(brElm, this.startNode);
+                const nearBlockNode: Node = this.parent.formatter.editorManager.domNode.blockParentNode(this.startNode);
+                const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
+                    this.range, (nearBlockNode as HTMLElement), true);
+                detach(newElem.previousSibling.childNodes[1]);
+                isEmptyBrInserted = true;
             }
             else {
                 this.range.insertNode(brElm);

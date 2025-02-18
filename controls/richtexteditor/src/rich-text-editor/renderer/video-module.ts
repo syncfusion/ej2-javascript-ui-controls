@@ -720,12 +720,12 @@ export class Video {
             if (!originalEvent.ctrlKey && originalEvent.key && (originalEvent.key.length === 1 || originalEvent.action === 'enter') &&
                 ((!isNOU(selectParentEle[0]) && (selectParentEle[0] as HTMLElement).tagName === 'VIDEO' || this.isEmbedVidElem(selectParentEle[0] as HTMLElement))) &&
                 (selectParentEle[0] as HTMLElement).parentElement) {
-                const prev: Node = ((selectParentEle[0] as HTMLElement).parentElement as HTMLElement).childNodes[0];
+                const prev: Node = ((selectParentEle[0] as HTMLElement).parentElement as HTMLElement);
                 if (this.contentModule.getEditPanel().querySelector('.e-vid-resize')) {
                     this.removeResizeEle();
                 }
                 this.parent.formatter.editorManager.nodeSelection.setSelectionText(
-                    this.contentModule.getDocument(), prev, prev, prev.textContent.length, prev.textContent.length);
+                    this.contentModule.getDocument(), prev, prev, prev.textContent.trim().length, prev.textContent.trim().length);
                 removeClass([selectParentEle[0] as HTMLElement], classes.CLS_VID_FOCUS);
                 this.quickToolObj.videoQTBar.hidePopup();
             }

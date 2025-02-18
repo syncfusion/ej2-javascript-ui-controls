@@ -1664,11 +1664,10 @@ export class TaskProcessor extends DateProcessor {
         }
     }
     public getDSTTransitions(year: number, timeZone: string): { dstStart: Date, dstEnd: Date } {
-        function findNthWeekday(year: number, month: number, dayOfWeek: number, n: number): Date {
-            const firstDayOfMonth: Date = new Date(Date.UTC(year, month, 1));
-            const firstDayOfWeek: number = firstDayOfMonth.getUTCDay();
-            const offset: number = (dayOfWeek - firstDayOfWeek + 7) % 7;
-            return new Date(Date.UTC(year, month, 1 + offset + (n - 1) * 7, 2, 0, 0));
+        function findLastSunday(year: number, month: number): Date {
+            const lastDayOfMonth: Date = new Date(Date.UTC(year, month + 1, 0)); // Last day of the month
+            const lastSunday: Date = new Date(Date.UTC(year, month, lastDayOfMonth.getUTCDate() - lastDayOfMonth.getUTCDay()));
+            return lastSunday;
         }
         function convertToTimezone(date: Date, timeZone: string): Date {
             const formatter: Intl.DateTimeFormat = new Intl.DateTimeFormat('en-US', {
@@ -1681,12 +1680,12 @@ export class TaskProcessor extends DateProcessor {
                 second: '2-digit',
                 hour12: false
             });
-            const formatted: any = formatter.format(date);
-            const [month, day, year, hour, minute, second] = formatted.match(/\d+/g)!.map(Number);
+            const formattedDate: string = formatter.format(date);
+            const [month, day, year, hour, minute, second] = formattedDate.match(/\d+/g)!.map(Number);
             return new Date(year, month - 1, day, hour, minute, second);
         }
-        const dstStartDate: Date = findNthWeekday(year, 2, 0, 5);
-        const dstEndDate: Date = findNthWeekday(year, 9, 0, 5);
+        const dstStartDate: Date = findLastSunday(year, 2);
+        const dstEndDate: Date = findLastSunday(year, 9);
         return {
             dstStart: convertToTimezone(dstStartDate, timeZone),
             dstEnd: convertToTimezone(dstEndDate, timeZone)
@@ -1806,17 +1805,55 @@ export class TaskProcessor extends DateProcessor {
                     leftValue = leftValue + leftDifference;
                 }
             }
-            if (this.parent.isInDst(timelineStartDate) && !this.parent.isInDst(startDate) && (this.parent.timelineModule.topTier === 'Hour' || this.parent.timelineModule.bottomTier === 'Hour')) {
-                leftValue = leftValue - this.parent.timelineSettings.timelineUnitSize;
-            }
             const topTier: Object = this.parent.timelineModule.customTimelineSettings.topTier;
             if (topTier && topTier['unit'] === 'Hour' && topTier['count'] === 1) {
                 tierMode = topTier['unit'];
                 countValue = topTier['count'];
             }
             const unitHour: boolean = ((tierMode === 'Hour' && countValue === 1) || (tierMode === 'Minutes' && countValue === 60));
-            if (hasDST && unitHour && startDate >= transitions['dstStart'] && isBeforeOrAtDSTStart && !this.parent.enableTimelineVirtualization) {
-                leftValue = leftValue - (this.parent.perDayWidth / 24);
+            const pervYear: number = startDate.getFullYear() - 1;
+            let isprevYearTransitions : boolean = false;
+            if (timelineStartDate.getFullYear() <= pervYear) {
+                if (timelineStartDate.getFullYear() < pervYear) {
+                    isprevYearTransitions = true;
+                }
+                else {
+                    const pervDSTTransitions: Object = this.getDSTTransitions(timelineStartDate.getFullYear(), this.systemTimeZone);
+                    if (startDate >= pervDSTTransitions['dstStart']) {
+                        isprevYearTransitions = true;
+                    }
+                }
+            }
+            const isHourly: boolean = this.parent.timelineModule.topTier === 'Hour' || this.parent.timelineModule.bottomTier === 'Hour';
+            const isDaily: boolean = this.parent.timelineModule.topTier === 'Day' || this.parent.timelineModule.bottomTier === 'Day';
+            const isStartDateInDst: boolean = this.parent.isInDst(startDate);
+            const isTimelineStartDateInDst: boolean = this.parent.isInDst(timelineStartDate);
+            const perHourWidth: number = this.parent.perDayWidth / 24;
+
+            if (!isStartDateInDst && isTimelineStartDateInDst) {
+                if ((countValue !== 1 && isHourly) || (countValue === 1 && isDaily)) {
+                    leftValue -= perHourWidth;
+                }
+            }
+            if (hasDST && unitHour && ((startDate >= transitions['dstStart']) || isprevYearTransitions) && !this.parent.enableTimelineVirtualization) {
+                if (countValue === 1) {
+                    const projectStartDate: Date = new Date(this.parent.projectStartDate);
+                    const projectEndDate: Date = new Date(this.parent.projectEndDate);
+                    const yearsCount: number[] = [];
+                    for (let year: number = projectStartDate.getFullYear(); year <= projectEndDate.getFullYear(); year++) {
+                        yearsCount.push(year);
+                    }
+                    const findYearIndex: (year: number) => number = (year: number): number => {
+                        return yearsCount.indexOf(year);
+                    };
+                    let index: number = findYearIndex(startDate.getFullYear());
+                    if (index !== -1) {
+                        if ((startDate > transitions['dstEnd']) || index === 0) {
+                            index += 1;
+                        }
+                        leftValue -= index * (this.parent.perDayWidth / 24);
+                    }
+                }
             }
             return leftValue;
         } else {

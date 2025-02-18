@@ -1853,7 +1853,7 @@ describe('Schedule base module', () => {
                 const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Mo');
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Nov 6, Monday');
+                expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Oct 23, Monday');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
                 const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
@@ -1889,7 +1889,7 @@ describe('Schedule base module', () => {
                 const popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
                 expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Tu');
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-                expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Oct 31, Tuesday');
+                expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Oct 24, Tuesday');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
                 const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
