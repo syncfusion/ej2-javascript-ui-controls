@@ -2138,11 +2138,14 @@ export function convertHexToColor(hex: string): ColorValue {
  */
 export function colorNameToHex(color: string): string {
     color = color === 'transparent' ? 'white' : color;
-    document.body.appendChild(createElement('text', { id: 'chartmeasuretext' }));
-    const element: HTMLElement = document.getElementById('chartmeasuretext');
+    let element: HTMLElement = document.getElementById('chartmeasuretext');
+    if (!element) {
+        element = createElement('text', { id: 'chartmeasuretext' });
+        document.body.appendChild(element);
+    }
     element.style.color = color;
     color = window.getComputedStyle(element).color;
-    remove(element);
+    element.style.color = '';
     let isRGBValue: string[];
     if (color.indexOf('rgb') === 0 || color.indexOf('hsl') === 0) {
         color = color.replace(/\s/g, '').replace(/[()]/g, '');

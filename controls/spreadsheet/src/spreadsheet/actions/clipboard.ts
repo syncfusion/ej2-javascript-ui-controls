@@ -1194,7 +1194,7 @@ export class Clipboard {
                             if (checkIsFormula(col)) {
                                 cells[j as number].formula = col;
                             } else {
-                                cells[j as number].value = <string>parseIntValue(col.trim(), true);
+                                cells[j as number].value = <string>parseIntValue(col.trim(), true, true);
                             }
                         }
                     }
@@ -1283,13 +1283,13 @@ export class Clipboard {
                     cells[colIdx as number].style = cellStyle;
                 }
                 if (td.textContent) {
-                    cells[colIdx as number].value = <string>parseIntValue(td.textContent.trim(), true);
+                    cells[colIdx as number].value = <string>parseIntValue(td.textContent.trim(), true, true);
                 }
                 formatStr = isSpreadsheet ? 'num-format' : 'number-format';
                 if (td.getAttribute(formatStr)) {
                     cells[colIdx as number].format = td.getAttribute(formatStr);
                     if (cells[colIdx as number].value && td.getAttribute('cell-value')) {
-                        cells[colIdx as number].value = <string>parseIntValue(td.getAttribute('cell-value').trim(), true);
+                        cells[colIdx as number].value = <string>parseIntValue(td.getAttribute('cell-value').trim(), true, true);
                     }
                 }
                 if (td.getAttribute('colspan') && parseInt(td.getAttribute('colspan'), 10) > 1) {

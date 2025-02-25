@@ -223,8 +223,13 @@ export class EventBase {
             } else {
                 const engineModule: PivotEngine = this.parent.engineModule as PivotEngine;
                 const field: IField = engineModule.fieldList[fieldName as string];
-                const members: IMembers = this.parent.dataType === 'olap' ? field.members :
-                    PivotUtil.getFormattedMembers(field.members, fieldName, engineModule);
+                let members: IMembers;
+                if (this.parent.dataSourceSettings.mode === 'Server') {
+                    members = field.members;
+                } else {
+                    members = this.parent.dataType === 'olap' ? field.members :
+                        PivotUtil.getFormattedMembers(field.members, fieldName, engineModule);
+                }
                 for (const item of filterObj.items) {
                     if (members[item as string]) {
                         isItemAvail = true;
@@ -589,7 +594,8 @@ export class EventBase {
                     engineModule.getFormattedValue(actualText, fieldName).formattedText,
                 isSelected: isInclude ? false : true
             };
-            if (filterObj[this.parent.isDateField ? member.formattedText as string : memberName as string] !== undefined) {
+            const memberText: string | number = this.parent.dataSourceSettings.mode === 'Server' ? member.actualText : member.formattedText;
+            if (filterObj[this.parent.isDateField ? memberText as string : memberName as string] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }
             if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {

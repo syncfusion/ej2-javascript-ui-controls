@@ -592,6 +592,8 @@ export class DialogEdit {
         this.addedRecord = null;
         this.ganttResources = [];
         this.dialogEditValidationFlag = false;
+        this.isFromAddDialog = false;
+        this.isFromEditDialog = false;
         if (this.dialog && !this.dialogObj.isDestroyed) {
             this.destroyDialogInnerElements();
             this.dialogObj.destroy();

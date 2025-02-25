@@ -65,7 +65,7 @@ import { HistoryEntry } from '../diagram/history';
 import { GridPanel } from '../core/containers/grid';
 import { Canvas } from '../core/containers/canvas';
 import { DiagramHtmlElement } from '../core/elements/html-element';
-import { PathElement, randomId } from '../index';
+import { getPoint, PathElement, randomId } from '../index';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { PathPort, PointPort } from '../objects/port';
@@ -1302,7 +1302,8 @@ export class DiagramEventHandler {
                 if (shape.orientation === 'Horizontal') {
                     offset = this.currentPosition.x - swimlaneNode.wrapper.bounds.x;
                 } else {
-                    offset = this.currentPosition.y - (swimlaneNode.wrapper.bounds.y + shape.header.height);
+                    offset = this.currentPosition.y - (swimlaneNode.wrapper.bounds.y +
+                        ((shape as SwimLane).hasHeader ? shape.header.height : 0));
                 }
                 const phases: PhaseModel = { id: randomId(), offset: offset, header: { annotation: {
                     content: actualShape.phases[0].header  === undefined ? 'Phase' : actualShape.phases[0].header.annotation.content,
@@ -2644,19 +2645,36 @@ export class DiagramEventHandler {
                 const rotateAngle: number = (helperObject.rotateAngle - (obj as Selector).rotateAngle);
                 const width: number = (helperObject.width - (obj as Selector).width);
                 const height: number = (helperObject.height - (obj as Selector).height);
-                for (let i: number = 0; i < (obj as Selector).nodes.length; i++) {
-                    const node: Node = (obj as Selector).nodes[parseInt(i.toString(), 10)] as Node;
-                    const parentNode: NodeModel = this.diagram.nameTable[node.parentId];
-                    if (parentNode && parentNode.shape.type !== 'SwimLane' && checkParentAsContainer(this.diagram, node, true)
-                        && parentNode.container.type === 'Canvas') {
-                        node.offsetX += offsetX;
-                        node.offsetY += offsetY;
-                        if (node && node.shape && node.shape.type !== 'UmlClassifier') {
-                            node.width += width;
-                            node.height += height;
+                const scaleWidth: number = helperObject.width / (obj as SelectorModel).width;
+                const scaleHeight: number = helperObject.height /  (obj as SelectorModel).height;
+                //929543: To resize the multiselected child nodes.
+                if ((this.tool as any).corner) {
+                    const pivot: PointModel = (this.tool as any).getPivot((this.tool as any).corner);
+                    for (let i: number = 0; i < (obj as SelectorModel).nodes.length; i++) {
+                        const node: NodeModel =  (obj as SelectorModel).nodes[parseInt(i.toString(), 10)];
+                        const element: Container = node.wrapper;
+                        const refWrapper: Container =  (obj as SelectorModel).wrapper;
+                        const x: number = refWrapper.offsetX - refWrapper.actualSize.width * refWrapper.pivot.x;
+                        const y: number = refWrapper.offsetY - refWrapper.actualSize.height * refWrapper.pivot.y;
+                        const refPoint: PointModel = getPoint(x, y, refWrapper.actualSize.width, refWrapper.actualSize.height,
+                                                              refWrapper.rotateAngle, refWrapper.offsetX, refWrapper.offsetY, pivot);
+                        this.diagram.commandHandler.scaleObject(scaleWidth, scaleHeight, refPoint, node as IElement, element, obj);
+                    }
+                } else {
+                    for (let i: number = 0; i < (obj as Selector).nodes.length; i++) {
+                        const node: Node = (obj as Selector).nodes[parseInt(i.toString(), 10)] as Node;
+                        const parentNode: NodeModel = this.diagram.nameTable[node.parentId];
+                        if (parentNode && parentNode.shape.type !== 'SwimLane' && checkParentAsContainer(this.diagram, node, true)
+                            && parentNode.container.type === 'Canvas') {
+                            node.offsetX += offsetX;
+                            node.offsetY += offsetY;
+                            if (node && node.shape && node.shape.type !== 'UmlClassifier') {
+                                node.width += width;
+                                node.height += height;
+                            }
+                            node.rotateAngle += rotateAngle;
+                            checkChildNodeInContainer(this.diagram, node);
                         }
-                        node.rotateAngle += rotateAngle;
-                        checkChildNodeInContainer(this.diagram, node);
                     }
                 }
             }
@@ -2667,7 +2685,6 @@ export class DiagramEventHandler {
         }
         return history;
     }
-
 
     private updateLaneChildNode(obj: NodeModel): void {
         for (let i: number = 0; i < ((obj.shape as SwimLaneModel).lanes.length); i++) {
@@ -2704,9 +2721,10 @@ export class DiagramEventHandler {
                         obj.maxWidth = obj.wrapper.width;
                         obj.wrapper.maxWidth = obj.wrapper.width;
                     }
+                    const colWidthDiff: number = helperObject.wrapper.actualSize.width - obj.wrapper.actualSize.width;
                     // 910832 - Lane height updating to negative values wrongly during resizing
                     container.updateColumnWidth(obj.columnIndex, helperObject.width, true, padding);
-                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject);
+                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject, colWidthDiff);
                     if ((obj as Node).isPhase) {
                         const id: string = (parentNode.shape as SwimLaneModel).phases[obj.columnIndex].header.id;
                         const node: Node = this.diagram.nameTable[`${id}`];
@@ -2723,9 +2741,10 @@ export class DiagramEventHandler {
                     }
                 } else if (obj.rowIndex !== undefined) {
                     isUpdateRow = true;
+                    const rowHeightDiff: number = helperObject.wrapper.actualSize.height - obj.wrapper.actualSize.height;
                     // 910832 - Lane height updating to negative values wrongly during resizing
                     container.updateRowHeight(obj.rowIndex, helperObject.height, true, padding);
-                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject);
+                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject, undefined, rowHeightDiff);
                     if (parentNode.shape.type === 'SwimLane') {
                         parentNode.height = (parentNode.height) ? container.height : parentNode.height;
                         parentNode.wrapper.height = parentNode.height;

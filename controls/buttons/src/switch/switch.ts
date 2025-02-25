@@ -331,7 +331,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) {
-                    removeClass([wrapper], oldProp.cssClass.split(' '));
+                    removeClass([wrapper], oldProp.cssClass.split(/\s+/).filter((c: string) => c.length > 0));
                 }
                 if (newProp.cssClass) {
                     addClass([wrapper], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));

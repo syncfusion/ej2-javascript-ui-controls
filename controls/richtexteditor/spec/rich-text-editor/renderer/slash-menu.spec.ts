@@ -358,6 +358,86 @@ describe('Slash Menu ', () => {
         });
     });
 
+    describe('Bug 938711: Formats toolbar status not updated properly when we apply heading using slash menu in RichTextEditor', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['Formats', 'NumberFormatList', 'BulletFormatList']
+                },
+                slashMenuSettings: {
+                    enable: true,
+                },
+                value: '/'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should apply heading 3 on select of the item.', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 1);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                const heading3: HTMLElement = document.querySelector('[data-value="Use this for sub sections and group headings."]')
+                heading3.click();
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].querySelector('.e-rte-dropdown-btn-text').textContent === 'Heading 3').toBe(true);
+                    done();
+                }, 50);
+            }, 150);
+        });
+        it('Should apply Ordered list on select of the item.', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 1);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                const olElem: HTMLElement = document.querySelector('[data-value="Create an ordered list."]')
+                olElem.click();
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].classList.contains('e-active')).toBe(true);
+                    done();
+                }, 50);
+            }, 150);
+        });
+        it('Should apply Unordered list on select of the item.', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 1);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                const ulElem: HTMLElement = document.querySelector('[data-value="Create an unordered list."]')
+                ulElem.click();
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-toolbar-item.e-template')[2].classList.contains('e-active')).toBe(true);
+                    done();
+                }, 50);
+            }, 150);
+        });
+    });
+
     describe('Cancelling the select event ', () => {
         let editor: RichTextEditor;
         beforeEach((done: DoneFn) => {

@@ -1879,8 +1879,9 @@ export class BpmnDiagrams {
                 if (newObject.style) {
                     updateStyle(newObject.style, (elementWrapper as Canvas).children[0]);
                 }
-                const bpmnshapeTriggerdata: string = getBpmnTriggerShapePathData(trigger);
-                (eventWrapper.children[2] as PathModel).data = bpmnshapeTriggerdata;
+                //EJ2-913823 - Transaction subprocess event trigger not updated properly at runtime
+                this.removeBPMNElementFromDOM(node as Node, diagram);
+                node.wrapper.children[0] = this.getBPMNActivityShape(node as Node);
             }
             if (newEvent.height !== undefined || newEvent.width !== undefined) {
                 this.getEventSize(newEvent, eventWrapper);

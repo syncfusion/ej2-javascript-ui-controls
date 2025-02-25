@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I688683` - Fixed an issue where the search method was not functioning correctly.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I689744` - The issue with chip item removal in the Dropdown Tree Component has been resolved.
+
+- `#I689346` - Resolved alignment and font size theme issues within the Dropdown Tree component.
+
+- `#I682703` - The issue where focus remained highlighted when reopening the Dropdown Tree multiple times has been resolved.
+
 ## 28.2.6 (2025-02-18)
 
 ### MultiSelect

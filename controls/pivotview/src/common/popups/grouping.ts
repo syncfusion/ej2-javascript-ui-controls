@@ -526,8 +526,8 @@ export class Grouping implements IAction {
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
                         showClearButton: true,
-                        format: '###',
-                        value: startAt === undefined ? undefined : parseInt(startAt, 10),
+                        format: '###.##########',
+                        value: startAt === undefined ? undefined : parseFloat(startAt),
                         enabled: !(startAt === undefined),
                         width: '100%',
                         cssClass: this.parent.cssClass
@@ -539,8 +539,8 @@ export class Grouping implements IAction {
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
                         showClearButton: true,
-                        format: '###',
-                        value: endAt === undefined ? undefined : parseInt(endAt, 10),
+                        format: '###.##########',
+                        value: endAt === undefined ? undefined : parseFloat(endAt),
                         enabled: !(endAt === undefined),
                         width: '100%',
                         cssClass: this.parent.cssClass
@@ -552,8 +552,8 @@ export class Grouping implements IAction {
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
                         showClearButton: true,
-                        format: '###',
-                        min: 1,
+                        format: '###.##########',
+                        min: 0,
                         value: selectedInterval,
                         width: '100%',
                         cssClass: this.parent.cssClass

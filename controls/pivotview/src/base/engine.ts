@@ -886,34 +886,87 @@ export class PivotEngine {
                         if (currentData && !isNaN(Number(currentData[fieldName as string]))) {
                             endingAt = typeof (group.endingAt) === 'string' ? parseInt(group.endingAt, 10) : group.endingAt as number;
                             cEndValue = endingAt ? endingAt : Math.max(...framedSet);
-                            const currentStartValue: number = Math.round(Number(currentData[fieldName as string]));
-                            const currentEndValue: number = Math.round(currentStartValue + (group.rangeInterval - 1));
+                            const decimalCnt: number = !Number.isInteger(group.rangeInterval) ?
+                                this.countDecimalPlaces(group.rangeInterval) : 0;
+                            let range: number;
+                            switch (decimalCnt) {
+                            case 10:
+                                range = 0.0000000001;
+                                break;
+                            case 9:
+                                range = 0.000000001;
+                                break;
+                            case 8:
+                                range = 0.00000001;
+                                break;
+                            case 7:
+                                range = 0.0000001;
+                                break;
+                            case 6:
+                                range = 0.000001;
+                                break;
+                            case 5:
+                                range = 0.00001;
+                                break;
+                            case 4:
+                                range = 0.0001;
+                                break;
+                            case 3:
+                                range = 0.001;
+                                break;
+                            case 2:
+                                range = 0.01;
+                                break;
+                            case 1:
+                                range = 0.1;
+                                break;
+                            default:
+                                range = 1;
+                            }
+                            const currentStartValue: number = Number.isInteger(group.rangeInterval) ?
+                                Math.floor(Number(currentData[fieldName as string])) :
+                                Number((currentData[fieldName as string] as number).toFixed(decimalCnt));
+                            const currentEndValue: number = Number.isInteger(group.rangeInterval) ?
+                                Math.floor(Number(currentStartValue + (group.rangeInterval - 1))) :
+                                Number((currentStartValue + (group.rangeInterval)).toFixed(decimalCnt));
                             if (currentStartValue >= groupName[0] && currentStartValue <= groupName[groupName.length - 1]) {
                                 const startValue: number = groupName[0];
-                                const endValue: number = groupName[groupName.length - 1];
-                                currentData[fieldName as string] = this.getNumberGroupHeaders(startValue, endValue, cEndValue);
+                                const endValue: number = Number.isInteger(group.rangeInterval) ?
+                                    Math.floor(groupName[groupName.length - 1]) :
+                                    Number(groupName[groupName.length - 1].toFixed(decimalCnt));
+                                this.processGrouping(currentData, fieldName, startValue, endValue, cEndValue, group.rangeInterval,
+                                                     decimalCnt);
                                 if (isNullOrUndefined(this.groupedDataType[fieldName as string])) {
                                     this.groupedDataType[fieldName as string] = 'string';
                                 }
                             } else {
                                 if (groupName.length === 0) {
-                                    for (let i: number = currentStartValue; i <= currentEndValue; i++) {
+                                    for (let i: number = currentStartValue; i <= currentEndValue;
+                                        i = Number((i + range).toFixed(decimalCnt))) {
                                         groupName.push(i);
                                     }
                                     const startValue: number = groupName[0];
-                                    const endValue: number = groupName[groupName.length - 1];
-                                    currentData[fieldName as string]  = this.getNumberGroupHeaders(startValue, endValue, cEndValue);
+                                    const endValue: number = Number.isInteger(group.rangeInterval) ?
+                                        Math.floor(groupName[groupName.length - 1]) :
+                                        Number(groupName[groupName.length - 1].toFixed(decimalCnt));
+                                    this.processGrouping(currentData, fieldName, startValue, endValue, cEndValue,
+                                                         group.rangeInterval, decimalCnt);
                                     if (isNullOrUndefined(this.groupedDataType[fieldName as string])) {
                                         this.groupedDataType[fieldName as string] = 'string';
                                     }
                                 } else {
-                                    let startValue: number = groupName[groupName.length - 1] + 1;
-                                    let endValue: number = startValue + (group.rangeInterval - 1);
+                                    let startValue: number = Number.isInteger(group.rangeInterval) ?
+                                        Math.floor(groupName[groupName.length - 1]) + 1 :
+                                        Number((groupName[groupName.length - 1]).toFixed(decimalCnt));
+                                    let endValue: number = Number.isInteger(group.rangeInterval) ?
+                                        Math.floor(startValue + (group.rangeInterval - 1)) :
+                                        Number((startValue + group.rangeInterval).toFixed(decimalCnt));
                                     let grouping: boolean = true;
                                     groupName.splice(0, groupName.length);
                                     while (grouping) {
                                         if (currentStartValue >= startValue && currentStartValue <= endValue) {
-                                            currentData[fieldName as string]  = this.getNumberGroupHeaders(startValue, endValue, cEndValue);
+                                            this.processGrouping(currentData, fieldName, startValue, endValue, cEndValue,
+                                                                 group.rangeInterval, decimalCnt);
                                             if (isNullOrUndefined(this.groupedDataType[fieldName as string])) {
                                                 this.groupedDataType[fieldName as string] = 'string';
                                             }
@@ -921,8 +974,10 @@ export class PivotEngine {
                                             groupName.push(endValue);
                                             grouping = false;
                                         }
-                                        startValue = endValue + 1;
-                                        endValue = startValue + (group.rangeInterval - 1);
+                                        startValue = Number.isInteger(group.rangeInterval) ? endValue + 1 : endValue;
+                                        endValue =
+                                            Number.isInteger(group.rangeInterval) ? Math.floor(startValue + (group.rangeInterval - 1)) :
+                                                Number((startValue + (group.rangeInterval)).toFixed(decimalCnt));
                                     }
                                 }
                             }
@@ -1039,6 +1094,21 @@ export class PivotEngine {
         //this.fields = Object.keys(fieldkeySet);
         return fieldkeySet;
     }
+    private countDecimalPlaces(num: number): number {
+        const decimalValue: string = num.toString();
+        return decimalValue.includes('.') ? decimalValue.split('.')[1].length : 0;
+    }
+    private processGrouping(currentData: IDataSet, fieldName: string, startValue: number, endValue: number, cEndValue: number,
+                            rangeInterval: number, decimalCnt: number): void {
+        if ((Number.isInteger(currentData[fieldName as string] as number)) || (!Number.isInteger(currentData[fieldName as string] as number)
+             && (Number(currentData[fieldName as string]) < endValue || cEndValue <= Number(currentData[fieldName as string])))) {
+            currentData[fieldName as string] = this.getNumberGroupHeaders(startValue, endValue, cEndValue);
+        } else if (!Number.isInteger(currentData[fieldName as string] as number) && Number(currentData[fieldName as string]) >= endValue) {
+            currentData[fieldName as string] =
+                this.getNumberGroupHeaders(Number((startValue + rangeInterval).toFixed(decimalCnt)),
+                                           Number((endValue + rangeInterval).toFixed(decimalCnt)), cEndValue);
+        }
+    }
     private getNumberGroupHeaders(startValue : number , endValue: number, cEndValue: number): string {
         const fieldName: string = (startValue === endValue) ? startValue.toString() : (cEndValue >= startValue && cEndValue <= endValue) ?
             (cEndValue === startValue) ? startValue.toString() : startValue.toString() + '-' + cEndValue.toString() :
@@ -1058,8 +1128,8 @@ export class PivotEngine {
                 isRangeAvail = false;
             }
         } else {
-            const startValue: number = typeof (group.startingAt) === 'string' ? parseInt(group.startingAt, 10) : group.startingAt as number;
-            const endValue: number = typeof (group.endingAt) === 'string' ? parseInt(group.endingAt, 10) : group.endingAt as number;
+            const startValue: number = typeof (group.startingAt) === 'string' ? parseFloat(group.startingAt) : group.startingAt as number;
+            const endValue: number = typeof (group.endingAt) === 'string' ? parseFloat(group.endingAt) : group.endingAt as number;
             if (!isNaN(startValue) && cValue < startValue || !isNaN(endValue) && cValue > endValue) {
                 isRangeAvail = true;
             } else {
@@ -1231,13 +1301,26 @@ export class PivotEngine {
                     type = (field && 'dataType' in field && field.dataType && dataTypes.indexOf(field.dataType.toLowerCase()) > -1) ?
                         field.dataType.toLowerCase() : PivotUtil.getType(fields[this.fieldKeys[key as string] as string | number] as Date);
                 }
+                if (type === undefined || type === 'undefined') {
+                    if (this.dataSourceSettings.groupSettings.length > 0) {
+                        this.dataSourceSettings.groupSettings.forEach((setting: IGroupSettings) => {
+                            if (this.fieldKeys[key as string] === setting.name && setting.type.toLocaleLowerCase() === 'number') {
+                                type = 'string';
+                            } else {
+                                type = 'number';
+                            }
+                        });
+                    } else {
+                        type = 'number';
+                    }
+                }
                 this.fieldList[key as string] = {
                     id: key,
                     pid: (field && 'groupName' in field && field.groupName) ? field.groupName :
                         this.groupingFieldsInfo[key as string] ? this.groupingFieldsInfo[key as string] : undefined,
                     caption: (field && 'caption' in field && field.caption) ? field.caption : key,
                     type: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ?
-                        'string' : (type === undefined || type === 'undefined') ? 'number' : type,
+                        'string' : type,
                     filterType: '',
                     index: len,
                     filter: [],

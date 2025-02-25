@@ -3965,8 +3965,6 @@ export class ValueChangedArgs {
     public setColIndex: Function;
     /** @hidden */
     public getValue: Function;
-    /** @hidden */
-    public setValue: Function;
     constructor(row: number, col: number, value: number | string) {
         this.row = row;
         this.col = col;
@@ -3986,9 +3984,6 @@ export class ValueChangedArgs {
         this.getValue = (): number | string => {
             return value;
         };
-        // this.setValue = (value: number): void => {
-        //     value = value;
-        // };
         return this;
     }
 }

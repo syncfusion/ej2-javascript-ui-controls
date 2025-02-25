@@ -179,8 +179,11 @@ function getElementLeft(): number {
  * @returns {number} - specifies the number value
  */
 function getElementRight(): number {
-    const popupWidth: number = (element && (((element.classList.contains('e-date-wrapper') || element.classList.contains('e-datetime-wrapper')) && element.classList.contains('e-rtl')) || (element.classList.contains('e-ddl') && element.classList.contains('e-rtl')) || element.classList.contains('e-date-range-wrapper'))) ? (popupRect ? popupRect.width : 0) :
+    let popupWidth: number = (element && (((element.classList.contains('e-date-wrapper') || element.classList.contains('e-datetime-wrapper')) && element.classList.contains('e-rtl')) || (element.classList.contains('e-ddl') && element.classList.contains('e-rtl')) || element.classList.contains('e-date-range-wrapper'))) ? (popupRect ? popupRect.width : 0) :
         (popupRect && (elementRect.width >= popupRect.width) ? popupRect.width : 0);
+    if (element && element.classList.contains('e-rtl') && element.classList.contains('e-multiselect')) {
+        popupWidth = popupRect.width;
+    }
     return elementRect.right + getBodyScrollLeft() - popupWidth;
 }
 /**

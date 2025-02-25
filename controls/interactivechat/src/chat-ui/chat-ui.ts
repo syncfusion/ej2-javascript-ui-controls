@@ -1411,7 +1411,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 break;
             case 'messages': {
                 this.renderUpdatedMessage();
-                this.handleAutoScroll();
+                // To prevent the issue where scrolling does not move to the bottom in the `messageTemplate` case on Angular and React platforms.
+                this.updateScrollPosition(true, 5);
                 break;
             }
             case 'user': {

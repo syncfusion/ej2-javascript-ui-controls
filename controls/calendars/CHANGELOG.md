@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I688316` - Fixed an issue where the month was not updating correctly when typing quickly.
+
 ## 28.1.41 (2025-01-21)
 
 ### DatePicker

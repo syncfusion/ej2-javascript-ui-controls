@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.6 (2025-02-18)
+
+### Popup
+
+#### Bug Fixes
+
+- `#I688364` - Fixed an issue with the positioning issue of the Multi select component popup while enabling the RTL mode.
+
 ## 28.1.39 (2024-01-14)
 
 ### Dialog

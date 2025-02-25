@@ -1883,6 +1883,7 @@ export class Mention extends DropDownBase {
             this.range = this.getCurrentRange();
         }
         const currentRange: string = this.getTextRange();
+        this.queryString = text;
         const lastWordRange: string = this.getLastLetter(currentRange);
         if ((this.ignoreCase && (text === lastWordRange || text === lastWordRange.toLowerCase()))
             || !this.ignoreCase && text === lastWordRange) {
@@ -1897,8 +1898,8 @@ export class Mention extends DropDownBase {
             this.renderList();
             this.renderPopup();
         }
-        else {
-            this.showPopup();
+        else if (!this.isPopupOpen) {
+            this.renderPopup();
         }
         this.popupObj.element.style.left = formatUnit(positionX);
         this.popupObj.element.style.top = formatUnit(positionY);

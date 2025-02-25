@@ -2561,3 +2561,131 @@ describe("Bold and Italic actions for Nested List types", () => {
           expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold; font-style: italic;"><strong><em>Syncfusion</em></strong><ol><li style="font-weight: bold; font-style: italic;"><strong><em>RTE</em></strong><ol><li id="list2" style="font-weight: bold; font-style: italic;"><strong><em>Bold Action</em></strong></li></ol></li></ol></li></ol>');
     });
 });
+
+describe('941202 - None Option Incorrectly Selected in List Dropdown for Normal Paragraph Content', () => {
+    let editor: RichTextEditor;
+    beforeEach((done: DoneFn)=> {
+        editor = renderRTE({
+            toolbarSettings: {
+                items: ['NumberFormatList']
+            }
+        })
+        done();
+    });
+    afterEach((done: DoneFn)=> {
+        destroy(editor);
+        done();
+    });
+    it ('Should not update the dropdown status for the paragraph.', (done: DoneFn)=> {
+        editor.value = '<p>Test</p>';
+        editor.dataBind();
+        editor.focusIn();
+        const range: Range = new Range();
+        range.setStart(editor.inputElement.querySelector('p').firstChild, 2);
+        editor.selectRange(range);
+        const splitButtonArrow: HTMLElement = editor.element.querySelector('.e-caret');
+        splitButtonArrow.click();
+        setTimeout(() => {
+            const popup: HTMLElement = document.querySelector('.e-popup-open');
+            const activeElem: HTMLElement = popup.querySelector('.e-item.e-active');
+            expect(activeElem).toBe(null);
+            done();
+        }, 100);
+    });
+    it ('Should not update the dropdown status for the Unordered List.', (done: DoneFn)=> {
+        editor.value = '<ul><li>Test</li></ul>';
+        editor.dataBind();
+        editor.focusIn();
+        const range: Range = new Range();
+        range.setStart(editor.inputElement.querySelector('li').firstChild, 2);
+        editor.selectRange(range);
+        const splitButtonArrow: HTMLElement = editor.element.querySelector('.e-caret');
+        splitButtonArrow.click();
+        setTimeout(() => {
+            const popup: HTMLElement = document.querySelector('.e-popup-open');
+            const activeElem: HTMLElement = popup.querySelector('.e-item.e-active');
+            expect(activeElem).toBe(null);
+            done();
+        }, 100);
+    });
+    it ('Should update the dropdown status for the Ordered List.', (done: DoneFn)=> {
+        editor.value = '<ol><li>Test</li></ol>';
+        editor.dataBind();
+        editor.focusIn();
+        const range: Range = new Range();
+        range.setStart(editor.inputElement.querySelector('li').firstChild, 2);
+        editor.selectRange(range);
+        const splitButtonArrow: HTMLElement = editor.element.querySelector('.e-caret');
+        splitButtonArrow.click();
+        setTimeout(() => {
+            const popup: HTMLElement = document.querySelector('.e-popup-open');
+            const activeElem: HTMLElement = popup.querySelector('.e-item.e-active');
+            expect(activeElem).not.toBe(null);
+            done();
+        }, 100);
+    });
+});
+
+describe('941202 - None Option Incorrectly Selected in List Dropdown for Normal Paragraph Content', () => {
+    let editor: RichTextEditor;
+    beforeEach((done: DoneFn)=> {
+        editor = renderRTE({
+            toolbarSettings: {
+                items: ['BulletFormatList']
+            }
+        })
+        done();
+    });
+    afterEach((done: DoneFn)=> {
+        destroy(editor);
+        done();
+    });
+    it ('Should not update the dropdown status for the paragraph.', (done: DoneFn)=> {
+        editor.value = '<p>Test</p>';
+        editor.dataBind();
+        editor.focusIn();
+        const range: Range = new Range();
+        range.setStart(editor.inputElement.querySelector('p').firstChild, 2);
+        editor.selectRange(range);
+        const splitButtonArrow: HTMLElement = editor.element.querySelector('.e-caret');
+        splitButtonArrow.click();
+        setTimeout(() => {
+            const popup: HTMLElement = document.querySelector('.e-popup-open');
+            const activeElem: HTMLElement = popup.querySelector('.e-item.e-active');
+            expect(activeElem).toBe(null);
+            done();
+        }, 100);
+    });
+    it ('Should update the dropdown status for the Unordered List.', (done: DoneFn)=> {
+        editor.value = '<ul><li>Test</li></ul>';
+        editor.dataBind();
+        editor.focusIn();
+        const range: Range = new Range();
+        range.setStart(editor.inputElement.querySelector('li').firstChild, 2);
+        editor.selectRange(range);
+        const splitButtonArrow: HTMLElement = editor.element.querySelector('.e-caret');
+        splitButtonArrow.click();
+        setTimeout(() => {
+            const popup: HTMLElement = document.querySelector('.e-popup-open');
+            const activeElem: HTMLElement = popup.querySelector('.e-item.e-active');
+            expect(activeElem).not.toBe(null);
+            done();
+        }, 100);
+    });
+    it ('Should not update the dropdown status for the Ordered List.', (done: DoneFn)=> {
+        editor.value = '<ol><li>Test</li></ol>';
+        editor.dataBind();
+        editor.focusIn();
+        const range: Range = new Range();
+        range.setStart(editor.inputElement.querySelector('li').firstChild, 2);
+        editor.selectRange(range);
+        const splitButtonArrow: HTMLElement = editor.element.querySelector('.e-caret');
+        splitButtonArrow.click();
+        setTimeout(() => {
+            const popup: HTMLElement = document.querySelector('.e-popup-open');
+            const activeElem: HTMLElement = popup.querySelector('.e-item.e-active');
+            expect(activeElem).toBe(null);
+            done();
+        }, 100);
+    });
+})

@@ -852,6 +852,13 @@
     &.sf-grid .e-ccheck.e-colfocus {
       background-color: $grid-hover-bg-color;
     }
+
+    &.sf-grid{
+      .e-gridcontent .e-leftfreeze.e-recordplusexpand,
+      .e-gridcontent .e-leftfreeze.e-recordpluscollapse{
+        @include background-color-styles($grid-skin, $group-row-bg-color, $group-row-bg-color);
+      }
+    }
   }
 
   .e-spreadsheet .e-ftrchk.e-chkfocus {

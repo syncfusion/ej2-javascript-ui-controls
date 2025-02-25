@@ -2962,7 +2962,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             };
                             dateMembers.push({
                                 formattedText: formattedValue.formattedText,
-                                actualText: isDateField ? formattedValue.dateText : isNumberType ?
+                                actualText: isDateField ? formattedValue.actualText : isNumberType ?
                                     (!isNaN(Number(values.Name)) ? Number(values.Name) : values.Name) : values.Name
                             });
                         }

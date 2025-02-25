@@ -1182,9 +1182,15 @@ export class Layout {
 
     private updateRevisionRange(revision: Revision, page: Page): any {
         for (let i: number = 0; i < revision.range.length; i++) {
-            const inline: TextElementBox = (revision.range[i] as TextElementBox);
-            if (!inline.line.paragraph.bodyWidget.page) {
-                inline.line.paragraph.bodyWidget.page = page;
+            const inline: object = revision.range[i];
+            if (inline instanceof TextElementBox) {
+                if (isNullOrUndefined(inline.line.paragraph.bodyWidget.page)) {
+                    inline.line.paragraph.bodyWidget.page = page;
+                }
+            } else if (inline instanceof WCharacterFormat) {
+                if (isNullOrUndefined((inline.ownerBase as ParagraphWidget).bodyWidget.page)) {
+                    (inline.ownerBase as ParagraphWidget).bodyWidget.page = page;
+                }
             }
         }
     }
@@ -10715,7 +10721,7 @@ export class Layout {
             if (this.viewer instanceof PageLayoutViewer || (this.viewer instanceof WebLayoutViewer && !(fieldBegin.line.paragraph.containerWidget instanceof TextFrame || fieldBegin.line.paragraph.bodyWidget instanceof HeaderFooterWidget))) {
                 if (!isNullOrUndefined(this.documentHelper.selection)) {
                     const fieldCode: string = this.documentHelper.selection.getFieldCode(fieldBegin);
-                    const regex: RegExp = /^(?!.*\bhyperlink\b).*\bpage\b.*$/;
+                    const regex: RegExp = /^(?!.*\bhyperlink\b)(?!.*\bnumpages\b).*\bpage\b.*$/;
                     if (!isNullOrUndefined(fieldCode) && (fieldCode.toLowerCase().match('numpages') || fieldCode.toLowerCase().match('sectionpages') || (regex.test(fieldCode.toLowerCase()) && reLayout)) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
                         const textElement: FieldTextElementBox = fieldBegin.fieldSeparator.nextNode as FieldTextElementBox;
                         if (!isNullOrUndefined(textElement)) {

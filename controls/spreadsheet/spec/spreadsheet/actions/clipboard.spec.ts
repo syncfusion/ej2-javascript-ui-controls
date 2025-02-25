@@ -1314,7 +1314,7 @@ describe('Clipboard ->', () => {
             });
         });
         
-        describe('EJ2-922761 ->', () => {
+        describe('EJ2-922761, EJ-936817', () => {
             let tableCont: HTMLElement; let spreadsheet: any;
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -1342,18 +1342,33 @@ describe('Clipboard ->', () => {
                     '<span>420104199011234969</span></u></s></p>' +
                     '</td>' +
                     '</tr>' +
+                    '<tr>' +
+                    '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
+                    '<span>0.0000</span></u></s></p>' +
+                    '</td>' +
+                    '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
+                    '<span>0.000</span></u></s></p>' +
+                    '</td>' +
+                    '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
+                    '<span>0.00</span></u></s></p>' +
+                    '</td>' +
+                    '</tr>' +
                     '</tbody></table>';
                 tableCont = createElement('span', { innerHTML: tableStr });
                 spreadsheet = helper.getInstance();
                 const rows: RowModel[] = [];
                 spreadsheet.clipboardModule.generateCells(tableCont, { model: rows });
-                expect(rows.length).toBe(2);
+                expect(rows.length).toBe(3);
                 expect(rows[0].cells.length).toBe(2);
                 expect(rows[0].cells[0].value.toString()).toBe('42010419901123459');
                 expect(rows[0].cells[1].value.toString()).toBe('420104199011234595');
                 expect(rows[1].cells.length).toBe(2);
                 expect(rows[1].cells[0].value.toString()).toBe('4201041990112349');
                 expect(rows[1].cells[1].value.toString()).toBe('420104199011234969');
+                expect(rows[2].cells.length).toBe(3);
+                expect(rows[2].cells[0].value.toString()).toBe('0.0000');
+                expect(rows[2].cells[1].value.toString()).toBe('0.000');
+                expect(rows[2].cells[2].value.toString()).toBe('0.00');
                 done();
             });
         });

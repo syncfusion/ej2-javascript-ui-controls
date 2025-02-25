@@ -401,7 +401,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) {
-                    removeClass([wrap], oldProp.cssClass.split(' '));
+                    removeClass([wrap], oldProp.cssClass.split(/\s+/).filter((c: string) => c.length > 0));
                 }
                 if (newProp.cssClass) {
                     addClass([wrap], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));

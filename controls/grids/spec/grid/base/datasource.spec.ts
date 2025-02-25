@@ -1753,3 +1753,102 @@ export let hierarchyOrderdata: Object[] = [
     },
    
 ];
+
+export let groupData: Object[] = [
+    {
+        Id: 1, Status: "Pending", Company: "Company B", Departament: "HR",
+        User: "Bob Brown", Name: "Task 1", Week: "Week 1",
+        DateStr: new Date(2024, 0, 3), StartTimeStr: "08:00",
+        EndTimeStr: "16:00", Duration: 8, Activity: "Development",
+        ActivityCompany: "Company B", Task: "Bug Fixing", LocationDestination: "Paris",
+        LocationDestinationCountry: "France", SourceRequest: "External",
+        System: "SAP", Wages: 1957.75, Overtime: 0, Avaiability: "No",
+        TaskAggregator: "Aggregator 3", DateCreation: new Date(2023, 11, 31),
+        Region: "Europe", Description: "Description for Task 1", ValueAllowance: 467.4,
+        IsOffshore: false, IsEdit: false
+    },
+    {
+        Id: 2, Status: "Approved", Company: "Company A", Departament: "IT",
+        User: "Jane Smith", Name: "Task 2", Week: "Week 1",
+        DateStr: new Date(2024, 0, 5), StartTimeStr: "07:00",
+        EndTimeStr: "15:00", Duration: 8, Activity: "Review",
+        ActivityCompany: "Company B", Task: "System Update", LocationDestination: "Lisbon",
+        LocationDestinationCountry: "France", SourceRequest: "External",
+        System: "SAP", Wages: 1654.42, Overtime: 3, Avaiability: "No",
+        TaskAggregator: "Aggregator 2", DateCreation: new Date(2024, 0, 2),
+        Region: "Asia", Description: "Description for Task 2", ValueAllowance: 184.8,
+        IsOffshore: false, IsEdit: true
+    },
+    {
+        Id: 3, Status: "Rejected", Company: "Company A", Departament: "HR",
+        User: "Alice Johnson", Name: "Task 3", Week: "Week 1",
+        DateStr: new Date(2024, 0, 7), StartTimeStr: "10:00",
+        EndTimeStr: "18:00", Duration: 8, Activity: "Review",
+        ActivityCompany: "Company B", Task: "System Update", LocationDestination: "Barcelona",
+        LocationDestinationCountry: "Portugal", SourceRequest: "External",
+        System: "Custom", Wages: 2559.86, Overtime: 0, Avaiability: "Yes",
+        TaskAggregator: "Aggregator 2", DateCreation: new Date(2024, 0, 3),
+        Region: "Europe", Description: "Description for Task 3", ValueAllowance: 252.5,
+        IsOffshore: true, IsEdit: false
+    },
+    {
+        Id: 4, Status: "Rejected", Company: "Company A", Departament: "Finance",
+        User: "John Doe", Name: "Task 4", Week: "Week 1",
+        DateStr: new Date(2024, 0, 9), StartTimeStr: "10:00",
+        EndTimeStr: "17:00", Duration: 7, Activity: "Deployment",
+        ActivityCompany: "Company C", Task: "QA Testing", LocationDestination: "Madrid",
+        LocationDestinationCountry: "France", SourceRequest: "External",
+        System: "SAP", Wages: 2273.5, Overtime: 1, Avaiability: "Yes",
+        TaskAggregator: "Aggregator 5", DateCreation: new Date(2023, 11, 31),
+        Region: "Europe", Description: "Description for Task 4", ValueAllowance: 485.81,
+        IsOffshore: false, IsEdit: true
+    },
+    {
+        Id: 5, Status: "Pending", Company: "Company A", Departament: "Finance",
+        User: "John Doe", Name: "Task 5", Week: "Week 1",
+        DateStr: new Date(2024, 0, 11), StartTimeStr: "08:00",
+        EndTimeStr: "16:00", Duration: 8, Activity: "Development",
+        ActivityCompany: "Company B", Task: "Code Review", LocationDestination: "Lisbon",
+        LocationDestinationCountry: "Spain", SourceRequest: "Internal",
+        System: "SAP", Wages: 2497.22, Overtime: 5, Avaiability: "No",
+        TaskAggregator: "Aggregator 3", DateCreation: new Date(2024, 0, 5),
+        Region: "Asia", Description: "Description for Task 5", ValueAllowance: 214.83,
+        IsOffshore: false, IsEdit: true
+    },
+    {
+        Id: 6, Status: "Pending", Company: "Company B", Departament: "Finance",
+        User: "Alice Johnson", Name: "Task 6", Week: "Week 1",
+        DateStr: new Date(2024, 0, 13), StartTimeStr: "08:00",
+        EndTimeStr: "15:00", Duration: 7, Activity: "Deployment",
+        ActivityCompany: "Company A", Task: "Bug Fixing", LocationDestination: "Lisbon",
+        LocationDestinationCountry: "Portugal", SourceRequest: "Internal",
+        System: "Custom", Wages: 1192.01, Overtime: 0, Avaiability: "Yes",
+        TaskAggregator: "Aggregator 2", DateCreation: new Date(2024, 0, 4),
+        Region: "Asia", Description: "Description for Task 6", ValueAllowance: 421.24,
+        IsOffshore: true, IsEdit: false
+    },
+    {
+        Id: 7, Status: "Rejected", Company: "Company C", Departament: "Finance",
+        User: "John Doe", Name: "Task 7", Week: "Week 1",
+        DateStr: new Date(2024, 0, 15), StartTimeStr: "09:00",
+        EndTimeStr: "17:00", Duration: 8, Activity: "Development",
+        ActivityCompany: "Company A", Task: "QA Testing", LocationDestination: "Madrid",
+        LocationDestinationCountry: "France", SourceRequest: "External",
+        System: "SAP", Wages: 1493.64, Overtime: 4, Avaiability: "No",
+        TaskAggregator: "Aggregator 5", DateCreation: new Date(2024, 0, 13),
+        Region: "North America", Description: "Description for Task 7", ValueAllowance: 342.14,
+        IsOffshore: true, IsEdit: false
+    },
+    {
+        Id: 8, Status: "Approved", Company: "Company A", Departament: "Finance",
+        User: "Jane Smith", Name: "Task 8", Week: "Week 2",
+        DateStr: new Date(2024, 0, 17), StartTimeStr: "08:00",
+        EndTimeStr: "17:00", Duration: 9, Activity: "Testing",
+        ActivityCompany: "Company C", Task: "Code Review", LocationDestination: "Madrid",
+        LocationDestinationCountry: "Spain", SourceRequest: "External",
+        System: "JIRA", Wages: 974.91, Overtime: 5, Avaiability: "Yes",
+        TaskAggregator: "Aggregator 1", DateCreation: new Date(2024, 0, 10),
+        Region: "Europe", Description: "Description for Task 8", ValueAllowance: 458.39,
+        IsOffshore: false, IsEdit: true
+    }
+];

@@ -252,12 +252,12 @@ export class WorkbookSort {
         const comparer: Function = DataUtil.fnSort(direction);
         let isXStringVal: boolean = false; let isYStringVal: boolean = false;
         if (x && y && (typeof x.value === 'string' || typeof y.value === 'string') && (x.value !== '' && y.value !== '')) {
-            if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side
+            if (isNumber(x.value) && x.format !== '@') { // Imported number values are of string type, need to handle this case in server side
                 x.value = <string>parseIntValue(x.value);
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 isXStringVal = true;
             }
-            if (isNumber(y.value)) {
+            if (isNumber(y.value) && y.format !== '@') {
                 y.value = <string>parseIntValue(y.value);
                 isYStringVal = true;
             }

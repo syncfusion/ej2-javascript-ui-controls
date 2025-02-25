@@ -500,11 +500,11 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
             (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 300 });
             width += 100;
-            expect(width).toEqual((rteObj.element.querySelector('img') as HTMLElement).offsetWidth + 100);
+            expect(width).toEqual((rteObj.element.querySelector('img') as HTMLElement).offsetWidth);
             (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
             (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 100 });
-            width -= 200;
-            expect(width).toEqual((rteObj.element.querySelector('img') as HTMLElement).offsetWidth - 100);
+            width -= 199;
+            expect(width).toEqual((rteObj.element.querySelector('img') as HTMLElement).offsetWidth);
             rteObj.value = null;
             rteObj.dataBind();
             rteObj.value = innerHTML1;
@@ -952,7 +952,6 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         afterAll(() => {
             destroy(rteObj);
-            detach(document.querySelector('.e-imginline'));
         });
         it('image dialog', (done: Function) => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
@@ -998,6 +997,10 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('insert image url', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const newRange: Range = new Range();
+            newRange.setStart(rteObj.inputElement, 0);
+            newRange.setEnd(rteObj.inputElement, 0);
+            rteObj.selectRange(newRange);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
@@ -2208,7 +2211,34 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 200);
         });
     });
-
+    describe('942010 - Image Link Is Lost When Dragging and Dropping the Image in the Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    resize: false
+                },
+                value: `<div><p>First p node-0</p><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window"></a></div>`,
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("Image Link Is Lost When Dragging and Dropping the Image in the Editor", function () {
+            let image: HTMLElement = createElement("IMG");
+            image.classList.add('e-rte-drag-image');
+            image.setAttribute('src', 'https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            rteObj.inputElement.querySelector('a').appendChild(image);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.imageModule as any).insertDragImage(event);
+            expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+            expect(rteObj.inputElement.querySelector('img').parentElement.tagName === 'A').toBe(true);
+        });
+    });
     describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -4527,6 +4557,35 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj.imageModule as any).insertDragImage(event);
             expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
             detach(document.getElementsByTagName('IMG')[0]);
+        });
+    });
+
+    describe('941896 - Checking resize icon when drag and drop', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    resize: false
+                },
+                value: `<div><p>First p node-0</p></div>`,
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("When resize is disabled checking after drag and drop if resize icon is present", function () {
+            let image: HTMLElement = createElement("IMG");
+            image.classList.add('e-rte-drag-image');
+            image.setAttribute('src', 'https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            rteObj.inputElement.appendChild(image);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.imageModule as any).insertDragImage(event);
+            expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+            expect(rteObj.inputElement.querySelectorAll('.e-rte-imageboxmark').length).toBe(0);
         });
     });
 

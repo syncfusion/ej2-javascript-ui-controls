@@ -122,6 +122,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isBlurDispatching: boolean = false;
     private isFilterPrevented: boolean = false;
     private isFilteringAction: boolean = false;
+    private isVirtualReorder: boolean = false;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -962,11 +963,13 @@ export class MultiSelect extends DropDownBase implements IInput {
 
     private updateVirtualReOrderList(isCheckBoxUpdate?: boolean): void {
         const query: Query = this.getForQuery(this.value, true).clone();
+        this.isVirtualReorder = true;
         if (this.enableVirtualization && this.dataSource instanceof DataManager) {
             this.resetList(this.selectedListData, this.fields, query);
         } else {
             this.resetList(this.dataSource, this.fields, query);
         }
+        this.isVirtualReorder = false;
         this.UpdateSkeleton();
         this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
         this.virtualItemCount = this.itemCount;
@@ -1190,11 +1193,15 @@ export class MultiSelect extends DropDownBase implements IInput {
         let predicate: Predicate;
         const field: string = this.isPrimitiveData ? '' : this.fields.value;
         if (this.enableVirtualization && valuecheck) {
-            if (isCheckbox){
-                for (let i: number = 0; i < valuecheck.length; i++) {
+            if (isCheckbox) {
+                const startindex: number = this.viewPortInfo.startIndex;
+                const endindex: number = (((startindex + this.viewPortInfo.endIndex) <= (valuecheck.length)) &&
+                    valuecheck[(startindex + this.viewPortInfo.endIndex) as number]) ? (startindex + this.viewPortInfo.endIndex)
+                    : (valuecheck.length);
+                for (let i: number = startindex; i < endindex; i++) {
                     const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
                         this.fields.value : '', (valuecheck[i as number] as string)) : (valuecheck[i as number] as string);
-                    if (i === 0) {
+                    if (i === startindex) {
                         predicate = new Predicate(field, 'equal', (value));
                     } else {
                         predicate = predicate.or(field, 'equal', (value));
@@ -1632,7 +1639,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
         }
-        if ((this.allowFiltering && isSkip) || !isReOrder || (!this.allowFiltering && isSkip)) {
+        if ((this.allowFiltering && isSkip) || !isReOrder || (!this.allowFiltering && isSkip) && !this.isVirtualReorder) {
             if (!isReOrder){
                 filterQuery.skip(this.viewPortInfo.startIndex);
             }
@@ -4400,7 +4407,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 text = this.text.split(delimiterChar);
                             } else {
                                 temp = isInitialVirtualData && delim ? this.text : this.getTextByValue(value);
-                                const textValues: string = this.isDynamicRemoteVirtualData && value != null && value !== '' ? this.getTextByValue(value) : isInitialVirtualData ? this.text : (this.text && this.text !== '' ? this.text + this.delimiterChar + temp : temp);
+                                const textValues: string = this.isDynamicRemoteVirtualData && value != null && value !== '' && !isInitialVirtualData ?
+                                    this.getTextByValue(value) : isInitialVirtualData ? this.text : (this.text && this.text !== '' ? this.text + this.delimiterChar + temp : temp);
                                 data += temp + delimiterChar + ' ';
                                 text.push(textValues);
                                 hiddenElementContent = this.hiddenElement.innerHTML;
@@ -4559,7 +4567,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             (this.mode === 'Box' || this.mode === 'Default'))) ||
                         (this.enableVirtualization && value != null && text != null && !isCustomData)) {
                         const currentText: string[] = [];
-                        const textValues: string = this.isDynamicRemoteVirtualData && text != null && text !== '' ? text : this.text != null && this.text !== '' && !(this.text as any).includes(text) ? this.text + this.delimiterChar + text : text;
+                        const textValues: string = this.isDynamicRemoteVirtualData && text != null && text !== '' && index === 0 ? text : this.text != null && this.text !== '' && !(this.text as any).includes(text) ? this.text + this.delimiterChar + text : text;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
                         this.addChip(text, value);

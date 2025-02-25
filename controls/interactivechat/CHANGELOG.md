@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### AI AssistView
+
+#### Bug Fixes
+
+- `#I692622` - Now the issue with scrollbar position when dynamically updating messages using `messageTemplate` property has been resolved.
+
 ## 28.2.6 (2025-02-18)
 
 ### AI AssistView

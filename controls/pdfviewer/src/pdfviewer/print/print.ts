@@ -267,10 +267,10 @@ export class Print {
                 pageImage.onload = (): void => {
                     if ((pageHeight > pageWidth) || !this.pdfViewer.enablePrintRotation) {
                         context.drawImage(pageImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
-                        if (annotationSource.annotImg) {
+                        if (annotationSource && annotationSource.annotImg) {
                             context.drawImage(annotationImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
                         }
-                        if (annotationSource.highlightImg) {
+                        if (annotationSource && annotationSource.highlightImg) {
                             context.save();
                             context.globalCompositeOperation = 'multiply';
                             context.drawImage(annotationImage1, 0, 0, this.printCanvas.width, this.printCanvas.height);
@@ -285,10 +285,10 @@ export class Print {
                         context.translate(-this.printCanvas.height * 0.5, -this.printCanvas.width * 0.5);
                         // draw the image
                         context.drawImage(pageImage, 0, 0, this.printCanvas.height, this.printCanvas.width);
-                        if (annotationSource.annotImg) {
+                        if (annotationSource && annotationSource.annotImg) {
                             context.drawImage(annotationImage, 0, 0, this.printCanvas.height, this.printCanvas.width);
                         }
-                        if (annotationSource.highlightImg) {
+                        if (annotationSource && annotationSource.highlightImg) {
                             context.save();
                             context.globalCompositeOperation = 'multiply';
                             context.drawImage(annotationImage1, 0, 0, this.printCanvas.width, this.printCanvas.height);
@@ -301,8 +301,10 @@ export class Print {
                     this.pdfViewer.renderDrawing(null, pageIndex);
                 };
                 pageImage.src = printImage.image;
-                annotationImage.src = annotationSource.annotImg;
-                if (!isNullOrUndefined(annotationSource.highlightImg)) {
+                if (annotationSource && !isNullOrUndefined(annotationSource.annotImg)) {
+                    annotationImage.src = annotationSource.annotImg;
+                }
+                if (annotationSource && !isNullOrUndefined(annotationSource.highlightImg)) {
                     annotationImage1.src = annotationSource.highlightImg;
                 }
                 this.printViewerContainer.appendChild(this.printCanvas);

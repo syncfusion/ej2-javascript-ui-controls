@@ -26,8 +26,11 @@ $ddt-select-all-padding: 8px 12px !default;
 $ddt-big-select-all-padding: 10px 16px !default;
 $ddt-select-all-height: 36px !default;
 $ddt-select-all-checkbox-margin: 0 12px !default;
-$ddt-select-all-text-indent: 0 !default;
-$ddt-select-all-bigger-text-indent: 0 !default;
+$ddt-rtl-select-all-checkbox-margin: 0 12px !default;
+$ddt-select-all-text-indent: 33px !default;
+$ddt-rtl-select-all-text-indent: 33px !default;
+$ddt-select-all-bigger-text-indent: 40px !default;
+$ddt-rtl-select-all-bigger-text-indent: 40px !default;
 $ddt-select-all-text-font-size: $text-sm !default;
 $ddt-popup-radius: 2px !default;
 $ddt-popup-reorder-border: $border-light !default;
@@ -55,6 +58,11 @@ $ddt-close-icon-bigger-min-height: 38px !default;
 $ddt-close-icon-bigger-width: 38px !default;
 $ddt-treeview-fullrow-bigger-height: 44px !default;
 $ddt-icon-bg-color: $content-bg-color !default;
+$ddt-select-all-font-size: 14px !default;
+$ddt-big-select-all-font-size: 16px !default;
+$ddt-big-select-all-text-margin: 0 16px !default;
+$ddt-rtl-big-select-all-text-margin: 0 16px !default;
+$ddt-select-all-checkbox-bottom: 1px !default;
 
 // color variables
 $ddt-chip-bg-color: $content-bg-color-alt2!default;

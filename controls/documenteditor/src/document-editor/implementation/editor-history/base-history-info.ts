@@ -951,7 +951,17 @@ export class BaseHistoryInfo {
         if (blockInfo.paragraph.isInsideTable && blockInfo.paragraph == this.owner.selection.getLastParagraph(blockInfo.paragraph.associatedCell)) {
             isLastChild = true;
         }
-        if (blockInfo.paragraph.getLength() == blockInfo.offset && !isLastChild) {
+        let isAtParagraphEnd: boolean = isNullOrUndefined(this.selectionEnd) ? true : false;
+        if (!isNullOrUndefined(this.selectionEnd)) {
+            const position: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.selectionEnd);
+            const paragraphInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(position);
+            if (paragraphInfo.paragraph === blockInfo.paragraph) {
+                isAtParagraphEnd = paragraphInfo.paragraph.getLength() + 1 === paragraphInfo.offset;
+            } else {
+                isAtParagraphEnd = true;
+            }
+        }
+        if (blockInfo.paragraph.getLength() == blockInfo.offset && isAtParagraphEnd && !isLastChild) {
             blockInfo.offset++;
         }
         this.endRevisionLogicalIndex = this.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
@@ -1296,6 +1306,7 @@ export class BaseHistoryInfo {
                             const index: number = currentRevision.range.indexOf(wiget.characterFormat);
                             if (index !== -1) {
                                 currentRevision.range.splice(index, 1);
+                                this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
                                 if (currentRevision.range.length === 0) {
                                     this.owner.revisions.remove(currentRevision);
                                 }

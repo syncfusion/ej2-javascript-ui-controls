@@ -2068,7 +2068,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                             if (isNullOrUndefined(eventArgs.operations[i].markerData)) {
                                 eventArgs.operations[i].markerData = {};
                             }
-                            eventArgs.operations[i].markerData.author = this.currentUser;
+                            if (isNullOrUndefined(eventArgs.operations[i].markerData.author) || eventArgs.operations[i].markerData.author === '') {
+                                eventArgs.operations[i].markerData.author = this.currentUser;
+                            }
                         }
                     }
                 }

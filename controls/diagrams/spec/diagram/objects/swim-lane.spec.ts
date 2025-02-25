@@ -9336,3 +9336,584 @@ describe('Bug 909158- Connector disconnects inside swimlane when copy,cut paste'
         done();
     });
 });
+
+describe('929543 - Swimlane restructure', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    ele = createElement('div', { id: 'diagramSwimlaneRestructure' });
+    document.body.appendChild(ele);
+    beforeAll((): void => {
+        var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        var darkColor = '#C7D4DF';
+        var lightColor = '#f5f5f5';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                        orientation: 'Horizontal',
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order1',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 60, width: 100
+                                },
+                                {
+                                    id: 'Order2',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER2',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                margin: { left:200, top: 20 },
+                                    height: 60, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order3',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER3',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 60, width: 100
+                                },
+                                {
+                                    id: 'Order4',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER4',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                margin: { left:200, top: 20 },
+                                    height: 60, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 250,
+                            header: { content: { content: 'Phase' } }
+                        },
+                        {
+                            id: 'phase2', offset: 350,
+                            header: { content: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+            {
+                id: 'swimlane2',
+                shape: {
+                    type: 'SwimLane',
+                    orientation:'Vertical',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                        orientation: 'Vertical',
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order11',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 60, width: 100
+                                },
+                                {
+                                    id: 'Order21',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER2',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                margin: { left:200, top: 20 },
+                                    height: 60, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order31',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER3',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 60, width: 100
+                                },
+                                {
+                                    id: 'Order41',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER4',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                margin: { left:200, top: 120 },
+                                    height: 60, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 250,
+                            header: { content: { content: 'Phase' } }
+                        }
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 820, offsetY: 700,
+                height: 100,
+                width: 650
+            },
+        ];
+        let connectors: ConnectorModel[] = [];
+        diagram = new Diagram({
+            nodes: nodes,
+            connectors:connectors,
+            width: 1500, height: 1000,
+            rulerSettings: { showRulers: true }
+        });
+        diagram.appendTo('#diagramSwimlaneRestructure');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Select multiple swimlane child and drag and drop-horizontal', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let order1 = diagram.nameTable['Order1'];
+        let order4 = diagram.nameTable['Order4'];
+        diagram.select([order1,order4]);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 330, 400);
+        mouseEvents.mouseDownEvent(diagramCanvas, 330, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 370, 380);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 420, 380);
+        mouseEvents.mouseUpEvent(diagramCanvas, 420, 380);
+        expect(diagram.selectedItems && diagram.selectedItems.nodes.length === 2).toBe(true);
+        done();
+    });
+    it('Select multiple swimlane child and drag and drop-vertical', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let order3 = diagram.nameTable['Order31'];
+        let order4 = diagram.nameTable['Order41'];
+        diagram.select([order3,order4]);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 1000, 755);
+        mouseEvents.mouseDownEvent(diagramCanvas, 1000, 755);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 1000, 685);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 1000, 650);
+        mouseEvents.mouseUpEvent(diagramCanvas, 1000, 650);
+        expect(diagram.selectedItems && diagram.selectedItems.nodes.length === 2).toBe(true);
+        done();
+    });
+});
+
+describe('929543 - Code coverage - Swimlane restructure', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { styles: 'width:100%;height:500px;' });
+        ele.appendChild(createElement('div', { id: 'symbolpaletteCodeCoverage', styles: 'width:25%;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'diagramCodeCoverageSwimlaneRevamp', styles: 'width:74%;height:500px;float:left;' }));
+        document.body.appendChild(ele);
+        var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        var darkColor = '#C7D4DF';
+        var lightColor = '#f5f5f5';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 150,
+                            children: [
+                                {
+                                    id: 'Order1',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 60, width: 100
+                                },
+                                {
+                                    id: 'Order2',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER2',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 200, top: 20 },
+                                    height: 60, width: 100
+                                },
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 250,
+                            header: { content: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+            {
+                id: 'swimlane2',
+                shape: {
+                    type: 'SwimLane',
+                    orientation:'Vertical',
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order11',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 60, width: 100
+                                },
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 250,
+                            header: { content: { content: 'Phase' } }
+                        }
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 820, offsetY: 600,
+                height: 100,
+                width: 650
+            },
+            {
+                id:'nodeOutside1', offsetX: 800, offsetY:100,width:70,height:70,
+            },
+            {
+                id:'nodeOutside2', offsetX: 900, offsetY:100,width:70,height:70,
+            }
+        ];
+        let connectors: ConnectorModel[] = [];
+        diagram = new Diagram({
+            nodes: nodes,
+            selectedItems:{handleSize:45},
+            connectors:connectors,
+            width: '70%', height: 1000,
+        });
+        diagram.appendTo('#diagramCodeCoverageSwimlaneRevamp');
+        palette = new SymbolPalette({
+            width: '25%', height: '500px',
+            palettes: [
+                {
+                    id: 'flow', expanded: true, symbols: [
+                        { id: 'Terminator', shape: { type: 'Flow', shape: 'Terminator' }, style: { strokeWidth: 1 } },
+                        { id: 'Process', shape: { type: 'Flow', shape: 'Process' }, style: { strokeWidth: 1 } },
+                        { id: 'Decision', shape: { type: 'Flow', shape: 'Decision' }, style: { strokeWidth: 1 } },
+                        { id: 'Document', shape: { type: 'Flow', shape: 'Document' }, style: { strokeWidth: 1 } }], title: 'Flow Shapes'
+                },
+                {
+                    id: 'swimlaneShapes', expanded: true,
+                    title: 'Swimlane Shapes',
+                    symbols: [
+                        {
+                            id: 'stackCanvas1',
+                            shape: {
+                                type: 'SwimLane', lanes: [
+                                    {
+                                        id: 'lane1',
+                                        style: { fill: '#f5f5f5' }, height: 60, width: 150,
+                                        header: { width: 50, height: 50, style: { fill: '#C7D4DF', fontSize: 11 } },
+                                    }
+                                ],
+                                orientation: 'Horizontal', isLane: true
+                            },
+                            height: 60,
+                            width: 140,
+                            style: { fill: '#f5f5f5' },
+                            offsetX: 70,
+                            offsetY: 30,
+                        }, {
+                            id: 'stackCanvas2',
+                            shape: {
+                                type: 'SwimLane',
+                                lanes: [
+                                    {
+                                        id: 'lane1',
+                                        style: { fill: '#f5f5f5' }, height: 150, width: 60,
+                                        header: { width: 50, height: 50, style: { fill: '#C7D4DF', fontSize: 11 } },
+                                    }
+                                ],
+                                orientation: 'Vertical', isLane: true
+                            },
+                            height: 140,
+                            width: 60,
+                            style: { fill: '#f5f5f5' },
+                            offsetX: 70,
+                            offsetY: 30,
+                        }, {
+                            id: 'verticalPhase',
+                            shape: {
+                                type: 'SwimLane',
+                                phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                                annotations: [{ text: '' }],
+                                orientation: 'Vertical', isPhase: true
+                            },
+                            height: 60,
+                            width: 140
+                        }, {
+                            id: 'horizontalPhase',
+                            shape: {
+                                type: 'SwimLane',
+                                phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                                annotations: [{ text: '' }],
+                                orientation: 'Horizontal', isPhase: true
+                            },
+                            height: 60,
+                            width: 140
+                        }
+                    ]
+                },
+                {
+                    id: 'connectors', expanded: true, symbols: [
+                        {
+                            id: 'Link1', type: 'Orthogonal', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 },
+                            targetDecorator: { shape: 'Arrow' }, style: { strokeWidth: 1 }
+                        },
+                        {
+                            id: 'Link2', type: 'Orthogonal', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 },
+                            targetDecorator: { shape: 'Arrow' }, style: { strokeWidth: 1, strokeDashArray: '4 4' }
+                        }], title: 'Connectors'
+                }
+            ], symbolHeight: 50, symbolWidth: 50,
+            symbolPreview: { width: 100, height: 100 },
+            expandMode: 'Multiple',
+        });
+        palette.appendTo('#symbolpaletteCodeCoverage');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        palette.destroy();
+        ele.remove();
+    });
+
+    it('Resize multiselected nodes with linerouting', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.constraints = DiagramConstraints.Default | DiagramConstraints.LineRouting;
+        diagram.dataBind();
+        let outNode1 = diagram.nameTable['nodeOutside1'];
+        let outNode2 = diagram.nameTable['nodeOutside2'];
+        diagram.select([outNode1,outNode2]);
+        let bounds = outNode2.wrapper.bounds.middleRight;
+        console.log(bounds);
+        console.log(diagram.element.offsetLeft);
+        console.log(diagram.element.offsetTop);
+        mouseEvents.mouseMoveEvent(diagramCanvas,bounds.x + diagram.element.offsetLeft,100);
+        mouseEvents.mouseDownEvent(diagramCanvas,bounds.x + diagram.element.offsetLeft,100);
+        mouseEvents.mouseMoveEvent(diagramCanvas,bounds.x + diagram.element.offsetLeft + 40, 100);
+        mouseEvents.mouseUpEvent(diagramCanvas,bounds.x + diagram.element.offsetLeft + 40,100);
+        expect(diagram.selectedItems && diagram.selectedItems.nodes.length === 2).toBe(true);
+        done();
+    });
+    it('Resize multiselected swimlane child nodes', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.constraints = DiagramConstraints.Default &~ DiagramConstraints.LineRouting;
+        diagram.dataBind();
+        let order1 = diagram.nameTable['Order1'];
+        let order2 = diagram.nameTable['Order2'];
+        diagram.select([order1,order2]);
+        let bounds = order2.wrapper.bounds.middleRight;
+        console.log(bounds);
+        console.log(diagram.element.offsetLeft);
+        console.log(diagram.element.offsetTop);
+        mouseEvents.mouseMoveEvent(diagramCanvas,bounds.x + diagram.element.offsetLeft,255);
+        mouseEvents.mouseDownEvent(diagramCanvas,bounds.x + diagram.element.offsetLeft,255);
+        mouseEvents.mouseMoveEvent(diagramCanvas,bounds.x + diagram.element.offsetLeft + 60, 255);
+        mouseEvents.mouseUpEvent(diagramCanvas,bounds.x + diagram.element.offsetLeft + 60,255);
+        expect(diagram.selectedItems && diagram.selectedItems.nodes.length === 2).toBe(true);
+        done();
+    });
+    it('Drag swimlane child and drop it at lane edge and perform undo-redo', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let order2 = diagram.nameTable['Order2'];
+        let swimlane = diagram.nameTable['swimlane'];
+        let swimBounds = swimlane.wrapper.bounds.bottomRight;
+        diagram.select([order2]);
+        let bounds = order2.wrapper.bounds.center;
+        mouseEvents.mouseMoveEvent(diagramCanvas,900,265);
+        mouseEvents.mouseDownEvent(diagramCanvas,900,265);
+        mouseEvents.mouseMoveEvent(diagramCanvas,1010,350);
+        mouseEvents.mouseMoveEvent(diagramCanvas,1210, 350);
+        mouseEvents.mouseUpEvent(diagramCanvas,1210, 350);
+        diagram.undo();
+        done();
+    });
+    it('Copy paste headerless horizontal swimlane', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let swimlane = diagram.nameTable['swimlane'];
+        diagram.select([swimlane]);
+        diagram.copy();
+        diagram.paste();
+        expect(diagram.nodes.length === 19).toBe(true);
+        diagram.undo();
+        done();
+    });
+    it('Drag and drop phase in vertical headerless swimlane', (done: Function) => {
+        //For horizontal phase in swimlane
+        palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+            let clonedElement: HTMLElement; let diagramElement: any;
+            let position: PointModel = palette['getMousePosition'](e.sender);
+            let symbols: IElement = palette.symbolTable['horizontalPhase'];
+            palette['selectedSymbols'] = symbols;
+            if (symbols !== undefined) {
+                clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                clonedElement.setAttribute('paletteId', palette.element.id);
+            }
+            return clonedElement;
+        };
+        let events2: MouseEvents = new MouseEvents();
+        events2.mouseDownEvent(palette.element, 200, 230, false, false);
+        events2.mouseMoveEvent(palette.element, 100, 100, false, false);
+        events2.mouseMoveEvent(palette.element, 200, 200, false, false);
+        events2.mouseMoveEvent(diagram.element, 1010, 666, false, false);
+        events2.mouseUpEvent(diagram.element, 1010, 666 , false, false);
+        done();
+    });
+    it('Delete swimlane child and undo-redo', (done: Function) => {
+        let swimlane = diagram.nameTable['swimlane'];
+        let swimlane2 = diagram.nameTable['swimlane2'];
+        let order1 = diagram.nameTable['Order1'];
+        let order3 = diagram.nameTable['Order11'];
+        diagram.select([order1]);
+        diagram.remove();
+        diagram.undo();
+        diagram.redo();
+        diagram.select([order3]);
+        diagram.remove();
+        diagram.undo();
+        done();
+    });
+    it('Resize phase beyond minWidth - horizontal', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let swimlane = diagram.nameTable['swimlane'];
+        let bounds = swimlane.wrapper.bounds.middleRight;
+        diagram.select([swimlane]);
+        mouseEvents.mouseDownEvent(diagramCanvas,1230,300);
+        mouseEvents.mouseMoveEvent(diagramCanvas,1000, 300);
+        mouseEvents.mouseMoveEvent(diagramCanvas,800,300);
+        mouseEvents.mouseMoveEvent(diagramCanvas,600, 300);
+        mouseEvents.mouseUpEvent(diagramCanvas,600,300);
+        done();
+    });
+    it('Resize phase beyond minHeight - vertical', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 990, 575);
+        mouseEvents.mouseDownEvent(diagramCanvas, 1250, 669);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 1250, 633);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 1250, 550);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 1250, 500);
+        mouseEvents.mouseUpEvent(diagramCanvas, 1250, 500);
+        done();
+    });
+});

@@ -51,9 +51,14 @@ export function updateCanvasBounds(
         diagram.protectPropertyChange(true);
         container = diagram.nameTable[(obj as Node).parentId];
         const wrapper: Canvas = container.wrapper as Canvas;
+        if (diagram.selectedItems.nodes.length > 1) {
+            (diagram as any).multiselect = true;
+        } else {
+            (diagram as any).multiselect = false;
+        }
         if (container && container.container.type === 'Canvas') {
             if ((isBoundsUpdate || (wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
-                (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y)))) {
+                (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y) && !(diagram as any).multiselect))) {
                 let parentWrapper: GridPanel;
                 const y: number = wrapper.bounds.y; const x: number = wrapper.bounds.x;
 
@@ -217,9 +222,13 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
                 container = diagram.selectedItems.wrapper as Canvas;
             }
             diagram.selectedObject.actualObject = object as NodeModel;
-            if ((!diagram.currentSymbol) && ((((object as Node).isLane && canLaneInterchange(object as Node, diagram) &&
-                checkParentAsContainer(diagram, object))
-                || ((!(object as Node).isLane) && checkParentAsContainer(diagram, object))) ||
+            // Added below code to render helper object for multiselected nodes inside swimlane to avoid interaction related issues.
+            const dragObject: NodeModel | ConnectorModel = object instanceof Selector
+                ? ((object as Selector).nodes.length > 0 ? (object as Selector).nodes[0] : object) : object;
+            diagram.selectedObject.actualObject = object as NodeModel;
+            if ((!diagram.currentSymbol) && ((((dragObject as Node).isLane && canLaneInterchange(dragObject as Node, diagram) &&
+                checkParentAsContainer(diagram, dragObject))
+                || ((!(dragObject as Node).isLane) && checkParentAsContainer(diagram, dragObject))) ||
                 ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
                 const node: NodeModel = {
                     id: 'helper',
@@ -360,7 +369,7 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
         //When we add child nodes at runtime and perform undo redo, the child node is not selectable as the zIndex of swimlane is higher than child node.
         //Added below code to update the zIndex of the child node.
         if (swimlane && swimlane.zIndex > node.zIndex && canUpdateZindex) {
-            this.updateZindex(node, swimlane, diagram);
+            updateZindex(node, swimlane, diagram);
         }
         const child: string | NodeModel = (diagram.nodes.indexOf(node) !== -1) ? node.id : node;
         if (parent.container.type === 'Canvas' && !historyAction) {
@@ -415,7 +424,12 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
             if (!(container as Node).parentId) {
                 diagram.updateDiagramObject(container);
             } else if (!isUndo) {
-                updateLaneBoundsAfterAddChild(container, swimlane, node, diagram);
+                if (!(diagram as any).multiselect) {
+                    updateLaneBoundsAfterAddChild(container, swimlane, node, diagram);
+                } else {
+                    considerSwimLanePadding(diagram, node, 20);
+                    diagram.updateDiagramElementQuad();
+                }
             }
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
                 const entry: HistoryEntry = {
@@ -424,6 +438,10 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                 };
                 diagram.addHistoryEntry(entry);
             }
+        }
+        else if (!isUndo) {
+            considerSwimLanePadding(diagram, node, 20);
+            diagram.updateDiagramElementQuad();
         }
         diagram.protectPropertyChange(false);
     }
@@ -437,17 +455,24 @@ function moveSwinLaneChild(node: NodeModel | ConnectorModel, diagram: Diagram): 
         targetNode.appendChild(sourceNode);
     }
 }
+export function updateLaneBoundsWithSelector(container: NodeModel, selector: SelectorModel,
+                                             diagram: Diagram, isBoundsUpdate?: boolean): void {
+    const swimLane: NodeModel = diagram.nameTable[(container as Node).parentId];
+    const isSelector: boolean = true;
+    updateLaneBoundsAfterAddChild(container, swimLane, selector, diagram, isBoundsUpdate, isSelector);
+}
 export function updateLaneBoundsAfterAddChild(
-    container: NodeModel, swimLane: NodeModel, node: NodeModel, diagram: Diagram, isBoundsUpdate?: boolean): boolean {
+    container: NodeModel, swimLane: NodeModel, node: NodeModel | SelectorModel, diagram: Diagram, isBoundsUpdate?: boolean,
+    isSelector?: boolean): boolean {
     const undoObject: NodeModel = cloneObject(container);
-    let isUpdateRow: boolean; let isGroupAction: boolean = false;
+    let isUpdateRow: boolean; let isUpdateColumn: boolean; let isGroupAction: boolean = false;
     const padding: number = (swimLane.shape as SwimLane).padding;
     const containerBounds: Rect = container.wrapper.bounds;
     const containerOuterBounds: Rect = container.wrapper.outerBounds;
     const nodeBounds: Rect = node.wrapper.bounds;
     if (swimLane && swimLane.shape.type === 'SwimLane' &&
         (containerBounds.right < nodeBounds.right + padding ||
-            containerBounds.bottom < nodeBounds.bottom + padding)) {
+        containerBounds.bottom < nodeBounds.bottom + padding || (isSelector && containerBounds.top > nodeBounds.top + padding))) {
         const grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
         const x: number = grid.bounds.x; const y: number = grid.bounds.y;
         let size: number;
@@ -466,7 +491,7 @@ export function updateLaneBoundsAfterAddChild(
                 size = (nodeBounds.right - containerBounds.right) + (containerBounds.left - nodeBounds.left) + padding * 2;
             }
             // size = nodeBounds.right - containerBounds.right;
-            isUpdateRow = false;
+            isUpdateColumn = true;
             grid.updateColumnWidth(container.columnIndex, containerBounds.width + size, true, padding);
         }
         if (containerBounds.bottom < nodeBounds.bottom + padding &&
@@ -483,15 +508,38 @@ export function updateLaneBoundsAfterAddChild(
             isUpdateRow = true;
             grid.updateRowHeight(container.rowIndex, containerBounds.height + size, true, padding);
         }
+        if (isSelector && containerBounds.top > nodeBounds.top - padding &&
+            containerOuterBounds.y <= containerBounds.y) {
+            if (!isHorizontal && isHeader) {
+                headerSize = isHeader ? isHeader.height : 0;
+                size = (containerBounds.top - nodeBounds.top) + (nodeBounds.bottom - containerBounds.bottom) +
+                    headerSize + padding * 2;
+            } else {
+                size = (containerBounds.top - nodeBounds.top) + (nodeBounds.bottom - containerBounds.bottom) + padding * 2;
+            }
+            // Adjust the size based on the top boundary difference
+            if (size > 0) {
+                isUpdateRow = true;
+                grid.updateRowHeight(container.rowIndex, containerBounds.height + size, true, padding);
+            }
+        }
         if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
             if (isBoundsUpdate) {
                 diagram.startGroupAction();
                 isGroupAction = true;
             }
-            if (isUpdateRow !== undefined) {
+            if (isUpdateRow) {
                 const entry: HistoryEntry = {
                     category: 'Internal',
-                    type: (isUpdateRow) ? 'RowHeightChanged' : 'ColumnWidthChanged',
+                    type: 'RowHeightChanged',
+                    undoObject: undoObject, redoObject: cloneObject(container)
+                };
+                diagram.addHistoryEntry(entry);
+            }
+            if (isUpdateColumn) {
+                const entry: HistoryEntry = {
+                    category: 'Internal',
+                    type: 'ColumnWidthChanged',
                     undoObject: undoObject, redoObject: cloneObject(container)
                 };
                 diagram.addHistoryEntry(entry);
@@ -508,7 +556,9 @@ export function updateLaneBoundsAfterAddChild(
         checkPhaseOffset(swimLane, diagram);
         checkLaneSize(swimLane);
     }
-    considerSwimLanePadding(diagram, node as NodeModel, padding);
+    if (!isSelector) {
+        considerSwimLanePadding(diagram, node as NodeModel, padding);
+    }
     diagram.updateDiagramElementQuad();
     return isGroupAction;
 }

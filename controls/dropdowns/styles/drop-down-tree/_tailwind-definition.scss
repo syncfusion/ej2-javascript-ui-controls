@@ -29,9 +29,14 @@ $ddt-last-chip-bigger-right-margin: 52px !default;
 $ddt-select-all-padding: 8px 12px !default;
 $ddt-big-select-all-padding: 12px 16px !default;
 $ddt-select-all-height: 22px !default;
-$ddt-select-all-checkbox-margin: 0 12px !default;
-$ddt-select-all-text-indent: 0 !default;
-$ddt-select-all-bigger-text-indent: 0 !default;
+$ddt-select-all-checkbox-margin: 0 8px !default;
+$ddt-rtl-select-all-checkbox-margin: 0 8px !default;
+$ddt-select-all-text-indent: 27px !default;
+$ddt-rtl-select-all-text-indent: 15px !default;
+$ddt-select-all-bigger-text-indent: 33px !default;
+$ddt-rtl-select-all-bigger-text-indent: 17px !default;
+$ddt-big-select-all-text-margin: 0 12px !default;
+$ddt-rtl-big-select-all-text-margin: 0 12px !default;
 $ddt-select-all-text-font-size: $text-sm !default;
 $ddt-popup-radius: 4px !default;
 $ddt-popup-reorder-border: $border-light !default;
@@ -51,6 +56,9 @@ $ddt-overflow-count-padding-top: 3px !default;
 $ddt-delim-padding : 3px 12px !default;
 $ddt-delim-bigger-padding: 7px 16px !default;
 $ddt-remains-count-padding-top: 3px !default;
+$ddt-select-all-font-size: 14px !default;
+$ddt-big-select-all-font-size: 16px !default;
+$ddt-select-all-checkbox-bottom: 0 !default;
 
 // color variables
 $ddt-filter-box-shadow-color: none !default;

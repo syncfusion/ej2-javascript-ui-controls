@@ -510,14 +510,9 @@ export class Image {
         }
     }
 
-    private adjustDimensionsByAspectRatio(width: number, height: number, aspectRatio: number, isWidthPrimary: boolean): ImageDimension {
-        if (isWidthPrimary) {
-            height = Math.round(width / aspectRatio);
-            width = Math.round(height * aspectRatio);
-        } else {
-            width = Math.round(height * aspectRatio);
-            height = Math.round(width / aspectRatio);
-        }
+    private adjustDimensionsByAspectRatio(width: number, height: number, aspectRatio: number): ImageDimension {
+        height = Math.round(width / aspectRatio);
+        width = Math.round(height * aspectRatio);
         return { width: width, height: height };
     }
 
@@ -586,9 +581,7 @@ export class Image {
     private adjustDimensions (width: number, height: number, diffX: number, diffY: number, aspectRatio: number): ImageDimension {
         width = (width < 16) ? 16 : width;
         height = (height < 16) ? 16 : height;
-        const isWidthPrimary: boolean = width > height;
-        const dimensions: { width: number, height: number } =
-            this.adjustDimensionsByAspectRatio(width, height, aspectRatio, isWidthPrimary);
+        const dimensions: { width: number, height: number } = this.adjustDimensionsByAspectRatio(width, height, aspectRatio);
         return dimensions;
     }
 
@@ -2154,14 +2147,19 @@ export class Image {
                     const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(
                         this.parent.contentModule.getDocument());
                     if (imgElement && imgElement.tagName === 'IMG') {
-                        if (imgElement.nextElementSibling) {
-                            if (imgElement.nextElementSibling.classList.contains(classes.CLS_IMG_INNER)) {
-                                range.insertNode(imgElement.parentElement.parentElement);
+                        const imgCaption: Element = imgElement.closest('.e-rte-img-caption');
+                        if (!isNOU(imgCaption)) {
+                            range.insertNode(imgCaption);
+                        } else {
+                            const anchorElement: HTMLElement = imgElement.closest('a');
+                            //To check if the anchor has only one image element
+                            const isAnchorValid: boolean = anchorElement && anchorElement.tagName === 'A' &&
+                                this.hasOnlyImage(anchorElement);
+                            if (isAnchorValid) {
+                                range.insertNode(anchorElement);
                             } else {
                                 range.insertNode(imgElement);
                             }
-                        } else {
-                            range.insertNode(imgElement);
                         }
                         imgElement.classList.remove(classes.CLS_RTE_DRAG_IMAGE);
                         const imgArgs: ActionCompleteEventArgs = { elements: [imgElement] };
@@ -2170,7 +2168,9 @@ export class Image {
                         });
                         this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                         const args: MouseEvent = e as MouseEvent;
-                        this.resizeStart(args as PointerEvent, imgElement);
+                        if (this.parent.insertImageSettings.resize) {
+                            this.resizeStart(args as PointerEvent, imgElement);
+                        }
                         this.hideImageQuickToolbar();
                     }
                 } else {
@@ -2178,6 +2178,29 @@ export class Image {
                 }
             });
         }
+    }
+
+    private hasOnlyImage(anchor: HTMLElement): boolean {
+        let imageFound: boolean = false;
+        for (let i: number = 0; i < anchor.childNodes.length; i++) {
+            const currentNode: Node = anchor.childNodes[i as number];
+            if (currentNode.nodeType === Node.TEXT_NODE) {
+                const text: string = currentNode.textContent.replace(/[\u200B\u200C\u200D]/g, '').trim(); // Remove zero-width spaces
+                if (text !== '') {
+                    return false; // Found non-empty text node, so it's invalid
+                }
+            } else if (currentNode.nodeType === Node.ELEMENT_NODE) {
+                if ((currentNode as HTMLElement).tagName === 'IMG') {
+                    if (imageFound) {
+                        return false; // Found more than one image, so it's invalid
+                    }
+                    imageFound = true;
+                } else {
+                    return false; // Found a non-image element, so it's invalid
+                }
+            }
+        }
+        return imageFound; // Return true only if exactly one img was found
     }
 
     private onSelect(args: DragEvent): void {

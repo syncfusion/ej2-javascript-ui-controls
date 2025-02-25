@@ -62,6 +62,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private isSelection: boolean = false;
     private selectedRowIndex: number;
     private isBottom: boolean = false;
+    private isBottomNotify: boolean = false;
     private diff: number = 0;
     private heightChange: boolean = false;
     /** @hidden */
@@ -95,6 +96,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private validationCol: Column;
     /** @hidden */
     public firstCellFocus: boolean = false;
+    private prevPage: number = 0;
+    private prevCurrentInfo: VirtualInfo = {};
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -148,7 +151,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private scrollListener(scrollArgs: ScrollArg): void {
-        if (!this.parent.enableVirtualization && this.parent.enableColumnVirtualization && (scrollArgs.direction === 'up' || scrollArgs.direction === 'down')) {
+        if ((!this.parent.enableVirtualization && this.parent.enableColumnVirtualization && (scrollArgs.direction === 'up'
+            || scrollArgs.direction === 'down')) || this.isBottomNotify) {
             return;
         }
         this.scrollAfterEdit();
@@ -225,6 +229,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         this.parent.notify(events.renderResponsiveColumnChooserDiv, { action: 'clear'});
         if (!(!this.parent.isInitialLoad && this.parent.enablePersistence)) {
+            if (this.prevPage === this.parent.pageSettings.currentPage && viewInfo.event === modelChanged) {
+                this.currentInfo = this.prevCurrentInfo;
+                return;
+            }
+            if (viewInfo.event === modelChanged) {
+                this.prevPage = this.parent.pageSettings.currentPage;
+                this.prevCurrentInfo = this.currentInfo;
+            }
+            this.isBottomNotify = this.isBottom && viewInfo.event === modelChanged;
             this.parent.notify(viewInfo.event, {
                 requestType: 'virtualscroll', virtualInfo: viewInfo,
                 focusElement: scrollArgs.focusElement
@@ -438,6 +451,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const lastPage: number = Math.ceil(this.getTotalBlocks() / 2);
         if (this.isBottom) {
             this.isBottom = false;
+            this.isBottomNotify = false;
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 1];
         }
         if ((this.parent.pageSettings.currentPage + 1 === lastPage || this.parent.pageSettings.currentPage === lastPage) &&
@@ -446,7 +460,13 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         if ((this.parent.pageSettings.currentPage === lastPage) && blocks.length === 1) {
             this.isBottom = true;
-            this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 2];
+            setTimeout(() => {
+                const scrollElement: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
+                scrollElement.scrollTop = this.offsets[this.offsetKeys.length - 2];
+                const scrollValues: ScrollArg = { direction: 'up', sentinel: this.observer.sentinelInfo.up,
+                    offset: { top: scrollElement.scrollTop, left: scrollElement.scrollLeft }, focusElement: this.parent.element };
+                this.scrollListener(scrollValues);
+            }, 0);
         }
         if (this.isTop) {
             this.parent.getContent().firstElementChild.scrollTop = 0;

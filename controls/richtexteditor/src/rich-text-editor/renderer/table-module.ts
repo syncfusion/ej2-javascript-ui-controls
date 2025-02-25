@@ -966,9 +966,6 @@ export class Table {
                 return;
             }
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
-            if (!range.collapsed) {
-                return; // Should not open Table quick toolbar when collapsed is equal to false.
-            }
             const closestTable: Element = closest(target, 'table');
             const startNode: HTMLElement = this.parent.getRange().startContainer.parentElement;
             const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;

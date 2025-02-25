@@ -5179,7 +5179,7 @@ export class WordExport {
                 return 'cleared';
             case 'None':
             case 1:
-                return 'None';
+                return 'none';
             case 'DashSmallGap':
                 return 'dashSmallGap';
             case 'Triple':

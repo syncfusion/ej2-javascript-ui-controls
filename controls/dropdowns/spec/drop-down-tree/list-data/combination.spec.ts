@@ -700,6 +700,41 @@ describe('DropDown Tree control List datasource', () => {
                 done();
             }, 450);
         });
+        it('Remove selected items from the input box using close icon after closing the popup', function () {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, showCheckBox: true, mode: 'Box', treeSettings: { autoCheck: true } }, '#ddtree');
+            var ele = ddtreeObj.element;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var checkEle = ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            expect(ddtreeObj.text).toBe('Australia,New South Wales,Victoria,South Australia,Western Australia');
+            var chipElement = ddtreeObj.element.parentElement.firstElementChild;
+            expect(chipElement.classList.contains('e-chips-wrapper')).toBe(true);
+            var chips = chipElement.querySelectorAll('.e-chips');
+            expect(chips.length).toBe(5);
+            expect(chips[0].querySelector(".e-chipcontent").textContent).toBe("Australia");
+            expect(chipElement.classList.contains('e-icon-hide')).toBe(false);
+            ddtreeObj.hidePopup();
+            var chipDelete = chips[4].querySelector('.e-chips-close');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            chipDelete.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            chipDelete.dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            chipDelete.dispatchEvent(e);
+            expect(ddtreeObj.text).toBe('New South Wales,Victoria,South Australia');
+            var chips_1 = chipElement.querySelectorAll('.e-chips');
+            expect(chips_1.length).toBe(3); 
+        });
     });
 
     describe('combinational testing', () => {

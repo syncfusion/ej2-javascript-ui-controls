@@ -207,27 +207,6 @@ export class PasteCleanup {
             value = tempDivElem.innerHTML;
             const isValueNotEmpty: boolean = tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
             !isNOU(tempDivElem.querySelector('table'));
-            const imgElements: NodeListOf<HTMLImageElement> = tempDivElem.querySelectorAll('img');
-            const base: string = this.parent.contentModule.getDocument().baseURI;
-            imgElements.forEach((imgElement: HTMLImageElement) => {
-                let imageFileFormat: string;
-                const imgElementSrc: string = imgElement.getAttribute('src');
-                if (!isNullOrUndefined(imgElementSrc) && imgElementSrc !== '') {
-                    if (imgElementSrc.indexOf('base64') > -1 && imgElementSrc.indexOf('data:') > -1) {
-                        imageFileFormat = imgElementSrc.split(';')[0].split('/')[1];
-                    } else {
-                        const parsedUrl: URL = imgElementSrc.indexOf('http') > -1 ? new URL(imgElementSrc) : new URL(imgElementSrc, base);
-                        const path: string = parsedUrl.pathname;
-                        imageFileFormat = path.split('.').pop().toLowerCase();
-                    }
-                    if (!isNullOrUndefined(imageFileFormat) &&
-                        allowedTypes.every((type: string) => imageFileFormat !== type.substring(1).toLowerCase()) &&
-                        imgElementSrc.indexOf('blob') === -1) {
-                        detach(imgElement);
-                    }
-                }
-            });
-            value = tempDivElem.innerHTML;
             this.parent.notify(events.cleanupResizeElements, {
                 value: value,
                 callBack: (currentValue: string) => {

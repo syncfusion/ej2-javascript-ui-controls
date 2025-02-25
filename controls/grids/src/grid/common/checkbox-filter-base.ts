@@ -996,8 +996,10 @@ export class CheckBoxFilterBase {
             this.options.dataSource = this.options.dataSource instanceof DataManager ?
                 this.options.dataSource : new DataManager(this.options.dataSource as JSON[]);
             this.infinitePermenantLocalData = [...this.options.dataSource.dataSource.json];
-            this.options.dataSource.dataSource.json = DataUtil.distinct(this.options.parentFilteredLocalRecords
-                .concat(...this.infinitePermenantLocalData), this.options.column.field, true);
+            const query1: Query = new Query();
+            this.queryGenerate(query1);
+            const result : Object[] = new DataManager(this.options.dataSource.dataSource).executeLocal(query1);
+            this.options.dataSource.dataSource.json = DataUtil.distinct(result, this.options.column.field, true);
             if (this.isForeignColumn(this.options.column as Column)) {
                 this.options.column.dataSource = this.options.column.dataSource instanceof DataManager ?
                     this.options.column.dataSource : new DataManager(this.options.column.dataSource as JSON[]);
@@ -1861,6 +1863,11 @@ export class CheckBoxFilterBase {
             const pred: PredicateModel = updatePredArr[j as number] as PredicateModel;
             const predValue: string | number | boolean = pred.value instanceof Date ?
                 this.valueFormatter.toView(pred.value, this.options.formatFn) as string : pred.value;
+            const column : Column = this.options.column as Column;
+            if (column.isForeignColumn()) {
+                const foreignDataObj: Object = getForeignData(column, {}, predValue as string | number, this.foreignKeyData)[0];
+                value = getValue(column.foreignKeyField, foreignDataObj);
+            }
             if (value === predValue && (pred.operator === 'equal' || pred.operator === 'notequal')) {
                 this.infiniteManualSelectMaintainPred.push(updatePredArr[j as number]);
                 updatePredArr.splice(j, 1);

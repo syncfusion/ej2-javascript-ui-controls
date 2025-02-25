@@ -345,6 +345,15 @@ describe('Button', () => {
             expect(element.classList.contains('e-btn')).toEqual(false);
         });
 
+        it('destroy method with extra space of cssClass property', () => {
+            button = new Button({cssClass: 'e-custom '});
+            button.appendTo('#button');
+            button.cssClass = "e-custom e-css ";
+            button.dataBind();
+            button.destroy();
+            expect(element.classList.contains('e-btn')).toEqual(false);
+        });
+
         it('getModuleName method', () => {
             button = new Button();
             button.appendTo('#button');

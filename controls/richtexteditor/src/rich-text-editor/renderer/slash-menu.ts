@@ -160,6 +160,7 @@ export class SlashMenu {
                         this.parent.executeCommand('formatBlock', itemModel.subCommand);
                         break;
                     }
+                    this.parent.notify(events.toolbarRefresh, {});
                 } else {
                     if (this.parent.inputElement.classList.contains('e-mention')) {
                         const slashMenuPopup: HTMLElement = this.parent.inputElement.ownerDocument.getElementById(this.parent.inputElement.id + '_slash_menu_popup');

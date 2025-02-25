@@ -4694,6 +4694,17 @@ export class Annotation {
         commentDiv.childNodes[1].ej2_instances[0].value = editComment;
     }
 
+    /**
+     * Updates the existing properties of the specified annotation object.
+     *
+     * @param {any} annotation - The annotation object that contains the properties to be updated.
+     * The object should include valid annotation properties such as type, bounds, color, opacity, etc.
+     * Modifying these properties will update the annotation in the PDF Viewer accordingly.
+     *
+     * @remarks
+     * This method will apply the changes to the annotation and refresh the viewer to reflect the updated properties.
+     */
+
     public editAnnotation(annotation: any): void {
         let currentAnnotation: any;
         let annotationId: string;

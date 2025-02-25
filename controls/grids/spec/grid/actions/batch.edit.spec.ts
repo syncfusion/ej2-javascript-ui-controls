@@ -5442,3 +5442,51 @@ describe('EJ2-927007: Save the cell with enter key functionality not working pro
         gridObj = null;
     });
 });
+
+describe('EJ2-939503: The row gets selected upon editing in batch mode, even with selectionSettings.checkboxOnly enabled. =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+        {
+            dataSource: data.slice(0,11),
+            editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+            selectionSettings: { checkboxOnly: true },
+            toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                { type: 'checkbox', width: 50 },
+                {
+                    field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                    validationRules: { required: true }, width: 120
+                },
+                {
+                    field: 'CustomerID', headerText: 'Customer ID', width: 140
+                },
+                { field: 'ShipName', headerText: 'Ship Name', width: 170 },
+                {
+                    field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150
+                }
+            ],
+            
+        }, done);
+    });
+
+    it('edit cell', (done: Function) => {
+        let cellEdit = (args?: any): void => {
+            expect(gridObj.isEdit).toBeFalsy();
+            gridObj.cellEdit = null;
+            done();
+        };
+        gridObj.cellEdit = cellEdit;
+        gridObj.editModule.editCell(0, 'CustomerID');
+    });
+
+    it('select the row', (done: Function) => {
+        expect(gridObj.getRows()[0].firstElementChild.classList.contains('e-selectionbackground')).toBeFalsy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

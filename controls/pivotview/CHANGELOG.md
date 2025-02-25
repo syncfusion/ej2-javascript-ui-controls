@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I689404` - Now we can apply number grouping to decimal values in the pivot table.
+- `#682045`, `#682045` - Date field members will now be correctly localized when using the Pivot Table with the server-side engine across different cultures.
+
 ## 28.2.6 (2025-02-18)
 
 ### Pivot Table

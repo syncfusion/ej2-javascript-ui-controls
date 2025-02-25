@@ -2371,6 +2371,32 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         return (!str || /^\s*$/.test(str));
     }
 
+    private checkGenericExtension(genericType: string, fileExtension: string): boolean {
+        const validExtensions: string[] = [];
+
+        switch (genericType.toLowerCase()) {
+        case 'image/*':
+            validExtensions.push('jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'svg', 'webp', 'heic');
+            break;
+        case 'audio/*':
+            validExtensions.push('mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a');
+            break;
+        case 'video/*':
+            validExtensions.push('mp4', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'webm', 'mpeg');
+            break;
+        case 'application/*':
+            validExtensions.push('doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', '7z', 'tar', 'pdf');
+            break;
+        case 'text/*':
+            validExtensions.push('txt', 'csv', 'html', 'css', 'js', 'json', 'xml', 'md');
+            break;
+        default:
+            break;
+        }
+
+        return (validExtensions as any).includes(fileExtension.toLowerCase());
+    }
+
     private checkExtension(files: FileInfo[]): FileInfo[] {
         const dropFiles: FileInfo[] = files;
         if (!this.isBlank(this.allowedExtensions)) {
@@ -2382,7 +2408,15 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             for (let i: number = 0; i < files.length; i++) {
                 const checkFileType: string = files[i as number].type.indexOf('.') !== -1 ?
                     files[i as number].type.replace('.', '') : files[i as number].type;
-                if (allowedExtensions.indexOf(('.' + checkFileType).toLocaleLowerCase()) === -1) {
+                if (allowedExtensions[0].indexOf('/*') !== -1) {
+                    const isValidExtension : boolean = this.checkGenericExtension(allowedExtensions[0], checkFileType);
+                    if (!isValidExtension)
+                    {
+                        files[i as number].status = this.localizedTexts('invalidFileType');
+                        files[i as number].statusCode = '0';
+                    }
+                }
+                else if ((allowedExtensions.indexOf(('.' + checkFileType).toLocaleLowerCase()) === -1)) {
                     files[i as number].status = this.localizedTexts('invalidFileType');
                     files[i as number].statusCode = '0';
                 }

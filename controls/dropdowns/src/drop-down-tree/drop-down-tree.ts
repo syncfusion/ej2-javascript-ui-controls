@@ -2511,6 +2511,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.updateFocus(focusedElement);
                 }
                 if (this.allowFiltering) {
+                    const focusedElement: HTMLElement = this.treeObj.element.querySelector('li.e-node-focus');
+                    if (!isNOU(focusedElement)) {
+                        removeClass([focusedElement], 'e-node-focus');
+                    }
                     removeClass([this.inputWrapper], [INPUTFOCUS]);
                     this.filterObj.element.focus();
                 }
@@ -3354,7 +3358,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.chipCollection.appendChild(chip);
         if (this.showClearButton) {
             chip.appendChild(chipClose);
-            EventHandler.add(chipClose, 'mousedown', this.removeChip, this);
+            EventHandler.add(chipClose, 'mouseup', this.removeChip, this);
         }
     }
 
@@ -3486,6 +3490,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private removeChip(e: MouseEvent): void {
         if (!this.enabled || this.readonly) {
             return;
+        }
+        if ((e.target as HTMLElement).classList.contains('e-chips-close') && !this.isPopupOpen) {
+            e.stopPropagation();
+            e.preventDefault();
         }
         const element: HTMLElement = (<HTMLElement>e.target).parentElement;
         const value: string = element.getAttribute('data-value');
@@ -3994,7 +4002,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.chipCollection) {
             const chipsIcons: HTMLElement[] = selectAll('.e-chips-close', this.chipCollection);
             for (const element of chipsIcons) {
-                EventHandler.remove(element, 'mousedown', this.removeChip);
+                EventHandler.remove(element, 'mouseup', this.removeChip);
             }
         }
         this.chipWrapper = null;

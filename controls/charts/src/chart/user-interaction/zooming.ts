@@ -960,7 +960,7 @@ export class Zoom {
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
-        this.chart.on('mousewheel', this.chartMouseWheel, this);
+        EventHandler.add(this.chart.element, this.wheelEvent, this.chartMouseWheel, this);
         this.chart.on(Browser.touchMoveEvent, this.mouseMoveHandler, this);
         this.chart.on(Browser.touchStartEvent, this.mouseDownHandler, this);
         this.chart.on(Browser.touchEndEvent, this.mouseUpHandler, this);
@@ -973,8 +973,8 @@ export class Zoom {
      * @private
      */
     public removeEventListener(): void {
+        EventHandler.remove(this.chart.element, this.wheelEvent, this.chartMouseWheel);
         if (this.chart.isDestroyed) { return; }
-        this.chart.off('mousewheel', this.chartMouseWheel);
         this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
         this.chart.off(Browser.touchStartEvent, this.mouseDownHandler);
         this.chart.off(Browser.touchEndEvent, this.mouseUpHandler);

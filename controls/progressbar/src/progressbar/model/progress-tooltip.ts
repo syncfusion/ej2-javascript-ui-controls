@@ -31,6 +31,8 @@ export class ProgressTooltip {
     public isRendered: boolean;
     // Defines interval to tooltip fadein.
     private fadeInInterval: number;
+    // Defines the previous left value of tooltip.
+    private previousPosition: number = 0;
 
     /**
      * Method to render the tooltip for progress bar.
@@ -39,6 +41,7 @@ export class ProgressTooltip {
     public tooltip(e?: PointerEvent | TouchEvent): void {
         const svgElement: HTMLElement = document.getElementById(this.control.element.id + '_tooltip');
         const isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+        this.previousPosition = svgElement.style.left ? parseInt(svgElement.style.left, 10) : 0;
         this.renderTooltip(e, this.control, !isTooltip);
         if (this.control.tooltip.enable && this.control.type === 'Circular' && this.control.animation.enable && !(this.control.tooltip.showTooltipOnHover)) {
             svgElement.style.visibility = 'hidden';
@@ -88,9 +91,11 @@ export class ProgressTooltip {
                 if (progress.type === 'Linear') {
                     if (args.timeStamp >= args.delay) {
                         args.element.style.visibility = 'visible';
-                        const value: number = effect(args.timeStamp, (0 - (width / 2 - this.control.progressRect.x - 5)),
-                                                     endValue + ( width / 2 - this.control.progressRect.x - 5),
-                                                     args.duration, progress.enableRtl);
+                        const start: number = this.previousPosition ? this.previousPosition :
+                            (0 - (width / 2 - this.control.progressRect.x - 5));
+                        const end: number = this.previousPosition ? endValue - start :
+                            endValue + (width / 2 - this.control.progressRect.x - 5);
+                        const value: number = effect(args.timeStamp, start, end, args.duration, progress.enableRtl);
                         args.element.style.left = '';
                         args.element.style.left = value + 'px'.toString();
                     }

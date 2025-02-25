@@ -16,7 +16,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import { dispatchEvent, hasClass, convertToBlob } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
-import { isIDevice } from '../../common/util';
+import { isIDevice, isSafari } from '../../common/util';
 
 /**
  * `Audio` module is used to handle audio actions.
@@ -402,7 +402,7 @@ export class Audio {
                 }
             }
         }
-        if (this.isAudioElem(e.target as HTMLElement)) {
+        if (this.isAudioElem(e.target as HTMLElement) && !isSafari()) {
             this.audEle = (e.target as HTMLElement).querySelector('audio') as HTMLAudioElement;
             e.preventDefault();
         }

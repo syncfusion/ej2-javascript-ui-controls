@@ -239,10 +239,10 @@ export class GridPanel extends Container {
      * @param {number} height - provide the Connector value.
      * @param {boolean} isConsiderChild - provide the Connector value.
      * @param {number} padding - provide the Connector value.
-     *
+     * @param {boolean} isUndoRedo - Provide if its undo-redo action or not
      * @private
      */
-    public updateRowHeight(rowId: number, height: number, isConsiderChild: boolean, padding?: number): void {
+    public updateRowHeight(rowId: number, height: number, isConsiderChild: boolean, padding?: number, isUndoRedo?: boolean): void {
         const row: GridRow = this.rows[parseInt(rowId.toString(), 10)];
         this.rowDefns[parseInt(rowId.toString(), 10)].height = height;
         if (this.height !== undefined) {
@@ -263,7 +263,7 @@ export class GridPanel extends Container {
         if (isConsiderChild) {
             const minHeight: number = (padding !== undefined) ? this.calculateCellHeightBasedOnChildren(rowId, padding) :
                 this.calculateCellHeight(rowId);
-            if (minHeight > height) {
+            if (minHeight > height && !isUndoRedo) {
                 this.updateRowHeight(rowId, minHeight, false);
             }
         }
@@ -292,10 +292,11 @@ export class GridPanel extends Container {
      * @param {number} width - provide the Connector value.
      * @param {boolean} isConsiderChild - provide the Connector value.
      * @param {number} padding - provide the Connector value.
+     * @param {boolean} isUndoRedo - Provide if its undo-redo action or not
      *
      * @private
      */
-    public updateColumnWidth(colId: number, width: number, isConsiderChild: boolean, padding?: number): void {
+    public updateColumnWidth(colId: number, width: number, isConsiderChild: boolean, padding?: number, isUndoRedo?: boolean): void {
         this.colDefns[parseInt(colId.toString(), 10)].width = width;
         if (this.width !== undefined) {
             this.width += width - this.rows[this.rows.length - 1].cells[parseInt(colId.toString(), 10)].desiredCellWidth;
@@ -315,7 +316,7 @@ export class GridPanel extends Container {
         if (isConsiderChild) {
             const minWidth: number = (padding !== undefined) ? this.calculateCellWidthBasedOnChildren(colId, padding) :
                 this.calculateCellWidth(colId);
-            if (minWidth > width) {
+            if (minWidth > width && !isUndoRedo) {
                 this.updateColumnWidth(colId, minWidth, false);
             }
         }

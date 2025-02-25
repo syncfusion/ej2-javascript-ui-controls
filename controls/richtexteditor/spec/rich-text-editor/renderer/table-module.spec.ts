@@ -7402,31 +7402,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
-    describe('938242: MAC - The quick toolbar for the MAC opens upon selecting text.', ()=> {
-        let editor: RichTextEditor;
-        beforeAll(()=> {
-            editor= renderRTE({
-                value: `<table><tr><td>Text Content</td><td>Text Content</td><td>Text Content</td></tr></table>`
-            });
-        })
-        afterAll(()=> {
-            destroy(editor);
-        })
-        it('Should not open the Quick toolbar on right click when range collapsed is false.', (done: DoneFn)=> {
-            editor.focusIn();
-            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
-            const range = new Range();
-            range.setStart(editor.inputElement.querySelector('td').firstChild, 0);
-            range.setEnd(editor.inputElement.querySelector('td').firstChild, 4);
-            editor.selectRange(range);
-            editor.inputElement.dispatchEvent(new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT));
-            setTimeout(() => {
-                expect(editor.quickToolbarModule.tableQTBar.popupObj.element.classList.contains('e-popup-open')).toBe(false);
-                done();
-            }, 100);
-        })
-    });
-
     describe('936848: Add Table Popup Gets Hidden Under the Lower Rich Text Editor’s Toolbar', () => {
         let rteObjOne : RichTextEditor;
         let rteObjTwo : RichTextEditor;

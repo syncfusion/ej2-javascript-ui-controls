@@ -520,8 +520,12 @@ export class UndoRedo {
         } else {
             if (actualObject.parentId) {
                 parentNode = diagram.nameTable[actualObject.parentId];
-                parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
-                parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
+                if (parentNode) {
+                    //929543: To remove the child node from lane children collection.
+                    this.removeChildFromLane(diagram, parentNode, actualObject);
+                    parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
+                    parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
+                }
             }
             if ((entryObject as Node).parentId && (entryObject as Node).parentId !== '') {
                 parentNode = diagram.nameTable[(entryObject as Node).parentId];
@@ -532,6 +536,40 @@ export class UndoRedo {
             diagram.removeElements(actualObject);
             diagram.updateDiagramObject(actualObject);
         }
+    }
+    /**
+     * removeChildFromLane method \
+     *
+     * @returns { void } .\
+     * @param {Diagram} diagram - provide the diagram value.
+     * @param {NodeModel} parentNode - provide the lane obj.
+     * @param {Node} actualObject - provide the node value.
+     * @private
+     */
+    public removeChildFromLane(diagram: Diagram, parentNode: NodeModel, actualObject: Node): void {
+        const swimlane: NodeModel = diagram.nameTable[(parentNode as Node).parentId];
+        if (swimlane && swimlane.shape && (swimlane.shape as SwimLane).lanes.length > 0) {
+            const isHorizontal: boolean = (swimlane.shape as SwimLane).orientation === 'Horizontal';
+            const hasPhases: boolean = ((swimlane.shape as SwimLane).phases.length > 0) && ((swimlane.shape as SwimLane).phaseSize > 0);
+            let phaseIndex: number = 0;
+            if (!hasPhases) {
+                phaseIndex = 1;
+            }
+            const index: number = isHorizontal
+                ? ((swimlane.shape as SwimLane).hasHeader ? (parentNode.rowIndex - (2 - phaseIndex))
+                    : (parentNode.rowIndex - (1 - phaseIndex)))
+                : parentNode.columnIndex - (1 - phaseIndex);
+
+            const lane: LaneModel = (swimlane.shape as SwimLane).lanes[parseInt(index.toString(), 10)];
+            if (lane && lane.children && lane.children.length > 0) {
+                for (let i: number = lane.children.length - 1; i >= 0; i--) {
+                    if (lane.children[parseInt(i.toString(), 10)].id === actualObject.id) {
+                        lane.children.splice(i, 1);
+                    }
+                }
+            }
+        }
+
     }
 
     private recordStackPositionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
@@ -577,12 +615,16 @@ export class UndoRedo {
             if (swimlane.shape.type === 'SwimLane') {
                 const grid: GridPanel = swimlane.wrapper.children[0] as GridPanel;
                 const padding: number = (swimlane.shape as SwimLane).padding;
+                let isUndoRedo: boolean = false;
+                if (diagram.diagramActions & DiagramAction.UndoRedo) {
+                    isUndoRedo = true;
+                }
                 updateSwimLaneObject(diagram, node, swimlane, obj);
                 if (isRow) {
-                    grid.updateRowHeight(obj.rowIndex, obj.wrapper.actualSize.height, true, padding);
+                    grid.updateRowHeight(obj.rowIndex, obj.wrapper.actualSize.height, true, padding, isUndoRedo);
                     swimlane.height = swimlane.wrapper.height = grid.height;
                 } else {
-                    grid.updateColumnWidth(obj.columnIndex, obj.wrapper.actualSize.width, true, padding);
+                    grid.updateColumnWidth(obj.columnIndex, obj.wrapper.actualSize.width, true, padding, isUndoRedo);
                     swimlane.width = swimlane.wrapper.width = grid.width;
                     if (obj.isPhase) {
                         actualObject.maxWidth = actualObject.wrapper.maxWidth = obj.wrapper.actualSize.width;
@@ -977,6 +1019,12 @@ export class UndoRedo {
                     diagram.remove(diagram.nameTable[(obj as BpmnAnnotation).nodeId + '_textannotation_' + obj.id]);
                 } else {
                     diagram.remove(obj);
+                    if ((obj as Node).parentId) {
+                        const parentNode: NodeModel = diagram.nameTable[(obj as Node).parentId];
+                        if (parentNode) {
+                            this.removeChildFromLane(diagram, parentNode, (obj as Node));
+                        }
+                    }
                     diagram.clearSelectorLayer();
                 }
             } else {

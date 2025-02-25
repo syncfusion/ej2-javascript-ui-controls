@@ -11,7 +11,7 @@ import { Page } from '../../../src/grid/actions/page';
 import { Sort } from '../../../src/grid/actions/sort';
 import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import { Selection } from '../../../src/grid/actions/selection';
-import { filterData, employeeData } from '../base/datasource.spec';
+import { filterData, employeeData, groupData } from '../base/datasource.spec';
 import { performComplexDataOperation } from '../../../src/grid/base/util';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
@@ -1666,3 +1666,52 @@ describe('EJ2: 916181 => All template is not rendering in React when using the C
         gridObj = null;
     });
 });
+
+
+describe('EJ2: 937540 => On-Demand Excel Filter Dialog in Grouped Grid with Existing Filters Does Not Show All Distinct Values => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: groupData,
+                allowFiltering: true,
+                allowSorting: true,
+                allowGrouping: true,
+                height: "600px",
+                filterSettings: {
+                    type: "Excel",
+                    enableInfiniteScrolling: true,
+                    columns: [{ field: "Status", matchCase: false, operator: "equal", predicate: "or", value: "Pending" }]
+                },
+                sortSettings: {
+                    columns: [{ field: "DateStr", direction: "Ascending" }],
+                },
+                groupSettings: {
+                    columns: ["DateStr"]
+                },
+                columns: [
+                    { type: "checkbox", width: 50 },
+                    { field: "Id", isPrimaryKey: true, headerText: "Id", width: 100, textAlign: "Right" },
+                    { field: "Status", headerText: "Status", allowEditing: false, width: 150, showColumnMenu: true, },
+                    { field: "User", headerText: "User" },
+                    { field: "DateStr", headerText: "Date", format: "yMd", textAlign: "Right" },
+                ]
+            }, done);
+    });
+
+    it('After opens the filter dialog 3 records should be available', (done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterAfterOpen') {
+                expect(args.filterModel.cBox.querySelectorAll('.e-ftrchk').length === 3).toBeTruthy();
+            }
+            done();
+        };
+        gridObj.filterModule.openMenuByField('User');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+

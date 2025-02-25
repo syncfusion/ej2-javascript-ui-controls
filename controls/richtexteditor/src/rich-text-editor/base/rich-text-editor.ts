@@ -3712,7 +3712,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.removeSelectionClassStates(this.inputElement);
             this.notify(events.focusChange, {});
             const value: string = this.getUpdatedValue();
-            this.setProperties({ value: value });
+            if (!this.rootContainer.classList.contains('e-source-code-enabled')) {
+                this.setProperties({ value: value }, true);
+            } else {
+                this.setProperties({ value: value });
+            }
             this.valueContainer.value = this.value;
             this.isValueChangeBlurhandler = true;
             this.invokeChangeEvent();

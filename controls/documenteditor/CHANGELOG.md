@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I682091` - Fixed a document corruption issue when applying a custom style and exporting to Docx.
+- `#I683126` - Fixed a script error that occurred when performing undo, delete, and reject actions on track changes content.
+- `#I691258` - Fixed an issue where undoing the deletion of list items did not work correctly with track changes enabled.
+- `#I687962` - Fixed incorrect behaviour when applying "Capitalize Each Word" to sentences containing multiple words with apostrophes.
+- `#I683579` - Fixed a spell checker issue that occurred when track changes were enabled on combined insertion and deletion content.
+- `#I688793` - Fixed a script error that occurred when opening an SFDT document containing track changes content.
+
 ## 28.2.6 (2025-02-18)
 
 ### DocumentEditor

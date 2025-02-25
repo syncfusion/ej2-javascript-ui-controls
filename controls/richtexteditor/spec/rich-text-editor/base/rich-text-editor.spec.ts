@@ -8933,6 +8933,37 @@ describe('936378 - Content Repetition Issue While Pressing Backspace in List.', 
     });
 });
 
+describe('942128 - Backspace not working properly.', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<p>This is  a paragraph content.</p><ul><li>This is a first list content</li></ul><p class='last_element'>This is a second list content.</p>`,
+        });
+    });
+    it('should merge content when pressing backspace key', (done: Function) => {
+        debugger
+        let node: Element = (rteObj as any).inputElement.querySelector('.last_element');
+        setCursorPoint(document, (node.childNodes[0] as Element), 0);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.querySelector("UL li").textContent.indexOf("This is a second list content.") > -1).toBe(true);
+        rteObj.value = `<p>This is  a paragraph content.</p><ul><li><p>This is a first list <em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><strong>content</strong></span></span></em></p></li></ul><p class='last_element'>This is a second list content.</p>`;
+        rteObj.dataBind();
+        let startNode = (rteObj as any).inputElement.querySelector('.last_element');
+        setCursorPoint(document, (startNode.childNodes[0] as Element), 0);
+        rteObj.keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.querySelector("UL li p").textContent.indexOf("This is a second list content.") > -1).toBe(true);
+        expect((rteObj as any).inputElement.querySelector("UL li p").lastChild.textContent === 'This is a second list content.').toBe(true);
+        done();
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+});
+
 describe('927297: When the Backspace key is pressed at the beginning of a line, it incorrectly merges all the lines into one.', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };

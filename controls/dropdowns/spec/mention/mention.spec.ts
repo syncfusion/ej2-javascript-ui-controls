@@ -514,6 +514,35 @@ describe('Mention', () => {
         });
     });
 
+    describe('Mention search method testing ', () => {
+        let mentionObj: any;
+        let element: HTMLDivElement;
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 700;
+            element = <HTMLDivElement>createElement('div', { id: 'inputMention' });
+            document.body.appendChild(element);
+            mentionObj = new Mention({ fields: { text: 'text', value: 'id' } });
+            mentionObj.appendTo(element);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) { element.remove(); };
+            document.body.innerHTML = '';
+        });
+        it('search method with hide popup checking', (done) => {
+            mentionObj.showPopup();
+            mentionObj.isPopupOpen = true;
+            mentionObj.search("snooker ", 146, 106);
+            setTimeout(function () {
+                expect(mentionObj.isPopupOpen).toEqual(false);
+                done();
+            }, 450);
+        });
+    });
+
     describe('Show popup onKeyup and inserting texts', () => {
         let mentionObj: any;
         let popupObj: any;

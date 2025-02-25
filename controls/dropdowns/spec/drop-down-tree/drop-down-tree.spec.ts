@@ -187,7 +187,7 @@ describe('DropDownTree control', () => {
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
             (ddtreeObj as any).onFocusOut();
-            expect(ddtreeObj.value.length).toBe(2);
+            expect(ddtreeObj.value.length).toBe(1);
         });
 
         it('Selecting values using fullrow and clearing it', () => {

@@ -2547,5 +2547,46 @@ describe('Audio Module', () => {
         });
     });
 
+    describe('939661: Audio progress bar event is not unbinding after playback in Safari', () => {
+        let editor: RichTextEditor;
+        const defaultUA: string = navigator.userAgent;
+        const safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
+        beforeAll(() => {
+            Object.defineProperty(navigator, 'userAgent', {
+                value: safari,
+                configurable: true
+            });
+            editor = renderRTE({
+                value: `<p><audio controls>
+                            <source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3" />
+                        </audio>
+                        </p> `
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+            Object.defineProperty(navigator, 'userAgent', {
+                value: defaultUA,
+                configurable: true
+            });
+        });
+
+        it('Should not call the prevent default for the click of the audio SAFARI.', (done: Function) => {
+            editor.focusIn();
+            const audioElem: HTMLAudioElement =  editor.inputElement.querySelector('audio');
+            let defaultPrevent: boolean = true;
+            function onAudioClick(e: any) {
+                defaultPrevent = e.defaultPrevented; // Will be true only if preventDefault() was called somewhere
+            }
+            audioElem.addEventListener('click', onAudioClick.bind(this));
+            audioElem.click();
+            setTimeout(() => {
+                expect(defaultPrevent).toBe(false);
+                audioElem.removeEventListener('click', onAudioClick)
+                done();
+            }, 100);
+        });
+    });
+
  });
  

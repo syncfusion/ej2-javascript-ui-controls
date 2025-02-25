@@ -925,6 +925,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                         this.linear.renderLinearLabel(true);
                     }
                 }
+                if (this.progressTooltipModule) {
+                    this.progressTooltipModule.tooltip();
+                }
                 this.element.setAttribute('aria-valuenow', this.argsData.value ? this.argsData.value.toString() : '0');
                 break;
             case 'animation':

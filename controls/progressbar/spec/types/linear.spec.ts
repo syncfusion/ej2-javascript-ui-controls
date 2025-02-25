@@ -1,6 +1,7 @@
 import { ProgressBar } from '../../src/progressbar/progressbar';
 import { createElement, EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../src/progressbar/model/progress-interface';
+import { ProgressBarModel } from '../../src';
 /**
  * spec for linear progress bar
  */
@@ -682,6 +683,22 @@ describe('linear progress bar databind', () => {
         progress.theme = 'Fluent2Dark';
         progress.value = 89.5;
         progress.showProgressValue = true;
+        progress.loaded = loaded;
+        progress.refresh();
+    });
+    it('checking the value changes on data bind', () => {
+        loaded = (args: Object): void => {
+            let oldProgress: ProgressBarModel = {
+                value: 10
+            };
+            let newProgress: ProgressBarModel = {
+                value: 10
+            };
+            progress.onPropertyChanged(oldProgress, newProgress);
+            let label: HTMLElement = document.getElementById('container_Linearprogress');
+            expect(label !== null).toBe(true);
+        };
+        progress.tooltip.enable = true;
         progress.loaded = loaded;
         progress.refresh();
     });

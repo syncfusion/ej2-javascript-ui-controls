@@ -2639,6 +2639,7 @@ export class SfdtReader {
     private parseTabStop(keyIndex: number, wTabs: any, tabs: WTabStop[]): void {
         if (wTabs) {
             for (let i: number = 0; i < wTabs.length; i++) {
+                let isDuplicate: boolean = false;
                 let tab: any = wTabs[i];
                 if (Object.keys(tab).length > 0) {
                     let tabStop: WTabStop = new WTabStop();
@@ -2646,7 +2647,19 @@ export class SfdtReader {
                     tabStop.tabLeader = this.getTabLeader(tab[tabLeaderProperty[keyIndex]]);
                     tabStop.deletePosition = tab[deletePositionProperty[keyIndex]];
                     tabStop.tabJustification = this.getTabJustification(tab[tabJustificationProperty[keyIndex]]);
-                    tabs.push(tabStop);
+                    for (let j: number = 0; j < tabs.length; j++) {
+                        const existingTab: WTabStop = tabs[j];
+                        if (existingTab.position === tabStop.position &&
+                            existingTab.tabLeader === tabStop.tabLeader &&
+                            existingTab.deletePosition === tabStop.deletePosition &&
+                            existingTab.tabJustification === tabStop.tabJustification) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+                    if (!isDuplicate) {
+                        tabs.push(tabStop);
+                    }
                 }
             }
         }

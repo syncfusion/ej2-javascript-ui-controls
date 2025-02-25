@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I691821` - The accumulation chart rendering performance has been improved.
+
+## 28.2.6 (2025-02-18)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I691577` - Now, mouse wheel zooming works properly in the Firefox browser.
+
 ## 28.2.5 (2025-02-11)
 
 ### Chart

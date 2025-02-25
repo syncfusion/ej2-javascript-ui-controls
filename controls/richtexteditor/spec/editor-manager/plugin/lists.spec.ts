@@ -723,6 +723,78 @@ describe ('left indent testing', () => {
             });
         });
 
+        describe('941259 - Auto List Conversion - Space Key Press Tests', () => {
+            let elem: HTMLElement;
+            let editorObj: EditorManager;
+            let editNode: HTMLElement;
+            let startNode: Node;
+            let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 32 } };
+
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node',
+                    innerHTML: `<div id="content-edit">
+                                    <ol><li class="olNode">1.</li></ol>
+                                    <ul><li class="ulNode">1.</li></ul>
+                                    <ul><li class="ulNode-star">*</li></ul>
+                                    <ol><li class="olNode-star">*</li></ol>
+                                </div>`
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it('Should not change the OL list when "1." is pressed at the start of OL\'s LI content', () => {
+                startNode = editNode.querySelector('.olNode').childNodes[0];
+                setCursorPoint(startNode as Element, 2);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.olNode').parentElement.tagName).toBe('OL');
+            });
+
+            it('Should change UL to OL when "1." is pressed at the start of UL’s LI content', () => {
+                startNode = editNode.querySelector('.ulNode').childNodes[0];
+                setCursorPoint(startNode as Element, 2);
+                editNode.focus();
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.ulNode').parentElement.tagName).toBe('OL'); // Expected change
+            });
+
+            it('Should not change the UL list when "*" is pressed at the start of UL\'s LI content', () => {
+                startNode = editNode.querySelector('.ulNode-star').childNodes[0];
+                setCursorPoint(startNode as Element, 1);
+                editNode.focus();
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.ulNode-star').parentElement.tagName).toBe('UL');
+            });
+
+            it('Should change OL to UL when "*" is pressed at the start of OL’s LI content', () => {
+                startNode = editNode.querySelector('.olNode-star').childNodes[0];
+                setCursorPoint(startNode as Element, 1);
+                editNode.focus();
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.olNode-star').parentElement.tagName).toBe('UL'); // Expected change
+            });
+
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
         describe('873315 - Applying list to the blockquotes element', () => {
             let elem: HTMLElement = createElement('div', {
                 id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p class="startFocus">Line 1</p><p>Line 2</p><blockquote>Line 3 with quotation</blockquote><p>Line 4</p><p>Line 5</p><blockquote>Line 6&nbsp;<span style="background-color: unset; text-align: inherit;">with quotation</span></blockquote><p>Line 7</p><p class="endFocus">Line 8</p></div>`
@@ -1973,6 +2045,33 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+
+        describe('Bug 939469: List not removed when we press backspace key in the RichTextEditor', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><ul><li class="rte">Hello</li></ul></div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it(' Backspace key press at start of the normal list', () => {
+                startNode = editNode.querySelector('.rte');
+                setCursorPoint((startNode.childNodes[0] as Element), 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelectorAll('p').length === 1).toBe(true);
+            });
+        });
         
         describe('Backspace key press at the start of the list when no content is previous to the list', () => {
             let elem: HTMLElement;
@@ -2790,6 +2889,38 @@ describe ('left indent testing', () => {
         
     });
 
+    describe('939650 - List is created at the last cell of the table instead of the intended position in Mac Safari browser', () => {
+        let editorObj: RichTextEditor;
+        beforeEach((done) => {
+            editorObj = renderRTE({
+                enterKey: 'BR',
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><br>`
+            });
+            done();
+        });
+        afterEach((done) => {
+            destroy(editorObj);
+            done();
+        });
+        it('should create a list wrapping the entire table and then remove it when toggled', (done) => {
+            let startNode = editorObj.inputElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 0);
+            (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+            expect(editorObj.inputElement.querySelector("ul").firstChild.firstChild.nodeName === 'TABLE').toBe(true);
+            let elements = editorObj.inputElement.querySelector("ul");
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, elements, elements, 0, 0);
+            (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+            expect(editorObj.inputElement.querySelector("ul")).toBe(null);
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 1, 1);
+            (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+            expect(editorObj.inputElement.querySelector("ul").firstChild.firstChild.nodeName === 'TABLE').toBe(true);
+            done();
+        });
+    });
+
     describe('935455 - Empty List Deletion When Selecting Text and Pressing Delete Key', () => {
         let editorObj: RichTextEditor;
         beforeEach((done) => {
@@ -2819,6 +2950,73 @@ describe ('left indent testing', () => {
             expect(editorObj.inputElement.querySelector("ol").lastElementChild.nodeName === 'LI').toBe(true);
             expect(editorObj.inputElement.querySelector("ol").lastElementChild.textContent === '').toBe(true);
             done();
+        });
+    });
+
+    describe('941893 - After inserting the table in a list and pressing enter key leads to delete the whole list and table', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let elem: HTMLElement;
+        let innerValue: string = `<div id=\"content-edit\"><ol><li><table class=\"e-rte-table\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td style=\"width: 50%;\"><br></td><td style=\"width: 50%;\"><br></td></tr><tr><td style=\"width: 50%;\"><br></td><td style=\"width: 50%;\"><br></td></tr></tbody></table></li></ol></div>`;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
+        beforeAll(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: innerValue
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+        it('Place cursor after the table, press Enter key, and ensure list structure is maintained.', (done) => {
+            let table: HTMLElement = editNode.querySelector('table');
+            setCursorPoint(table, 0);
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.event.which = 13;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(editNode.querySelector('table')).not.toBeNull();
+            done();
+        });
+    });
+
+    describe('EJ2-939668 - Empty list is not reverted when pressing Enter key', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
+        let elem: HTMLElement;
+        let innerValue: string = `<div id="content-edit"><p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li id="firstli"><p><br></p></li><li><p>Capable of handling markdown editing.</p></li></ul></li></ul></li></ul></li></ul></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul></div>`;        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: innerValue
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' Empty list is reverted after pressing the Enter key', () => {
+            startNode = editNode.querySelector('#firstli');
+            startNode = startNode.childNodes[0] as HTMLElement;
+            setCursorPoint(startNode, 0);
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.event.which = 13;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(editNode.querySelector('#firstli')).toBe(null);
+        });
+
+        afterAll(() => {
+            detach(elem);
         });
     });
 });

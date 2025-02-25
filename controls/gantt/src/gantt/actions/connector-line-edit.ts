@@ -206,19 +206,16 @@ export class ConnectorLineEdit {
                 }
             }
             if (preArray[j as number].includes('-')) {
-                if (preArray[j as number].includes('-') && preArray[j as number].includes('days')) {
-                    predecessorName = preArray[j as number].slice(-9).toString();
-                }
-                if (preArray[j as number].includes('-') && preArray[j as number].includes('day')) {
-                    predecessorName = preArray[j as number].slice(-8).toString();
-                }
-                else {
-                    predecessorName = preArray[j as number].slice(-2).toString();
+                if (preArray[j as number].includes('-') && (preArray[j as number].includes('days') || preArray[j as number].includes('day'))) {
+                    const splitName: string[] = preArray[j as number].split(/-(?=\d)/);
+                    if (splitName.length > 0) {
+                        predecessorName = splitName[splitName.length - 1];
+                    }
                 }
                 if (preArray[j as number].includes('-') && /[A-Za-z]/.test(predecessorName)) {
                     const indexFS: number = preArray[j as number].indexOf(predecessorName);
                     if (indexFS !== -1) {
-                        firstPart = preArray[j as number].substring(0, indexFS);
+                        firstPart = preArray[j as number].substring(0, indexFS - 1);
                         if (firstPart.includes('-')) {
                             isAlpha = true;
                         }

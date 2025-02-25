@@ -12059,7 +12059,7 @@ export class Editor {
     }
     //Change text into capitalize each word
     private capitalizeFirst(inputString: string, makeFirstLetterCapital: boolean): string {
-        const pattern = /^\w+'\w+$/;
+        const pattern = /\b\w+'\w+\b/g;
         if (pattern.test(inputString)) {
             let words: string = inputString.split(/[^a-zA-Z0-9'\-]+/).toString();
             words = inputString.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -15259,7 +15259,7 @@ export class Editor {
             startOffset = start.offset;
             startLine = start.currentWidget;
             tempStartOffset = startOffset;
-            if ((startOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
+            if ((startOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget)) && isNullOrUndefined(paragraph.nextWidget)) {
                 startOffset++;
             }
             if (end.paragraph.isInsideTable && (!this.owner.enableTrackChanges || this.skipTracking())) {
@@ -15301,7 +15301,7 @@ export class Editor {
                 ((this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change' || (this.editorHistory.currentBaseHistoryInfo.isAcceptOrReject === 'Accept' && this.editorHistory.isRedoing)) && start.currentWidget.isLastLine() && ((start.currentWidget == end.currentWidget && start.offset + 1 >= end.paragraph.getLength()) || (start.currentWidget !== end.currentWidget && start.paragraph === paragraph))))) {
             isCombineNextParagraph = true;
         }
-        if ((tempStartOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
+        if ((tempStartOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget) && isNullOrUndefined(paragraph.nextWidget))) {
             startOffset--;
         }
         let paraEnd: TextPosition = end.clone();
@@ -19329,8 +19329,8 @@ export class Editor {
                 //     previousParagraph = this.documentHelper.selection.getPreviousBlock(paragraph) as ParagraphWidget;
                 // }
                 if (this.owner.enableTrackChanges && paragraph.previousRenderedWidget != undefined && paragraph.previousRenderedWidget.characterFormat.revisions.length == 0) {
+                    const characterFormat = previousParagraph.characterFormat.cloneFormat();
                     if (!this.checkToMatchEmptyParaMarkBack(previousParagraph)) {
-                        const characterFormat = previousParagraph.characterFormat.cloneFormat();
                         this.insertRevision(previousParagraph.characterFormat, 'Deletion');
                         let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
                         let previousIndex: number = previousParagraph.childWidgets.length - 1;
@@ -19342,7 +19342,7 @@ export class Editor {
                         let previousIndex: number = previousParagraph.childWidgets.length - 1;
                         this.documentHelper.layout.reLayoutParagraph(previousParagraph, previousIndex, 0);
                         selection.selects(previousParagraph.childWidgets[previousIndex] as LineWidget, endOffset, true);
-                        this.addRemovedNodes(paragraph);
+                        this.addRemovedNodes(characterFormat);
                     }
                 } else if (previousParagraph.isEmpty() && !this.owner.enableTrackChanges) {
                     this.removePrevParaMarkRevision(paragraph);
@@ -19885,9 +19885,12 @@ export class Editor {
 
     private updateEndRevisionIndex(): void {
         if (!isNullOrUndefined(this.editorHistory.undoStack) && this.editorHistory.undoStack.length > 0) {
-            let prevHistoryInfo: BaseHistoryInfo = this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1];
-            if (prevHistoryInfo.lastElementRevision && isNullOrUndefined(prevHistoryInfo.endRevisionLogicalIndex)) {
-                prevHistoryInfo.updateEndRevisionInfo();
+            for (let i: number = this.editorHistory.undoStack.length - 1; i >= 0; i--) {
+                let prevHistoryInfo: BaseHistoryInfo = this.editorHistory.undoStack[i];
+                if (prevHistoryInfo.lastElementRevision && isNullOrUndefined(prevHistoryInfo.endRevisionLogicalIndex)) {
+                    prevHistoryInfo.updateEndRevisionInfo();
+                    break;
+                }
             }
         }
     }
@@ -20287,7 +20290,7 @@ export class Editor {
             }
         }
 
-        if (selection.start.currentWidget.isLastLine() && offset === this.documentHelper.selection.getLineLength(selection.start.currentWidget)) {
+        if (selection.start.currentWidget.isLastLine() && offset >= this.documentHelper.selection.getLineLength(selection.start.currentWidget)) {
             if (paragraph.isInsideTable && isNullOrUndefined(paragraph.nextWidget)) {
                 return;
             }

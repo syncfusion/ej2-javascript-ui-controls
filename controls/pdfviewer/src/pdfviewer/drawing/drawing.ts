@@ -1078,7 +1078,7 @@ export class Drawing {
                             if (!this.pdfViewer.viewerBase.isFormFieldSelect && !this.pdfViewer.viewerBase.isFormFieldMouseDown &&
                                  !this.pdfViewer.viewerBase.isFormFieldMouseMove) {
                                 this.pdfViewer.viewerBase.isFormFieldSelect = true;
-                                const field: IFormField = {
+                                const field: any = {
                                     name: (node as any).name, id: (node as any).id, value: (node as any).value,
                                     fontFamily: node.fontFamily, fontSize: node.fontSize, fontStyle: (node as any).fontStyle,
                                     color: (node as PdfFormFieldBaseModel).color,
@@ -1087,10 +1087,11 @@ export class Drawing {
                                     visibility: (node as any).visibility,
                                     maxLength: (node as any).maxLength, isRequired: (node as any).isRequired,
                                     isPrint: node.isPrint, rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip,
-                                    options: (node as any).options, isChecked: (node as any).isChecked, isSelected: (node as any).isSelected
+                                    options: (node as any).options, isChecked: (node as any).isChecked,
+                                    isSelected: (node as any).isSelected, bounds: (node as any).bounds
                                 };
                                 if (!this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated) {
-                                    this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
+                                    this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field as IFormField, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
                                 }
                                 this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated = false;
                             }
@@ -1130,7 +1131,7 @@ export class Drawing {
                                 if (!this.pdfViewer.viewerBase.isFormFieldSelect && !this.pdfViewer.viewerBase.isFormFieldMouseDown &&
                                      !this.pdfViewer.viewerBase.isFormFieldMouseMove) {
                                     this.pdfViewer.viewerBase.isFormFieldSelect = true;
-                                    const field: IFormField = {
+                                    const field: any = {
                                         value: (node as any).value, fontFamily: node.fontFamily, fontSize: node.fontSize,
                                         fontStyle: (node as any).fontStyle,
                                         color: (node as PdfFormFieldBaseModel).color,
@@ -1140,10 +1141,10 @@ export class Drawing {
                                         maxLength: (node as any).maxLength, isRequired: (node as any).isRequired,
                                         isPrint: node.isPrint, rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip,
                                         options: (node as any).options, isChecked: (node as any).isChecked,
-                                        isSelected: (node as any).isSelected
+                                        isSelected: (node as any).isSelected, bounds: (node as any).bounds
                                     };
                                     if (!this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated) {
-                                        this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
+                                        this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field as IFormField, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
                                     }
                                     this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated = false;
                                 }

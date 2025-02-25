@@ -10729,13 +10729,13 @@ export class PdfViewerBase {
                     findIndex((el: any) => el.id === signatureFieldAnnotation.id)];
             }
             if (currentObject) {
-                const field: IFormField = {
+                const field: any = {
                     name: currentObject.name, id: currentObject.id, fontFamily: currentObject.fontFamily,
                     fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
                     color: (currentObject as PdfFormFieldBaseModel).color, value: currentObject.value,
                     type: currentObject.formFieldAnnotationType ? currentObject.formFieldAnnotationType : currentObject.type,
                     backgroundColor: (currentObject as PdfFormFieldBaseModel).backgroundColor,
-                    alignment: (currentObject as any).alignment
+                    alignment: (currentObject as any).alignment, bounds: currentObject.bounds
                 };
                 let target: any = document.getElementById(currentObject.id);
                 target = target ? target : (document.getElementById(currentObject.id + '_content_html_element') ? document.getElementById(currentObject.id + '_content_html_element').children[0].children[0] : null);

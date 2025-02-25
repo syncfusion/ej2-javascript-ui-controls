@@ -279,6 +279,21 @@ export class CollaborativeEditingHandler {
             data.skipOperation = true;
         }
     }
+    private handleAcceptReject(revisions: Revision[], operation: Operation): void {
+        for (let i: number = 0; i < revisions.length; i++) {
+            let revision: Revision = revisions[i];
+            if (revision.author === operation.markerData.author && revision.revisionType === operation.markerData.revisionType) {
+                const currentRevision: Revision = this.documentEditor.editorModule.getRevision(revision.revisionID);
+                if (currentRevision) {
+                    if (operation.markerData.isAcceptOrReject === 'Accept') {
+                        revision.accept();
+                    } else if (operation.markerData.isAcceptOrReject === 'Reject') {
+                        revision.reject();
+                    }
+                }
+            }
+        }
+    }
     private applyRemoteOperation(action: ActionInfo, offset: number, selectionLength: number): void {
         let currentUser: string = this.documentEditor.currentUser;
         let currentEditMode: boolean = this.documentEditor.commentReviewPane.commentPane.isEditMode;
@@ -363,6 +378,25 @@ export class CollaborativeEditingHandler {
                         revision.accept();
                     } else if (op2.markerData.isAcceptOrReject === 'Reject') {
                         revision.reject();
+                    }
+                } else {
+                    if (op2.text === CONTROL_CHARACTERS.Row) {
+                        let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
+                        if (data && data.rowWidget) {
+                            this.handleAcceptReject(data.rowWidget.rowFormat.revisions, op2);
+                        }
+                    } else {
+                        this.documentEditor.selectionModule.select(startOffset, endOffset);
+                        let item: WCharacterFormat | ElementBox;
+                        if (this.documentEditor.selection.start.isAtParagraphEnd) {
+                            item = this.documentEditor.selection.start.currentWidget.paragraph.characterFormat;
+                        } else {
+                            const elementInfo: ElementInfo = this.documentEditor.selectionModule.start.currentWidget.getInline(this.documentEditor.selectionModule.start.offset + 1, 0);
+                            item = elementInfo.element;
+                        }
+                        if (!isNullOrUndefined(item)) {
+                            this.handleAcceptReject(item.revisions, op2);
+                        }
                     }
                 }
                 continue;

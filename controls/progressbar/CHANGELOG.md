@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I690917` - Now, the tooltip renders properly when updating the progress value on data binding.
+
 ## 28.2.6 (2025-02-18)
 
 ### ProgressBar

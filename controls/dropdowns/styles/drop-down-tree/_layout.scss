@@ -557,10 +557,7 @@
         .e-checkbox-wrapper {
           position: relative;
           text-indent: 0;
-
-          @if ($ddt-skin-name == 'tailwind3') {
-            bottom: 2px;
-          }
+          bottom: $ddt-select-all-checkbox-bottom;
 
           .e-frame {
             @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
@@ -571,7 +568,7 @@
 
         .e-all-text {
           font-family: inherit;
-          font-size: 14px;
+          font-size: $ddt-select-all-font-size;
           margin: $ddt-select-all-checkbox-margin;
           @if $ddt-skin-name == 'tailwind' {
             line-height: $ddt-select-all-height;
@@ -923,6 +920,13 @@
       &.e-popup {
         .e-treeview .e-list-item .e-ul {
           padding: 0 14px 0 0;
+        }
+
+        .e-selectall-parent {
+          text-indent: $ddt-rtl-select-all-text-indent;
+          .e-all-text {
+            margin: $ddt-rtl-select-all-checkbox-margin;
+          }
         }
       }
     }

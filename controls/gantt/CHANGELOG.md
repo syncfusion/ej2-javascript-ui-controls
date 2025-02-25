@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I685559` - `updateRecordByID` method does not work when a predecessor dependency value is passed with offset days issue has been resolved.
+- `#I689267` - Console error occurred at initial load when end date not mapped in `taskFields` issue has been resolved.
+- Task not rendered at given time in datasource when `dayWorkingTime` is enabled issue has been resolved.
+- `#I691907` - Incorrect values are saved during edit action of work field with `FixedDuration` and `FixedWork` task types issue has been resolved.
+- `#I690721` - Console error occurs when user map level property in datasource issue has been resolved.
+
 ## 28.2.6 (2025-02-18)
 
 ### GanttChart

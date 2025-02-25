@@ -332,7 +332,9 @@ export class MaskedDateTime {
                 this.dayTypeCount += (this.dayTypeCount === 0 && (parseInt(date + '0', 10) > maxDaysInMonth)) ? 2 : 1;
             } else {
                 this.isDayPart = false;
-                this.dayTypeCount = this.isDateZero ? this.dayTypeCount + 1 : this.dayTypeCount;
+                if (!(this.dayTypeCount === 1 && this.isDateZero)) {
+                    this.dayTypeCount += this.isDateZero ? 1 : 0;
+                }
             }
             break;
         }
@@ -388,7 +390,9 @@ export class MaskedDateTime {
                     newDateValue.setMonth(0);
                     this.isLeadingZero = true;
                     this.isMonthPart = false;
-                    this.monthTypeCount = this.isMonthZero ? this.monthTypeCount + 1 : this.monthTypeCount;
+                    if (!(this.monthTypeCount === 1 && this.isMonthZero)) {
+                        this.monthTypeCount += this.isMonthZero ? 1 : 0;
+                    }
                 }
             } else {
                 const monthString: string[] = <string[]>(this.getCulturedValue('months[stand-alone].wide'));

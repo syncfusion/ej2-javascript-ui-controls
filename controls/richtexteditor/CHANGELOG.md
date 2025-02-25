@@ -16,6 +16,8 @@
 
 - `#F195933` - Now, the Add Table popup works properly when using two Rich Text Editors.
 
+- `#I687267` - Now, the screen reader works properly when navigating the color picker in the toolbar using the keyboard.
+
 ## 28.2.5 (2025-02-11)
 
 ### RichTextEditor

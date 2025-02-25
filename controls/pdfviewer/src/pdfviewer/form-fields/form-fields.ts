@@ -1123,11 +1123,13 @@ export class FormFields {
                     } else if (signatureType === 'Image') {
                         bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue,
                                                     currentLeft, currentTop, currentWidth, currentHeight);
+                        const newBounds: any = Object.freeze(bounds);
                         const image: HTMLImageElement = new Image();
                         const currentTarget: any = target;
                         image.src = currentValue;
                         image.onload = function (): void {
-                            proxy.imageOnLoad(bounds, image, currentValue, currentPage, rotateAngle,
+                            const editableBounds: any = Object.isFrozen(newBounds) ? { ...newBounds } : newBounds;
+                            proxy.imageOnLoad(editableBounds, image, currentValue, currentPage, rotateAngle,
                                               currentField, signatureField, signString, signatureFontFamily,
                                               signatureFontSize, currentTarget);
                         };
@@ -1549,7 +1551,21 @@ export class FormFields {
                                 currentData.Value = signaturePath;
                             }
                             if (signatureBounds) {
-                                currentData.Bounds = signatureBounds;
+                                if (!isNullOrUndefined(currentData.uniqueID) && fieldsByName === currentData.FieldName
+                                    && target.id === currentData.uniqueID) {
+                                    currentData.Bounds = signatureBounds;
+                                }
+                                else {
+                                    const boundWidth: number = this.ConvertPointToPixel(currentData.LineBounds.Width);
+                                    const boundHeight: number = this.ConvertPointToPixel(currentData.LineBounds.Height);
+                                    const boundX: number = this.ConvertPointToPixel(currentData.LineBounds.X);
+                                    const boundY: number = this.ConvertPointToPixel(currentData.LineBounds.Y);
+                                    const currentHeight: number = signatureBounds.height;
+                                    const currenWidth: number = signatureBounds.width;
+                                    const newX: number = boundX + ((boundWidth - currenWidth) / 2);
+                                    const newY: number = boundY + ((boundHeight - currentHeight) / 2);
+                                    currentData.Bounds = { x: newX, y: newY, height: currentHeight, width: currenWidth};
+                                }
                             }
                             if (signatureFontFamily) {
                                 currentData.FontFamily = signatureFontFamily;

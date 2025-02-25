@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### Grid
+
+#### Bug fixes
+
+- `#I687341` - In `on-demand filtering`, filter dialog in a grouped grid with existing filters did not show all distinct values issue has been resolved.
+- `#I591587` - The issue where the `on-demand filtering` feature did not function correctly when using a `foreign key` column has been resolved.
+- `#I691061` - Resolved an issue where the row was selected while editing a cell in batch mode, even when `checkboxOnly` was enabled.
+- `#I688302` - Fixed an issue where a duplicate `API` call occurred during virtual scrolling.
+- `#I676970` - Resolved an issue where bottom white space appeared after fully scrolling down on the initial virtual grid load.
+
 ## 28.2.6 (2025-02-18)
 
 ### Grid

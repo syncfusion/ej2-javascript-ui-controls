@@ -769,7 +769,6 @@ export class Edit {
                 } else if (isAutoSchedule) {
                     if (column === 'duration' || column === 'endDate') {
                         this.parent.dataOperation.updateUnitWithWork(currentData);
-                        this.parent.dataOperation.updateDurationWithWork(currentData);
                         if (ganttProp.duration === 0) {
                             this.parent.setRecordValue('isMilestone', true, ganttProp, true);
                         }
@@ -797,7 +796,6 @@ export class Edit {
                     }
                     else {
                         this.parent.dataOperation.updateWorkWithDuration(currentData);
-                        this.parent.dataOperation.updateUnitWithWork(currentData);
                     }
                 } else {
                     this.parent.dataOperation.updateWorkWithDuration(currentData);

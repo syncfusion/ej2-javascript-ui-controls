@@ -16,6 +16,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { ToolbarStatus } from '../../editor-manager/plugin/toolbar-status';
 import { IToolbarStatus } from '../../common/interface';
 import { isSafari } from '../../common/util';
+import { defaultLocale } from '../models/default-locale';
 
 /**
  * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
@@ -471,12 +472,11 @@ export class ToolbarRenderer implements IRenderer {
                     const startNode: HTMLElement = proxy.parent.getRange().startContainer.parentElement;
                     const listElem: Element = startNode.closest('LI');
                     const currentLiElem: HTMLElement = !isNOU(listElem) ? listElem.parentElement : null;
-                    if (!isNOU(currentLiElem) && (currentLiElem.nodeName === 'OL' || currentLiElem.nodeName === 'UL')) {
-                        if (currentLiElem.nodeName === 'UL' && (args.items[0 as number] as IDropDownItemModel).subCommand === 'NumberFormatList') {
-                            addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
-                        } else if (currentLiElem.nodeName === 'OL' && (args.items[0 as number] as IDropDownItemModel).subCommand === 'BulletFormatList') {
-                            addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
-                        } else {
+                    const currentAction: string = (args.items[0 as number] as IDropDownItemModel).subCommand;
+                    if (!isNOU(currentLiElem)) {
+                        const validNumberFormatAction: boolean  = (currentAction === 'NumberFormatList' && currentLiElem.nodeName === 'OL');
+                        const validBulletFormatAction: boolean  = (currentAction === 'BulletFormatList' && currentLiElem.nodeName === 'UL');
+                        if (validNumberFormatAction || validBulletFormatAction) {
                             let currentListStyle: string = currentLiElem.style.listStyleType.split('-').join('').toLocaleLowerCase();
                             currentListStyle = currentListStyle === 'decimal' ? 'number' : currentListStyle;
                             for (let index: number = 0; index < args.element.childNodes.length; index++) {
@@ -489,8 +489,6 @@ export class ToolbarRenderer implements IRenderer {
                                 }
                             }
                         }
-                    } else {
-                        addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
                     }
                 }
                 this.closeTooltip({target: args.event.target as HTMLElement});
@@ -661,6 +659,7 @@ export class ToolbarRenderer implements IRenderer {
         });
         dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement; args.element.setAttribute('role', 'button');
         dropDown.appendTo(args.element);
+        args.element.setAttribute('aria-label', item === 'backgroundcolor' ? defaultLocale.backgroundColor : defaultLocale.fontColor);
         const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
         popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));

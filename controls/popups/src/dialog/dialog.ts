@@ -1342,7 +1342,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 const buttonType: string = !isNullOrUndefined(this.buttons[i as number].type) ?
                     this.buttons[i as number].type.toLowerCase() : 'button';
                 const btn: HTMLElement =
-                this.createElement('button', { className: this.cssClass, attrs: {type: buttonType }});
+                this.createElement('button', { className: this.cssClass, attrs: {type: buttonType, tabindex: '0' }});
                 this.buttonContent.push(btn.outerHTML);
             }
             this.setFooterTemplate();

@@ -196,6 +196,7 @@ export class MsWordPaste {
         for (let i: number = 0; i < imgElem.length; i++) {
             if (!isNOU(imgElem[i as number].getAttribute('v:shapes')) &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Picture') < 0 &&
+                imgElem[i as number].getAttribute('v:shapes').indexOf('Chart') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('圖片') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Grafik') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').toLowerCase().indexOf('image') < 0 &&
@@ -216,9 +217,11 @@ export class MsWordPaste {
         const linkRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.)|(blob\:))(\S+))/gi);
         if (imgElem.length > 0) {
             for (let i: number = 0; i < imgElem.length; i++) {
-                imgSrc.push(imgElem[i as number].getAttribute('src'));
-                const imageName: string = imgElem[i as number].getAttribute('src').split('/')[imgElem[i as number].getAttribute('src').split('/').length - 1].split('.')[0] + i;
-                imgName.push(imageName);
+                if (!imgElem[i as number].classList.contains('e-rte-image-unsupported')) {
+                    imgSrc.push(imgElem[i as number].getAttribute('src'));
+                    const imageName: string = imgElem[i as number].getAttribute('src').split('/')[imgElem[i as number].getAttribute('src').split('/').length - 1].split('.')[0] + i;
+                    imgName.push(imageName);
+                }
             }
             const hexValue: { [key: string]: string | boolean | number }[] = this.hexConversion(rtfData);
             for (let i: number = 0; i < hexValue.length; i++) {

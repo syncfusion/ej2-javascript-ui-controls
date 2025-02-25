@@ -383,19 +383,12 @@
 
       .e-selectall-parent {
         text-indent: $ddt-select-all-bigger-text-indent;
-        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          padding: $ddt-big-select-all-padding;
+        padding: $ddt-big-select-all-padding;
 
-          .e-all-text {
-            font-size: $text-base;
-            line-height: 24px;
-            @if $ddt-skin-name == 'bootstrap5' {
-              margin: 0 12px;
-            }
-            @else {
-              margin: 0 16px;
-            }
-          }
+        .e-all-text {
+          font-size: $ddt-big-select-all-font-size;
+          line-height: 24px;
+          margin: $ddt-big-select-all-text-margin;
         }
       }
 
@@ -549,6 +542,13 @@
             left: $ddt-dd-icon-bigger-width;
           }
           right: auto;
+        }
+      }
+
+      .e-selectall-parent {
+        text-indent: $ddt-rtl-select-all-bigger-text-indent;
+        .e-all-text {
+          margin: $ddt-rtl-big-select-all-text-margin;
         }
       }
     }

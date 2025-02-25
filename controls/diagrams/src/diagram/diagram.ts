@@ -7066,7 +7066,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      */
     public removePhase(node: NodeModel, phase: PhaseModel): void {
-        removePhase(this, undefined, node, phase);
+        const id: string = phase.header.id;
+        const phaseObj: NodeModel = this.nameTable[`${id}`];
+        removePhase(this, phaseObj, node);
         this.updateDiagramElementQuad();
     }
     //827745-support to edit Segment for Straight connector at runtime.
@@ -9976,11 +9978,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             let hideRotate: boolean = false;
             const hideResize: boolean = false;
             let thumbConstraints: ThumbsConstraints = (selectorModel as Selector).thumbsConstraints;
+            let isInsideSwimlane: boolean = false;
+            if (this.nameTable[(obj as Node).parentId]) {
+                const lane: NodeModel = this.nameTable[(obj as Node).parentId];
+                isInsideSwimlane = (lane as Node).isLane;
+            }
             if (obj instanceof Node) {
                 //Bug 913796: Multiselect swimlane with outside node, drag, rotate is not proper.
                 //Hided rotate thumb for swimlane
                 hideRotate = (obj.shape.type === 'Bpmn' && ((obj.shape as BpmnShapeModel).shape === 'Activity' &&
-                    ((obj.shape as BpmnShapeModel).activity.subProcess.collapsed === false))) || obj.shape.type === 'SwimLane';
+                    ((obj.shape as BpmnShapeModel).activity.subProcess.collapsed === false))) || obj.shape.type === 'SwimLane' || isInsideSwimlane;
                 // hideResize = (obj.shape.type === 'Bpmn' && (obj.shape as BpmnShapeModel).shape === 'TextAnnotation');
                 if (!canRotate(obj) || !(thumbConstraints & ThumbsConstraints.Rotate) || hideRotate) {
                     thumbConstraints = thumbConstraints & ~ThumbsConstraints.Rotate;

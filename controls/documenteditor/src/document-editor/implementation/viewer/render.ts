@@ -2344,31 +2344,37 @@ private calculatePathBounds(data: string): Rect {
                 elementBox.canTrigger = true;
                 this.leftPosition = this.pageLeft;
                 this.topPosition = this.pageTop;
-                let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
-                if (errorDetails.errorFound && !this.isPrinting) {
-                    color = '#FF0000';
-                    let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-                    const errors = this.spellChecker.errorWordCollection;
-                    for (let i: number = 0; i < errorDetails.elements.length; i++) {
-                        let currentElement: ErrorTextElementBox = errorDetails.elements[i];
-                        const exactText = this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true);
-                        if (elementBox.ignoreOnceItems.indexOf(exactText) === -1) {
-                            if (isRTL) {
-                                this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.end)) ? left : currentElement.end.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
-                            } else {
-                                this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
-                            }
-                            if (errors.containsKey(exactText)) {
-                                const errorElements = errors.get(exactText);
-                                if (errorElements.indexOf(currentElement) === -1) {
-                                    errorElements.push(currentElement);
+                let isDeleteRevision: boolean = false;
+                if (!isNullOrUndefined(elementBox.revisions) && elementBox.revisions.length > 0) {
+                    isDeleteRevision = elementBox.revisions[0].revisionType === "Deletion" ? true : false;
+                }
+                if (!isDeleteRevision) {
+                    let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
+                    if (errorDetails.errorFound && !this.isPrinting) {
+                        color = '#FF0000';
+                        let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+                        const errors = this.spellChecker.errorWordCollection;
+                        for (let i: number = 0; i < errorDetails.elements.length; i++) {
+                            let currentElement: ErrorTextElementBox = errorDetails.elements[i];
+                            const exactText = this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true);
+                            if (elementBox.ignoreOnceItems.indexOf(exactText) === -1) {
+                                if (isRTL) {
+                                    this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.end)) ? left : currentElement.end.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                                } else {
+                                    this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                                }
+                                if (errors.containsKey(exactText)) {
+                                    const errorElements = errors.get(exactText);
+                                    if (errorElements.indexOf(currentElement) === -1) {
+                                        errorElements.push(currentElement);
+                                    }
                                 }
                             }
                         }
+                    } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
+                        this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
+                        elementBox.isSpellCheckTriggered = true;
                     }
-                } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
-                    this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
-                    elementBox.isSpellCheckTriggered = true;
                 }
             }
         }

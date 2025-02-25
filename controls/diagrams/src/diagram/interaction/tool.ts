@@ -42,6 +42,8 @@ import { getInOutConnectPorts, cloneBlazorObject, getObjectType, checkPort, find
 import { initializeCSPTemplate, isBlazor, remove } from '@syncfusion/ej2-base';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../objects/fixed-user-handle-model';
 import { findAngle } from '../utility/connector';
+import { updateLaneBoundsWithSelector } from './container-interaction';
+import { Diagram } from '../diagram';
 
 /**
  * Defines the interactive tools
@@ -999,12 +1001,27 @@ export class MoveTool extends ToolBase {
                     if (this.commandHandler.diagram.selectedItems.nodes.length !== nodes.length) {
                         nodes = this.commandHandler.diagram.selectedItems.nodes;
                     }
+                    //929543: To calculate the difference between the target lane bounds and selector bounds.
+                    // We use this difference values to set the margin left and margin top for the child nodes of lane.
+                    nodes = this.calculateDiff(this.commandHandler.diagram.selectedItems, this.currentTarget, this.commandHandler.diagram);
+                    if(this.commandHandler.diagram.selectedItems.nodes.length > 1) {
+                        (this.commandHandler.diagram as any).multiselect = true;
+                    } else {
+                        (this.commandHandler.diagram as any).multiselect = false;
+                    }
                     for (let i: number = 0; i < nodes.length; i++) {
-                        if (!nodes[parseInt(i.toString(), 10)].container && temp && !(this.commandHandler.diagram.cancelPositionChange)) {
+                        if (!nodes[parseInt(i.toString(), 10)].container && !(this.commandHandler.diagram.cancelPositionChange)) {
                             isEndGroup = true;
                             this.commandHandler.updateLaneChildrenZindex(nodes[parseInt(i.toString(), 10)] as Node,this.currentTarget);
                             this.commandHandler.dropChildToContainer(this.currentTarget, nodes[parseInt(i.toString(), 10)]);
                             this.commandHandler.renderContainerHelper(nodes[parseInt(i.toString(), 10)]);
+                        }
+                    }
+                    //929543: To update the lane size based on the dropped child nodes entire bounds.
+                    if (nodes.length > 1) {
+                        let helper = this.commandHandler.diagram.nameTable['helper'];
+                        if (helper) {
+                            updateLaneBoundsWithSelector(this.currentTarget, helper, this.commandHandler.diagram);
                         }
                     }
                     if (historyAdded && this.commandHandler.isContainer && isEndGroup) {
@@ -1063,6 +1080,46 @@ export class MoveTool extends ToolBase {
         }
         // this.commandHandler.updateBlazorSelector();
         super.mouseUp(args);
+    }
+    private clearDiff(nodes: NodeModel[]) {
+        nodes.forEach(function (node, index) {
+            delete (node as any).diffX;
+            delete (node as any).diffY;
+        });
+    }
+    private calculateDiff(selector: SelectorModel, target: NodeModel, diagram: Diagram){
+        this.clearDiff(selector.nodes);
+        let selectorLeft = selector.wrapper.bounds.left;
+        let selectorTop = selector.wrapper.bounds.top;
+        let targetLeft = target.wrapper.bounds.left;
+        let targetTop = target.wrapper.bounds.top;
+        let diffLeft: number;
+        let diffTop: number;
+        const swimlane = diagram.nameTable[(target as Node).parentId];
+        if (target.columnIndex === 0 && swimlane && swimlane.shape.orientation === 'Horizontal') {
+            targetLeft += 50;
+        }
+        if (target.rowIndex === 1 && swimlane && swimlane.shape.orientation === 'Vertical') {
+            targetTop += 50;
+        }
+        if (selectorLeft < targetLeft) {
+            diffLeft = targetLeft - selectorLeft;
+
+        } else {
+            diffLeft = 0;
+        }
+        if (selectorTop < targetTop) {
+            diffTop = targetTop - selectorTop;
+
+        }else {
+            diffTop = 0;
+        }
+        let nodes = selector.nodes;
+        nodes.forEach(function(node, index) {
+            (node as any).diffX = diffLeft;
+            (node as any).diffY = diffTop;
+        });
+        return nodes;
     }
 
     //EJ2-59309-While drag the connected node the connector endPointChange event does not get trigger

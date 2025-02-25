@@ -1736,7 +1736,9 @@ export class FormFieldsBase {
             formFields.IsTransparent = true;
         }
         formFields.FontColor = { R: listBoxField.color[0], G: listBoxField.color[1], B: listBoxField.color[2] };
-        formFields.BorderColor = { R: listBoxField.borderColor[0], G: listBoxField.borderColor[1], B: listBoxField.borderColor[2] };
+        if (!isNullOrUndefined(listBoxField.borderColor)) {
+            formFields.BorderColor = { R: listBoxField.borderColor[0], G: listBoxField.borderColor[1], B: listBoxField.borderColor[2] };
+        }
         formFields.Rotation = listBoxField.rotationAngle;
         formFields.IsReadonly = listBoxField.readOnly;
         formFields.IsRequired = listBoxField.required;
@@ -1750,9 +1752,9 @@ export class FormFieldsBase {
             }
         }
         for (let i: number = 0; i < itemCount; i++) {
-            const item: PdfListFieldItem = listBoxField.itemAt(i);
+            const item: any = listBoxField._kidsCount > 0 ? listBoxField.itemAt(i) : listBoxField._options[parseInt(i.toString(), 10)];
             if (item) {
-                formFields.TextList.push(item.text);
+                formFields.TextList.push(listBoxField._kidsCount > 0 ? item.text : item);
                 if (i === 0) {
                     formFields.Alignment = listBoxField.textAlignment;
                 }

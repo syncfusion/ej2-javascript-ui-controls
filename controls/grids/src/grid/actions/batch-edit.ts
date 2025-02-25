@@ -751,8 +751,9 @@ export class BatchEdit {
                 cellEditArgs.cell.classList.remove('e-updatedtd');
             }
             gObj.isEdit = true;
+            const checkSelect: boolean = !isNullOrUndefined(cellEditArgs.row.querySelector('.e-selectionbackground')) ? true : false;
             gObj.clearSelection();
-            if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
+            if ((!gObj.isCheckBoxSelection || !gObj.isPersistSelection) && (checkSelect || !gObj.selectionSettings.checkboxOnly)) {
                 gObj.selectRow(this.cellDetails.rowIndex, true);
             }
             this.renderer.update(cellEditArgs);

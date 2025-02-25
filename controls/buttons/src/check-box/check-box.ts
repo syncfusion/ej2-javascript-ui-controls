@@ -475,7 +475,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) {
-                    removeClass([wrapper], oldProp.cssClass.split(' '));
+                    removeClass([wrapper], oldProp.cssClass.split(/\s+/).filter((c: string) => c.length > 0));
                 }
                 if (newProp.cssClass) {
                     addClass([wrapper], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));

@@ -758,6 +758,9 @@ export class SpellChecker {
                 let textElement: TextElementBox = undefined;
                 for (let i: number = index - difference; i >= 0; i--) {
                     textElement = line.children[i] as TextElementBox;
+                    if (!isNullOrUndefined(textElement) && !isNullOrUndefined(textElement.revisions) && textElement.revisions.length > 0 && textElement.revisions[0].revisionType === "Deletion") {
+                        break;
+                    }
                     if (textElement instanceof TextElementBox && !isPrevField) {
                         if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1) {
                             prevCombined = !isNullOrUndefined(textToCombine) ? true : false;
@@ -791,6 +794,9 @@ export class SpellChecker {
                 let element: TextElementBox = undefined;
                 for (let i: number = index + 1; i < line.children.length; i++) {
                     element = (line.children[i] as TextElementBox);
+                    if (!isNullOrUndefined(element) && !isNullOrUndefined(element.revisions) && element.revisions.length > 0 && element.revisions[0].revisionType === "Deletion") {
+                        break;
+                    }
                     if (element instanceof TextElementBox && !isPrevField) {
                         if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0) {
                             currentText += element.text;

@@ -73,6 +73,7 @@ import { DiagramTooltipModel } from '../objects/tooltip-model';
 import { NodeModel } from '../objects/node-model';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel, FixedUserHandleModel } from '../objects/fixed-user-handle-model';
 import { DiagramHtmlElement } from '../core/elements/html-element';
+import { Overview } from '../../overview/overview';
 
 /**
  * Defines the behavior of commands
@@ -4161,6 +4162,14 @@ export class CommandHandler {
                 }
             }
         }
+        //886700: undo and redo changes not reflected properly in overview after rotate and resize
+        for (const temp of this.diagram.views) {
+            // eslint-disable-next-line security/detect-object-injection
+            const view: View = this.diagram.views[temp];
+            if (view instanceof Overview) {
+                this.diagram.refreshCanvasDiagramLayer(view);
+            }
+        }
     }
 
     /**   @private  */
@@ -6306,19 +6315,35 @@ Remove terinal segment in initial
                     }
                     objects = this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect);
                 } else if (actualObject instanceof Selector) {
-                    for (let i: number = 0; i < actualObject.nodes.length; i++) {
-                        const node: Node = actualObject.nodes[i] as Node;
-                        if (node instanceof Node && node.shape.type !== 'SwimLane' &&
-                            !checkParentAsContainer(this.diagram, node)
-                            && !node.isLane
-                            && !node.isPhase && !node.isHeader) {
-                            node.offsetX += offsetX; node.offsetY += offsetY;
-                            node.width += width; node.height += height; node.rotateAngle += rotateAngle;
-                            this.diagram.nodePropertyChange(node, {} as Node, {
-                                offsetX: node.offsetX, offsetY: node.offsetY,
-                                width: node.width, height: node.height, rotateAngle: node.rotateAngle
-                            } as Node);
-                            objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect));
+                     //929543: To resize the multiselected nodes properly
+                     const scaleWidth: number = helperObject.width / (actualObject as SelectorModel).width;
+                     const scaleHeight: number = helperObject.height /  (actualObject as SelectorModel).height;
+                     let pivot = (this.diagram as any).eventHandler.tool.getPivot((this.diagram as any).eventHandler.tool.corner);
+                     if ((this.diagram as any).eventHandler.tool.corner) {
+                         for (let i: number = 0; i < (actualObject as SelectorModel).nodes.length; i++) {
+                             const node: NodeModel =  (actualObject as SelectorModel).nodes[parseInt(i.toString(), 10)];
+                             const element: Container = node.wrapper;
+                             const refWrapper: Container =  (actualObject as SelectorModel).wrapper;
+                             const x: number = refWrapper.offsetX - refWrapper.actualSize.width * refWrapper.pivot.x;
+                             const y: number = refWrapper.offsetY - refWrapper.actualSize.height * refWrapper.pivot.y;
+                             var refPoint: PointModel = getPoint(x, y, refWrapper.actualSize.width, refWrapper.actualSize.height, refWrapper.rotateAngle, refWrapper.offsetX, refWrapper.offsetY, pivot);
+                             this.diagram.commandHandler.scaleObject(scaleWidth, scaleHeight, refPoint, node as IElement, element, actualObject);
+                         }
+                     } else {
+                        for (let i: number = 0; i < actualObject.nodes.length; i++) {
+                            const node: Node = actualObject.nodes[i] as Node;
+                            if (node instanceof Node && node.shape.type !== 'SwimLane' &&
+                                !checkParentAsContainer(this.diagram, node)
+                                && !node.isLane
+                                && !node.isPhase && !node.isHeader) {
+                                node.offsetX += offsetX; node.offsetY += offsetY;
+                                node.width += width; node.height += height; node.rotateAngle += rotateAngle;
+                                this.diagram.nodePropertyChange(node, {} as Node, {
+                                    offsetX: node.offsetX, offsetY: node.offsetY,
+                                    width: node.width, height: node.height, rotateAngle: node.rotateAngle
+                                } as Node);
+                                objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect));
+                            }
                         }
                     }
                 }

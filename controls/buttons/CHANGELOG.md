@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### Button
+
+#### Bug Fixes
+
+- `#I692936` - The issue with "Script error thrown while destroying the button due to extra space in cssClass property" has been resolved.
+
 ## 28.2.6 (2025-02-18)
 
 ### Checkbox

@@ -499,7 +499,7 @@ export class InsertHtml {
                 const newListItem: HTMLElement = document.createElement('li');
                 elements[0].parentNode.replaceChild(newListItem, elements[0]);
                 elements.forEach((child: HTMLElement) => newListItem.appendChild(child));
-                if (newListItem.textContent && newListItem.textContent.trim() === '') {
+                if (newListItem.textContent && newListItem.textContent.trim() === '' && !newListItem.querySelector('img')) {
                     parentList.removeChild(newListItem);
                 }
                 hasListContainerCleanUp = true;

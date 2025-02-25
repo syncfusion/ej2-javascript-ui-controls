@@ -758,7 +758,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             this.fmDialogContainer = <HTMLElement>this.element.getElementsByClassName('e-file-select-wrap')[0];
         }
         this.wireEvents();
-        if (!isNullOrUndefined(this.fmDialogContainer) && Browser.isIos) {
+        if (!isNullOrUndefined(this.fmDialogContainer) && (Browser.isIos || Browser.info.name === 'safari')) {
             this.fmDialogContainer.style.display = 'block';
         }
         if (this.zIndex === 1000 || !isNullOrUndefined(relativeElement)) {

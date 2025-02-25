@@ -1741,10 +1741,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
             case 'cssClass':
                 if (!this.popupEle) { break; }
                 if (oldProp.cssClass) {
-                    removeClass(this.overlayEle ? [this.popupEle, this.overlayEle] : [this.popupEle], oldProp.cssClass.split(' '));
+                    removeClass(this.overlayEle ? [this.popupEle, this.overlayEle] : [this.popupEle], oldProp.cssClass.split(/\s+/).filter((c: string) => c.length > 0));
                 }
                 if (newProp.cssClass) {
-                    addClass(this.overlayEle ? [this.popupEle, this.overlayEle] : [this.popupEle], newProp.cssClass.split(' '));
+                    addClass(this.overlayEle ? [this.popupEle, this.overlayEle] : [this.popupEle], newProp.cssClass.split(/\s+/).filter((c: string) => c.length > 0));
                 }
                 break;
             case 'visible':

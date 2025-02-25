@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.2.7 (2025-02-25)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I691472` - Now, the exception did not occur when trying to print the document without annotation modules.
+- `#I687949` - Now, the Exception will not occur while loading the customer provided document with form fields.
+- `#I688986` - Now, the form field bounds values are available in the `formFieldAdd` event.
+- Now, the script error did not occur when loading the document with modified toolbar settings.
+- `#I689173` - Now, the form field on the non-rendered page does not disappear after filling in the textbox field.
+
 ## 28.2.6 (2025-02-18)
 
 ### PDF Viewer

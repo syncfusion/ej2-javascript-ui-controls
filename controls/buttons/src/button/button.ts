@@ -249,7 +249,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
             'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
             'e-top-icon-btn', 'e-bottom-icon-btn'];
         if (this.cssClass) {
-            classList = classList.concat(this.cssClass.split(' '));
+            classList = classList.concat(this.cssClass.split(/\s+/).filter((c: string) => c.length > 0));
         }
         super.destroy();
         removeClass([this.element], classList);
@@ -354,7 +354,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) {
-                    removeClass([this.element], oldProp.cssClass.split(' '));
+                    removeClass([this.element], oldProp.cssClass.split(/\s+/).filter((c: string) => c.length > 0));
                 }
                 if (newProp.cssClass) {
                     addClass([this.element], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));

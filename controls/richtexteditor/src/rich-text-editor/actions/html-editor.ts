@@ -22,6 +22,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { ON_BEGIN } from './../../common/constant';
 import { HtmlToolbarStatus } from './html-toolbar-status';
 import { XhtmlValidation } from './xhtml-validation';
+import * as CONSTANTS from './../../editor-manager/base';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -583,8 +584,9 @@ export class HtmlEditor {
                     const cursorpointer: number = lastPosition.offset;
                     const lastChild: Element = lastPosition.node as Element;
                     const childNodes: Node[] = Array.from(currentElement.childNodes);
+                    const previousBlockElements: Node = this.getImmediateBlockNode(lastChild);
                     for (let i: number = 0; i < childNodes.length; i++) {
-                        prevSibling.appendChild(childNodes[i as number].cloneNode(true));
+                        previousBlockElements.appendChild(childNodes[i as number].cloneNode(true));
                     }
                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                         this.parent.contentModule.getDocument(),
@@ -658,6 +660,12 @@ export class HtmlEditor {
             }
         }
         return null;
+    }
+    private getImmediateBlockNode(node: Node): Node {
+        while (node && CONSTANTS.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0) {
+            node = node.parentNode;
+        }
+        return node;
     }
     private deleteCleanup(e: NotifyArgs, currentRange: Range): void {
         let isLiElement: boolean = false;

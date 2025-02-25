@@ -1061,6 +1061,27 @@ export class Toolbar {
      * @returns {void}
      */
     private createCustomItem(startIndex: number): any {
+        if (!isNullOrUndefined(this.pdfViewer.toolbarSettings)) {
+            if (isNullOrUndefined(this.pdfViewer.toolbarSettings.toolbarItems)) {
+                this.pdfViewer.toolbarSettings.toolbarItems = ['OpenOption', 'PageNavigationTool', 'MagnificationTool', 'SelectionTool',
+                    'PanTool', 'UndoRedoTool', 'CommentTool', 'SubmitForm', 'SearchOption', 'AnnotationEditTool',
+                    'FormDesignerEditTool', 'PrintOption', 'DownloadOption'];
+            }
+            if (isNullOrUndefined(this.pdfViewer.toolbarSettings.annotationToolbarItems)) {
+                this.pdfViewer.toolbarSettings.annotationToolbarItems = ['HighlightTool', 'UnderlineTool', 'StrikethroughTool',
+                    'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool',
+                    'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool',
+                    'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool',
+                    'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'];
+            }
+            if (isNullOrUndefined(this.pdfViewer.toolbarSettings.formDesignerToolbarItems)) {
+                this.pdfViewer.toolbarSettings.formDesignerToolbarItems = ['TextboxTool', 'PasswordTool', 'CheckBoxTool',
+                    'RadioButtonTool', 'DropdownTool', 'ListboxTool', 'DrawSignatureTool', 'DeleteTool'];
+            }
+            if (isNullOrUndefined(this.pdfViewer.toolbarSettings.showTooltip)) {
+                this.pdfViewer.toolbarSettings.showTooltip = false;
+            }
+        }
         for (let j: number = startIndex; j < this.pdfViewer.toolbarSettings.toolbarItems.length; j++) {
             if (typeof (this.pdfViewer.toolbarSettings.toolbarItems[parseInt(j.toString(), 10)]) === 'object') {
                 const customToolbarItem: CustomToolbarItemModel =

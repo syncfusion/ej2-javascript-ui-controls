@@ -961,7 +961,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         };
                         dateMembers.push({
                             formattedText: formattedValue.formattedText,
-                            actualText: isDateField ? formattedValue.dateText : isNumberType ?
+                            actualText: isDateField ? formattedValue.actualText : isNumberType ?
                                 (!isNaN(Number(values.Name)) ? Number(values.Name) : values.Name) : values.Name
                         });
                     }

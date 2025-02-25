@@ -596,7 +596,7 @@ export class MoveTool extends ToolBase {
             const currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([(args.source as PdfAnnotationBaseModel).id], currentSelctor);
-            if (this.pdfViewerBase.activeElements.activePageID === args.source.pageIndex){
+            if (this.pdfViewerBase.activeElements.activePageID === args.source.pageIndex && this.pdfViewerBase.action === 'Drag') {
                 this.commandHandler.dragSelectedObjects(this.calculateMouseActionXDiff(args),
                                                         this.calculateMouseActionYDiff(args),
                                                         this.pdfViewerBase.activeElements.activePageID, currentSelctor , null);

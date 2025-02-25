@@ -1008,6 +1008,65 @@ describe('Group By Date feature', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    describe('- Number grouping with decimal values', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Grouping);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: decimalData as IDataSet[],
+                    columns: [],
+                    valueSortSettings: { headerDelimiter: ' - ' },
+                    values: [{ name: 'Amount', caption: 'Sold Amount' }],
+                    rows: [{ name: 'Sold' }],
+                    expandAll: false,
+                    filters: [],
+                    groupSettings: [{ name: 'Sold', type: 'Number', startingAt: 0.1, endingAt: 0.7, rangeInterval: 0.1 }]
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                enableVirtualization: true,
+                showGroupingBar: true,
+                allowGrouping: true
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 500);
+        });
+        it('- Checking grouped row header', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rowsheader')[0].textContent).toBe('0.1-0.2');
+                done();
+            }, 1000);
+        });
+    });
 });
 
 let pivotDatas: IDataSet[] = [
@@ -1391,4 +1450,15 @@ let pivotGroupingData: IDataSet[] = [
         state: "Rajkot",
         pno: "ERTS4512",
     },
+];
+let decimalData: IDataSet[] = [
+    { 'Sold': 0.1, 'Amount': 42600, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2015', 'Quarter': 'Q4' },
+    { 'Sold': 0.25, 'Amount': 46008, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2016', 'Quarter': 'Q1' },
+    { 'Sold': 0.3, 'Amount': 83496, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2016', 'Quarter': 'Q2' },
+    { 'Sold': 0.4, 'Amount': 52824, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2015', 'Quarter': 'Q1' },
+    { 'Sold': 0.5, 'Amount': 86904, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2015', 'Quarter': 'Q2' },
+    { 'Sold': 0.6, 'Amount': 153360, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2017', 'Quarter': 'Q4' },
+    { 'Sold': 0.7, 'Amount': 161880, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2016', 'Quarter': 'Q3' },
+    { 'Sold': 0.8, 'Amount': 114168, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2016', 'Quarter': 'Q4' },
+    { 'Sold': 1.2, 'Amount': 153360, 'Country': 'France', 'Products': 'Mountain Bikes', 'Year': 'FY 2015', 'Quarter': 'Q3' },
 ];

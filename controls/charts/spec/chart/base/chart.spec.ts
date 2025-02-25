@@ -1646,22 +1646,5 @@ describe('Chart Control', () => {
             chart.loaded = loaded;
             chart.appendTo('#element');
         });
-        it('Checking the mousewheel event', (done: Function) => {
-            loaded = (args: Object): void => {
-                let wheelArgs: unknown = {
-                    preventDefault: () => {
-                    },
-                    wheelDelta: 120,
-                    detail: 3,
-                    clientX: 210,
-                    clientY: 100
-                };
-                chart.zoomSettings.enableMouseWheelZooming = true;
-                chart.chartOnMouseWheel(<WheelEvent>wheelArgs);
-                done();
-            };
-            chart.loaded = loaded;
-            chart.appendTo('#element');
-        });
     });
 });

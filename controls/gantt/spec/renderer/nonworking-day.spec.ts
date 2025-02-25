@@ -256,3 +256,56 @@ describe('874399 - weekend is not visible', function () {
         }
     });
 });	
+describe('Milestone not rendered correctly with day working time', function () {
+    let ganttObj: Gantt;
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+        dataSource: [{
+            TaskID: 1, TaskName: 'Sign contract', StartDate: new Date('2019-04-04T12:00:00'), Duration: 0,
+            Progress: 30,
+        }],
+        dayWorkingTime:[{from:0, to: 24}],
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks',
+        },
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search','ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan'],
+        allowSelection: true,
+        gridLines: "Both",
+        showColumnMenu: false,
+        highlightWeekends: true,
+        columns: [
+            { field: 'TaskID', width: 80 },
+            { field: 'TaskName', width: 250 },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Predecessor' },
+            { field: 'Progress' },
+        ],
+        height: '550px',
+        allowUnscheduledTasks: true,
+        }, done);
+    });
+    it('Check left value', () => {
+        expect(ganttObj.flatData[0].ganttProperties.left).toBe(148.5);
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});	
