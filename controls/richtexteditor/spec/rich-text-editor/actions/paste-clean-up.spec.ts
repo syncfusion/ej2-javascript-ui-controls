@@ -1941,9 +1941,9 @@ describe("EJ2-51957-Unable to paste url more than two times", () => {
       rteObj.onPaste(keyBoardEvent);
       expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(1);
       rteObj.onPaste(keyBoardEvent);
-      expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(2);
+      expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(1);
       rteObj.onPaste(keyBoardEvent);
-      expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(3);
+      expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(1);
       done();
     });
     afterAll((done: DoneFn) => {

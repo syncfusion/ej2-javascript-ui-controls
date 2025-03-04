@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I683160` - Fixed the issue where an itemTemplate element not render while opens ComboBox popup twice when filtering enabled.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I687522` - Issue with "Filtering data not properly displayed while filter with diacritic characters in Listbox" has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I688364` - Fixed an issue with the positioning issue of the Multi select component popup while enabling the RTL mode.
+
 ## 28.2.7 (2025-02-25)
 
 ### Mention
@@ -21,12 +41,6 @@
 - `#I682703` - The issue where focus remained highlighted when reopening the Dropdown Tree multiple times has been resolved.
 
 ## 28.2.6 (2025-02-18)
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I688364` - Fixed an issue with the positioning issue of the Multi select component popup while enabling the RTL mode.
 
 ### ComboBox
 

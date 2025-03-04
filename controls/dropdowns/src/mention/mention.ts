@@ -1648,8 +1648,7 @@ export class Mention extends DropDownBase {
             if (lastNode) {
                 range = range.cloneRange();
                 if (this.isRTE) {
-                    range.setStart(lastNode, 0);
-                    range.setEnd(lastNode, lastNode.textContent.length);
+                    range.setStart(lastNode, lastNode.textContent.length);
                 }
                 else {
                     range.setStartAfter(lastNode);

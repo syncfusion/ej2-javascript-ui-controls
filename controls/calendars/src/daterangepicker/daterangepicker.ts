@@ -1545,7 +1545,12 @@ export class DateRangePicker extends CalendarBase {
                     this.invalidValueString = null;
                     const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
                     const startDate: Date = this.globalize.parseDate(this.getAmPmValue(range[0]).trim(), dateOptions);
-                    const endDate: Date = this.globalize.parseDate(this.getAmPmValue(range[1]).trim(), dateOptions);
+                    let endDate: Date = this.globalize.parseDate(this.getAmPmValue(range[1]).trim(), dateOptions);
+                    if (this.start !== 'Decade' && this.start === 'Year' && this.depth !== 'Month'){
+                        if (this.inputElement.defaultValue !== value){
+                            endDate = this.getStartEndDate(endDate, true);
+                        }
+                    }
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
                         const prevStartVal: Date = this.startValue;
                         this.startValue = startDate;
@@ -2272,14 +2277,14 @@ export class DateRangePicker extends CalendarBase {
         }
         const y: number = date.getFullYear();
         const m: number = date.getMonth();
-        const firstDay: Date = isValue ? new Date(y, m, startDateValue.getDate(), startDateValue.getHours(), startDateValue.getMinutes(),
-                                                  startDateValue.getSeconds()) : new Date(y, m, 1);
-        const lastDay: Date = isValue ? new Date(y, m, endDateValue.getDate(), endDateValue.getHours(), endDateValue.getMinutes(),
-                                                 endDateValue.getSeconds()) : new Date(y, m + 1, 0);
-        const firstMonth: Date = isValue ? new Date(y, startDateValue.getMonth(), startDateValue.getDate(), startDateValue.getHours(),
-                                                    startDateValue.getMinutes(), startDateValue.getSeconds()) : new Date(y, 0, 1);
-        const lastMonth: Date = isValue ? new Date(y, endDateValue.getMonth(), endDateValue.getDate(), endDateValue.getHours(),
-                                                   endDateValue.getMinutes(), endDateValue.getSeconds()) : new Date(y, 11, 31);
+        const firstDay: Date = isValue && this.start !== 'Year' ? new Date(y, m, startDateValue.getDate(), startDateValue.getHours(), startDateValue.getMinutes(),
+                                                                           startDateValue.getSeconds()) : new Date(y, m, 1);
+        const lastDay: Date = isValue && this.start !== 'Year' ? new Date(y, m, endDateValue.getDate(), endDateValue.getHours(), endDateValue.getMinutes(),
+                                                                          endDateValue.getSeconds()) : new Date(y, m + 1, 0);
+        const firstMonth: Date = isValue && this.start !== 'Year' ? new Date(y, startDateValue.getMonth(), startDateValue.getDate(), startDateValue.getHours(), startDateValue.getMinutes(),
+                                                                             startDateValue.getSeconds()) : new Date(y, 0, 1);
+        const lastMonth: Date = isValue && this.start !== 'Year' ? new Date(y, endDateValue.getMonth(), endDateValue.getDate(), endDateValue.getHours(), endDateValue.getMinutes(),
+                                                                            endDateValue.getSeconds()) : new Date(y, 11, 31);
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             if (!this.isMobile || this.isMobile && !this.endButton.element.classList.contains(ACTIVE)) {
                 this.removeSelection();

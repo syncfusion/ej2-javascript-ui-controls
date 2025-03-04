@@ -349,8 +349,8 @@ export class TableResizer {
             }
         } else {
             //the minimum height of the Row in MS word is 2.7 points which is equal to 3.6 pixel.
-            if (rowFormat.height + dragValue >= 2.7 && rowFormat.height !== rowFormat.height + dragValue) {
-                rowFormat.height = rowFormat.height + dragValue;
+            if (rowFormat.height !== rowFormat.height + dragValue) {
+                rowFormat.height = rowFormat.height + dragValue < 2.7 ? 2.7 : rowFormat.height + dragValue;
             }
         }
     }

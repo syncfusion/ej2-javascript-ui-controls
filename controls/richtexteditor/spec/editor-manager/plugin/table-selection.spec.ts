@@ -1,5 +1,8 @@
 import { createElement, detach } from "@syncfusion/ej2-base";
 import { TableSelection } from "../../../src/editor-manager/plugin/table-selection";
+import { RichTextEditor } from "../../../src";
+import { renderRTE, destroy } from "../../rich-text-editor/render.spec";
+import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 
 // Test case for the Table cell selection public methods
 // 1. getBlockNodes method - return the block nodes collection after the wraping of inline nodes.
@@ -291,6 +294,34 @@ describe('Table Cell Selection ', () => {
             const tableSelection = new TableSelection(editableElement as HTMLElement, document);
             const blockNodes: HTMLElement[] = tableSelection.getBlockNodes();
             expect(blockNodes.length).toBe(6);
+        });
+    });
+
+    describe('942813: Format status not updated for the Block level formats inside the table.', () => {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({});
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it ('Should update the proper format when the heading format applied to all table cells.', (done: DoneFn)=> {
+            editor.focusIn();
+            const content: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 12.6214%;"> <tr style="height: 12.6214%;"> <th style="width: 12.1813%" class="e-cell-select e-multi-cells-select"><span>S No</span><br></th> <th style="width: 23.2295%" class="e-cell-select e-multi-cells-select"><span>Name</span><br></th> <th style="width: 9.91501%" class="e-cell-select e-multi-cells-select"><span>Age</span><br></th> <th style="width: 15.5807%" class="e-cell-select e-multi-cells-select"><span>Gender</span><br></th> <th style="width: 17.9887%" class="e-cell-select e-multi-cells-select"><span>Occupation</span><br></th> <th style="width: 21.1048%" class="e-cell-select e-multi-cells-select">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.0194%;"> <td style="width: 12.1813%" class="e-cell-select e-multi-cells-select">1</td> <td style="width: 23.2295%" class="e-cell-select e-multi-cells-select">Selma Rose</td> <td style="width: 9.91501%" class="e-cell-select e-multi-cells-select">30</td> <td style="width: 15.5807%" class="e-cell-select e-multi-cells-select">Female</td> <td style="width: 17.9887%" class="e-cell-select e-multi-cells-select"><span>Engineer</span><br></td> <td style="width: 21.1048%" class="e-cell-select e-multi-cells-select"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 22.8155%;"> <td style="width: 12.1813%" class="e-cell-select e-multi-cells-select">2</td> <td style="width: 23.2295%" class="e-cell-select e-multi-cells-select"><span>Robert</span><br></td> <td style="width: 9.91501%" class="e-cell-select e-multi-cells-select">28</td> <td style="width: 15.5807%" class="e-cell-select e-multi-cells-select">Male</td> <td style="width: 17.9887%" class="e-cell-select e-multi-cells-select"><span>Graphic Designer</span></td> <td style="width: 21.1048%" class="e-cell-select e-multi-cells-select"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.0194%;"> <td style="width: 12.1813%" class="e-cell-select e-multi-cells-select">3</td> <td style="width: 23.2295%" class="e-cell-select e-multi-cells-select"><span>William</span><br></td> <td style="width: 9.91501%" class="e-cell-select e-multi-cells-select">35</td> <td style="width: 15.5807%" class="e-cell-select e-multi-cells-select">Male</td> <td style="width: 17.9887%" class="e-cell-select e-multi-cells-select">Teacher</td> <td style="width: 21.1048%" class="e-cell-select e-multi-cells-select"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.0194%;"> <td style="width: 12.1813%" class="e-cell-select e-multi-cells-select">4</td> <td style="width: 23.2295%" class="e-cell-select e-multi-cells-select"><span>Laura Grace</span><br></td> <td style="width: 9.91501%" class="e-cell-select e-multi-cells-select">42</td> <td style="width: 15.5807%" class="e-cell-select e-multi-cells-select">Female</td> <td style="width: 17.9887%" class="e-cell-select e-multi-cells-select">Doctor</td> <td style="width: 21.1048%" class="e-cell-select e-multi-cells-select"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 16.0194%;"> <td style="width: 12.1813%" class="e-cell-select e-multi-cells-select">5</td><td style="width: 23.2295%" class="e-cell-select e-multi-cells-select"><span>Andrew James</span><br></td><td style="width: 9.91501%" class="e-cell-select e-multi-cells-select">45</td><td style="width: 15.5807%" class="e-cell-select e-multi-cells-select">Male</td><td style="width: 17.9887%" class="e-cell-select e-multi-cells-select">Lawyer</td><td style="width: 21.1048%" class="e-cell-select e-multi-cells-select e-cell-select-end"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table>`;
+            editor.inputElement.innerHTML = content;
+            const formatDropdownBthn: HTMLElement = editor.element.querySelector('.e-caret');
+            formatDropdownBthn.click();
+            setTimeout(() => {
+                const headingItem: HTMLElement =  document.querySelector('.e-popup-open .e-h2');
+                headingItem.click();
+                const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+                editor.inputElement.dispatchEvent(mouseUpEvent);
+                setTimeout(() => {
+                    const formatDropDown: HTMLElement = editor.element.querySelectorAll('.e-toolbar-item')[4] as HTMLElement;
+                    expect(formatDropDown.textContent).toBe('Heading 2');
+                    done();
+                }, 100);
+            }, 100);
         });
     });
 });

@@ -4,6 +4,7 @@ import {AnnotationRenderer, ShapeAnnotationBase, PopupAnnotationBase, FreeTextAn
 import { PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfDictionary, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _ContentParser, _stringToBytes, _PdfRecord, _encode, _PdfBaseStream, PdfPageSettings, PdfMargins, PdfTemplate, _annotationFlagsToString } from '@syncfusion/ej2-pdf';
 import { Matrix, Rect, Size } from '@syncfusion/ej2-drawings';
 import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
+import { IPageAnnotations } from '../annotation';
 
 /**
  * PageRenderer
@@ -314,15 +315,27 @@ export class PageRenderer{
                     if (annotation instanceof PdfRubberStampAnnotation) {
                         this.htmldata = [];
                         const stampAnnotation: PdfRubberStampAnnotation = annotation as PdfRubberStampAnnotation;
+                        const pdfRenderedFormFields: any[] = [];
+                        for (const formfield of this.pdfViewer.pdfRendererModule.formFieldsBase.PdfRenderedFormFields) {
+                            if (formfield.ActualFieldName === stampAnnotation._dictionary._map.T) {
+                                pdfRenderedFormFields.push(formfield);
+                                break;
+                            }
+                        }
                         if (stampAnnotation._dictionary.has('T') && this.checkName(stampAnnotation)) {
                             this.signatureAnnotationList.push(annotRenderer.loadSignatureImage(stampAnnotation, pageNumber));
                         }
-                        else if (stampAnnotation._dictionary.has('M') || (stampAnnotation._dictionary.has('NM') || stampAnnotation._dictionary.has('Name') && !stampAnnotation._dictionary.has('F') || (!stampAnnotation._dictionary.has('NM') && !stampAnnotation._dictionary.has('T')))) {
+                        else if (stampAnnotation._dictionary.has('M') || (stampAnnotation._dictionary.has('NM') ||
+                            stampAnnotation._dictionary.has('Name') && !stampAnnotation._dictionary.has('F') ||
+                            (!stampAnnotation._dictionary.has('NM') && !stampAnnotation._dictionary.has('T'))) ||
+                            isNullOrUndefined(pdfRenderedFormFields[0]) || !this.pdfViewerBase.isSignatureWithInRect(
+                            this.pdfViewerBase.canvasRectArray(pdfRenderedFormFields[0].LineBounds),
+                            this.pdfViewerBase.canvasRectArray(stampAnnotation.bounds))) {
                             const rubberStampAnnotation: StampAnnotationBase = new StampAnnotationBase();
                             rubberStampAnnotation.Author = stampAnnotation.author;
                             rubberStampAnnotation.Subject = stampAnnotation.subject;
                             rubberStampAnnotation.AnnotName = stampAnnotation.name;
-                            if (rubberStampAnnotation.AnnotName === '' || rubberStampAnnotation.AnnotName === null) {
+                            if (rubberStampAnnotation.AnnotName === '' || isNullOrUndefined(rubberStampAnnotation.AnnotName)) {
                                 rubberStampAnnotation.AnnotName = this.setAnnotationName(pageNumber);
                             }
                             if (annotation._dictionary.has('rotateAngle')) {
@@ -634,14 +647,37 @@ export class PageRenderer{
                 annotOrder = this.pdfViewer.viewerBase.importedAnnotation[data.rubberStampAnnotationPageNumber].annotationOrder;
             }
         }
+        let storeObject: any;
+        let annotObject: IPageAnnotations[];
         const currentAnnot: any = annotOrder.find((currentAnnotation: { AnnotName: any; }) => id === currentAnnotation.AnnotName);
         if (currentAnnot) {
             if (!isNullOrUndefined(currentAnnot.Apperarance)) {
                 currentAnnot.Apperarance = [];
             }
             currentAnnot.Apperarance.push(Json);
-            this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotImage(currentAnnot, 0, null, null, true, true,
-                                                                                        data.collectionOrder);
+            storeObject = PdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
+            if (this.pdfViewerBase.isStorageExceed) {
+                storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'];
+            }
+            let shouldRender: boolean = true;
+            if (storeObject) {
+                annotObject = JSON.parse(storeObject);
+                if (annotObject.length > 0) {
+                    for (let i: number = 0; i < annotObject.length; i++) {
+                        for (let j: number = 0; j < annotObject[parseInt(i.toString(), 10)].annotations.length; j++) {
+                            if (annotObject[parseInt(i.toString(), 10)].annotations[parseInt(j.toString(), 10)].
+                                annotName === currentAnnot.AnnotName) {
+                                shouldRender = false;
+                            }
+                        }
+                    }
+                }
+            }
+            if (shouldRender) {
+                this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotImage(
+                    currentAnnot, 0, null, null, true, true, data.collectionOrder
+                );
+            }
         }
         this.Imagedata = imageUrl;
     }

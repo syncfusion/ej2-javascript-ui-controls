@@ -7,7 +7,7 @@ import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
 import { getLastTextNode } from "../../../src/common/util";
-import { ARROW_DOWN_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROW_UP_EVENT_INIT, ARROWRIGHT_EVENT_INIT, BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ESCAPE_KEY_EVENT_INIT, INSRT_TABLE_EVENT_INIT, SHIFT_ARROW_DOWN_EVENT_INIT, SHIFT_ARROW_LEFT_EVENT_INIT, SHIFT_ARROW_RIGHT_EVENT_INIT, SHIFT_ARROW_UP_EVENT_INIT } from "../../constant.spec";
+import { ARROW_DOWN_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROW_UP_EVENT_INIT, ARROWRIGHT_EVENT_INIT, BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ESCAPE_KEY_EVENT_INIT, INSRT_TABLE_EVENT_INIT, SHIFT_ARROW_DOWN_EVENT_INIT, SHIFT_ARROW_LEFT_EVENT_INIT, SHIFT_ARROW_RIGHT_EVENT_INIT, SHIFT_ARROW_UP_EVENT_INIT, TAB_KEY_EVENT_INIT } from "../../constant.spec";
 
 
 describe('Table Module', () => {
@@ -2466,13 +2466,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     let insertBtn: HTMLElement = tablePop.querySelector("#" + controlId + "_quick_TableRows");
                     insertBtn.click();
                     let dropdown: HTMLElement = document.querySelector('#' + controlId + "_quick_TableRows-popup");
-                    (dropdown.querySelectorAll(".e-item")[0] as HTMLElement).click();
-                    insertBtn = tablePop.querySelector("#" + controlId + "_quick_TableRows");
-                    insertBtn.click();
-                    dropdown = document.querySelector('#' + controlId + "_quick_TableRows-popup");
-                    (dropdown.querySelectorAll(".e-item")[1] as HTMLElement).click();
-                    expect((rteObj as any).inputElement.querySelectorAll("td").length === 6).toBe(true);
-                    expect((node.parentNode.parentNode.nextSibling.childNodes[0].childNodes[0] as HTMLElement).tagName === 'TD').toBe(true);
+                    expect((dropdown.querySelectorAll(".e-item")[0] as HTMLElement).textContent == 'Insert row after').toBe(true);
                     done();
                 }, 600);
             });
@@ -5954,7 +5948,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         beforeEach(function () {
             rteObj = renderRTE({
                 toolbarSettings: {
-                    items: ['CreateTable']
+                    items: ['CreateTable', 'BackgroundColor']
                 },
                 quickToolbarSettings: {
                     table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
@@ -5977,14 +5971,24 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
             (rteObj as any).mouseDownHandler(eventsArg);
             (rteObj as any).mouseUp(eventsArg);
-            (rteObj as any).tableModule.setBGColor({
+            let target: HTMLElement = rteObj.inputElement.querySelector('.e-rte-table td');
+            let activeCell: HTMLElement = rteObj.inputElement.querySelectorAll("td")[1];
+            let args: any = {
+                event: { target: target },
+                selectNode: [activeCell] as any,
+            };
+            (rteObj as any).formatter.editorManager.tableObj.tableMove(args);
+            (rteObj as any).formatter.editorManager.tableObj.setBGColor({
                 "item": {
                     "command": "Font",
-                    "subCommand": "BackgroundColor",
-                    "value": "rgb(255, 255, 0)"
+                    "subCommand": "BackgroundColor"
                 },
+                "value": "rgb(255, 255, 0)",
                 "name": "tableColorPickerChanged"
             });
+            let backgroundColorPicker: HTMLElement = <HTMLElement>rteObj.element.querySelector(".e-rte-backgroundcolor-dropdown");
+            backgroundColorPicker.click();
+            (backgroundColorPicker.querySelector(".e-background-color") as HTMLElement).click();
             expect(tdElement.style.backgroundColor != '' ).toBe(true);
             done();
         });
@@ -6861,14 +6865,22 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
             (rteObj as any).mouseDownHandler(eventsArg);
             (rteObj as any).mouseUp(eventsArg);
-            (rteObj as any).tableModule.setBGColor({
+            let target: HTMLElement = rteObj.inputElement.querySelector('.e-rte-table td');
+            let activeCell: HTMLElement = rteObj.inputElement.querySelectorAll("td")[1];
+            let args: any = {
+                event: { target: target },
+                selectNode: [activeCell] as any,
+            };
+            (rteObj as any).formatter.editorManager.tableObj.tableMove(args);
+            (rteObj as any).formatter.editorManager.tableObj.setBGColor({
                 "item": {
                     "command": "Font",
-                    "subCommand": "BackgroundColor",
-                    "value": "rgb(255, 255, 0)"
+                    "subCommand": "BackgroundColor"
                 },
+                "value": "rgb(255, 255, 0)",
                 "name": "tableColorPickerChanged"
             });
+            rteObj.notify('hideTableQuickToolbar', {});
             expect((document.querySelectorAll('.e-rte-quick-popup') as any).length).toBe(0);
             done();
         });
@@ -6903,6 +6915,36 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect(rteObj.value).toBe('<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2>');
                 done();
             }, 100);
+        });
+    });
+
+    describe('936814: Tab Key Press Functionality in Table', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 50%;">testing-1</td><td style="width: 50%;" class="">testing-2</td></tr><tr><td style="width: 50%;" class=""><br></td><td style="width: 50%;" class=""><br></td></tr></tbody></table><p><br></p>`,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should move cursor from the first to the second cell on pressing Tab key', (done: DoneFn) => {
+            rteObj.focusIn();
+            const firstCell = rteEle.querySelector('td.e-cell-select');
+            setCursorPoint(firstCell as Element, 0);
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', TAB_KEY_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', TAB_KEY_EVENT_INIT));
+            setTimeout(() => {
+                const firstRowCells = rteEle.querySelectorAll('.e-rte-table tbody tr:first-child td');
+                expect(firstRowCells[0].classList.contains('e-cell-select')).toBe(false);
+                expect(firstRowCells[1].classList.contains('e-cell-select')).toBe(true);
+                done();
+            },100);
         });
     });
 
@@ -7402,6 +7444,64 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe('938242: MAC - The quick toolbar for the MAC opens upon selecting text.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor= renderRTE({
+                value: `<table><tr><td>Text Content</td><td>Text Content</td><td>Text Content</td></tr></table>`
+            });
+        })
+        afterAll(()=> {
+            destroy(editor);
+        })
+        it('Should not open the Quick toolbar on right click when range collapsed is false.', (done: DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT));
+            const range = new Range();
+            range.setStart(editor.inputElement.querySelector('td').firstChild, 0);
+            range.setEnd(editor.inputElement.querySelector('td').firstChild, 4);
+            editor.selectRange(range);
+            editor.inputElement.dispatchEvent(new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT));
+            setTimeout(() => {
+                expect(editor.quickToolbarModule.tableQTBar.popupObj.element.classList.contains('e-popup-open')).toBe(false);
+                done();
+            }, 100);
+        })
+    });
+
+    describe('941512: Table is not inserted for the selected blockquote', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+                value: `<blockquote><p>Testing</p></blockquote>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should insert a table after selecting text within blockquote', (done) => {
+            rteObj.focusIn();
+            const blockquote = rteObj.contentModule.getDocument().querySelector('blockquote p');
+            const selection = new NodeSelection();
+            selection.setSelectionText(rteObj.contentModule.getDocument(), blockquote.firstChild, blockquote.firstChild, 0, 7);
+            const createTableButton = rteEle.querySelector('.e-toolbar-item button') as HTMLElement;
+            createTableButton.click();
+            const insertTableButton = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            insertTableButton.click();
+            const insertButton = document.querySelector('.e-insert-table') as HTMLElement;
+            insertButton.click();
+            setTimeout(() => {
+                const tables = rteObj.contentModule.getDocument().querySelectorAll('table');
+                expect(tables.length).toBe(1);
+                done();
+            }, 100);
+        });
+    });
     describe('936848: Add Table Popup Gets Hidden Under the Lower Rich Text Editor’s Toolbar', () => {
         let rteObjOne : RichTextEditor;
         let rteObjTwo : RichTextEditor;
@@ -7433,6 +7533,184 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect((<HTMLElement>rteObjOne.element.querySelector(".e-toolbar-wrapper") as HTMLElement).style.zIndex === '11').toBe(true);
             (<HTMLElement>rteObjOne.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             expect((<HTMLElement>rteObjOne.element.querySelector(".e-toolbar-wrapper") as HTMLElement).style.zIndex === '').toBe(true);
+        });
+    });
+
+    describe('942409 - Background color applies to the newly inserted rows and column', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableRows', 'TableColumns', 'BackgroundColor']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th><br></th></tr></thead><tbody><tr><td class="e-cell-select" style="width: 33.3333%; background-color: rgb(255, 255, 0);"><span style="background-color: rgb(255, 255, 0);">​</span></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Case 1: Row - Should not copy the Background color style when new column and row are inserted.', (done: DoneFn)=> {
+            editor.focusIn();
+            const mouseDownEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(mouseDownEvent);
+            setCursorPoint(editor.contentModule.getEditPanel().querySelector('td'), 0);
+            const mouseUpEvent =  new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const rowDropDownBtn: HTMLElement = document.querySelector('.e-popup-open .e-table-rows');
+                rowDropDownBtn.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelector('table').rows.length).toBe(4);
+                    const insertRowAfterBtn: HTMLElement = document.querySelectorAll('.e-item')[1] as HTMLElement;
+                    insertRowAfterBtn.click();
+                    setTimeout(() => {
+                        expect(editor.inputElement.querySelector('table').rows.length).toBe(5);
+                        expect(editor.inputElement.querySelectorAll('td')[3].style.backgroundColor).toBe('');
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('943288: Cursor Position Incorrect After Deleting a Table ', () => {
+        let rteObj: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Introductory text.</p><table class="e-rte-table"><tbody><tr><td>Cell 1</td><td>Cell 2</td></tr></tbody></table><h2>Following text.</h2>`,
+                quickToolbarSettings: {
+                    table: ['TableRemove']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should delete the table and place cursor after the table section', (done) => {
+            rteObj.focusIn();
+            const mouseDownEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseDownEvent);
+            setCursorPoint(rteObj.contentModule.getEditPanel().querySelector('td'), 0);
+            const mouseUpEvent =  new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            rteObj.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const deleteBtn: HTMLElement = document.querySelector('.e-btn-icon.e-table-remove.e-icons').parentElement;
+                deleteBtn.click();
+                setTimeout(() => {
+                    expect(rteObj.element.querySelector('table')).toBe(null);
+                    expect(window.getSelection().getRangeAt(0).startOffset).toBe(1);
+                    expect(window.getSelection().getRangeAt(0).endOffset).toBe(1);
+                    done();
+                }, 100);
+            },100)
+        });
+    });
+
+    describe('942409 - Background color applies to the newly inserted rows and column', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableRows', 'TableColumns', 'BackgroundColor']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th><br></th></tr></thead><tbody><tr><td class="e-cell-select" style="width: 33.3333%; background-color: rgb(255, 255, 0);"><span style="background-color: rgb(255, 255, 0);">​</span></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Case 2: Column -Should not copy the Background color style when new column and row are inserted.', (done: DoneFn)=> {
+            editor.focusIn();
+            const mouseDownEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(mouseDownEvent);
+            setCursorPoint(editor.contentModule.getEditPanel().querySelector('td'), 0);
+            const mouseUpEvent =  new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const colDropDownBtn: HTMLElement = document.querySelector('.e-popup-open .e-table-columns');
+                colDropDownBtn.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelector('table').rows[0].cells.length).toBe(3);
+                    const insertRowAfterBtn: HTMLElement = document.querySelectorAll('.e-item')[1] as HTMLElement;
+                    insertRowAfterBtn.click();
+                    setTimeout(() => {
+                        expect(editor.inputElement.querySelector('table').rows[0].cells.length).toBe(4);
+                        expect(editor.inputElement.querySelectorAll('td')[5].style.backgroundColor).toBe('');
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('935436 - Improving coverage for toolbar renderer.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th><br></th></tr></thead><tbody><tr><td class="e-cell-select" style="width: 33.3333%; background-color: rgb(255, 255, 0);"><span style="background-color: rgb(255, 255, 0);"></span></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Test case coverage for Cell Vertical Split', (done: DoneFn)=> {
+            editor.focusIn();
+            setCursorPoint(editor.contentModule.getEditPanel().querySelector('td'), 0);
+            const mouseDownEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(mouseDownEvent);
+            editor.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseDownEvent);
+            const mouseUpEvent =  new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const cellDropDownBtn: HTMLElement = document.querySelector('.e-popup-open .e-table-cell');
+                cellDropDownBtn.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelector('table').rows[1].cells.length).toBe(3);
+                    const insertRowAfterBtn: HTMLElement = document.querySelectorAll('.e-item')[2] as HTMLElement;
+                    insertRowAfterBtn.click();
+                    setTimeout(() => {
+                        expect(editor.inputElement.querySelector('table').rows[1].cells.length).toBe(4);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 200);
+        });
+    });
+
+    describe('935436 - Improving coverage for toolbar renderer.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                quickToolbarSettings: {
+                    table: ['BackgroundColor']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th><br></th></tr></thead><tbody><tr><td class="e-cell-select" style="width: 33.3333%; background-color: rgb(255, 255, 0);"><span style="background-color: rgb(255, 255, 0);"></span></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Test case coverage for Cell Background color', (done: DoneFn)=> {
+            editor.focusIn();
+            setCursorPoint(editor.contentModule.getEditPanel().querySelector('td'), 0);
+            const mouseDownEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(mouseDownEvent);
+            editor.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseDownEvent);
+            const mouseUpEvent =  new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const colorDropDown: HTMLElement = document.querySelector('.e-popup-open .e-background-color');
+                colorDropDown.click();
+                setTimeout(() => {
+                done();
+                }, 100);
+            }, 200);
         });
     });
 });

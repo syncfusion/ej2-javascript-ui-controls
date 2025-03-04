@@ -1149,6 +1149,9 @@ export class DialogEdit {
                         }
                         this.validateScheduleFields(args, column, ganttObj);
                     }
+                    else {
+                        this.parent['triggeredColumnName'] = '';
+                    }
                 };
             }
             fieldsModel[column.field] = common;
@@ -1170,6 +1173,9 @@ export class DialogEdit {
                         this.parent['triggeredColumnName'] = column.field;
                     }
                     this.validateScheduleFields(args, column, ganttObj);
+                }
+                else {
+                    this.parent['triggeredColumnName'] = '';
                 }
             };
             fieldsModel[column.field] = numeric;

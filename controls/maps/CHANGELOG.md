@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 28.2.7 (2025-02-25)
+## 28.2.9 (2025-03-04)
+
+### Maps
+
+#### Bug fixes
+
+- `#I695421` - The data label will render correctly when binds to the specified label Path.
+
+## 28.2.6 (2025-02-18)
 
 ### Maps
 

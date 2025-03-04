@@ -3663,6 +3663,9 @@ export class Layout {
             if (isNeedToLayoutShape && element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') {
                 this.layoutShape(element);
             }
+            if (!this.isRelayoutOverlap && element instanceof TabElementBox && element.text === '\t') {
+                element.width = this.getTabWidth(line.paragraph, this.viewer, 0, line, element);
+            }
             width += element.width;
             if (currentElement === element) {
                 break;
@@ -5640,9 +5643,10 @@ export class Layout {
         let paragraph: ParagraphWidget = line.paragraph;
         let isSplitByWord: boolean = false;
         let lastTextElement: number = 0;
+        let isJustifiedPara : boolean = paragraph.paragraphFormat.textAlignment === 'Justify' ? true : false;
         for (let i: number = index - 1; i >= 0; i--) {
             let textElement: ElementBox = line.children[i] as ElementBox;
-            if (textElement instanceof TextElementBox && textElement.width > 0) {
+            if (textElement instanceof TextElementBox && (textElement.width > 0 || (!isJustifiedPara && textElement.text === '\t'))) {
                 let text: string = textElement.text;
                 lastTextElement = i;
                 if (text.length > 0 && (text[text.length - 1] === ' ' || text[text.length - 1] === '-')) {
@@ -5650,6 +5654,10 @@ export class Layout {
                         this.addSplittedLineWidget(line, index - 1);
                         return true;
                     }
+                    isSplitByWord = true;
+                    break;
+                } else if (!this.isRelayoutOverlap && !isJustifiedPara && textElement instanceof TabElementBox && text === '\t' && lastTextElement !== 0) {
+                    lastTextElement--;
                     isSplitByWord = true;
                     break;
                 } else if (text === '\t' || this.documentHelper.textHelper.isUnicodeText(text, textElement.scriptType)) {

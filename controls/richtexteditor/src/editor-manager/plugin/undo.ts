@@ -276,4 +276,7 @@ export class UndoRedoManager {
         }
         return status;
     }
+    public getCurrentStackIndex(): number {
+        return this.steps;
+    }
 }

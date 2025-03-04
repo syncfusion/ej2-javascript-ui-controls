@@ -207,6 +207,7 @@ export let defaultLocale: { [key: string]: string } = {
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
     'linkAriaLabel': 'Open in new window',
+    'imageLinkAriaLabel': 'Open in new window',
     'unsupportedImage': 'Unsupported file format',
     'mergecells': 'Merge cells',
     'verticalsplit': 'Vertical split',
@@ -342,7 +343,6 @@ export let toolsLocale: { [key: string]: string } = {
     'emojiPickerTypeToFind': 'Type to find',
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
-    'imageLinkAriaLabel': 'Open in new window',
     'inlinecode': 'inlinecode'
 };
 

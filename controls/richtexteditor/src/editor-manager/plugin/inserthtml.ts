@@ -4,7 +4,7 @@ import { NodeCutter } from './nodecutter';
 import * as CONSTANT from './../base/constant';
 import { detach, Browser, isNullOrUndefined as isNOU, createElement, closest } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
-import { updateTextNode, nestedListCleanUp } from './../../common/util';
+import { updateTextNode, nestedListCleanUp, scrollToCursor } from './../../common/util';
 
 /**
  * Insert a HTML Node or Text
@@ -43,6 +43,7 @@ export class InsertHtml {
                 node = insertNode;
             }
         }
+        const scrollHeight: number = !isNOU(editNode) ? editNode.scrollHeight : 0;
         const nodeSelection: NodeSelection = new NodeSelection(editNode as HTMLElement);
         const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
@@ -111,7 +112,16 @@ export class InsertHtml {
                 range.extractContents();
             }
             if ((insertNode as HTMLElement).tagName === 'TABLE') {
-                this.removeEmptyElements(editNode as HTMLElement);
+                const emptyElement: HTMLElement = closest(range.startContainer, 'blockquote') as HTMLElement;
+                if (!isNOU(emptyElement) && emptyElement.childNodes.length > 0) {
+                    for (let i: number = emptyElement.childNodes.length - 1; i >= 0; i--) {
+                        const currentChild: HTMLElement = emptyElement.childNodes[i as number] as HTMLElement;
+                        if (!isNOU(currentChild) && currentChild.innerText.trim() === '') {
+                            detach(currentChild);
+                        }
+                    }
+                }
+                this.removeEmptyElements(editNode as HTMLElement, false, emptyElement as HTMLElement);
             }
             for (let index: number = 0; index < nodes.length; index++) {
                 if (nodes[index as number].nodeType !== 3 && nodes[index as number].parentNode != null) {
@@ -193,6 +203,9 @@ export class InsertHtml {
             } else {
                 nodeSelection.setSelectionText(docElement, node, node, node.textContent.length, node.textContent.length);
             }
+        }
+        if (!isNOU(editNode) && scrollHeight < editNode.scrollHeight && node.nodeType === 1 && (node.nodeName === 'IMG' || !isNOU((node as HTMLElement).querySelector('img')))) {
+            scrollToCursor(docElement, editNode as HTMLElement);
         }
     }
 
@@ -296,7 +309,27 @@ export class InsertHtml {
                     lastSelectionNode = node.firstChild;
                     fragment.appendChild(node.firstChild);
                 }
-                tempSpan.parentNode.replaceChild(fragment, tempSpan);
+                const matchedElement: HTMLElement = this.getClosestMatchingElement(tempSpan.parentNode as HTMLElement, fragment);
+                if (fragment.childNodes.length === 1 && fragment.firstChild && matchedElement) {
+                    const wrapperDiv: HTMLElement = document.createElement('div');
+                    const text: string = fragment.firstChild.textContent || '';
+                    wrapperDiv.innerHTML = (fragment.firstChild as HTMLElement).innerHTML || '';
+                    const replacementNode: Node = lastSelectionNode = wrapperDiv.firstChild;
+                    if (replacementNode) {
+                        matchedElement.replaceChild(replacementNode, tempSpan);
+                        if (matchedElement.parentNode && replacementNode.nodeType === Node.TEXT_NODE && ((replacementNode.previousSibling &&
+                            replacementNode.previousSibling.nodeType === Node.TEXT_NODE) ||
+                            (replacementNode.nextSibling && replacementNode.nextSibling.nodeType === Node.TEXT_NODE))) {
+                            matchedElement.parentNode.normalize();
+                            const startOffset: number = range.startOffset + text.length;
+                            nodeSelection.setCursorPoint(docElement, matchedElement.firstChild as HTMLElement, startOffset);
+                            lastSelectionNode = null;
+                        }
+                    }
+                    wrapperDiv.remove();
+                } else {
+                    tempSpan.parentNode.replaceChild(fragment, tempSpan);
+                }
             }
         } else {
             let parentElem: Node = range.startContainer;
@@ -353,15 +386,15 @@ export class InsertHtml {
                 node.parentNode.replaceChild(fragment, node);
             }
         }
-        if (lastSelectionNode.nodeName === 'TABLE') {
+        if (lastSelectionNode && lastSelectionNode.nodeName === 'TABLE') {
             const pTag: HTMLElement = createElement('p');
             pTag.appendChild(createElement('br'));
             lastSelectionNode.parentElement.insertBefore(pTag, lastSelectionNode.nextSibling);
             lastSelectionNode = pTag;
         }
-        if (lastSelectionNode.nodeName === '#text') {
+        if (lastSelectionNode && lastSelectionNode.nodeName === '#text') {
             this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
-        } else if (lastSelectionNode.nodeName === 'HR') {
+        } else if (lastSelectionNode && lastSelectionNode.nodeName === 'HR') {
             const nextSiblingNode: HTMLElement = lastSelectionNode.nextSibling ? lastSelectionNode.nextSibling as HTMLElement : null;
             const siblingTag: HTMLElement = enterAction === 'DIV' ? createElement('div') : createElement('p');
             siblingTag.appendChild(createElement('br'));
@@ -379,11 +412,62 @@ export class InsertHtml {
             }
             nodeSelection.setSelectionText(docElement, lastSelectionNode, lastSelectionNode, 0, 0);
         }
-        else {
+        else if (lastSelectionNode) {
             this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode);
         }
         this.alignCheck(editNode as HTMLElement);
         this.listCleanUp(nodeSelection, docElement);
+    }
+
+    private static compareParentElements(el1: HTMLElement | null, el2: HTMLElement | null): boolean {
+        if (!el1 || !el2) {
+            return false;
+        }
+        if (el1.tagName !== el2.tagName) {
+            return false;
+        }
+        return this.getFilteredAttributes(el1) === this.getFilteredAttributes(el2);
+    }
+
+    private static getFilteredAttributes(element: HTMLElement): string {
+        return Array.from(element.attributes)
+            .map((attr: Attr): string => {
+                if (attr.name === 'class') {
+                    const filteredClass: string = attr.value.split(' ')
+                        .filter((cls: string) => cls !== 'pasteContent_RTE')
+                        .join(' ');
+                    return filteredClass ? `class='${filteredClass}'` : '';
+                }
+                return `${attr.name}='${attr.value}'`;
+            })
+            .filter((attr: string) => attr.length > 0)
+            .sort()
+            .join(' ');
+    }
+
+    private static getClosestMatchingElement(startNode: HTMLElement | null, fragment: DocumentFragment): HTMLElement | null {
+        let currentNode: HTMLElement | null = startNode;
+        while (currentNode) {
+            const matchingPastedNode: HTMLElement | null = this.findMatchingChild(fragment, currentNode);
+            if (matchingPastedNode) {
+                return currentNode;
+            }
+            currentNode = currentNode.parentElement;
+        }
+        return null;
+    }
+
+    private static findMatchingChild(fragment: ParentNode, targetNode: HTMLElement): HTMLElement | null {
+        for (const node of Array.from(fragment.children) as HTMLElement[]) {
+            if (this.compareParentElements(node, targetNode)) {
+                return node;
+            }
+            const deeperMatch: HTMLElement | null = this.findMatchingChild(node, targetNode);
+            if (deeperMatch) {
+                return deeperMatch;
+            }
+        }
+        return null;
     }
 
     private static listCleanUp(nodeSelection: NodeSelection, docElement: Document): void {
@@ -702,7 +786,7 @@ export class InsertHtml {
         return removableElement;
     }
 
-    private static removeEmptyElements(element: HTMLElement, ignoreBlockNodes: boolean = false): void {
+    private static removeEmptyElements(element: HTMLElement, ignoreBlockNodes: boolean = false, emptyElement: Element = null): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         const filteredEmptyElements: Element[] = Array.from(emptyElements).filter((element: Element) => {
             const tagName: string = element.tagName.toLowerCase();
@@ -723,7 +807,8 @@ export class InsertHtml {
                 detach(colGroup);
                 continue;
             }
-            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(currentEmptyElem.tagName.toLowerCase()) < 0 && lineWithDiv) {
+            const isEmptyElement: boolean = !isNOU(emptyElement) && currentEmptyElem === emptyElement;
+            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(currentEmptyElem.tagName.toLowerCase()) < 0 && lineWithDiv && !isEmptyElement) {
                 const detachableElement: HTMLElement = this.findDetachEmptyElem(currentEmptyElem, ignoreBlockNodes);
                 if (!isNOU(detachableElement) && !(detachableElement.nodeType === Node.ELEMENT_NODE && detachableElement.nodeName.toUpperCase() === 'TEXTAREA')) {
                     detach(detachableElement);

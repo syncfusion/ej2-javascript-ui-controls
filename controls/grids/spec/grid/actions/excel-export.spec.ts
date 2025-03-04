@@ -1102,6 +1102,52 @@ describe('excel Export =>', () => {
             gridObj = null;
         });
     });
+
+    // used for code coverage
+    describe('937544: Column header spanning does not work correctly with stacked headers in Excel export', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowExcelExport: true,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Center', width: '120px' },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '150'
+                        },
+                        {
+                            field: 'EmployeeID', headerText: 'Employee ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '150'
+                        },
+                        { headerText: 'Order Details',
+                            columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                                { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10 }
+                            ]
+                        },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 }
+                    ]
+                }, done);
+        });
+    
+        it('column spanning in excel export', (done) => {
+            gridObj.excelHeaderQueryCellInfo = (args) => {
+                if (args.gridCell.column.field === 'OrderID') {
+                    args.cell.colSpan = 3;
+                }
+            };
+            gridObj.excelExport();
+            done();
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });    
 });
 
 

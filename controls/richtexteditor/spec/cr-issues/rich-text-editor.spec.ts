@@ -271,6 +271,29 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
         });
     });
+    describe('Bug 940154: Pressing backspace twice inside a table removes the entire table in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;"><ul><li>Hi<br></li><li class="startNode">Hello<br></li><li class="endNode">Bye</li></ul></td><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>',
+            });
+        });
+        it(' pressing backspace twice in list inside a table , should not remove the entire table', () => {
+            const startNode: Element = rteObj.inputElement.querySelector('.startNode').firstChild as Element;
+            const endNode: Element = rteObj.inputElement.querySelector('.endNode').firstChild as Element;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, startNode.textContent.length)
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            expect(rteObj.inputElement.querySelector('table')).not.toBe(null);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('883844: When using the Refresh method, RichTextEditor doesnot get refreshed to initial rendering', () => {
         let editor: RichTextEditor;
         beforeAll(() => {
@@ -529,7 +552,7 @@ describe('RTE CR issues ', () => {
             rteObj.dataBind();
             (<any>rteObj).keyDown(EnterkeyboardEventArgs);
             setTimeout(() => {
-                expect(rteObj.inputElement.innerHTML === '<ul><li><div>one</div></li><li><div>two</div></li></ul><div><br></div><div class="test test">three</div>').toBe(true); 
+                expect(rteObj.inputElement.innerHTML === '<ul><li><div>one</div></li><li><div>two</div></li></ul><div><br></div><div class="test">three</div>').toBe(true); 
                 done();
             }, 100);
         });

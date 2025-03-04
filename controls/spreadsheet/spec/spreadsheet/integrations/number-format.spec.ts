@@ -962,7 +962,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             helper.getElement(`#${helper.id}_number_format`).click();
             helper.getElement(`#${helper.id}_Fraction`).click();
             expect(cell.format).toBe('#,##0 ?/?');
-            expect(cellEle.textContent).toBe('20 139/500');
+            expect(cellEle.textContent).toBe('20 2/7');
             expect(formatBtn.textContent).toBe('Fraction');
             format = getFormatFromType('Scientific');
             expect(format).toBe('0.00E+0');
@@ -2479,6 +2479,76 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             cellEle = helper.invoke('getCell', [7, 8]);
             expect(cellEle.textContent).toBe('23:17');
             expect(sheet.rows[7].cells[8].value).toBe('0.9701388888888889');
+            done();
+        });
+    });
+    describe('Fraction format in spreadsheet component', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: [] }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Fraction format - I', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '0', format: '# ?/?' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('0    ');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":0,"format":"# ?/?","formattedText":"0    "}');
+            done();
+        });
+        it('Fraction format - II', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '67.32', format: '# ?/?' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('67 1/3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":67.32,"format":"# ?/?","formattedText":"67 1/3"}');
+            done();
+        });
+        it('Fraction format - III', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '12.89', format: '# ??/??' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('12 81/91');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":12.89,"format":"# ??/??","formattedText":"12 81/91"}');
+            done();
+        });
+        it('Fraction format - IV', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '7.056', format: '# ???/???' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('7 7/125');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":7.056,"format":"# ???/???","formattedText":"7 7/125"}');
+            done();
+        });
+        it('Fraction format - V', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '2.4', format: '# ?/?' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('2 2/5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":2.4,"format":"# ?/?","formattedText":"2 2/5"}');
+            done();
+        });
+        it('Fraction format - VI', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '9.988', format: '# ??/??' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('9 82/83');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":9.988,"format":"# ??/??","formattedText":"9 82/83"}');
+            done();
+        });
+        it('Fraction format - VII', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '-0.67', format: '# ?/?' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('- 2/3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":-0.67,"format":"# ?/?","formattedText":"- 2/3"}');
+            done();
+        });
+        it('Fraction format - VIII', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '1.999', format: '# ????/????' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('1 999/1000');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":1.999,"format":"# ????/????","formattedText":"1 999/1000"}');
+            done();
+        });
+        it('Fraction format - IX', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '5/3', format: '# ?/?' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('1 2/3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":1.6666666666666667,"format":"# ?/?","formattedText":"1 2/3"}');
+            done();
+        });
+        it('Fraction format - X', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '435 3/5', format: '# ?/?' }, 'A1']);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('435 3/5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":435.6,"format":"# ?/?","formattedText":"435 3/5"}');
             done();
         });
     });

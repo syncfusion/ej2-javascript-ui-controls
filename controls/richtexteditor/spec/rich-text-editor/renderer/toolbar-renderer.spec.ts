@@ -118,6 +118,9 @@ describe('Toolbar - Renderer', () => {
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
             (trgEle.firstElementChild as HTMLElement).click();
             expect(document.querySelector(".e-popup-overlay")).toBe(null);
+            rteObj.enabled = false;
+            (trgEle.firstElementChild as HTMLElement).click();
+            rteObj.enabled = true;
         });
 
         afterAll(() => {
@@ -445,6 +448,33 @@ describe('Toolbar - Renderer', () => {
                 expect((textBaseQuickToolbar as any).colorPickerObj.backgroundColorPicker.enablePersistence).toBe(false);
                 done();
             }, 100);
+        });
+    });
+
+    describe('Apply FullScreen mode to RTE -', () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FullScreen', 'BackgroundColor',]
+                }
+            });
+            rteEle = rteObj.element;
+        });
+
+        it(' Maximize and Minimize RTE testing', () => {
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.setAttribute('title', 'Maximize');
+            dispatchEvent(trgEle, 'mouseover');
+            trgEle.click();
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            dispatchEvent(trgEle, 'mouseover');
+            expect(rteEle.classList.contains('e-rte-full-screen')).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 });

@@ -4027,6 +4027,11 @@ export class BasicFormulas {
      * @returns {string | number} - Compute the Text.
      */
     public ComputeTEXT(...args: string[]): string | number {
+        let nestedFormula: boolean;
+        if (args.length && args[args.length - 1] === 'nestedFormulaTrue') {
+            nestedFormula = true;
+            args.pop();
+        }
         const argsLength: number = args.length;
         const firstArg: string = args[0];
         const secondArg: string = args[1];
@@ -4127,7 +4132,7 @@ export class BasicFormulas {
                 s1 = (this.parent.parentObject as any).getDisplayText({ format: s2, value: d });
             }
         }
-        return s1;
+        return nestedFormula ? this.parent.tic + s1 + this.parent.tic : s1;
     }
 
     /**

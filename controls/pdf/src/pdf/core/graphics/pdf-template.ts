@@ -41,6 +41,7 @@ export class PdfTemplate {
     _appearance: string;
     _pendingResources: string;
     _templateOriginalSize: number[];
+    _isSignature: boolean = false;
     /**
      * Initializes a new instance of the `PdfTemplate` class.
      *

@@ -7210,3 +7210,39 @@ describe('EJ2-929184 - When allowSelection is enabled dynamically, the SelectedR
         gridObj = null;
     });
 });
+
+describe('EJ2-939544 - Issue with selection persistence in grouped grid when collapsing and expanding', () =>{
+    let gridObj: Grid;
+    beforeAll((done) => {
+        gridObj = createGrid({
+                dataSource: data,
+                selectionSettings: { type: 'Multiple', mode: 'Both', persistSelection: true },
+                columns: [{ field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'Freight', headerText: 'Freight' },
+                    { field: 'ShipCity', headerText: 'Ship City' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }],
+                    allowGrouping: true,
+                    groupSettings: { columns: ['ShipCountry'] },
+            }, done);
+        });
+    it('Select the row', (done: Function) => {
+        gridObj.selectRow(0);
+        done();
+
+    });
+
+    it('Check the selection', (done: Function) => {
+        (gridObj.getContent().querySelectorAll('.e-recordplusexpand')[0] as HTMLElement).click();
+        (gridObj.getContent().querySelectorAll('.e-recordpluscollapse')[0] as HTMLElement).click();
+        expect(gridObj.selectedRowIndex).toBe(0);
+        done();
+
+    });
+    
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

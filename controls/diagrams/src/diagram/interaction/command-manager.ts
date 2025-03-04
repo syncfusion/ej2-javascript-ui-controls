@@ -1274,6 +1274,10 @@ export class CommandHandler {
             if (group) {
                 this.select(group);
             }
+            // 939249: Duplicate Ports Added to Group After Grouping and Undoing.
+            obj.annotations = (group.annotations as ShapeAnnotationModel[]);
+            obj.ports = (group.ports as PointPortModel[]);
+            obj.style = group.style;
             const entry: HistoryEntry = { type: 'Group', undoObject: obj, redoObject: obj, category: 'Internal' };
             this.addHistoryEntry(entry);
             this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;

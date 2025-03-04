@@ -434,9 +434,7 @@ export class DetailsView {
     /* istanbul ignore next */
     private onDataBound(): void {
         this.createDragObj();
-        if ((this.parent.selectedItems.length !== 0 && !this.parent.enableVirtualization) ||
-                ((this.parent.selectedItems.length !== 0 && this.parent.enableVirtualization &&
-                this.element.querySelector('.e-content').scrollTop === 0))) {
+        if ((this.parent.selectedItems.length !== 0 && !this.parent.enableVirtualization)) {
             this.selectRecords(this.parent.selectedItems);
         }
         if (this.isPasteOperation === true && (!isNullOrUndefined(this.gridObj.getDataRows()) && this.gridObj.getDataRows().length > 0)) {
@@ -1203,7 +1201,9 @@ export class DetailsView {
             if (this.gridObj.getSelectedRowIndexes().length !== 1) {
                 const lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
                 const lastItem: Element = this.gridObj.getRowByIndex(lastItemIndex);
-                lastItem.querySelector('.e-checkselect').setAttribute('tabindex', '-1');
+                if (!isNOU(lastItem)) {
+                    lastItem.querySelector('.e-checkselect').setAttribute('tabindex', '-1');
+                }
             }
             item.querySelector('.e-rowcell.e-fe-checkbox').removeAttribute('tabindex');
         }
@@ -1269,10 +1269,16 @@ export class DetailsView {
     private onDeSelection(args: RowDeselectEventArgs): void {
         /* istanbul ignore next */
         if (!this.parent.allowMultiSelection && isNOU(args.data)) {
-            this.gridObj.getRowByIndex(<number>args.rowIndex).removeAttribute('tabindex');
+            const item: Element = this.gridObj.getRowByIndex(<number>args.rowIndex);
+            if (!isNOU(item)) {
+                item.removeAttribute('tabindex');
+            }
         } else if (this.gridObj.getSelectedRowIndexes().length > 1) {
             const lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
-            this.gridObj.getRowByIndex(lastItemIndex).querySelector('.e-checkselect').removeAttribute('tabindex');
+            const lastItem: Element = this.gridObj.getRowByIndex(lastItemIndex);
+            if (!isNOU(lastItem)) {
+                lastItem.querySelector('.e-checkselect').removeAttribute('tabindex');
+            }
         }
         if (this.gridObj.selectedRowIndex === -1) {
             this.gridObj.element.setAttribute('tabindex', '0');

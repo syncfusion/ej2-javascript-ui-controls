@@ -860,6 +860,12 @@ describe('Number formatter', () => {
             });
         });
     });
+    describe('formats zero without trailing zeros when using a custom format', () => {
+        it('zero value', () => {
+            formatter = NumberFormat.numberFormatter('en', { format: '$#,##0 ', currency: 'USD' }, cldrData);
+            expect(formatter(zero)).toBe('$0 ');
+        });
+    });
     describe('group separator and decimal separator for custom format', () => {
         it('fraction value', () => {
             formatter = NumberFormat.numberFormatter('de', { format: '#,###.##' }, cldrData);

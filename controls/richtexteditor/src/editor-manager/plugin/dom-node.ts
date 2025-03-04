@@ -800,6 +800,10 @@ export class DOMNode {
     public blockNodes(action?: boolean): Node[] {
         const collectionNodes: Element[] = [];
         const selection: Selection = this.getSelection();
+        const tableBlockNodes: HTMLElement[] = this.tableSelection.getBlockNodes();
+        if (tableBlockNodes.length > 0) {
+            return tableBlockNodes;
+        }
         if (this.isEditorArea() && selection.rangeCount) {
             const ranges: Range[] = <Range[]>this.getRangePoint();
             for (let j: number = 0; j < ranges.length; j++) {
@@ -904,10 +908,6 @@ export class DOMNode {
                     collectionNodes.splice(i, 1);
                 }
             }
-        }
-        const tableBlockNodes: HTMLElement[] = this.tableSelection.getBlockNodes();
-        if (tableBlockNodes.length > 0) {
-            return tableBlockNodes;
         }
         return collectionNodes;
     }

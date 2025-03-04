@@ -2019,6 +2019,39 @@ describe('Data validation ->', () => {
                 done();
             });
         });
+        describe('EJ2-939916 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], frozenColumns: 3, frozenRows: 2 }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Unable to Open List Validation Dropdown When Merged Cells Exist Between Freeze and Unfreeze Areas', (done: Function) => {
+                helper.getInstance().addDataValidation({ type: 'List', inCellDropDown: true, value1: '10,20,30' }, 'D2:D10');
+                helper.getInstance().merge('B8:E8');
+                const cell: CellModel = helper.getInstance().sheets[0].rows[4].cells[3];
+                expect(JSON.stringify(cell.validation)).toBe('{"type":"List","inCellDropDown":true,"value1":"10,20,30"}');
+                helper.invoke('selectRange', ['D5']);
+                const td: HTMLElement = helper.invoke('getCell', [4, 3]).children[0];
+                expect(td.classList).toContain('e-validation-list');
+                const coords: ClientRect = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, document, td);
+                helper.triggerMouseAction('mousedup', { x: coords.left, y: coords.top }, document, td);
+                (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup li:nth-child(2)');
+                    expect(helper.getInstance().sheets[0].rows[4].cells[3].value).toBe(20);
+                    expect(helper.invoke('getCell', [4, 3]).innerText).toBe('20');
+                    helper.editInUI('15');
+                    setTimeout(() => {
+                        expect(helper.getElements('.e-validation-error-dlg.e-dialog').length).toBe(1);
+                        helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                        helper.click('.e-validation-error-dlg .e-footer-content button:nth-child(2)');
+                        done();
+                    }, 10);
+                }, 10);
+            });
+        });
     });
 
     describe('Localization is not updated for apply  button in the data Validation Pop-up ->',()=>{

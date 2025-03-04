@@ -237,6 +237,10 @@ export class EditorManager {
             case 'alternate':
                 this.observer.notify(CONSTANT.TABLE_ALTERNATE, { item: exeValue, event: event, callBack: callBack });
                 break;
+            case 'backgroundcolor':
+                this.observer.notify(CONSTANT.TABLE_BACKGROUND_COLOR,
+                                     { subCommand: value, value: exeValue, event: event, callBack: callBack });
+                break;
             }
             break;
         case 'font':

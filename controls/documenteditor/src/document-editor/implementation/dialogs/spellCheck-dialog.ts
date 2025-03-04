@@ -182,7 +182,7 @@ export class SpellCheckDialog {
             this.parent.spellCheckerModule.isChangeAll = true;
             showSpinner(this.documentHelper.dialog.element);
             const elements: ElementBox[] = this.parent.spellCheckerModule.errorWordCollection.get(this.errorText);
-            for (let i: number = 0; i < elements.length; i++) {
+            for (let i: number = elements.length - 1; i >= 0; i--) {
                 if (elements[i] instanceof ErrorTextElementBox && !elements[i].ischangeDetected) {
                     this.parent.spellCheckerModule.manageReplace(this.selectedText, elements[i]);
                 } else if (elements[i] instanceof TextElementBox) {

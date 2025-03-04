@@ -533,4 +533,17 @@ export class NodeSelection {
         const { end, endNodeName, endNode } = this.isTableOrImageEnd(range);
         return { start, startName: startNodeName, end, endName: endNodeName, startNode, endNode };
     }
+
+    public findLastTextPosition(element: Node): { node: Node; offset: number } | null {
+        if (element.nodeType === Node.TEXT_NODE) {
+            return { node: element, offset: element.textContent ? element.textContent.length : 0 };
+        }
+        for (let i: number = element.childNodes.length - 1; i >= 0; i--) {
+            const lastPosition: { node: Node; offset: number } | null = this.findLastTextPosition(element.childNodes[i as number]);
+            if (lastPosition) {
+                return lastPosition;
+            }
+        }
+        return null;
+    }
 }

@@ -1515,7 +1515,9 @@ function addSwimlanePhases(
     //To set the old lane id while creating lanes in undo-redo
     if ((newPhase as Node).laneGrids && (newPhase as Node).laneGrids.length > 0) {
         const index: number = orientation ? (rowIndex - (2 + headerIndex)) : columnIndex - 1;
-        canvas.id = (newPhase as Node).laneGrids[parseInt(index.toString(), 10)];
+        if (!diagram.nameTable[(newPhase as Node).laneGrids[parseInt(index.toString(), 10)]]) {
+            canvas.id = (newPhase as Node).laneGrids[parseInt(index.toString(), 10)];
+        }
     }
     //To store the lane ids in a collection while creating phase lanes
     const phaseIndex: number = orientation ? columnIndex : rowIndex - 1;
@@ -2282,6 +2284,7 @@ export function considerSwimLanePadding(diagram: Diagram, node: NodeModel, paddi
         }
         const canvas: Canvas = lane.wrapper as Canvas;
         let laneHeader: Canvas; let isConsiderHeader: boolean = false;
+        //For Multi-selected nodes
         (node as any).diffX = (node as any).diffX || 0;
         (node as any).diffY = (node as any).diffY || 0;
         if ((node as any).diffX > 0) {

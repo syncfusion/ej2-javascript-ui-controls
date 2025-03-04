@@ -6,6 +6,7 @@ import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import * as EVENTS from './../../common/constant';
 import { NodeSelection } from '../../selection';
+import { isSafari, scrollToCursor } from '../../common/util';
 
 /**
  * Audio internal component
@@ -116,6 +117,9 @@ export class AudioCommand {
             audioElm.addEventListener('loadeddata', () => {
                 if (e.value !== 'AudioReplace' || !isReplaced) {
                     if (!isNOU(this.parent.currentDocument)) {
+                        if (isSafari()) {
+                            scrollToCursor(this.parent.currentDocument, this.parent.editableElement as HTMLElement);
+                        }
                         e.callBack({
                             requestType: 'Audios',
                             editorMode: 'HTML',

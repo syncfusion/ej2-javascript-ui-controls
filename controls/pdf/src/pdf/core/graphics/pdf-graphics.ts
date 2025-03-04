@@ -902,8 +902,8 @@ export class PdfGraphics {
                             matrix._scale(1, 1);
                             scaleApplied = true;
                         } else if (templateBox[0] !== 0 && templateBox[1] !== 0 && templateBox[0] === bounds.x &&
-                                   this._page && bounds.y + templateBox[1] === this._page._size[1]) {
-                            matrix._translate(bounds.x - templateBox[0], -(bounds.y + templateBox[1]));
+                                   this._page && template._isSignature) {
+                            matrix._translate(bounds.x - templateBox[0], -this._page.size[1]);
                             matrix._scale(scaleX, scaleY);
                             scaleApplied = true;
                         }

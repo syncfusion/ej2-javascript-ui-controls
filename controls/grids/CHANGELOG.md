@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### Grid
+
+#### Bug fixes
+
+- `#I688846` - The issue of performance delay in checkbox row selection when filtering complex columns has been resolved.
+- `#I687298` - Resolved the issue where column header spanning was not working correctly with stacked headers in Excel export.
+- `#I682492` - Fixed an issue where a script error was thrown when copying with a focused stacked header in cell selection mode.
+- `#I690056` - Resolved the issue with `persistSelection` in the grouped grid when collapsing and expanding.
+- `#I685339` - Resolved the issue where resizing the frozen column is not adjust the content table properly.
+
 ## 28.2.7 (2025-02-25)
 
 ### Grid

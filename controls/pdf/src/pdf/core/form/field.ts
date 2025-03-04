@@ -71,6 +71,7 @@ export abstract class PdfField {
     _circleCaptionFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 8, PdfFontStyle.regular);
     _textAlignment: PdfTextAlignment;
     _isUpdating: boolean = false;
+    _isImport: boolean = false;
     /**
      * Gets the count of the loaded field items (Read only).
      *
@@ -4320,7 +4321,22 @@ export class PdfCheckBoxField extends PdfField {
     }
     _doPostProcess(isFlatten: boolean = false): void {
         const count: number = this._kidsCount;
-        if (this._isLoaded) {
+        if (!this._isLoaded) {
+            for (let i: number = 0; i < count; i++) {
+                const item: PdfStateItem = this.itemAt(i);
+                if (item) {
+                    const state: _PdfCheckFieldState = item.checked ? _PdfCheckFieldState.checked : _PdfCheckFieldState.unchecked;
+                    item._postProcess(item.checked ? 'Yes' : 'Off');
+                    if (isFlatten) {
+                        const template: PdfTemplate = this._createAppearance(item, state);
+                        this._drawTemplate(template, item._getPage(), item.bounds);
+                    } else {
+                        this._drawAppearance(item);
+                    }
+                    item._dictionary._updated = !isFlatten;
+                }
+            }
+        } else if (isFlatten || this._setAppearance || this._dictionary._updated || this._isImport) {
             if (count > 0) {
                 for (let i: number = 0; i < count; i++) {
                     const item: PdfStateItem = this.itemAt(i);
@@ -4350,21 +4366,6 @@ export class PdfCheckBoxField extends PdfField {
                     _PdfCheckFieldState.checked :
                     _PdfCheckFieldState.unchecked;
                 this._drawTemplate(_getStateTemplate(style, this), this.page, this.bounds);
-            }
-        } else {
-            for (let i: number = 0; i < count; i++) {
-                const item: PdfStateItem = this.itemAt(i);
-                if (item) {
-                    const state: _PdfCheckFieldState = item.checked ? _PdfCheckFieldState.checked : _PdfCheckFieldState.unchecked;
-                    item._postProcess(item.checked ? 'Yes' : 'Off');
-                    if (isFlatten) {
-                        const template: PdfTemplate = this._createAppearance(item, state);
-                        this._drawTemplate(template, item._getPage(), item.bounds);
-                    } else {
-                        this._drawAppearance(item);
-                    }
-                    item._dictionary._updated = !isFlatten;
-                }
             }
         }
         this._dictionary._updated = !isFlatten;
@@ -7267,6 +7268,9 @@ export class PdfSignatureField extends PdfField {
                     if (template && page) {
                         const graphics: PdfGraphics = page.graphics;
                         const state: PdfGraphicsState = graphics.save();
+                        if (this.isSigned) {
+                            template._isSignature = true;
+                        }
                         if (page.rotation !== PdfRotationAngle.angle0) {
                             graphics.drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, graphics));
                         } else {

@@ -1,4 +1,4 @@
-import { isNumber, LocaleNumericSettings } from '../common/index';
+import { evaluate, isNumber, LocaleNumericSettings } from '../common/index';
 import { CellModel } from '../base/index';
 import { getNumericObject, isUndefined } from '@syncfusion/ej2-base';
 
@@ -10,11 +10,12 @@ import { getNumericObject, isUndefined } from '@syncfusion/ej2-base';
  * @param {string} groupSep - Specifies the group separator.
  * @param {string} decimalSep - Specifies the decimal separator.
  * @param {string} currencySym - Specifies the currency Symbol.
+ * @param {boolean} isFractionalType - Defines whether the value is a fractional type or not.
  * @returns {Object} - returns the parsed value.
  * @hidden
  */
 export function checkIsNumberAndGetNumber(
-    cell: CellModel, locale: string, groupSep?: string, decimalSep?: string, currencySym?: string
+    cell: CellModel, locale: string, groupSep?: string, decimalSep?: string, currencySym?: string, isFractionalType?: boolean
 ): { isNumber: boolean, value: string } {
     let cellValue: string = cell.value;
     if (isNumber(cellValue)) {
@@ -35,6 +36,21 @@ export function checkIsNumberAndGetNumber(
         }
         if (isNumber(cellValue)) {
             return { isNumber: true, value: cellValue };
+        }
+        if (isFractionalType && cellValue.split('/').length === 2) {
+            try {
+                const splittedVal: string[] = cellValue.split(' ');
+                if (splittedVal.length === 2 && splittedVal[0].split('/').length === 1) {
+                    const result: string = evaluate(splittedVal[0]);
+                    const result1: string = evaluate(splittedVal[1]);
+                    cellValue = result + result1;
+                } else {
+                    cellValue = evaluate(cellValue);
+                }
+                return { isNumber: true, value: cellValue };
+            } catch (error) {
+                return { isNumber: false, value: cellValue };
+            }
         }
     }
     return { isNumber: false, value: cellValue };

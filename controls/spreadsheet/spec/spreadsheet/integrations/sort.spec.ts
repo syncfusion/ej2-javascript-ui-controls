@@ -433,7 +433,7 @@ describe('Spreadsheet sorting module ->', () => {
                 helper.invoke('numberFormat', ['_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-', 'B1:B8']);
                 const inst: Spreadsheet = helper.getInstance();
                 expect(inst.sheets[0].rows[1].cells[1].format).toEqual('_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-');
-                expect(helper.invoke('getCell', [1, 1]).textContent).toEqual('           02 ');
+                expect(helper.invoke('getCell', [1, 1]).textContent).toEqual('             2 ');
                 helper.invoke('selectRange', ['B1:B8']);
                 setTimeout((): void => {
                     helper.getElement('#' + helper.id + '_sorting').click();
@@ -451,13 +451,13 @@ describe('Spreadsheet sorting module ->', () => {
                                 null, sortAsc);
                             setTimeout((): void => {
                                 expect(inst.sheets[0].rows[3].cells[1].value.toString()).toEqual('4');
-                                expect(helper.invoke('getCell', [3, 1]).textContent).toEqual('           04 ');
+                                expect(helper.invoke('getCell', [3, 1]).textContent).toEqual('             4 ');
                                 expect(inst.sheets[0].rows[4].cells[1].value.toString()).toEqual('5');
-                                expect(helper.invoke('getCell', [4, 1]).textContent).toEqual('           05 ');
+                                expect(helper.invoke('getCell', [4, 1]).textContent).toEqual('             5 ');
                                 expect(inst.sheets[0].rows[5].cells[1].value.toString()).toEqual('6');
-                                expect(helper.invoke('getCell', [5, 1]).textContent).toEqual('           06 ');
+                                expect(helper.invoke('getCell', [5, 1]).textContent).toEqual('             6 ');
                                 expect(inst.sheets[0].rows[6].cells[1].value.toString()).toEqual('7');
-                                expect(helper.invoke('getCell', [6, 1]).textContent).toEqual('           07 ');
+                                expect(helper.invoke('getCell', [6, 1]).textContent).toEqual('             7 ');
                                 expect(inst.sheets[0].rows[7].cells[1].value.toString()).toEqual('11');
                                 expect(helper.invoke('getCell', [7, 1]).textContent).toEqual('           11 ');
                                 done();
@@ -481,7 +481,7 @@ describe('Spreadsheet sorting module ->', () => {
                             expect(inst.sheets[0].rows[7].cells[1]).toBeNull();
                             expect(helper.invoke('getCell', [7, 1]).textContent).toEqual('');
                             expect(inst.sheets[0].rows[1].cells[3].value.toString()).toEqual('2');
-                            expect(helper.invoke('getCell', [1, 3]).textContent).toEqual('           02 ');
+                            expect(helper.invoke('getCell', [1, 3]).textContent).toEqual('             2 ');
                             expect(inst.sheets[0].rows[7].cells[3].value.toString()).toEqual('11');
                             expect(helper.invoke('getCell', [7, 3]).textContent).toEqual('           11 ');
                             done();

@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 28.2.7 (2025-02-25)
+## 28.2.9 (2025-03-04)
+
+### MultiColumn ComboBox
+
+#### Bug Fixes
+
+- `#I682925` - Now the issue with value not returned properly when using the ejs-for in the Multicolumn ComboBox has been resolved.
+
+- `#I691442` - Now the issue with popup height doesn’t adjust properly when filtering results with large row content in the Multicolumn ComboBox has been resolved.
+
+## 28.2.6 (2025-02-18)
 
 ### MultiColumn ComboBox
 

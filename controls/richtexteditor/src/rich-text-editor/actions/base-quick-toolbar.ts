@@ -308,7 +308,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                     container: this.toolbarElement,
                     containerType: 'quick',
                     items: this.stringItems
-                } as IDropDownRenderArgs);
+                } as IDropDownRenderArgs, beforeQuickToolbarArgs.targetElement as HTMLElement);
                 this.colorPickerObj.renderColorPickerInput({
                     container: this.toolbarElement,
                     containerType: 'quick',
@@ -336,7 +336,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                     (x === beforeQuickToolbarArgs.positionX || y === beforeQuickToolbarArgs.positionY)) {
                     this.setPosition(showPopupData);
                 }
-                if (!this.parent.inlineMode.enable) {
+                if (!this.parent.inlineMode.enable || this.parent.iframeSettings.enable) {
                     this.checkCollision(showPopupData, 'parent', '');
                 }
                 this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : (type === 'text') ? 'text' : ''));

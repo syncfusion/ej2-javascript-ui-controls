@@ -360,7 +360,7 @@ export class HtmlEditor {
         }
         let currentRange: Range;
         const args: KeyboardEvent = e.args as KeyboardEvent;
-        if (this.parent.inputElement.querySelectorAll('.e-cell-select').length > 1 && (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13)) {
+        if (this.parent.inputElement.querySelectorAll('.e-cell-select:not(table)').length > 1 && (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13)) {
             this.tableSelectionKeyAction(e);
             this.parent.autoResize();
             return;
@@ -580,7 +580,8 @@ export class HtmlEditor {
                     if (prevSibling.lastChild.nodeName === 'BR') {
                         prevSibling.removeChild(prevSibling.lastChild);
                     }
-                    const lastPosition: { node: Node; offset: number } | null = this.findLastTextPosition(prevSibling);
+                    const lastPosition: { node: Node; offset: number } | null =
+                        this.parent.formatter.editorManager.nodeSelection.findLastTextPosition(prevSibling);
                     const cursorpointer: number = lastPosition.offset;
                     const lastChild: Element = lastPosition.node as Element;
                     const childNodes: Node[] = Array.from(currentElement.childNodes);
@@ -646,6 +647,16 @@ export class HtmlEditor {
                     !isLiElement ? detach(this.rangeElement) : detach(this.rangeElement.parentElement);
                     this.oldRangeElement.normalize();
                 }
+            }
+        }
+        if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 &&
+            currentRange.startContainer.nodeType !== Node.TEXT_NODE){
+            const ChildNode: HTMLElement = !isNOU(currentRange.startContainer.childNodes[currentRange.startOffset - 1]) &&
+            !(currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable ?
+                currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement : null;
+            if (ChildNode) {
+                ChildNode.remove();
+                (e.args as KeyboardEventArgs).preventDefault();
             }
         }
     }

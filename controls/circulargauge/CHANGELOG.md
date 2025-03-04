@@ -4,6 +4,38 @@
 
 ## [Unreleased]
 
+## 28.1.33 (2024-12-12)
+
+### Circular Gauge
+
+#### New features
+
+`#I642465` - The drag-and-drop interaction for pointers can now be enabled individually by using the `enableDrag` property within the `pointers` property when multiple pointers are available.
+
+## 27.1.58 (2024-11-05)
+
+### Circular Gauge
+
+#### Bug fixes
+
+`#I644577` - The target element is now correctly identified in the `gaugeMouseDown` event.
+
+## 27.1.57 (2024-10-29)
+
+### Circular Gauge
+
+#### Bug fixes
+
+`#I640295` - Exceptions will no longer be thrown when the pointer is dragged and the pointer value is updated during the `dragEnd` event.
+
+## 27.1.50 (2024-09-24)
+
+### Circular Gauge
+
+#### Bug fixes
+
+- The annotations will now render correctly when templates are provided through functions.
+
 ## 25.1.35 (2024-03-15)
 
 ### Circular Gauge

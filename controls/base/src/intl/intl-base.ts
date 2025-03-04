@@ -943,6 +943,7 @@ export namespace IntlBase {
         const spaceGrouping: boolean = integerPart.replace(/ $/g, '').indexOf(' ') !== -1;
         cOptions.useGrouping = integerPart.indexOf(',') !== -1 || spaceGrouping;
         integerPart = integerPart.replace(/,/g, '');
+        integerPart = (/\s$/.test(integerPart)) ? integerPart.replace(/ /g, '') : integerPart;
         const fractionPart: string = pattern[7];
         if (integerPart.indexOf('0') !== -1) {
             cOptions.minimumIntegerDigits = integerPart.length - integerPart.indexOf('0');

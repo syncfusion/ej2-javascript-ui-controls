@@ -249,6 +249,42 @@ export class Lists {
         let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
         endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
+        if (!isNOU(startNode) && startNode.closest('li')) {
+            const listCursorInfo: ListCursorInfo = this.getListCursorInfo(range);
+            const isFirst: boolean = startNode.previousElementSibling === null;
+            const allowedCursorSelections: ListCursorPosition[] = ['StartParent'];
+            const allowedSelections: ListSelectionState[] = ['SingleFull', 'MultipleFull'];
+            const blockNodes: HTMLElement[] = this.parent.domNode.blockNodes() as HTMLElement[];
+            const isAllListSelected: boolean = this.isAllListNodesSelected(startNode.closest('li').parentElement as HTMLUListElement | HTMLOListElement);
+            const hasIndent: boolean = listCursorInfo.position === 'StartNested' && startNode && startNode.parentElement &&
+                                    startNode.parentElement.closest('li') && startNode.parentElement.closest('li').getAttribute('style')
+                                    && startNode.parentElement.closest('li').getAttribute('style').indexOf('list-style-type: none;') !== -1;
+            if (isFirst && (allowedCursorSelections.indexOf(listCursorInfo.position) > -1 || hasIndent)) {
+                e.event.preventDefault();
+                let saveSelection: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+                this.domNode.setMarker(saveSelection);
+                this.revertList([blockNodes[0] as HTMLElement], e);
+                this.revertClean();
+                saveSelection = this.domNode.saveMarker(saveSelection);
+                saveSelection.restore();
+                return;
+            } else if (allowedSelections.indexOf(listCursorInfo.selectionState) > -1 && isAllListSelected) {
+                e.event.preventDefault();
+                blockNodes[0].innerHTML = '';
+                range.deleteContents();
+                if (blockNodes.length > 1) {
+                    for (let i: number = 0; i < blockNodes.length; i++) {
+                        if (i === 0) {
+                            continue; // First List is needed after the removal of list items.
+                        }
+                        const list: HTMLElement = blockNodes[i as number];
+                        detach(list);
+                    }
+                }
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, blockNodes[0], 0);
+                return;
+            }
+        }
         if (startNode === endNode && !isNullOrUndefined(closest(startNode, 'li')) &&
             ((startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) ||
             (startNode.textContent.length === 1 && startNode.textContent.charCodeAt(0) === 8203))) {
@@ -288,9 +324,58 @@ export class Lists {
                 parentList.parentElement.insertBefore(startNode.children[1], parentList);
             }
         }
+        if (startNode === endNode && startNode.tagName === 'LI' && this.isAtListStart(startNode, range) && !isNOU(startNode.closest('ul, ol'))) {
+            const currentList: Element | null = startNode.closest('ul, ol');
+            const parentListItem: HTMLElement | null = currentList.parentElement;
+            const prevSibling: Element | null = startNode.previousElementSibling;
+            const nestedList: HTMLElement | null = startNode.querySelector('ol, ul');
+            if ((!isNOU(parentListItem) && parentListItem.tagName === 'LI' && !isNOU(currentList.previousSibling)) || (!isNOU(prevSibling) && prevSibling.nodeName === 'LI')) {
+                if (!isNOU(nestedList) && (isNOU(prevSibling) || !isNOU(prevSibling))) {
+                    e.event.preventDefault();
+                    // Preventing a default content editable div behaviour and handles rearrangement of nested lists when press the backspace while the cursor is at the nested list structure and also redistributes child nodes and maintains cursor position after rearrangement
+                    this.handleNestedListRearrangement(startNode, currentList, parentListItem, prevSibling, nestedList);
+                }
+            }
+        }
         this.removeList(range, e);
         this.firstListBackSpace(range, e);
     }
+
+    private handleNestedListRearrangement(
+        startNode: Element,
+        currentList: Element,
+        parentListItem: HTMLElement,
+        prevSibling: Element | null,
+        nestedList: HTMLElement
+    ): void {
+        const cursorOffset: { node: Node; offset: number } | null =
+            this.parent.nodeSelection.findLastTextPosition(!isNOU(prevSibling) ? prevSibling : currentList.previousSibling);
+        const childNodes: ChildNode[] = Array.from(startNode.childNodes);
+        for (let i: number = 0; i < childNodes.length; i++) {
+            const child: ChildNode = childNodes[i as number];
+            if (child === nestedList && nestedList) {
+                while (nestedList.firstChild) {
+                    currentList.insertBefore(nestedList.firstChild, startNode);
+                    const emptyOL: HTMLElement | null = startNode.querySelector('OL:empty,UL:empty');
+                    if (emptyOL) {
+                        startNode.remove();
+                    }
+                }
+            } else {
+                if (!isNOU(prevSibling)) {
+                    cursorOffset.node.parentElement.closest('li').appendChild(child);
+                }
+                else {
+                    parentListItem.insertBefore(child, currentList);
+                }
+            }
+        }
+        this.parent.nodeSelection.setCursorPoint(
+            this.parent.currentDocument,
+            cursorOffset.node as Element,
+            cursorOffset.offset);
+    }
+
     private removeList(range: Range, e: IHtmlKeyboardEvent): void{
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = (!isNOU(range.endContainer.parentElement.closest('li')) && range.endContainer.parentElement.closest('li').childElementCount > 1 && range.endContainer.nodeName === '#text') ? range.endContainer as Element :  this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
@@ -1209,14 +1294,23 @@ export class Lists {
                         if (attributes.length > 0) {
                             for (let d: number = 0; d < attributes.length; d++) {
                                 const e: Attr = attributes[d as number];
-                                const existingValue: string = childNode.getAttribute(e.nodeName);
-                                const parentValue: string = (element.parentElement).getAttribute(e.nodeName);
-                                childNode.setAttribute(e.nodeName, existingValue ? parentValue + ' ' + existingValue : parentValue);
+                                const clean: (v: string) => string = (v: string): string =>
+                                    v ? v.split(';').filter((s: string): boolean => !/list-style-(image|type):/.test(s.trim())).join(';').trim() : '';
+                                const existingValue: string = clean(childNode.getAttribute(e.nodeName));
+                                const parentValue: string = clean(element.parentElement.getAttribute(e.nodeName));
+                                if (existingValue && existingValue !== parentValue ) {
+                                    childNode.setAttribute(e.nodeName, existingValue ? parentValue + ' ' + existingValue : parentValue);
+                                } else {
+                                    childNode.setAttribute(e.nodeName, parentValue);
+                                }
+                                if ((childNode as HTMLElement).style.length === 0) {
+                                    childNode.removeAttribute('style');
+                                }
                             }
                         }
                     }
                     className = childNode.getAttribute('class');
-                    if (className && childNode.getAttribute('class')) {
+                    if (className && childNode.getAttribute('class') && className !== childNode.getAttribute('class')) {
                         attributes(childNode, { 'class': className + ' ' + childNode.getAttribute('class') });
                     }
                 }
@@ -1284,4 +1378,125 @@ export class Lists {
         }
         return true;
     }
+
+    private getListCursorInfo(range: Range): ListCursorInfo {
+        let position: ListCursorPosition;
+        let selectionState: ListSelectionState;
+        const startNode: Node = range.startContainer.nodeType === Node.TEXT_NODE ?
+            range.startContainer.parentElement : range.startContainer;
+        const endNode: Node = range.endContainer.nodeType === Node.TEXT_NODE ?
+            range.endContainer.parentElement : range.endContainer;
+        const isSelection: boolean = !range.collapsed;
+        const startList: HTMLLIElement = (startNode as HTMLElement).closest('li');
+        const endList: HTMLLIElement = (endNode as HTMLElement).closest('li');
+        const isNestedStart: boolean = this.checkIsNestedList(startList.closest('ol, ul') as HTMLElement);
+        const isNestedEnd: boolean = this.checkIsNestedList(endList.closest('ol, ul') as HTMLElement);
+        const blockNodes: HTMLElement[] = this.parent.domNode.blockNodes() as HTMLElement[];
+        const length: number = blockNodes.length;
+        const itemType: ListItemType = this.getListSelectionType(isNestedStart ? 'Nested' : 'Parent', isNestedEnd ? 'Nested' : 'Parent');
+        if (isSelection) {
+            if (blockNodes.length === 1) {
+                selectionState = range.startOffset === 0 && range.endOffset === startList.textContent.length ? 'SingleFull' : 'SinglePartial';
+            } else {
+                selectionState = range.startOffset === 0 && range.endOffset === blockNodes[length - 1].textContent.length ? 'MultipleFull' : 'MultiplePartial';
+            }
+            position = 'None';
+        } else {
+            if (range.startOffset === 0) {
+                position = isNestedStart ? 'StartNested' : 'StartParent';
+            } else if (range.startOffset === startList.textContent.length) {
+                position = isNestedStart ? 'EndNested' : 'EndParent';
+            } else {
+                position = isNestedStart ? 'MiddleNested' : 'MiddleParent';
+            }
+            selectionState = 'None';
+        }
+        return { position, selectionState, itemType };
+    }
+
+    private checkIsNestedList(listParent: HTMLElement): boolean {
+        const isDirectParent: boolean = listParent.parentElement === this.parent.editableElement as HTMLElement;
+        if (isDirectParent) { // Check if the list is directly under the editable element.
+            return false;
+        }
+        if (listParent.closest('li')) {
+            return true;
+        }
+        return false;
+    }
+
+    private getListSelectionType(start: ListItemType, end: ListItemType): ListItemType {
+        if (start === 'Nested' && end === 'Nested') {
+            return 'Nested';
+        } else if (start === 'Parent' && end === 'Parent') {
+            return 'Parent';
+        } else {
+            return 'Mixed';
+        }
+    }
+
+    private isAllListNodesSelected(list: HTMLOListElement | HTMLUListElement): boolean {
+        const selection: Selection = this.parent.currentDocument.getSelection();
+        let isAllSelected: boolean = false;
+        const liNodes: NodeListOf<HTMLLIElement> = list.querySelectorAll('li');
+        for (let i: number = 0; i < liNodes.length; i++) {
+            if (selection.containsNode(liNodes[i as number], false)) {
+                isAllSelected = true;
+            } else {
+                isAllSelected = false;
+                break;
+            }
+        }
+        return isAllSelected;
+    }
+}
+
+/**
+ * @hidden
+ */
+type ListCursorPosition =
+    | 'StartParent'    // Cursor is at the start of a parent list item
+    | 'StartNested'    // Cursor is at the start of a nested list item
+    | 'MiddleParent'   // Cursor is in the middle of a parent list item
+    | 'MiddleNested'   // Cursor is in the middle of a nested list item
+    | 'EndParent'      // Cursor is at the end of a parent list item
+    | 'EndNested'      // Cursor is at the end of a nested list item
+    | 'None';          // Selection range
+
+/**
+ * @hidden
+ */
+type ListSelectionState =
+    | 'None'           // Cursor range
+    | 'SingleFull'     // Single list item fully selected
+    | 'SinglePartial'  // Single list item partially selected
+    | 'MultipleFull'   // Multiple list items fully selected
+    | 'MultiplePartial'; // Multiple list items partially selected
+
+/**
+ * @hidden
+ */
+type ListItemType =
+| 'Parent'      // Basic List
+| 'Nested'      // Nested List
+| 'Mixed';      // Both Parent and Nested List
+
+/**
+ * To get the details of the Current list selection.
+ *
+ * @hidden
+ */
+interface ListCursorInfo {
+    /**
+     *  Gives the current cursor position when the `range.collapsed` is `true`.
+     */
+    position: ListCursorPosition;
+    /**
+     * Gives the current selection state when the `range.collapsed` is `false`.
+     */
+    selectionState: ListSelectionState;
+    /**
+     * Gives the current list item type.
+     */
+    itemType: ListItemType;
 }

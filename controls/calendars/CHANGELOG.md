@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I40705` - Fixed issue where the selected date was incorrect when setting the Start and Depth properties in the DateRangePicker to `Year`.
+
 ## 28.2.7 (2025-02-25)
 
 ### DatePicker

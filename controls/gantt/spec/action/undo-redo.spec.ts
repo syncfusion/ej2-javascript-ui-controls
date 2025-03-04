@@ -6894,3 +6894,108 @@ describe('Gantt undo redo action for delete action', () => {
         }
     });
 });
+describe('Gantt undo action after adding segment data', () => {
+    Gantt.Inject(Sort,Selection, UndoRedo, Edit, Toolbar, RowDD,Filter, ContextMenu, ColumnMenu, Selection);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: [],
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments',
+            },
+            height: '450px',
+            treeColumnIndex: 1,
+            allowSelection: true,
+            highlightWeekends: true,
+            enableUndoRedo: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true
+            },
+            columns: [
+                { field: 'TaskID', width: 80 },
+                {
+                    field: 'TaskName',
+                    headerText: 'Job Name',
+                    width: '250',
+                    clipMode: 'EllipsisWithTooltip',
+                },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' },
+            ],
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+                'Undo',
+                'Redo',
+            ],
+            splitterSettings: {
+                position: '35%',
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%',
+            },
+            projectStartDate: new Date('01/30/2024'),
+            projectEndDate: new Date('03/04/2024'),
+            undoRedoActions: [
+                'Sorting',
+                'Add',
+                'ColumnReorder',
+                'ColumnResize',
+                'ColumnState',
+                'Delete',
+                'Edit',
+                'Filtering',
+                'Indent',
+                'Outdent',
+                'NextTimeSpan',
+                'PreviousTimeSpan',
+                'RowDragAndDrop',
+                'Search',
+            ],
+                }, done);
+        });
+        it('undo action for delete action', () => {
+            let data: Object =  {
+                TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                Duration: 1, Progress: '60',
+                Segments: [
+                    { StartDate: new Date('02/04/2019'), Duration: 1 },
+                ]
+            }
+            ganttObj.addRecord(data);
+            ganttObj.deleteRecord(3);
+            ganttObj.actionComplete = function (args: any): void {
+                if(args.requestType == 'add') {
+                    expect(ganttObj.currentViewData.length).toBe(1);
+                }            }
+            ganttObj.undo();
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+});

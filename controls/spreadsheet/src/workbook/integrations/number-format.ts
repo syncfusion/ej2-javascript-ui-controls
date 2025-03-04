@@ -1,4 +1,4 @@
-import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs, isReadOnly, isImported, getSwapRange } from '../common/index';
+import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs, isReadOnly, isImported, getSwapRange, getGcd } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors, getRow, RowModel, isHiddenRow } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, IntlBase } from '@syncfusion/ej2-base';
 import { cldrData, defaultCurrencyCode } from '@syncfusion/ej2-base';
@@ -950,7 +950,8 @@ export class WorkbookNumberFormat {
                 isRightAlign = !!fResult;
                 break;
             case 'Fraction':
-                numArgs = checkIsNumberAndGetNumber({ value: fResult }, this.parent.locale, this.localeObj.group, this.localeObj.decimal);
+                numArgs = checkIsNumberAndGetNumber({ value: fResult }, this.parent.locale, this.localeObj.group, this.localeObj.decimal,
+                                                    null, true);
                 if (numArgs.isNumber) {
                     cell.value = args.value = numArgs.value;
                     fResult = this.fractionFormat(args);
@@ -1490,18 +1491,44 @@ export class WorkbookNumberFormat {
     }
 
     private fractionFormat(args: NumberFormatArgs): string {
+        let fractionResult: string;
         args.format = args.format || getFormatFromType('Fraction');
         this.checkAndSetColor(args);
-        const valArr: string[] = args.value.toString().split('.');
-        const suffixVal: string = this.getFormattedNumber(args.format.split(' ')[0], Number(valArr[0]));
-        const fractionDigit: number = args.format.split('?').length / 2;
-        if (valArr.length === 2 && !valArr[1].startsWith('0'.repeat(fractionDigit))) {
-            const fractionResult: string = toFraction(Number(args.value));
-            if (fractionResult) {
-                return `${suffixVal} ${fractionResult}`;
+        const valueArr: string[] = args.value.toString().split('.');
+        const formatArr: string[] = args.format.split(' ');
+        const fractionArr: string[] = formatArr[1] ? formatArr[1].split('/') : [];
+        if (valueArr.length === 2 && !valueArr[1].startsWith('0'.repeat(fractionArr[1].trim().length || 0))) {
+            const fractionPattern: RegExp = /^\?{1,3}\/\?{1,3}$|^\?\/[248]$|^\?\?\/16$/;
+            if (fractionPattern.test(formatArr[1])) {
+                let [numerator, denominator, minError]: [number, number, number] = [0, 1, Number.MAX_VALUE];
+                const denominatorLimit: number = fractionArr[1].includes('?') ?
+                    Number('9'.repeat(fractionArr[1].split('?').length - 1)) : Number(fractionArr[1]);
+                const decimalPart: number = parseFloat(`0.${valueArr[1]}`);
+                for (let tempDenom: number = 1; tempDenom <= denominatorLimit; tempDenom++) {
+                    const tempNumer: number = Math.round(decimalPart * tempDenom);
+                    const error: number = Math.abs(decimalPart - tempNumer / tempDenom);
+                    if (error < minError) {
+                        [numerator, denominator, minError] = [tempNumer, tempDenom, error];
+                    }
+                }
+                const gcd: number = getGcd(numerator, denominator);
+                [numerator, denominator] = [numerator / gcd, denominator / gcd];
+                if (numerator === denominator) {
+                    valueArr[0] = `${parseInt(valueArr[0], 10) + 1}`;
+                } else if (numerator !== 0) {
+                    fractionResult = `${numerator}/${denominator}`;
+                }
+            } else {
+                fractionResult = toFraction(Number(args.value));
             }
         }
-        return suffixVal + ' ' + '  '.repeat(fractionDigit * 2);
+        const suffixVal: string = this.getFormattedNumber(formatArr[0], Math.abs(Number(valueArr[0])));
+        if (fractionResult) {
+            return (Number(args.value) < 0 ? '-' : '') + (suffixVal === '0' ? '' : suffixVal) +
+                (fractionResult === '' ? '' : ' ' + fractionResult);
+        } else {
+            return (Number(args.value) < 0 ? '-' : '') + suffixVal + ' '.repeat(formatArr.join().split('').length - 1);
+        }
     }
 
     private checkAndSetColor(args: NumberFormatArgs): void {

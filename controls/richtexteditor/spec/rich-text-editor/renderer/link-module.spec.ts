@@ -2288,4 +2288,44 @@ describe('After clicking on outside, link dialog still open state', function () 
             },500);
         });
     });
+    describe('940236 -  Removing validation when the values are entered', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({ 
+                value: '<p>test</p>',
+                enableAutoUrl: true
+             });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('link dialog', () => {
+            (rteObj as any).value = 'test';
+            (rteObj as any).dataBind();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            let event: any = { preventDefault: function () { } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let selectParent: any = new NodeSelection().getParentNodeCollection(range)
+            let selectNode: any = new NodeSelection().getNodeCollection(range);
+            let evnArg: any = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                selectParent: selectParent, selectNode: selectNode
+            };
+            (<any>rteObj).linkModule.linkDialog(evnArg);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = ' ';
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').classList.contains('e-error')).toBe(true);
+            let  inputElement = (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl');
+            inputElement.value = 'h';
+            let inputChangeEvent = new Event('input', {
+                bubbles: true,
+                cancelable: true
+            });
+            inputElement.dispatchEvent(inputChangeEvent);
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').classList.contains('e-error')).toBe(false);
+        });
+    });
 });

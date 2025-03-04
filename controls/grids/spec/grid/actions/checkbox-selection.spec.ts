@@ -35,7 +35,7 @@ describe('Grid checkbox selection functionality', () => {
             }
             gridObj = createGrid(
                 {
-                    dataSource: data,
+                    dataSource: data.slice(0, 15),
                     columns: [
                         { type: 'checkbox', width: 50 },
                         { headerText: 'OrderID', isPrimaryKey: true, field: 'OrderID' },

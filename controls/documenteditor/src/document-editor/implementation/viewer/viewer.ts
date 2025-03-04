@@ -2312,6 +2312,10 @@ export class DocumentHelper {
                         }
                         if (!(this.isTouchInput || this.isSelectionChangedOnMouseMoved || this.touchDownOnSelectionMark > 0 || this.isDragStarted)) {
                             this.updateTextPositionForSelection(touchPoint, 1);
+                            if (!isNullOrUndefined(this.currentSelectedComment) && this.owner.commentReviewPane
+                                && !this.owner.commentReviewPane.commentPane.isEditMode) {
+                                this.currentSelectedComment = undefined;
+                            }
                         }
                         if (this.isLeftButtonPressed(event) && !this.isDragStarted) {
                             event.preventDefault();

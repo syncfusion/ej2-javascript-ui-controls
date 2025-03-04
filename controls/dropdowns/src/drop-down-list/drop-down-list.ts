@@ -2819,7 +2819,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     && ((this.dataSource instanceof DataManager)
                         || (!isNullOrUndefined(this.dataSource) && !isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
-                    if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                    if (this.itemTemplate && (this.element.tagName === 'EJS-COMBOBOX' || this.isReact) && this.allowFiltering) {
                         setTimeout(
                             () => {
                                 this.updateActionCompleteDataValues(ulElement, list);

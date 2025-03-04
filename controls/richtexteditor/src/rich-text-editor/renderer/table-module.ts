@@ -89,6 +89,7 @@ export class Table {
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.afterKeyDown, this.afterKeyDown, this);
+        this.parent.on(events.hideTableQuickToolbar, this.hideTableQuickToolbar, this);
     }
 
     protected removeEventListener(): void {
@@ -104,7 +105,7 @@ export class Table {
         this.parent.off(events.tableToolbarAction, this.onToolbarAction);
         this.parent.off(events.dropDownSelect, this.dropdownSelect);
         this.parent.off(events.mouseDown, this.cellSelect);
-        this.parent.off(events.tableColorPickerChanged, this.setBGColor);
+        this.parent.off(events.hideTableQuickToolbar, this.hideTableQuickToolbar);
         this.parent.off(events.keyDown, this.keyDown);
         this.parent.off(events.tableModulekeyUp, this.tableModulekeyUp);
         this.parent.off(events.bindCssClass, this.setCssClass);
@@ -148,7 +149,6 @@ export class Table {
     private afterRender(): void {
         if (isNullOrUndefined(this.contentModule)) {
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-            this.parent.on(events.tableColorPickerChanged, this.setBGColor, this);
             this.parent.on(events.mouseDown, this.cellSelect, this);
             if (this.parent.tableSettings.resize) {
                 EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
@@ -259,12 +259,10 @@ export class Table {
                     case 9:
                     case 37:
                     case 39:
-                        this.removeCellSelectClasses();
                         proxy.tabSelection(event, selection, ele);
                         break;
                     case 40:
                     case 38:
-                        this.removeCellSelectClasses();
                         proxy.tableArrowNavigation(event, selection, ele);
                         break;
                     }
@@ -655,6 +653,9 @@ export class Table {
                 const closestTd: HTMLElement = closest(ele, 'td') as HTMLElement;
                 ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
             }
+            if ((ele && ele.tagName === 'TD' || ele.tagName === 'TH') && !ele.classList.contains(classes.CLS_TABLE_SEL)) {
+                ele.classList.add(classes.CLS_TABLE_SEL);
+            }
             const eventArgs: KeyboardEventArgs = e.args as KeyboardEventArgs;
             if (this.previousTableElement !== ele && !isNullOrUndefined(this.previousTableElement)
                 && !eventArgs.shiftKey && (eventArgs.keyCode === 39 || eventArgs.keyCode === 37 ||
@@ -888,6 +889,7 @@ export class Table {
     }
     private tableArrowNavigation(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
         const selText: Node = selection.range.startContainer;
+        this.previousTableElement = ele;
         if ((event.keyCode === 40 && selText.nodeType === 3 && (selText.nextSibling && selText.nextSibling.nodeName === 'BR' ||
             selText.parentNode && selText.parentNode.nodeName !== 'TD')) ||
             (event.keyCode === 38 && selText.nodeType === 3 && (selText.previousSibling && selText.previousSibling.nodeName === 'BR' ||
@@ -915,19 +917,6 @@ export class Table {
         if (ele) {
             selection.setSelectionText(this.contentModule.getDocument(), ele, ele, 0, 0);
         }
-    }
-    private setBGColor(args: IColorPickerEventArgs): void {
-        const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
-        // eslint-disable-next-line
-        const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
-        // eslint-disable-next-line
-        const selectedCells = this.curTable.querySelectorAll('.e-cell-select');
-        for (let i: number = 0; i < selectedCells.length; i++) {
-            (selectedCells[i as number] as HTMLElement).style.backgroundColor = args.item.value;
-        }
-        this.parent.formatter.process(this.parent, args, (args as IColorPickerEventArgs).originalEvent, args.item.value);
-        this.parent.formatter.saveData();
-        this.hideTableQuickToolbar();
     }
 
     private hideTableQuickToolbar(): void {

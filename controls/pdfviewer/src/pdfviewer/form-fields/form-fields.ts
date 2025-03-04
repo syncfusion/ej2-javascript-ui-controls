@@ -2623,6 +2623,7 @@ export class FormFields {
                             }
                         }
                         this.pdfViewer.annotation.deleteAnnotationById(annotation.id);
+                        this.currentTarget = null;
                     }
                 }
                 if (currentData.Name !== 'SignatureField' && currentData.Name !== 'ink' && currentData.Name !== 'RadioButton') {

@@ -15,6 +15,7 @@ const NODATA: string = 'e-nodata';
 const DISABLED: string = 'e-disabled';
 const INPUTFOCUS: string = 'e-input-focus';
 const MULTICOLUMNLIST: string = 'e-multicolumn-list';
+const HIDDENELEMENT: string = 'e-multicolumn-list-hidden';
 const MULTICOLUMNGRID: string = 'e-multicolumn-grid';
 
 export class MultiColumnGrid {
@@ -922,6 +923,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private isInitialRender: boolean;
     private remoteDataLength: number;
     private selectedRowIndex: number;
+    private hiddenElement: HTMLSelectElement;
 
     /**
      * *Constructor for creating the component
@@ -1002,6 +1004,24 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.wireEvents();
     }
 
+    private setHiddenValue(): void {
+        if (isNOU(this.value)) {
+            this.hiddenElement.innerHTML = '';
+            return;
+        }
+        const existingOption: HTMLOptionElement = this.hiddenElement.querySelector('option');
+        if (!isNOU(existingOption)) {
+            existingOption.textContent = this.text;
+            existingOption.setAttribute('value', this.value.toString());
+        } else if (!isNOU(this.hiddenElement)) {
+            const newOption: HTMLOptionElement = document.createElement('option');
+            newOption.text = this.text;
+            newOption.setAttribute('value', this.value.toString());
+            newOption.setAttribute('selected', '');
+            this.hiddenElement.appendChild(newOption);
+        }
+    }
+
     private renderGrid(): void {
         const gridColumns: ColumnModel[] = this.getGridColumns();
         const sortOrder: string = this.sortOrder.toString().toLowerCase();
@@ -1061,6 +1081,18 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.trigger('actionComplete', args);
         if (args.requestType === 'sorting') {
             this.updateRowSelection(args);
+        }
+        if (Array.isArray(args.rows) && this.isDataFiltered) {
+            const rows: Array<{ uid: string }> = args.rows as Array<{ uid: string }>;
+            let rowHeight: number = 0;
+            rows.forEach((row: { uid: string }) => {
+                const rowElement: Element | null = this.gridObj.getRowElementByUID(row.uid);
+                if (rowElement) {
+                    rowHeight += rowElement.getBoundingClientRect().height;
+                }
+            });
+            this.popupRowHeight = rowHeight || parseFloat(this.popupHeight as string);
+            this.updateGridHeight(true, true);
         }
         this.popupObj.refreshPosition();
         this.gridObj.element.querySelector('.e-content').scrollTop = 0;
@@ -1244,6 +1276,20 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.inputWrapper = this.inputObj.container;
         this.inputWrapper.classList.add(MULTICOLUMNLIST);
         this.inputWrapper.setAttribute('spellcheck', 'false');
+        this.hiddenElement = this.createElement('select', {
+            attrs: {
+                'aria-hidden': 'true',
+                'tabindex': '-1',
+                'class': HIDDENELEMENT
+            }
+        }) as HTMLSelectElement;
+        prepend([this.hiddenElement], this.inputWrapper);
+        const name: string = this.inputEle.getAttribute('name') ? this.inputEle.getAttribute('name') : this.inputEle.getAttribute('id');
+        this.hiddenElement.setAttribute('name', name);
+        this.inputEle.removeAttribute('name');
+        if (!this.hiddenElement.hasAttribute('aria-label')) {
+            this.hiddenElement.setAttribute('aria-label', this.getModuleName());
+        }
         if (this.element.tagName === this.getDirective()) {
             this.element.appendChild(this.inputWrapper);
         }
@@ -1282,7 +1328,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     break;
                 default: {
                     const defaultAttr: string[] = ['title', 'id', 'placeholder', 'role', 'autocomplete', 'autocapitalize', 'spellcheck', 'minlength', 'maxlength'];
-                    if (defaultAttr.indexOf(htmlAttr) > -1) {
+                    const validateAttr: string[] = ['name', 'required'];
+                    if (validateAttr.indexOf(htmlAttr) > -1 || htmlAttr.indexOf('data') === 0) {
+                        this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[`${htmlAttr}`]);
+                    } else if (defaultAttr.indexOf(htmlAttr) > -1) {
                         if (htmlAttr === 'placeholder') {
                             Input.setPlaceholder(htmlAttributes[htmlAttr as string], inputEle);
                         } else {
@@ -1462,7 +1511,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         let popupHeight: string = this.getSize(false);
         this.popupEle.style.maxHeight = popupHeight;
         if (this.footerTemplate) {
-            this.footer = this.footer ? this.footer : this.popupEle.querySelector('.e-popup-footer');
             const height: number = Math.round(this.footer.getBoundingClientRect().height);
             popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
         }
@@ -1472,14 +1520,13 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.isInitialRender = true;
     }
 
-    private updateGridHeight(isFilter?: boolean, autoHeight?: boolean, dataSourceCount?: number): void {
+    private updateGridHeight(isFilter?: boolean, autoHeight?: boolean): void {
         let height: string;
         if (isFilter) {
             const gridContentEle: HTMLElement = this.gridObj.getContent().querySelector('.e-content');
             const scrollBarHeight: number = gridContentEle.offsetHeight - gridContentEle.clientHeight;
-            let totalRowHeight: number = dataSourceCount * this.popupRowHeight;
-            if (this.fields.groupBy !== '' && !isNOU(this.fields.groupBy)) { totalRowHeight += this.popupRowHeight; }
-            height = autoHeight ? (totalRowHeight < this.prevGridHeight ? (totalRowHeight + scrollBarHeight) + 'px' : this.prevGridHeight + 'px') : this.prevGridHeight + 'px';
+            if (this.fields.groupBy !== '' && !isNOU(this.fields.groupBy)) { this.popupRowHeight += this.popupRowHeight; }
+            height = autoHeight ? (this.popupRowHeight < this.prevGridHeight ? (this.popupRowHeight + scrollBarHeight) + 'px' : this.prevGridHeight + 'px') : this.prevGridHeight + 'px';
         }
         else {
             this.prevGridHeight = this.popupDiv.getBoundingClientRect().height - this.popupDiv.querySelector('.e-gridheader').getBoundingClientRect().height;
@@ -1632,6 +1679,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     this.updateValues(selectedRecords ? dataValue : '', selectedRecords ? dataText : '', this.gridObj.selectedRowIndex, ChangeEventArgs);
                 }
                 Input.setValue(selectedRecords ? dataText : '', this.inputEle, this.floatLabelType, this.showClearButton);
+                this.setHiddenValue();
                 if (!isKeyNav || (isKeyNav && isUpdateVal)) { this.hidePopup(e as KeyboardEventArgs); }
             }
         });
@@ -1645,6 +1693,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.value = value || this.value;
         this.index = this.selectedRowIndex = !isNOU(index) ? index : this.index;
         this.isProtectedOnChange = prevOnChange;
+        this.setHiddenValue();
         if (!isInitial) { this.triggerChangeEvent(eventArgs); }
     }
 
@@ -1765,7 +1814,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             const dataLength: number = dataLists.length;
             filteredData = dataLists.filter(
                 (item: { [key: string]: Object }) => this.filterData(item, filterType, inputValue, fields));
-            this.updateGridDataSource(filteredData, dataLength);
+            this.updateGridDataSource(filteredData);
         });
     }
 
@@ -1784,12 +1833,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         }
     }
 
-    private updateGridDataSource(dataSource: { [key: string]: Object }[], dataLength?: number): void {
-        let autoHeight: boolean = true;
+    private updateGridDataSource(dataSource: { [key: string]: Object }[]): void {
         if (dataSource.length > 0) {
-            const length: number = this.dataSource instanceof DataManager ? dataLength
-                : (this.dataSource as { [key: string]: Object }[]).length;
-            autoHeight = length !== dataSource.length;
             removeClass([this.popupDiv], [NODATA]);
             const noRecordEle: HTMLElement = this.popupDiv.querySelector('.e-no-records');
             if (noRecordEle) { this.popupDiv.removeChild(noRecordEle); }
@@ -1799,7 +1844,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             this.l10nUpdate();
             addClass([this.popupDiv], [NODATA]);
         }
-        this.updateGridHeight(true, autoHeight, dataSource.length);
     }
 
     private wireEvents(): void {
@@ -2283,6 +2327,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.popupEle = null;
         this.footer = null;
         this.noRecord = null;
+        this.hiddenElement = null;
         super.destroy();
     }
 

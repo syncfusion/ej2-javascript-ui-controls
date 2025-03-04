@@ -1316,6 +1316,9 @@ private calculatePathBounds(data: string): Rect {
             let firstPara: ParagraphWidget = this.documentHelper.selection.getFirstParagraph(cellWidget) as ParagraphWidget;
             let firstLine: LineWidget = firstPara.firstChild as LineWidget;                
             let xLeft = firstLine.paragraph.x;
+            if(firstLine.children.length > 0 && !isNullOrUndefined(firstLine.children[0].margin) && firstLine.children[0].margin.left > 0){
+                xLeft += firstLine.children[0].margin.left;
+            }
             let ytop = firstLine.paragraph.y;
             if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
                 let highlighters = this.documentHelper.selection.editRegionHighlighters;
@@ -1324,18 +1327,23 @@ private calculatePathBounds(data: string): Rect {
                 this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(ytop, 2),this.getScaledValue(firstLine.height - firstLine.margin.bottom),0,color);
             }
         }
-        if (cellWidget.isRenderEditRangeEnd) {
-            let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(cellWidget) as ParagraphWidget;
-            let lastLine: LineWidget = lastPara.lastChild as LineWidget;
-            let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
-            let xLeft = this.documentHelper.textHelper.getWidth(String.fromCharCode(164), lastLine.paragraph.characterFormat) + position.x;
-            if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
-                let highlighters = this.documentHelper.selection.editRegionHighlighters;
-                let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lastLine) : [];
-                let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
-                this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(position.y, 2),this.getScaledValue(lastLine.height - lastLine.margin.bottom),0,color);           
-            }    
-        }
+        
+        //Commented out the following code as part of bug fix (BUG-935678):The Editable region start marker rendering issue when the paragraph has a left margin.
+        //As per Microsoft Word behavior, when a cell, row, or table contains an editable element, the edit range end element should not be rendered for each cell.        
+        // To align with this behavior, we have disabled this logic.
+
+        // if (cellWidget.isRenderEditRangeEnd) {
+        //     let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(cellWidget) as ParagraphWidget;
+        //     let lastLine: LineWidget = lastPara.lastChild as LineWidget;
+        //     let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
+        //     let xLeft = this.documentHelper.textHelper.getWidth(String.fromCharCode(164), lastLine.paragraph.characterFormat) + position.x;
+        //     if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
+        //         let highlighters = this.documentHelper.selection.editRegionHighlighters;
+        //         let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lastLine) : [];
+        //         let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+        //         this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(position.y, 2),this.getScaledValue(lastLine.height - lastLine.margin.bottom),0,color);           
+        //     }    
+        // }
     }
     private checkHeaderFooterLineWidget(widget: IWidget, keys: IWidget[]): IWidget {
         let headerFooter: HeaderFooterWidget;
@@ -1655,6 +1663,9 @@ private calculatePathBounds(data: string): Rect {
                     if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges && elementBox.columnFirst==-1 ){
                         var height = elementBox.line.height - elementBox.line.margin.bottom;
                         let xLeft = left;
+                        if(!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0){
+                            xLeft += elementBox.margin.left;
+                        }
                         let yTop = top;
                         let highlighters = this.documentHelper.selection.editRegionHighlighters;
                         let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lineWidget) : [];
@@ -1720,6 +1731,9 @@ private calculatePathBounds(data: string): Rect {
             if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks && this.documentHelper.getBookmarks().indexOf(elementBox.name) !== -1) {
                 var height = elementBox.line.height - elementBox.line.margin.bottom;
                 let xLeft = left;
+                if(!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0){
+                    xLeft += elementBox.margin.left;
+                }
                 let yTop = top;
                 if(elementBox.bookmarkType == 1){
                     if(this.isBookmarkEndAtStart(elementBox) && isNullOrUndefined(elementBox.properties)){
@@ -1747,7 +1761,11 @@ private calculatePathBounds(data: string): Rect {
                             }
                         }
                         if(!isNullOrUndefined(prevRenderableElement)){
-                            xLeft += this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                            if(previousParaElement.containerWidget instanceof TableCellWidget){
+                                xLeft += previousParaElement.x + this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                            }else{
+                                xLeft += this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);  
+                            }
                             yTop = this.documentHelper.selection.getTop(prevRenderableElement.line);
                         }
                     }
@@ -2546,10 +2564,10 @@ private calculatePathBounds(data: string): Rect {
                                         this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate, checkText);
                                     }
                                 });
-                                elementBox.ischangeDetected = false;
                             }
                         }
                     }
+                    elementBox.ischangeDetected = false; 
                 }
             }
         }

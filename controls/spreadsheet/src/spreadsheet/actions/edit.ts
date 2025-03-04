@@ -1704,9 +1704,10 @@ export class Edit {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
-                    getUpdateUsingRaf((): void => dialog.destroyDialog());
+                    dialog.hide(true);
+                } else {
+                    dialog.dialogInstance.content = dlgArgs.content;
                 }
-                dialog.dialogInstance.content = dlgArgs.content;
                 focus(this.parent.element);
             },
             close: (): void => {

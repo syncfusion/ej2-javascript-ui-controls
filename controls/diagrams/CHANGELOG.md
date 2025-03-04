@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I679022` - Scroll padding is now applied during panning, allowing movement to the extreme end of the diagram.
+- `#I689120` - Ports are no longer retained after undoing the grouping of nodes with ports set in `nodeDefaults`.
+
 ## 28.2.6 (2025-02-18)
 
 ### Diagram

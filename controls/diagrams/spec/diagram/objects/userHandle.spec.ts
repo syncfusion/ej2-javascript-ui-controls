@@ -719,7 +719,7 @@ describe('Diagram Control', () => {
             expect(diagram.nodes.length == 2).toBe(true);
             // Pan the diagram
             mouseEvents.dragAndDropEvent(diagramCanvas, 400, 300, 400, 200);
-            expect(diagram.scroller.horizontalOffset == 0 && diagram.scroller.verticalOffset == -75).toBe(true);
+            expect(diagram.scroller.horizontalOffset == 0 && diagram.scroller.verticalOffset == 0).toBe(true);
             done();
         });
         it('memory leak', () => {

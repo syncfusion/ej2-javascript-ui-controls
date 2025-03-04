@@ -903,8 +903,11 @@ export class BpmnDiagrams {
         (process as Node).processId = parentId;
         const parentNode: NodeModel = diagram.nameTable[`${parentId}`];
         const subProcess: BpmnSubProcessModel = (parentNode.shape as BpmnShape).activity.subProcess;
-        if (node && parentNode && parentNode.shape.type === 'Bpmn' && node.shape.type === 'Bpmn' &&
-            subProcess.processes) {
+        //EJ2-942115-The function addProcess is not working when empty processes are not defined in the subprocess object.
+        if (!subProcess.processes) {
+            subProcess.processes = [];
+        }
+        if (node && parentNode && parentNode.shape.type === 'Bpmn' && node.shape.type === 'Bpmn') {
             node.processId = parentId;
             const processes: string[] = (parentNode.shape as BpmnShape).activity.subProcess.processes;
             if (processes.indexOf(id) < 0) {

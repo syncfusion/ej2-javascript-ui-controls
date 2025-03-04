@@ -202,4 +202,7 @@ export class UndoRedoCommands {
         }
         return status;
     }
+    public getCurrentStackIndex(): number {
+        return this.steps;
+    }
 }

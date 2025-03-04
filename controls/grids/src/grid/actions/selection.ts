@@ -61,6 +61,7 @@ export class Selection implements IAction {
      */
     public selectedColumnsIndexes: number[] = [];
     public isColumnSelected: boolean;
+    public gridCurrentRecord: Object[];
     private prevColIndex: number;
     public checkBoxState: boolean = false;
     private selectionSettings: SelectionSettings;
@@ -2668,6 +2669,10 @@ export class Selection implements IAction {
     }
 
     private refreshHeader(): void {
+        const checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
+        if (checkboxColumn.length && !this.parent.getDataModule().isRemote()) {
+            this.gridCurrentRecord = this.getData();
+        }
         this.setCheckAllState();
     }
 
@@ -3012,6 +3017,10 @@ export class Selection implements IAction {
     }
 
     private onDataBound(): void {
+        const checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
+        if (checkboxColumn.length && !this.parent.getDataModule().isRemote()) {
+            this.gridCurrentRecord = this.getData();
+        }
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             if (this.selectedRecords.length) {
                 this.isPrevRowSelection = true;
@@ -3351,7 +3360,7 @@ export class Selection implements IAction {
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
                 setChecked(input, false);
                 input.indeterminate = false;
-                let getRecord: object[] = this.parent.getDataModule().isRemote() ? [] : this.getData();
+                let getRecord: object[] = this.parent.getDataModule().isRemote() ? [] : this.gridCurrentRecord;
                 if (this.parent.groupSettings.columns.length && getRecord['records']) {
                     getRecord = getRecord['records'];
                 }
@@ -3666,7 +3675,8 @@ export class Selection implements IAction {
         const headerAction: boolean = (e.container.isHeader && e.element.tagName !== 'TD' && !closest(e.element, '.' + literals.rowCell))
             && !(e.byKey && e.keyArgs.action === 'space');
         if (!e.byKey || clear) {
-            if (clear && !this.parent.isCheckBoxSelection) { this.clearSelection(); }
+            if (clear && !(this.parent.isCheckBoxSelection || (this.selectionSettings.persistSelection && (e.parent.classList.contains('e-recordplusexpand') ||
+                e.parent.classList.contains('e-groupcaption'))))) { this.clearSelection(); }
             return;
         }
         let [rowIndex, cellIndex]: number[] = e.container.isContent ? e.container.indexes : e.indexes;

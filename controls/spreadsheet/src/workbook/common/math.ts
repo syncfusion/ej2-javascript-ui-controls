@@ -89,6 +89,15 @@ export function isNumber(val: string | number): boolean {
 
 /**
  * @hidden
+ * @param {string | number} val - Specifies the value.
+ * @returns {string} - Returns converted value.
+ */
+export function evaluate(val: string | number): string {
+    return Function('"use strict";return (' + val + ')')();
+}
+
+/**
+ * @hidden
  * @param {Date | string | number} text - Specifies the text.
  * @param {Internationalization} intl - Specifies the Internationalization.
  * @param {string} locale - Specifies the locale.

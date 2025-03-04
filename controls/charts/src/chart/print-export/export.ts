@@ -184,36 +184,40 @@ export class Export {
         let requiredValues: string[][] = [];
         const headerStyle: ExcelCellStyle = { bold: true, hAlign: 'Center', vAlign: 'Center', wrapText: true };
         let xValues: number[][] = [];
-        const isRangeNavigator: boolean = controls[0].getModuleName() === 'rangeNavigator';
-        const isAccumulation: boolean = controls[0].getModuleName() === 'accumulationchart';
-        this.series = isRangeNavigator ? controls[0].series : (controls[0] as Chart | AccumulationChart | StockChart).visibleSeries;
-        if (isRangeNavigator && this.series.length === 0) {
-            if (controls[0].dataSource) {
-                //To create an Excel sheet when the Rangenavigator series is not given.
-                this.createRangeNavigatorExcelSheet(controls[0] as RangeNavigator, headerStyle, type);
-            }
-        }
-        else {
-            this.histogramSeriesCount = 0;
-            this.requiredValuesLength = 0;
-            this.axisCollection = [];
-            if (isAccumulation || isRangeNavigator) {
-                this.axisCollection.push(null);
+        for (let i: number = 0; i < controls.length; i++) {
+            const isRangeNavigator: boolean = controls[i as number].getModuleName() === 'rangeNavigator';
+            const isAccumulation: boolean = controls[i as number].getModuleName() === 'accumulationchart';
+            this.series = isRangeNavigator ? controls[i as number].series :
+                (controls[i as number] as Chart | AccumulationChart | StockChart).visibleSeries;
+            if (isRangeNavigator && this.series.length === 0) {
+                if (controls[i as number].dataSource) {
+                    //To create an Excel sheet when the Rangenavigator series is not given.
+                    this.createRangeNavigatorExcelSheet(controls[i as number] as RangeNavigator, headerStyle, type);
+                }
             }
             else {
-                this.axisCollection = controls[0].getModuleName() === 'stockChart' ? (controls[0] as StockChart).chart.horizontalAxes : (controls[0] as Chart).horizontalAxes;
+                this.histogramSeriesCount = 0;
+                this.requiredValuesLength = 0;
+                this.axisCollection = [];
+                if (isAccumulation || isRangeNavigator) {
+                    this.axisCollection.push(null);
+                }
+                else {
+                    this.axisCollection = controls[i as number].getModuleName() === 'stockChart' ? (controls[i as number] as StockChart).chart.horizontalAxes : (controls[i as number] as Chart).horizontalAxes;
+                }
+                //To get the number of columns for the excel.
+                requiredValues = this.getRequiredValues(isRangeNavigator);
+                if (this.requiredValuesLength === 0 && this.series.length === this.histogramSeriesCount) {
+                    return;
+                }
+                //To get all x values in the series.
+                xValues = this.getXValue(requiredValues, controls[i as number], isRangeNavigator, isAccumulation);
+                //To get the the chart title and series name.
+                this.getTitle(requiredValues, headerStyle, controls[i as number], isRangeNavigator, isAccumulation, type,
+                              xValues[0].length);
+                //To create an Excel sheet.
+                this.createExcelSheet(isRangeNavigator, isAccumulation, xValues, type, requiredValues, headerStyle, controls[i as number]);
             }
-            //To get the number of columns for the excel.
-            requiredValues = this.getRequiredValues(isRangeNavigator);
-            if (this.requiredValuesLength === 0 && this.series.length === this.histogramSeriesCount) {
-                return;
-            }
-            //To get all x values in the series.
-            xValues = this.getXValue(requiredValues, controls, isRangeNavigator, isAccumulation);
-            //To get the the chart title and series name.
-            this.getTitle(requiredValues, headerStyle, controls, isRangeNavigator, isAccumulation, type, xValues[0].length);
-            //To create an Excel sheet.
-            this.createExcelSheet(isRangeNavigator, isAccumulation, xValues, type, requiredValues, headerStyle, controls);
         }
         const columns: ExcelRowAndColumn[] = [];
         this.requiredValuesLength = this.requiredValuesLength === 0 ? 1 : this.requiredValuesLength;
@@ -332,14 +336,16 @@ export class Export {
      */
 
     private getTitle (requiredValues: string[][], headerStyle: ExcelCellStyle,
-                      controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
+                      control: Chart | AccumulationChart | RangeNavigator | StockChart,
                       isRangeNavigator : boolean, isAccumulation: boolean, type: ExportType, xValueLength: number) : void {
         let cells: ExcelCell[] = [];
         const additionalCells: ExcelCell[] = [];
         let index: number = 1;
         let isTitle: boolean = false;
-        if (!isRangeNavigator && type === 'XLSX' && (controls[0] as Chart | AccumulationChart | StockChart).title) {
+        let titlePushRowIndex: number;
+        if (!isRangeNavigator && type === 'XLSX' && (control as Chart | AccumulationChart | StockChart).title) {
             this.rows.push({});
+            titlePushRowIndex = this.rows.length > 0 ? this.rows.length - 1 : -1;
             this.actualRowCount++;
             isTitle = true;
         }
@@ -394,7 +400,7 @@ export class Export {
                     index = localIndex;
                     isYName = true;
                 }
-                valueType = isAccumulation ? requiredValues[0][0] : isRangeNavigator ? (controls[0] as RangeNavigator).valueType :
+                valueType = isAccumulation ? requiredValues[0][0] : isRangeNavigator ? (control as RangeNavigator).valueType :
                     this.axisCollection[axisCount as number].valueType;
                 valueType = (isAccumulation || valueType.indexOf('DateTime') > -1) ? valueType : 'Category';
             }
@@ -413,9 +419,9 @@ export class Export {
         }
         if (isTitle) {
             cells = [];
-            cells.push({ index: 1, value: (controls[0] as Chart | AccumulationChart | StockChart).title,
+            cells.push({ index: 1, value: (control as Chart | AccumulationChart | StockChart).title,
                 colSpan: (index === 1 ? index : index - 1), rowSpan: 1, style: headerStyle });
-            this.rows[0] = ({ index: 1, cells: cells });
+            this.rows[titlePushRowIndex as number] = ({ index: titlePushRowIndex + 1, cells: cells });
         }
         this.requiredValuesLength = index - 1;
     }
@@ -430,12 +436,12 @@ export class Export {
      * @private
      */
 
-    private getXValue(requiredValues: string[][], controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
+    private getXValue(requiredValues: string[][], control: Chart | AccumulationChart | RangeNavigator | StockChart,
                       isRangeNavigator: boolean, isAccumulation: boolean): number[][] {
         const xValues: number[][] = [];
         for (let axisCount: number = 0; axisCount < this.axisCollection.length; axisCount++) {
             const xValue: number[] = [];
-            const valueType: string = isAccumulation ? '' : isRangeNavigator ? (controls[0] as RangeNavigator).valueType : this.axisCollection[axisCount as number].valueType;
+            const valueType: string = isAccumulation ? '' : isRangeNavigator ? (control as RangeNavigator).valueType : this.axisCollection[axisCount as number].valueType;
             for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
                 const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type.indexOf('Bar') > -1)) ? null : this.axisCollection[axisCount as number].name : '';
                 if ((!isRangeNavigator && ((!isAccumulation && (axisName !==
@@ -477,7 +483,7 @@ export class Export {
 
     private createExcelSheet(isRangeNavigator: boolean, isAccumulation: boolean, xValues: number[][], type: ExportType,
                              requiredValues: string[][], headerStyle: ExcelCellStyle,
-                             controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[]): void {
+                             controls: Chart | AccumulationChart | RangeNavigator | StockChart): void {
         let startIndex: number = 0;
         let index: number = 0;
         for (let axisCount: number = 0; axisCount < this.axisCollection.length; axisCount++) {

@@ -221,7 +221,7 @@ export function scrollToCursor(
                 finalFocusElement.scrollIntoView(false);
             }
         } else {
-            if (cursorTop > inputElement.getBoundingClientRect().height) {
+            if (cursorTop > inputElement.getBoundingClientRect().height || cursorBottom > rootRect.bottom) {
                 finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
         }

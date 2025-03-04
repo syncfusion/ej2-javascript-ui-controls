@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 28.2.7 (2025-02-25)
+## 28.2.9 (2025-03-04)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue where the appearance of an existing signature field was not preserved when the flatten option was set to true.
+- Resolved an issue where the appearance of an ink annotation was not preserved when using a custom ink points collection.
+- Resolved an issue where the file size increased when loading and saving the document multiple times without an incremental update.
+
+## 28.2.6 (2025-02-18)
 
 ### PDF Parser
 

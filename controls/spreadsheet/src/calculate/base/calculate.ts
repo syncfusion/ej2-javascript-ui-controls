@@ -1003,7 +1003,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             args = [''];
                         }
                         if (nestedFormula && libFormula) {
-                            const formulas: string[] = ['IF', 'INDEX', 'SORT', 'T', 'EXACT', 'PROPER', 'DOLLAR', 'DATE'];
+                            const formulas: string[] = ['IF', 'INDEX', 'SORT', 'T', 'EXACT', 'PROPER', 'DOLLAR', 'DATE', 'TEXT'];
                             if (formulas.some((formula: string): boolean => formula === libFormula)) {
                                 args.push('nestedFormulaTrue');
                             }

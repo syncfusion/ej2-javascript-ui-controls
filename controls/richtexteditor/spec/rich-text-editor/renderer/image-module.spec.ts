@@ -6302,4 +6302,50 @@ client side. Customer easy to edit the contents and get the HTML content for
         }, 200);
         });
     });
+    describe('940236 - Adding validation to the image link when the values are empty and Removing it when the values are entered ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                insertImageSettings: { resize: false }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('image dialog', () => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            (document.querySelector('.e-insertImage') as HTMLElement).click();
+            (<any>rteObj).element.querySelector('.e-rte-image').click();
+            let args: any = {
+                preventDefault: function () { },
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
+                item: {}
+            };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let evnArg: any = { args, selfImage: (<any>rteObj).imageModule, selection: save, selectNode: [(<any>rteObj).element.querySelector('.e-rte-image')], link: null, target: '' };
+            (<any>rteObj).imageModule.insertImgLink(evnArg);
+            (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').value = ' ';
+            evnArg.args.item = { command: 'Images', subCommand: 'insertlink' };
+            (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-update-link').click();
+            (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').focus();
+            expect((<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').classList.contains('e-error')).toBe(true);
+            let  inputElement = (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link');
+            inputElement.value = 'h';
+            let inputChangeEvent = new Event('input', {
+                bubbles: true,
+                cancelable: true
+            });
+            inputElement.dispatchEvent(inputChangeEvent);
+            expect((<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').classList.contains('e-error')).toBe(false); 
+        });
+        });
 });

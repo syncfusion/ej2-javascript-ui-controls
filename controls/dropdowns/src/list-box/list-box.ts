@@ -2284,7 +2284,8 @@ export class ListBox extends DropDownBase {
         }
         const char: string = String.fromCharCode(e.keyCode);
         const isWordCharacter: Object = char.match(/\w/);
-        if (!isNullOrUndefined(isWordCharacter)) {
+        const isWordAccentCharacter: Object = char.match(/[A-Za-z0-9\u00C0-\u024F ]/);
+        if (!isNullOrUndefined(isWordCharacter) || !isNullOrUndefined(isWordAccentCharacter)) {
             this.isValidKey = true;
         }
         this.isBackSpace = e.keyCode === 8;

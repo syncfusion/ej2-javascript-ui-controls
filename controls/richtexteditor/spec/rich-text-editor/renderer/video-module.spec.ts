@@ -4798,4 +4798,46 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('942817: IFrame - Script Error Occurs After Replacing Embedded Code with a Web URL ', function () {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach(function (done) {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                value: "<p>Testing<span class=\"e-video-wrap\" contenteditable=\"false\" title=\"movie.mp4\"><video class=\"e-rte-video e-video-inline\" controls=\"\"><source src=\"https://www.w3schools.com/html/mov_bbb.mp4\" type=\"video/mp4\"></video></span><br></p>"
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach(function (done) {
+            destroy(rteObj);
+            done();
+        });
+        it('Replace the embeded video to web url inside list', function (done) {
+            rteObj.value = `<p><ul><li style="margin-bottom: 10px;">Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.<p><span class="e-embed-video-wrap" style="display: inline-block;"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/IB2P1FBXjcQ?si=6ReBEsgCNdSMlQAV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="" class="e-video-inline e-rte-embed-url e-resize" style="min-width: 0px; max-width: 1108px; min-height: 0px;" data-gtm-yt-inspected-158="true">&ZeroWidthSpace;</iframe></span></span><br/></p></li><li style="margin-bottom: 10px;">The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li></ul></p>`;
+            rteObj.dataBind();
+            let video: HTMLElement  = rteObj.contentModule.getEditPanel().querySelector(".e-video-clickelem");
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, video, video, 0, 1);
+            dispatchEvent(video, 'mousedown');
+            video.click();
+            dispatchEvent(video, 'mouseup');
+            setTimeout(function () {
+                let videoBtn: HTMLElement  = document.querySelector('#' + controlId + "_quick_VideoReplace");
+                videoBtn.click();
+                let dialog: HTMLElement  = document.querySelector('#' + controlId + "_video");
+                (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
+                urlInput.value =(`https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4`) as string;
+                (dialog.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                (dialog.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+                setTimeout(function () {
+                    let result = rteObj.inputElement.querySelector('video');
+                    expect(result.querySelector('source').src === 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4').toBe(true);
+                    done();
+                },200);
+            }, 100);
+        });
+    });
 });

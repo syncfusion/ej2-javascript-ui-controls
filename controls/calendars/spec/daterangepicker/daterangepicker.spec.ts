@@ -7734,8 +7734,8 @@ describe('DateRangePicker', () => {
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[2]).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-year')).toBe(true);
             expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-year')).toBe(true);
-            expect(document.querySelector('.e-start-label').innerHTML).toBe('Mar 8, 2019');
-            expect(document.querySelector('.e-end-label').innerHTML).toBe('Mar 10, 2019');
+            expect(document.querySelector('.e-start-label').innerHTML).toBe('Mar 1, 2019');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Mar 31, 2019');
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);

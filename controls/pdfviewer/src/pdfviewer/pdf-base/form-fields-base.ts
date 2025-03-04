@@ -2196,7 +2196,17 @@ export class FormFieldsBase {
                     }
                 } else if (annotation instanceof PdfRubberStampAnnotation) {
                     const stampAnnotation: PdfRubberStampAnnotation = annotation as PdfRubberStampAnnotation;
-                    if (stampAnnotation._dictionary.has('T') && !stampAnnotation._dictionary.has('NM') && !stampAnnotation._dictionary.has('M')) {
+                    const pdfRenderedFormFields: any[] = [];
+                    for (const formfield of this.PdfRenderedFormFields) {
+                        if (formfield.ActualFieldName === stampAnnotation._dictionary._map.T) {
+                            pdfRenderedFormFields.push(formfield);
+                            break;
+                        }
+                    }
+                    if (stampAnnotation._dictionary.has('T') && !stampAnnotation._dictionary.has('NM') && !stampAnnotation._dictionary.has('M')
+                        && pdfRenderedFormFields.length > 0 && this.pdfViewerBase.isSignatureWithInRect(
+                        this.pdfViewerBase.canvasRectArray(pdfRenderedFormFields[0].LineBounds),
+                        this.pdfViewerBase.canvasRectArray(stampAnnotation.bounds))) {
                         const formFields: PdfRenderedFields = new PdfRenderedFields();
                         formFields.FieldName = stampAnnotation._dictionary.get('T') + '_' + count;
                         const dictionary: any = annotation._dictionary.get('AP');

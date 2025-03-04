@@ -15328,7 +15328,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('FB23112, EJ2-60666 ->', () => {
+        describe('FB23112, EJ2-60666, EJ2-939665 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
@@ -15354,6 +15354,13 @@ describe('Spreadsheet formula module ->', () => {
                     expect(helper.invoke('getCell', [0, 1]).textContent).toBe('0');
                     done();
                 });
+            });
+            it('CONCAT formula is not working properly with the nested TEXT formula', (done: Function) => {
+                helper.edit('J2', '=CONCAT(TEXT("100000","$#,##0")," Test")');
+                helper.edit('J3', '=TEXT("100000","$#,##0")');
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('$100,000 Test');
+                expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toBe('$100,000');
+                done();
             });
         });
         describe('fb23644, fb23650 ->', () => {

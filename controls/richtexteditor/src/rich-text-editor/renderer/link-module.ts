@@ -369,6 +369,9 @@ export class Link {
                             this.parent.contentModule.getEditPanel() as HTMLTextAreaElement);
                     }
                 }
+                if ((this.dialogObj.element && this.dialogObj.element.querySelector('.e-rte-linkurl') && this.dialogObj.element.querySelector('.e-rte-linkurl') !== null)) {
+                    EventHandler.remove(this.dialogObj.element.querySelector('.e-rte-linkurl'), 'input', this.handleKeyDown);
+                }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
                 const args: Dialog = this.dialogObj;
@@ -508,6 +511,13 @@ export class Link {
         const regexp: RegExp = new regExp('(ftp|http|https)://(\\w+:{0,1}\\w*@)?(\\S+)(:[0-9]+)?(/|/([\\w#!:.?+=&%@\\-\\/]))?', 'gi');
         return regexp.test(url);
     }
+    private handleKeyDown(): void {
+        const linkelem: HTMLElement = this.parent.element.querySelector('#' + this.rteID + '_rtelink_dialog-content');
+        const linkUrl: HTMLElement = linkelem.querySelector('.e-rte-linkurl');
+        if (linkUrl.classList.contains('e-error') && ((linkUrl as HTMLInputElement).value.length >= 1 && (linkUrl as HTMLInputElement).value.trim() !== ' ')) {
+            removeClass([linkUrl], 'e-error');
+        }
+    }
     private checkUrl(e: boolean): void {
         const linkEle: HTMLElement = this.dialogObj.element as HTMLElement;
         const linkUrl: HTMLElement = linkEle.querySelector('.e-rte-linkurl') as HTMLElement;
@@ -515,8 +525,10 @@ export class Link {
             addClass([linkUrl], 'e-error');
             (linkUrl as HTMLInputElement).setSelectionRange(0, (linkUrl as HTMLInputElement).value.length);
             (linkUrl as HTMLInputElement).focus();
+            EventHandler.add(linkUrl, 'input', this.handleKeyDown, this);
         } else {
             removeClass([linkUrl], 'e-error');
+            EventHandler.remove(linkUrl, 'input', this.handleKeyDown);
         }
     }
     private removeLink(e: NotifyArgs): void {

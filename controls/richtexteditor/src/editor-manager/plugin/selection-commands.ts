@@ -219,7 +219,7 @@ export class SelectionCommands {
             const focusChild: ChildNode = childNodes[adjustedIndex as number];
             // If it's an end node and a text node, place the cursor at the end of text content
             const adjustedOffset: number = isEndNode ?
-                (focusChild.nodeType === Node.TEXT_NODE ? focusChild.textContent.length : offset) : 0;
+                (focusChild.nodeType === Node.TEXT_NODE ? focusChild.textContent.length : focusChild.childNodes.length) : 0;
             return [focusChild, adjustedOffset];
         }
         // If the container is already a text node or has no children, return as it is.
@@ -563,7 +563,7 @@ export class SelectionCommands {
             for (let num: number = 0; num < child.length; num++) {
                 if (child[num as number].nodeType !== 3 || (child[num as number].textContent &&
                      child[num as number].textContent.trim().length > 0)) {
-                    if (value !== '') {
+                    if (value !== '' && value !== 'transparent') {
                         child[num as number] = InsertMethods.Wrap(
                             child[num as number] as HTMLElement,
                             this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
@@ -580,7 +580,7 @@ export class SelectionCommands {
                     }
                     if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
                         && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
-                        liElement.style.fontFamily = value;
+                        liElement.removeAttribute('style');
                     }
                     if (child[num as number].textContent === startText) {
                         if (num === 0) {

@@ -890,7 +890,12 @@ export class Drawing {
             diagramLayer = (document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex) as HTMLCanvasElement);
         }
         if (diagramLayer) {
-            const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
+            let zoom: number;
+            if (diagramLayer.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
+                zoom = 1;
+            } else {
+                zoom = this.pdfViewer.viewerBase.getZoomFactor();
+            }
             const width: number = diagramLayer.width / zoom;
             const height: number = diagramLayer.height / zoom;
             const ctx: CanvasRenderingContext2D = diagramLayer.getContext('2d');

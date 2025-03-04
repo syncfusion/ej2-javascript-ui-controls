@@ -232,6 +232,7 @@ export class ExportUtils {
         for (let i: number = 0; i < controls.length; i++) {
             const control: Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart | Chart3D |
             CircularChart3D = controls[i as number];
+            if (control.enableRtl) { svgObject.setAttribute('direction', 'rtl'); }
             const isCanvas: boolean = (control as Chart).enableCanvas;
             const svg: Node = control.svgObject.cloneNode(true);
             const groupEle: Element = control.renderer.createGroup({

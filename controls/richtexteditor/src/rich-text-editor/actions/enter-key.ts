@@ -513,7 +513,7 @@ export class EnterKeyAction {
                             } else if (!isNOU(currentParent) && currentParent !== this.parent.inputElement && currentParent.nodeName !== 'BR') {
                                 if (currentParent.textContent.trim().length === 0 || (currentParent.textContent.trim().length === 1 &&
                                     currentParent.textContent.charCodeAt(0) === 8203)) {
-                                    if ((currentParent.childElementCount > 1 && currentParent.lastElementChild.nodeName === 'IMG') || !isNOU(currentParent.firstElementChild) &&
+                                    if ((currentParent.childElementCount > 1 && currentParent.lastElementChild.nodeName === 'IMG') || (currentParent.lastElementChild && currentParent.lastElementChild.nodeName === 'BR') || !isNOU(currentParent.firstElementChild) &&
                                     (currentParent.querySelector('.e-video-wrap') || currentParent.querySelector('.e-audio-wrap'))) {
                                         this.insertBRElement();
                                     } else {

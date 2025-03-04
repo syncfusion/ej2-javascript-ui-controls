@@ -106,6 +106,54 @@ describe('Uploader Control', () => {
         });        
     });
 
+    describe('Uploader Clear Button Disable during Upload Progress', () => {
+    let uploadObj: Uploader;
+    let element: HTMLElement;
+
+    beforeEach(() => {
+        element = createElement('input', { id: 'upload-input', attrs: { type: 'file' } });
+        document.body.appendChild(element);
+        uploadObj = new Uploader({
+            autoUpload: false,
+            asyncSettings: {
+                saveUrl: 'https://fake-url.com',
+                removeUrl: 'https://fake-url.com/remove',
+            },
+            progress: (e: any) => {
+                const li = uploadObj.fileList[0];
+                (uploadObj as any).updateProgressbar(e, li);
+            }
+        });
+        uploadObj.appendTo('#upload-input');
+    });
+
+    afterEach(() => {
+        uploadObj.destroy();
+        document.body.innerHTML = '';
+    });
+
+    it('should disable the clear button during upload in progress', (done) => {
+        const fileObj: File = new File(["dummy content"], "dummy.txt", { lastModified: Date.now(), type: "text/plain" });
+        const eventArgs = {
+            ...new MouseEvent('click'),
+            preventDefault: () => {},
+            target: { files: [fileObj] } as unknown as EventTarget  // Cast to unknown first, then to EventTarget
+        };
+
+        (uploadObj as any).onSelectFiles(eventArgs as any);
+        expect((uploadObj as any).clearButton.hasAttribute('disabled')).toBe(false);
+
+        uploadObj.upload([uploadObj.filesData[0]]);
+
+        setTimeout(() => {
+            const progressEvent = new ProgressEvent('progress', { loaded: 50, total: 100 });
+            (uploadObj as any).uploadInProgress(progressEvent, uploadObj.filesData[0]);
+            expect((uploadObj as any).clearButton.hasAttribute('disabled')).toBe(true);
+            done();
+        }, 500);
+    });
+});
+
     describe('prevent file list keyboard navigation testing', () => {
         let uploadObj: any;
         beforeEach((): void => {

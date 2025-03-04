@@ -2769,6 +2769,54 @@ describe("Quick Toolbar - Actions Module", () => {
         });
     });
 
+    describe('942019 - Aria-Label Becomes Empty When Applying a Link to an Image.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th class="e-cell-select"><br></th></tr></thead><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""> <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/> <br></td></tr></tbody></table><p><br></p>`;
+        beforeAll((done: DoneFn) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|', 'FormatPainter', 'ClearFormat', '|',
+                        'Bold', 'Italic', 'Underline', 'StrikeThrough', 'EmojiPicker', '|',
+                        'Formats', 'Alignments', 'OrderedList', 'UnorderedList', '|',
+                        'CreateLink', 'CreateTable', 'Image', 'Audio', 'Video', 'FileManager', '|',
+                        'SourceCode', 'FullScreen']
+                },
+                quickToolbarSettings: {
+                    image: ['InsertLink', 'Remove']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Checking the image link has ariaLabel', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-rte-image');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: clickEvent });
+            setTimeout(() => {
+                (<any>rteObj).quickToolbarModule.imageQTBar.element.querySelectorAll(".e-toolbar-item")[0].firstChild.click();
+                (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').value = 'http://www.goole.com';
+                (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-update-link').click();
+                setTimeout(() => {
+                    rteObj.inputElement.querySelector("img").parentElement.nodeName === 'A';
+                    rteObj.inputElement.querySelector("img").parentElement.ariaLabel === 'Open in new window';
+                    done();
+                }, 0)
+            }, 0)
+        });
+    });
+
     describe('872307 - Tabel merge quick toolbar tooltip issues ', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: DoneFn) => {

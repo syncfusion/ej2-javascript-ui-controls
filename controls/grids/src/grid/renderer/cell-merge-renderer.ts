@@ -27,7 +27,7 @@ export class CellMergeRender<T> {
         const cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[parseInt(i.toString(), 10)].cellType
             || CellType.Data);
         let colSpan: number = row.cells[parseInt(i.toString(), 10)].cellSpan ? row.cells[parseInt(i.toString(), 10)].cellSpan :
-            (cellArgs.colSpan + i) <= row.cells.length ? cellArgs.colSpan : row.cells.length - i;
+            cellArgs.colSpan ? (cellArgs.colSpan + i) <= row.cells.length ? cellArgs.colSpan : row.cells.length - i : 1;
         const rowSpan: number = cellArgs.rowSpan;
         let visible: number = 0;
         let spannedCell: Cell<Column>;

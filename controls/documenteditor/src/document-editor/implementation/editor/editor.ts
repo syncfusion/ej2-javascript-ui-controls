@@ -4247,7 +4247,11 @@ export class Editor {
                         let lastElementRevision: Revision = lastElement.revisions[lastElement.revisions.length - 1];
                         isNew = false;
                         if (currentRevision !== lastElementRevision) {
-                            this.clearAndUpdateRevisons(currentRevision.range, lastElementRevision, lastElementRevision.range.indexOf(lastElement) + 1);
+                            let index: number = lastElementRevision.range.indexOf(lastElement) + 1;
+                            if (lastElementRevision.range.filter(range => range instanceof WCharacterFormat)) {
+                                index += 1;
+                            }
+                            this.clearAndUpdateRevisons(currentRevision.range, lastElementRevision, index);
                             this.owner.revisions.remove(currentRevision);
                         }
                     }
@@ -4525,9 +4529,6 @@ export class Editor {
      * @returns {void}
      */
     private clearAndUpdateRevisons(range: object[], revision: Revision, index: number, isReverse?: boolean): void {
-        if(revision.range.filter(range => range instanceof WCharacterFormat)) {
-            index += 1;
-        }
         let j: number = 0;
         for (let i: number = 0; i < range.length; i++) {
             if (range[i] instanceof ElementBox || range[i] instanceof WCharacterFormat) {
@@ -8968,7 +8969,11 @@ export class Editor {
                 let startPosition: TextPosition = selection.start.clone();
                 //let prevBlock: ParagraphWidget = (block as ParagraphWidget).clone()
                 if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking() && !isSkipRevision) {
-                    this.insertRevisionForBlock(block, 'Insertion');
+                    if (selection.start.isAtParagraphEnd && this.isRevisionMatched(startPara.characterFormat, 'Insertion')) {
+                        this.insertRevisionForBlock(block, 'Insertion', false, this.retrieveRevisionByType(startPara.characterFormat, 'Insertion'));
+                    } else {
+                        this.insertRevisionForBlock(block, 'Insertion');
+                    }
                 }
                 if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo) {
                     if (!this.editorHistory.isUndoing && !this.editorHistory.isRedoing) {
@@ -10218,8 +10223,8 @@ export class Editor {
         } else if (offset > 0) {
             let length: number = currentParagraph.getLength();
             this.moveInlines(currentParagraph, newParagraph, 0, 0, currentParagraph.firstChild as LineWidget, offset, lineWidget);
-            if (length === offset && currentParagraph.characterFormat.revisions.length > 0) {
-                while(currentParagraph.characterFormat.revisions.length > 0) {
+            if (this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing) && length === offset && currentParagraph.characterFormat.revisions.length > 0) {
+                while (currentParagraph.characterFormat.revisions.length > 0) {
                     newParagraph.characterFormat.revisions.push(currentParagraph.characterFormat.revisions.shift());
                 }
             }
@@ -15075,7 +15080,37 @@ export class Editor {
                                     this.trackRowDeletion(tableRow, true, false);
                                 } else {
                                     this.removeFieldInBlock(tableRow, true);
-                                    table.childWidgets.splice(i, 1);
+                                    let prevRenderedRow: TableRowWidget = tableRow.previousRenderedWidget as TableRowWidget;
+                                    while (!isNullOrUndefined(prevRenderedRow)) {
+                                        for (let j: number = 0; j < prevRenderedRow.childWidgets.length; j++) {
+                                            let cell: TableCellWidget = prevRenderedRow.childWidgets[j] as TableCellWidget;
+                                            if (tableRow.rowIndex < cell.ownerRow.rowIndex + cell.cellFormat.rowSpan) {
+                                                cell.cellFormat.rowSpan--;
+                                            }
+                                        }
+                                        prevRenderedRow = prevRenderedRow.previousRenderedWidget as TableRowWidget;
+                                    }
+                                    for (var j = 0; j < tableRow.childWidgets.length; j++) {
+                                        let cell: TableCellWidget = tableRow.childWidgets[j] as TableCellWidget;
+                                        let nextRenderedRow: TableRowWidget = tableRow.nextRenderedWidget as TableRowWidget;
+                                        if (!isNullOrUndefined(nextRenderedRow)) {
+                                            if (nextRenderedRow.rowIndex < cell.ownerRow.rowIndex + cell.cellFormat.rowSpan) {
+                                                cell.cellFormat.rowSpan--;
+                                                const cellWidget: TableCellWidget = this.createColumn(this.selection.getLastParagraph(cell));
+                                                cellWidget.cellFormat.copyFormat(cell.cellFormat);
+                                                cellWidget.index = cell.index;
+                                                cellWidget.rowIndex = cell.rowIndex;
+                                                cellWidget.columnIndex = cell.columnIndex;
+                                                cellWidget.containerWidget = nextRenderedRow;
+                                                cellWidget.margin = cell.margin.clone();
+                                                cellWidget.leftBorderWidth = cell.leftBorderWidth;
+                                                cellWidget.rightBorderWidth = cell.rightBorderWidth;
+                                                nextRenderedRow.childWidgets.splice(cellWidget.columnIndex, 0, cellWidget);
+                                            }
+                                        }
+                                        tableRow.childWidgets.splice(j, 1);
+                                        j--;
+                                    }
                                     tableRow.destroy();
                                     i--;
                                 }
@@ -16793,6 +16828,22 @@ export class Editor {
                                     }
                                 }
                             }
+                        }
+                    }
+                    let nextRenderedRow: TableRowWidget = row.nextRenderedWidget as TableRowWidget;
+                    if (!isNullOrUndefined(nextRenderedRow)) {
+                        if (nextRenderedRow.rowIndex < cell.ownerRow.rowIndex + cell.cellFormat.rowSpan) {
+                            cell.cellFormat.rowSpan--;
+                            const cellWidget: TableCellWidget = this.createColumn(this.selection.getLastParagraph(cell));
+                            cellWidget.cellFormat.copyFormat(cell.cellFormat);
+                            cellWidget.index = cell.index;
+                            cellWidget.rowIndex = cell.rowIndex;
+                            cellWidget.columnIndex = cell.columnIndex;
+                            cellWidget.containerWidget = nextRenderedRow;
+                            cellWidget.margin = cell.margin.clone();
+                            cellWidget.leftBorderWidth = cell.leftBorderWidth;
+                            cellWidget.rightBorderWidth = cell.rightBorderWidth;
+                            nextRenderedRow.childWidgets.splice(cellWidget.columnIndex, 0, cellWidget);
                         }
                     }
                     row.childWidgets.splice(j, 1);

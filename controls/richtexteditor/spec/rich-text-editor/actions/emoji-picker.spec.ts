@@ -2150,3 +2150,65 @@ describe('936848: Add Table Popup Gets Hidden Under the Lower Rich Text Editorâ€
         expect((<HTMLElement>rteObjOne.element.querySelector(".e-toolbar-wrapper") as HTMLElement).style.zIndex === '').toBe(true);
     });
 });
+
+describe('935436 - "Added Test case for emoji picker searchFilter method coverage issue for Iframe', () => {
+    let rteObj: RichTextEditor;
+    let controlId: string;
+    let innerHTML: string = `<p id="rte-p"> </p>`;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['EmojiPicker']
+            },
+            iframeSettings: { enable: true },
+            value: innerHTML
+        });
+        controlId = rteObj.element.id;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Covered the tescase with Iframe Setting enable true', () => {
+        const element: HTMLElement = document.body.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+        element.click();
+        const inputEle: HTMLInputElement = rteObj.element.querySelector('.e-rte-emoji-search');
+        const popupObj: HTMLElement = rteObj.element.querySelector('.e-rte-emojipicker-popup');
+        inputEle.value = 'sssssssssssssssss';
+        dispatchEvent(popupObj, 'keyup');
+        (rteObj as any).element.querySelector(".e-rte-emojipicker-popup .e-input-group .e-clear-icon").click();
+        dispatchEvent(popupObj, 'keyup');
+        expect(rteObj.element.querySelector(".e-rte-emojipicker-popup .e-rte-emojiSearch-noEmoji") == null).toBe(true);
+    });
+});
+
+describe('935436 - "Added Test case for emoji picker ToolbarClick method coverage issue for Inline Mode', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['EmojiPicker']
+            },
+            inlineMode: {
+                enable: true
+            },
+            value: `<p id="rte-p">Hello</p>`
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Covered the tescase with Inline mode true', (done: DoneFn) => {
+        rteObj.focusIn();
+        const textNode: Element = (rteObj as any).inputElement.querySelector('#rte-p').firstChild;
+        setCursorPoint(textNode, 3);
+        rteObj.showInlineToolbar();
+        setTimeout(() => {
+            const element: HTMLElement = document.body.querySelector('.e-emoji');
+            element.click();
+            setTimeout(() => {
+                expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).not.toBe(null);
+                done();
+            }, 100);
+        }, 100);
+    });
+});

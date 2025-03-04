@@ -539,3 +539,40 @@ describe('EJ2-936849 - Script error thrown when copying with column selection in
         gridObj = null;
     });
 });
+
+describe('EJ2-942607 - Script error thrown when copying with focused stacked header in cell selection mode => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 10),
+                selectionSettings: { type: 'Multiple', mode: 'Cell' },
+                height: 400,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                    {
+                        headerText: 'Order Details', columns: [
+                            { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd' },
+                            { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                        ]
+                    },
+                    {
+                        headerText: 'Ship Details', columns: [
+                            { field: 'ShipCity', headerText: 'Ship City', width: 145 },
+                            { field: 'ShipCountry', headerText: 'Ship Country', width: 140 }
+                        ]
+                    }
+                ]
+            }, done);
+    });
+
+    it('Copy the data', (done: Function) => {
+        gridObj.copy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

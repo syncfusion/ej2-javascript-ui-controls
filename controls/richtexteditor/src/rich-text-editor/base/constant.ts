@@ -415,11 +415,6 @@ export const colorPickerChanged: string = 'colorPickerChanged';
  * @hidden
  * @deprecated
  */
-export const tableColorPickerChanged: string = 'tableColorPickerChanged';
-/**
- * @hidden
- * @deprecated
- */
 export const focusChange: string = 'focusChange';
 /**
  * @hidden
@@ -501,6 +496,11 @@ export const beforeDialogOpen: string = 'beforeDialogOpen';
  * @deprecated
  */
 export const clearDialogObj: string = 'clearDialogObj';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const hideTableQuickToolbar: string = 'hideTableQuickToolbar';
 /**
  * @hidden
  * @deprecated

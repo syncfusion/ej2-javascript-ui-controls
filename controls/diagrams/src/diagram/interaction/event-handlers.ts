@@ -3051,7 +3051,12 @@ class ObjectFinder {
             }
         }
         //908151: The connector automatically connects to the subprocess
-        if (actualTarget && node && actualTarget.id === (node as Node).processId) {
+        //909560: prevent child connector connecting to its own parent group
+        //937174: Drag and drop subprocess and add children try to connect with connector throw exception
+        if (actualTarget && (
+            (node && actualTarget.id === (node as Node).processId) ||
+            ((action === 'ConnectorSourceEnd' || action === 'ConnectorTargetEnd') && actualTarget.id === (connector as Connector).parentId)
+        )) {
             actualTarget = null;
         }
         return actualTarget;

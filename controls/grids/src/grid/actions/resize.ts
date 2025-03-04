@@ -3,7 +3,7 @@ import { Column } from '../models/column';
 import { IGrid, IAction, ResizeArgs, DistributeColWidth } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
 import * as events from '../base/constant';
-import { getScrollBarWidth, parentsUntil, Global, frozenDirection, isChildColumn, applyStickyLeftRightPosition, groupCaptionRowLeftRightPos } from '../base/util';
+import { getScrollBarWidth, parentsUntil, Global, frozenDirection, isChildColumn, applyStickyLeftRightPosition, groupCaptionRowLeftRightPos, addStickyColumnPosition } from '../base/util';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import * as literals from '../base/string-literals';
@@ -777,6 +777,7 @@ export class Resize implements IAction {
                                 (<{ valueX?: number }>column).valueX = width;
                             }
                         }
+                        addStickyColumnPosition(this.parent, column, node);
                     }
                 }
             }
@@ -994,6 +995,9 @@ export class Resize implements IAction {
     private resizeEnd(e: PointerEvent): void {
         if (!this.helper || this.parent.isDestroyed) { return; }
         const gObj: IGrid = this.parent;
+        if (gObj.isFrozenGrid()) {
+            this.refreshResizePosition();
+        }
         EventHandler.remove(this.parent.element, Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(document, Browser.touchEndEvent, this.resizeEnd);
         if (Browser.isDevice) {

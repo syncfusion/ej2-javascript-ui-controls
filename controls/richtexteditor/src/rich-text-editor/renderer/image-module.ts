@@ -1207,17 +1207,27 @@ export class Image {
             this.parent.inputElement.focus({ preventScroll: true });
         }
     }
-
+    private handleKeyDown(): void {
+        const linkelem: HTMLElement = this.parent.element.querySelector('#' + this.rteID + '_image_dialog-content');
+        const linkUrl: HTMLElement = linkelem.querySelector('.e-img-link');
+        if (linkUrl.classList.contains('e-error') && ((linkUrl as HTMLInputElement).value.length >= 1 && (linkUrl as HTMLInputElement).value.trim() !== ' ')) {
+            removeClass([linkUrl], 'e-error');
+        }
+    }
     private insertlink(e: IImageNotifyArgs): void {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
         let url: string = (e.link as HTMLInputElement).value;
-        if (url === '') {
+        if (url.trim() === '') {
             addClass([e.link], 'e-error');
             (e.link as HTMLInputElement).setSelectionRange(0, url.length);
             (e.link as HTMLInputElement).focus();
+            EventHandler.add(e.link,  'input', this.handleKeyDown, this);
             return;
+        } else {
+            EventHandler.remove(e.link,  'input', this.handleKeyDown);
+            removeClass([e.link], 'e-error');
         }
         if (!this.isUrl(url)) {
             url = 'http://' + url;
@@ -1463,6 +1473,9 @@ export class Image {
             this.browseButton = null;
         }
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
+            if ((this.dialogObj.element && this.dialogObj.element.querySelector('.e-img-link') && this.dialogObj.element.querySelector('.e-img-link') !== null)) {
+                EventHandler.remove(this.dialogObj.element.querySelector('.e-img-link'), 'input', this.handleKeyDown);
+            }
             this.dialogObj.destroy();
             detach(this.dialogObj.element);
             this.dialogObj = null;
@@ -1715,7 +1728,7 @@ export class Image {
             const regex: RegExp = /[\w-]+.(jpg|png|jpeg|gif)/g;
             const matchUrl: string = (!isNOU(url.match(regex)) && proxy.parent.editorMode === 'HTML') ? url.match(regex)[0] : '';
             const value: IImageCommandsArgs = {
-                cssClass: (((this as IImageNotifyArgs).selectParent && ((this as IImageNotifyArgs).selectParent[0] as HTMLElement).classList.contains('e-imgbreak') === true)) ? classes.CLS_IMGBREAK : (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
+                cssClass: (((this as IImageNotifyArgs).selectParent && ((this as IImageNotifyArgs).selectParent[0] as HTMLElement).classList && ((this as IImageNotifyArgs).selectParent[0] as HTMLElement).classList.contains('e-imgbreak') === true)) ? classes.CLS_IMGBREAK : (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
                 url: url, selection: (this as IImageNotifyArgs).selection, altText: matchUrl,
                 selectParent: (this as IImageNotifyArgs).selectParent, width: {
                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
@@ -2005,14 +2018,8 @@ export class Image {
     }
     private dragStart(e: DragEvent): void | boolean {
         if ((e.target as HTMLElement).nodeName === 'IMG') {
-            this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
-                if (actionBeginArgs.cancel) {
-                    e.preventDefault();
-                } else {
-                    e.dataTransfer.effectAllowed = 'copyMove';
-                    (e.target as HTMLElement).classList.add(classes.CLS_RTE_DRAG_IMAGE);
-                }
-            });
+            e.dataTransfer.effectAllowed = 'copyMove';
+            (e.target as HTMLElement).classList.add(classes.CLS_RTE_DRAG_IMAGE);
         } else {
             return true;
         }

@@ -401,8 +401,16 @@ export class Formats {
             let replaceTag: string;
             const startNode: Node = this.getNode(formatsNodes[i as number]);
             const endNode: Node = this.getNode(formatsNodes[formatsNodes.length - 1]);
-            const wholeBlockquoteSelected: boolean = isToggleBlockquote && parentNode.firstChild === startNode
-             && parentNode.lastChild === endNode;
+            let wholeBlockquoteSelected: boolean;
+            if (!isNOU(closest((formatsNodes[i as number]), 'table')) &&
+                (!isNOU(closest((formatsNodes[i as number]), 'td')) || !isNOU(closest((formatsNodes[i as number]), 'th')))) {
+                wholeBlockquoteSelected = this.hasOnlyBlockquotes(
+                    (closest((formatsNodes[i as number]), 'td') ||
+                    closest((formatsNodes[i as number]), 'th')) as HTMLElement
+                );
+            } else {
+                wholeBlockquoteSelected = isToggleBlockquote && parentNode.firstChild === startNode && parentNode.lastChild === endNode;
+            }
             if (wholeBlockquoteSelected) {
                 replaceTag = replaceHTML.replace(/<blockquote[^>]*>|<\/blockquote>/g, '');
             } else if (isToggleBlockquoteList) {
@@ -484,6 +492,26 @@ export class Formats {
                 elements: this.parent.domNode.blockNodes() as Element[]
             });
         }
+    }
+
+    private hasOnlyBlockquotes(currentNode: HTMLElement): boolean {
+        let blockquoteFound: boolean = false;
+        for (let i: number = 0; i < currentNode.childNodes.length; i++) {
+            const child: Node = currentNode.childNodes[i as number];
+            if (child.nodeType === Node.TEXT_NODE) {
+                const text: string = child.textContent.replace(/[\u200B\u200C\u200D]/g, '').trim(); // Remove zero-width spaces
+                if (text !== '') {
+                    return false; // Found non-empty text node, so it's invalid
+                }
+            } else if (child.nodeType === Node.ELEMENT_NODE) {
+                if ((child as HTMLElement).tagName === 'BLOCKQUOTE') {
+                    blockquoteFound = true;
+                } else {
+                    return false; // Found a non-blockquote element, so it's invalid
+                }
+            }
+        }
+        return blockquoteFound; // Return true only if at least one blockquote was found and no other elements
     }
 
     private getNode(node: Node): Node {

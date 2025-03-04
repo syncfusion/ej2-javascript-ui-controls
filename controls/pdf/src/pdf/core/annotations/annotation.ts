@@ -7007,6 +7007,7 @@ export class PdfInkAnnotation extends PdfComment {
             this.color !== null &&
             typeof this._color !== 'undefined') {
             for (let l: number = 0; l < this._inkPointsCollection.length; l++) {
+                let isDot: boolean = false;
                 if (this._inkPointsCollection[Number.parseInt(l.toString(), 10)].length % 2 === 0) {
                     let inkPoints: number[] = this._inkPointsCollection[Number.parseInt(l.toString(), 10)];
                     if (inkPoints.length === 2) {
@@ -7015,6 +7016,7 @@ export class PdfInkAnnotation extends PdfComment {
                         const locw: number = inkPoints[0] + 0.5;
                         const loch: number = inkPoints[1] + 0.5;
                         inkPoints = [ locx, locy, locw, loch ];
+                        isDot = true;
                     }
                     const point: Array<number[]> = new Array(inkPoints.length / 2);
                     let count: number = 0;
@@ -7066,10 +7068,15 @@ export class PdfInkAnnotation extends PdfComment {
                         }
                         const path1: PdfPath = new PdfPath();
                         let path2: PdfPath = null;
-                        if (point.length === 2) {
+                        if (isDot) {
                             const width: number = point[1][0] - point[0][0];
                             const height: number = point[1][1] - point[0][1];
                             path1.addEllipse(point[0][0] + (0.5), -(point[0][1] + height + (0.5)), width, height);
+                            path2 = new PdfPath();
+                            path2._pathTypes =  path1._pathTypes;
+                            path2._points = path1._points;
+                        } else if (point.length === 2) {
+                            path1.addLine(point[0][0], -point[0][1], point[1][0], -point[1][1]);
                             path2 = new PdfPath();
                             path2._pathTypes =  path1._pathTypes;
                             path2._points = path1._points;

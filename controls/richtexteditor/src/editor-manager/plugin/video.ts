@@ -6,6 +6,7 @@ import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import * as EVENTS from './../../common/constant';
 import { NodeSelection } from '../../selection';
+import { isSafari, scrollToCursor } from '../../common/util';
 
 /**
  * Video internal component
@@ -230,6 +231,9 @@ export class VideoCommand {
                         videoElm.classList.add('e-rte-embed-url');
                     }
                     if (!isNOU(this.parent.currentDocument)) {
+                        if (isSafari()) {
+                            scrollToCursor(this.parent.currentDocument, this.parent.editableElement as HTMLElement);
+                        }
                         e.callBack({
                             requestType: 'Videos',
                             editorMode: 'HTML',

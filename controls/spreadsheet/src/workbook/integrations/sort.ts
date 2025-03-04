@@ -251,23 +251,31 @@ export class WorkbookSort {
         const direction: string = sortDescriptor.order || '';
         const comparer: Function = DataUtil.fnSort(direction);
         let isXStringVal: boolean = false; let isYStringVal: boolean = false;
+        let xVal: string | CellModel = x ? x.value : x;
+        let yVal: string | CellModel = y ? y.value : y;
         if (x && y && (typeof x.value === 'string' || typeof y.value === 'string') && (x.value !== '' && y.value !== '')) {
-            if (isNumber(x.value) && x.format !== '@') { // Imported number values are of string type, need to handle this case in server side
-                x.value = <string>parseIntValue(x.value);
+            if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side
+                xVal = <string>parseIntValue(x.value);
+                if (x.format !== '@') {
+                    x.value = xVal;
+                }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 isXStringVal = true;
             }
-            if (isNumber(y.value) && y.format !== '@') {
-                y.value = <string>parseIntValue(y.value);
+            if (isNumber(y.value)) {
+                yVal = <string>parseIntValue(y.value);
+                if (y.format !== '@') {
+                    y.value = yVal;
+                }
                 isYStringVal = true;
             }
             if (!isYStringVal && !isYStringVal) {
                 const caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
                 const collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
                 if (!direction || direction.toLowerCase() === 'ascending') {
-                    return collator.compare(x.value as string, y.value as string);
+                    return collator.compare(<string>xVal, <string>yVal);
                 } else {
-                    return collator.compare(x.value as string, y.value as string) * -1;
+                    return collator.compare(<string>xVal, <string>yVal) * -1;
                 }
             }
         }
@@ -282,7 +290,7 @@ export class WorkbookSort {
         if (isYNull) {
             return -1;
         }
-        return comparer(x ? x.value : x, y ? y.value : y);
+        return comparer(xVal, yVal);
     }
 
     /**

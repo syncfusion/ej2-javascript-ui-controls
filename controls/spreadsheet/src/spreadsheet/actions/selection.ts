@@ -1,9 +1,9 @@
 import { Spreadsheet } from '../base/index';
 import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue, rangeSelectionByKeydown } from '../common/index';
 import { showAggregate, refreshOverlayElem, getRowIdxFromClientY, getColIdxFromClientX, hideAutoFillElement, NoteSaveEventArgs, showNote } from '../common/index';
-import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange } from '../../workbook/index';
+import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange, checkColumnValidation } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
-import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach } from '@syncfusion/ej2-base';
+import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach, getComponent } from '@syncfusion/ej2-base';
 import { BeforeSelectEventArgs, getMoveEvent, getEndEvent, isTouchStart, isMouseUp, isDiscontinuousRange } from '../common/index';
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged, completeAction } from '../common/index';
 import { colWidthChanged, protectSelection, editOperation, initiateFormulaReference, initiateCur, clearCellRef, getScrollBarWidth } from '../common/index';
@@ -11,6 +11,7 @@ import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSw
 import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle, removeNoteContainer, setActionData } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell, updateCell, getSheetName } from '../../workbook/index';
 import { getIndexesFromAddress, selectionComplete, skipHiddenIdx, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX } from '../../workbook/common/index';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 
 /**
@@ -291,8 +292,9 @@ export class Selection {
                 if (this.getSheetElement().contains(e.target as Node) && !(e.target as HTMLElement).classList.contains('e-colresize')
                     && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
                     const sheet: SheetModel = this.parent.getActiveSheet(); const mode: string = this.parent.selectionSettings.mode;
-                    const rowIdx: number = this.getRowIdxFromClientY({ clientY: getClientY(e), target: e.target as Element });
-                    const colIdx: number = this.getColIdxFromClientX({ clientX: getClientX(e), target: e.target as Element });
+                    const mouseClientX: number = getClientX(e); const mouseClientY: number = getClientY(e);
+                    const rowIdx: number = this.getRowIdxFromClientY({ clientY: mouseClientY, target: e.target as Element });
+                    const colIdx: number = this.getColIdxFromClientX({ clientX: mouseClientX, target: e.target as Element });
                     const activeIdx: number[] = getCellIndexes(sheet.activeCell);
                     let isRowSelected: boolean; let isColSelected: boolean;
                     if (sheet.showHeaders) {
@@ -317,6 +319,39 @@ export class Selection {
                         } else {
                             isRowSelected = this.parent.getRowHeaderContent().contains(e.target as Node);
                             isColSelected = this.parent.getColumnHeaderContent().contains(e.target as Node);
+                        }
+                    }
+                    if ((sheet.frozenRows || sheet.frozenColumns) && !isColSelected && !isRowSelected) {
+                        const trgt: Element = e.target as Element;
+                        const idx: number = ['e-rowhdr-table', 'e-selectall-table', 'e-colhdr-table'].findIndex(
+                            (cls: string) => trgt.classList.contains(cls));
+                        if (idx > -1) {
+                            const selector: string = ['.e-row-header', '.e-selectall-container', '.e-column-header'][idx as number];
+                            const closestEle: HTMLElement = closest(trgt, selector) as HTMLElement;
+                            if (closestEle && closestEle.style.zIndex) {
+                                const cell: CellModel = getCell(rowIdx, colIdx, sheet);
+                                if ((cell && cell.validation && cell.validation.type === 'List') ||
+                                    (checkColumnValidation(sheet.columns[colIdx as number], rowIdx, colIdx) &&
+                                        sheet.columns[colIdx as number].validation.type === 'List')) {
+                                    const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+                                    if (td) {
+                                        const listEle: HTMLElement = td.querySelector('.e-validation-list');
+                                        if (listEle) {
+                                            const listEleRect: ClientRect = listEle.getBoundingClientRect();
+                                            const dropdownClicked: boolean = mouseClientX >= listEleRect.left &&
+                                                mouseClientX <= listEleRect.right && mouseClientY >= listEleRect.top &&
+                                                mouseClientY <= listEleRect.bottom;
+                                            if (dropdownClicked) {
+                                                const ddlEle: HTMLElement = listEle.querySelector('.e-dropdownlist');
+                                                if (ddlEle) {
+                                                    const ddlInst: DropDownList = getComponent(ddlEle, 'dropdownlist');
+                                                    if (ddlInst) { ddlInst.showPopup(); }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     if (e.which === 3 && this.isSelected(rowIdx, colIdx)) {

@@ -1022,6 +1022,7 @@ export interface IFormatter {
     isAppliedCommand?(e?: MouseEvent): string
     mdSelectionFormat?: MDSelectionFormats
     beforeSlashMenuApply(): void
+    getCurrentStackIndex(): number
 }
 /**
  * @deprecated

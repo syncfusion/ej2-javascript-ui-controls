@@ -27,12 +27,12 @@ export class ToolbarAction {
     }
 
     private toolbarClick(args: IDropDownClickArgs): void {
+        if (isNOU(args.item)) {
+            return;
+        }
         if (isSafari() && this.parent.formatter.editorManager.nodeSelection &&
             !this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
             this.parent.notify(events.selectionRestore, {});
-        }
-        if (isNOU(args.item)) {
-            return;
         }
         if (!isNOU((args.item as { [key: string]: object }).controlParent)) {
             // eslint-disable-next-line

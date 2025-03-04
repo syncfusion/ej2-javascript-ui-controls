@@ -1524,16 +1524,6 @@ export class Video {
                 ((this as IImageNotifyArgs).args as ClickEventArgs).originalEvent, proxy.uploadUrl);
             proxy.uploadUrl.url = '';
         } else if (proxy.parent.editorMode === 'HTML' && (url !== '' || embedUrl !== '')) {
-            if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
-                closest(
-                    // eslint-disable-next-line
-                    (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" + ']'))) {
-                (proxy.contentModule.getEditPanel() as HTMLElement).focus();
-                const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
-                (this as IImageNotifyArgs).selection = proxy.parent.formatter.editorManager.nodeSelection.save(
-                    range, proxy.contentModule.getDocument());
-                (this as IImageNotifyArgs).selectParent = proxy.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
-            }
             const webUrlBtn: HTMLInputElement = document.getElementById('webURL') as HTMLInputElement;
             const name: string =  webUrlBtn.checked ? url.split('/')[url.split('/').length - 1] : embedUrl;
             const value: IVideoCommandsArgs = {

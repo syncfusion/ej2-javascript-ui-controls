@@ -147,7 +147,7 @@ export class DataLabel {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? !isNullOrUndefined(datasrcObj[labelpath as string]) ?
-            datasrcObj[labelpath as string].toString() : datasrcObj[layer.shapeDataPath] : shapeData['properties'][labelpath as string];
+            datasrcObj[labelpath as string].toString() : shapeData['properties'][labelpath as string] || datasrcObj[layer.shapeDataPath] : shapeData['properties'][labelpath as string];
         if ((Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]') &&
             (isNullOrUndefined(text) && (!isNullOrUndefined(layer.dataSource) && layer.dataSource['length'] === 0))) {
             for (let l: number = 0; l < layer.shapePropertyPath.length; l++) {

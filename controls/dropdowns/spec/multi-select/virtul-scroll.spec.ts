@@ -1134,6 +1134,45 @@ describe('MultiSelect_Virtualization', () => {
         });
     });
 
+    describe('Virtualization with 65k data preselection', () => {
+        let multiObj: any;
+        let ele: HTMLInputElement;
+        let records: { [key: string]: Object }[] = [];
+        beforeAll(() => {
+            for (let i = 1; i <= 68000; i++) {
+                records.push({ id: 'id' + i, text: `Item ${i}`, group: `Group ${String.fromCharCode(65 + (i % 4))}` });
+            }
+            ele = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+            document.body.appendChild(ele);
+        });
+
+        afterAll(() => {
+            if (multiObj) {
+                multiObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('should handle 65k data preselection and show popup properly', (done) => {
+            multiObj = new MultiSelect({
+                dataSource: records,
+                mode: 'CheckBox',
+                enableVirtualization: true,
+                popupHeight: '200px',
+                fields: { text: 'text', value: 'id' },
+                created: () => multiObj.selectAll(true)
+            });
+            multiObj.appendTo('#multiselect');
+            setTimeout(() => {
+                multiObj.showPopup();
+                setTimeout(() => {
+                    expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                    done();
+                }, 500);
+            }, 800);
+        });
+    });
+
     describe('EJ2-932891', () => {
         let listObj: MultiSelect;
         let popupObj: any;

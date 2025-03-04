@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I694559` - Now, the RTL-enabled chart renders properly while exporting.
+- `#I690910` - Multiple charts can now be exported as a single CSV or XLSX file.
+
 ## 28.2.7 (2025-02-25)
 
 ### Accumulation Chart

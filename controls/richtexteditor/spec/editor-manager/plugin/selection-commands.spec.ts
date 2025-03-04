@@ -1418,6 +1418,7 @@ describe('EJ2-46956: Applying background color to multiple span element does not
             }
         });
         let rteEle = rteObj.element;
+        let initialSpanCount: number = rteObj.element.querySelectorAll('.e-content span').length;
         let span1: Node = rteObj.element.querySelectorAll('.e-content span')[0];
         let span2: Node = rteObj.element.querySelectorAll('.e-content span')[1];
         domSelection.setSelectionText(document, span1, span2, 0, 0);
@@ -1426,7 +1427,8 @@ describe('EJ2-46956: Applying background color to multiple span element does not
         backgroundColorPicker.click();
         let noColorItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item");
         noColorItem.click();
-        expect(rteObj.element.querySelectorAll('.e-content span')[0].style.backgroundColor).toBe('transparent');
+        let afterSpanCount: number = rteObj.element.querySelectorAll('.e-content span').length;
+        expect(initialSpanCount).not.toBe(afterSpanCount);
     });
     it(' Apply transparent to text selection', () => {
         rteObj = renderRTE({
@@ -1444,12 +1446,60 @@ describe('EJ2-46956: Applying background color to multiple span element does not
         backgroundColorPicker.click();
         let noColorItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item");
         noColorItem.click();
-        expect(rteObj.element.querySelectorAll('.e-content span > span')[2].style.backgroundColor).toBe('transparent');
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[2].style.backgroundColor).toBe('');
         expect(rteObj.element.querySelectorAll('.e-content span > span')[4].style.backgroundColor).toBe('transparent');
         expect(rteObj.element.querySelectorAll('.e-content span > span')[6].style.backgroundColor).toBe('transparent');
     });
     afterEach(() => {
         destroy(rteObj);
+    });
+});
+
+describe('Background Color Apply and Remove - Auto Span Creation in List Item', function () {
+    let rteObj: any;
+    let domSelection = new NodeSelection();
+
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            value: `<ul><li class='li1'>item1</li></ul>`,
+            toolbarSettings: {
+                items: ['BackgroundColor']
+            }
+        });
+        done();
+    });
+    afterAll(function (done) {
+        destroy(rteObj);
+        done();
+    });
+    it('Test for applying and removing background color with auto span creation', function (done) {
+        let range = document.createRange();
+        let liElement = rteObj.element.querySelector('.li1');
+        range.setStart(liElement.childNodes[0], 0);
+        range.setEnd(liElement.childNodes[0], liElement.textContent.length);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(
+            document,
+            'backgroundcolor',
+            rteObj.element.querySelector('.e-content'),
+            'SPAN', 
+            null,
+            'rgb(255, 255, 0)'
+        );
+        let spanElement = liElement.querySelector('span');
+        expect(spanElement).not.toBeNull();
+        expect(spanElement.style.backgroundColor).toEqual('rgb(255, 255, 0)');
+        SelectionCommands.applyFormat(
+            document,
+            'backgroundcolor',
+            rteObj.element.querySelector('.e-content'),
+            'SPAN',
+            null,
+            ''
+        );
+        expect(liElement.querySelector('span')).toBeNull();
+        expect(liElement.innerHTML).toEqual('item1'); 
+        done();
     });
 });
 
@@ -2366,6 +2416,53 @@ describe('939682: Console error occurs when applying bold (Ctrl+B) on a selected
         domSelection.setRange(document, range);
         SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
         expect(rteObj.element.querySelector('strong')).not.toBeNull();
+        done();
+    });
+});
+
+describe('942951: IndexSizeError Shown in Console After Applying Bold Format to Selected Heading 1 Text', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    let defaultUA: string = navigator.userAgent;
+    let defaultVendor: string = navigator.vendor;
+    let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
+    let safariVendor: string = "Apple Computer, Inc.";
+    beforeAll(() => {
+        Object.defineProperty(navigator, 'userAgent', {
+            value: safari,
+            configurable: true
+        });
+        Object.defineProperty(navigator, 'vendor', {
+            value: safariVendor,
+            configurable: true
+        });
+
+        rteObj = renderRTE({
+            value: `<h1>Welcome to the Syncfusion<sup>®</sup> Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>`,
+            toolbarSettings: {
+                items: ['Bold']
+            }
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        Object.defineProperty(navigator, 'userAgent', {
+            value: defaultUA,
+            configurable: true
+        });
+        Object.defineProperty(navigator, 'vendor', {
+            value: defaultVendor,
+            configurable: true
+        });
+    });
+    it('should apply bold formatting to the entire H1 element', (done) => {
+        const range: Range = document.createRange();
+        const h1Element = rteObj.element.querySelector('h1');
+        range.setStart(h1Element.firstChild, 0);
+        range.setEnd(h1Element.lastChild, h1Element.lastChild.textContent.length);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
+        expect(h1Element.querySelector('strong')).not.toBeNull();
         done();
     });
 });

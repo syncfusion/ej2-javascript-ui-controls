@@ -9,7 +9,7 @@ import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE
     CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE,
     CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM,
     CLS_BULLETFORMATLIST_TB_BTN, CLS_NUMBERFORMATLIST_TB_BTN, CLS_LIST_PRIMARY_CONTENT } from '../base/classes';
-import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs, IDropDownItemModel } from '../base/interface';
+import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs, IDropDownItemModel, ActionBeginEventArgs } from '../base/interface';
 import { ColorPicker, PaletteTileEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { hasClass } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
@@ -465,7 +465,7 @@ export class ToolbarRenderer implements IRenderer {
             enableRtl: this.parent.enableRtl,
             select: this.dropDownSelected.bind(this),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (Browser.info.name === 'safari') {
+                if (Browser.info.name === 'safari' && !proxy.parent.inputElement.contains(proxy.parent.getRange().startContainer)) {
                     proxy.parent.notify(events.selectionRestore, {});
                 }
                 if (proxy.parent.editorMode !== 'Markdown' ) {
@@ -593,11 +593,9 @@ export class ToolbarRenderer implements IRenderer {
                             (closest(range.startContainer.parentNode, 'td,th')) ||
                             (proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')))
                             && range.collapsed && args.subCommand === 'BackgroundColor' && (closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable)) {
-                        proxy.parent.notify(events.tableColorPickerChanged,
-                                            {
-                                                item: { command: args.command, subCommand: args.subCommand,
-                                                    value: colorpickerValue }
-                                            });
+                        const colorPickerArgs: ActionBeginEventArgs = { name: 'tableColorPickerChanged', item: { command: 'Table', subCommand: 'BackgroundColor', value: colorpickerValue  }, ...args };
+                        proxy.parent.formatter.process(this.parent, colorPickerArgs, null, colorpickerValue);
+                        proxy.parent.notify(events.hideTableQuickToolbar, {});
                     } else {
                         proxy.parent.notify(events.colorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
                             value: colorpickerValue }
@@ -638,10 +636,9 @@ export class ToolbarRenderer implements IRenderer {
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
                             closest(range.startContainer.parentNode, 'td,th')) && range.collapsed){
-                        proxy.parent.notify(events.tableColorPickerChanged, { item: {
-                            command: args.command, subCommand: args.subCommand,
-                            value: colorpickerValue }
-                        });
+                        const colorPickerArgs: ActionBeginEventArgs = { name: 'tableColorPickerChanged', item: { command: 'Table', subCommand: 'BackgroundColor', value: colorpickerValue  }, ...args };
+                        proxy.parent.formatter.process(this.parent, colorPickerArgs, null, colorpickerValue);
+                        proxy.parent.notify(events.hideTableQuickToolbar, {});
                     } else {
                         proxy.parent.notify(events.colorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
                             value: colorpickerValue }
@@ -747,7 +744,10 @@ export class ToolbarRenderer implements IRenderer {
                 const closestElement: Element = closest(range.startContainer.parentNode, 'table');
                 if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' || range.startContainer.nodeName === 'BODY' ||
                     (range.startContainer.parentNode && closest(range.startContainer.parentNode, 'td,th'))) && range.collapsed && args.subCommand === 'BackgroundColor' && (closestElement && closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable)) {
-                    proxy.parent.notify(events.tableColorPickerChanged, colorPickerArgs);
+                    colorPickerArgs.name = 'tableColorPickerChanged';
+                    colorPickerArgs.item.command = 'Table';
+                    proxy.parent.formatter.process(this.parent, colorPickerArgs, colorPickerArgs.event, colorPickerArgs.item.value);
+                    proxy.parent.notify(events.hideTableQuickToolbar, {});
                 } else {
                     proxy.parent.notify(events.colorPickerChanged, colorPickerArgs);
                 }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### GanttChart
+
+#### Bug fixes
+
+ `#I689599` -  Resolved a console error that occurred when undoing a deleted split task.
+ `#I692333` -  When the `includeWeekend` property is set to true, the split taskbar cannot be dragged and dropped issue has been resolved.
+
 ## 28.2.7 (2025-02-25)
 
 ### GanttChart

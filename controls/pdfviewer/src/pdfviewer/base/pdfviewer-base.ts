@@ -6579,7 +6579,13 @@ export class PdfViewerBase {
         return updatedCollections;
     }
 
-    private isSignatureWithInRect(fieldArray: any, signArray: any): boolean {
+    /**
+     * @private
+     * @param {any} fieldArray - The form field bounds.
+     * @param {any} signArray - The annotation bounds.
+     * @returns {boolean} - Returns true or false.
+     */
+    public isSignatureWithInRect(fieldArray: any, signArray: any): boolean {
         fieldArray = fieldArray[0];
         signArray = signArray[0];
         const fieldx2: number = fieldArray.x + fieldArray.width;
@@ -6594,7 +6600,12 @@ export class PdfViewerBase {
         return false;
     }
 
-    private canvasRectArray(bounds: any): any {
+    /**
+     * @private
+     * @param {any} bounds - The form field or annotation bounds.
+     * @returns {any} - Returns bounds.
+     */
+    public canvasRectArray(bounds: any): any {
         const array: any = [];
         if (bounds) {
             const left: number = !isNullOrUndefined(bounds.x) ? bounds.x : !isNullOrUndefined(bounds.X) ? bounds.X :

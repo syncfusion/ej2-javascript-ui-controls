@@ -6739,7 +6739,7 @@ describe('836937 - Rich Text Editor Table Module', function () {
         rteObj.keyDown(keyBoardEvent);
         rteObj.keyUp(keyBoardEvent);
         setTimeout(() => {
-            expect(rteObj.element.querySelectorAll('.tdElement')[0].classList.contains("e-cell-select") == false).toBe(true);
+            expect(rteObj.element.querySelectorAll('.tdElement')[0].classList.contains("e-cell-select") == true).toBe(true);
             done();
         }, 100);
     });
@@ -8848,12 +8848,19 @@ describe('923382: Apply background color to the table in iframe', () => {
             var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
             (rteObj as any).mouseDownHandler(eventsArg);
             (rteObj as any).mouseUp(eventsArg);
-            (rteObj as any).tableModule.setBGColor({
+            let target: HTMLElement = rteObj.inputElement.querySelector('.e-rte-table td');
+            let activeCell: HTMLElement = rteObj.inputElement.querySelectorAll("td")[1];
+            let args: any = {
+                event: { target: target },
+                selectNode: [activeCell] as any,
+            };
+            (rteObj as any).formatter.editorManager.tableObj.tableMove(args);
+            (rteObj as any).formatter.editorManager.tableObj.setBGColor({
                 "item": {
                     "command": "Font",
-                    "subCommand": "BackgroundColor",
-                    "value": "rgb(255, 255, 0)"
+                    "subCommand": "BackgroundColor"
                 },
+                "value": "rgb(255, 255, 0)",
                 "name": "tableColorPickerChanged"
             });
             expect(tdElement.style.backgroundColor != '' ).toBe(true);
@@ -9076,6 +9083,67 @@ describe('921865 - undo not tirggerd, after performing copy and pasting content 
             expect(stack === 1).toBe(true);
             done();
         }, 100);
+    });
+});
+describe('942278 - Cursor is misplaced after performing undo action', () => {
+    let rteObj: RichTextEditor;
+    beforeEach(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Undo', 'Redo']
+            },
+            value: "<p>Rich Text Editor 1</p><p>Rich Text Editor 2</p><p>Rich Text Editor 3</p>"
+        });
+    });
+    it('should update undo/redo stack when at first stack position', (done) => {
+        setCursorPoint(document, (rteObj as any).inputElement.childNodes[0], 0);
+        (rteObj as any).mouseUp({ target: (rteObj as any).inputElement, isTrusted: true });
+        setCursorPoint(document, (rteObj as any).inputElement.childNodes[1], 0);
+        (rteObj as any).mouseUp({ target: (rteObj as any).inputElement, isTrusted: true });
+        rteObj.executeCommand('insertHTML', 'inserted an html', { undo: true });
+        rteObj.executeCommand('undo');
+        expect(window.getSelection().getRangeAt(0).startContainer === (rteObj as any).inputElement.childNodes[1]).toBe(true);
+        var keyBoardEvent = { type: 'keyup', preventDefault: function () { }, ctrlKey: true, key: 'ArrowDown', stopPropagation: function () { }, shiftKey: false, which: 40 };
+        let sel = new NodeSelection().setSelectionText(document, (rteObj as any).inputElement.childNodes[2].firstChild, rteObj.inputElement.childNodes[2].firstChild, 0, 5);
+        (rteObj as any).keyUp(keyBoardEvent);
+        rteObj.executeCommand('insertHTML', 'inserted an html', { undo: true });
+        rteObj.executeCommand('undo');
+        expect(window.getSelection().getRangeAt(0).startContainer.parentElement === (rteObj as any).inputElement.childNodes[2]).toBe(true);
+        done();
+    });
+    afterEach((done: DoneFn) => {
+        destroy(rteObj);
+        done();
+    });
+});
+describe('942278 - Cursor is misplaced after performing undo action', () => {
+    let rteObj: RichTextEditor;
+    beforeEach(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Undo', 'Redo','Bold']
+            },
+            editorMode: 'Markdown',
+            value: `Rich Text Editor 1
+Rich Text Editor 2
+Rich Text Editor 3`
+       });
+    });
+    it('should update undo/redo stack when at first stack position', (done) => {
+        let textArea = rteObj.inputElement;
+        (rteObj as any).formatter.editorManager.markdownSelection.setSelection(textArea, 5, 5);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        (rteObj as any).formatter.editorManager.markdownSelection.setSelection(textArea, 10, 15);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        (rteObj as any).element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[2].click();
+        (rteObj as any).element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[0].click();
+        expect((rteObj as any).inputElement.selectionStart === 10).toBe(true);
+        expect((rteObj as any).inputElement.selectionEnd === 15).toBe(true);
+        done();
+    });
+    afterEach((done: DoneFn) => {
+        destroy(rteObj);
+        done();
     });
 });
 });

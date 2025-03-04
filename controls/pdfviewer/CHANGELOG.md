@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I688924` - Now, the stamp annotation is displayed correctly in the provided document in the PDF Viewer.
+- `#I688583` - Now, we are able to add the signature to the signature field properly after clearing the form field value using the `clearFormFields` method.
+
 ## 28.2.7 (2025-02-25)
 
 ### PDF Viewer

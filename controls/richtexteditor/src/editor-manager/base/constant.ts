@@ -39,6 +39,8 @@ export const TABLE_DASHED: string = 'TABLE_DASHED';
 
 export const TABLE_ALTERNATE: string = 'TABLE_ALTERNATE';
 
+export const TABLE_BACKGROUND_COLOR: string = 'TABLE_BACKGROUND_COLOR';
+
 export const TABLE_MOVE: string = 'TABLE_MOVE';
 
 /**

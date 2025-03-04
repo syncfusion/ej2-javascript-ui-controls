@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I687932` - Fixed the issue where focus was not updated to the document when selecting a comment in the comment pane.
+- `#I685571`, `#I694238` - Fixed the tab element formatting issue when opening the reported document.
+- `#I683091` - Fixed the issue where cell size was not reverting correctly and an extra column was created after deleting a row.
+- `#I683159` - Fixed the issue where the editable region start marker was not rendering correctly when a paragraph had a right margin.
+- `#I691849` - Fixed the issue where Document Editor became unresponsive when accepting all changes in SFDT files containing multiple lists copied from Word.
+
 ## 28.2.7 (2025-02-25)
 
 ### DocumentEditor

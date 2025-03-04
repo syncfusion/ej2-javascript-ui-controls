@@ -1,10 +1,11 @@
 import { createElement, closest, detach, Browser, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
-import { IHtmlItem } from './../base/interface';
+import { IHtmlItem, IHtmlSubCommands } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import { removeClassWithAttr } from '../../common/util';
 import * as EVENTS from '../../common/constant';
+import { NodeSelection } from '../../selection';
 
 /**
  * Link internal component
@@ -40,6 +41,7 @@ export class TableCommand {
         this.parent.observer.on(CONSTANT.TABLE_HORIZONTAL_SPLIT, this.HorizontalSplit, this);
         this.parent.observer.on(CONSTANT.TABLE_VERTICAL_SPLIT, this.VerticalSplit, this);
         this.parent.observer.on(CONSTANT.TABLE_DASHED, this.tableStyle, this);
+        this.parent.observer.on(CONSTANT.TABLE_BACKGROUND_COLOR, this.setBGColor, this);
         this.parent.observer.on(CONSTANT.TABLE_ALTERNATE, this.tableStyle, this);
         this.parent.observer.on(CONSTANT.TABLE_MOVE, this.tableMove, this);
         this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
@@ -59,6 +61,7 @@ export class TableCommand {
         this.parent.observer.off(CONSTANT.TABLE_VERTICAL_SPLIT, this.VerticalSplit);
         this.parent.observer.off(CONSTANT.TABLE_DASHED, this.tableStyle);
         this.parent.observer.off(CONSTANT.TABLE_ALTERNATE, this.tableStyle);
+        this.parent.observer.off(CONSTANT.TABLE_BACKGROUND_COLOR, this.setBGColor);
         this.parent.observer.off(CONSTANT.TABLE_MOVE, this.tableMove);
         this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
@@ -169,9 +172,6 @@ export class TableCommand {
         if (!(selectedCell.nodeName === 'TH' || selectedCell.nodeName === 'TD')) {
             selectedCell = closest(selectedCell.parentElement, 'td,th') as HTMLElement;
         }
-        if (selectedCell.nodeName.toLowerCase() === 'th' && e.item.subCommand === 'InsertRowBefore') {
-            return;
-        }
         this.curTable = closest(this.parent.nodeSelection.range.startContainer.parentElement, 'table') as HTMLTableElement;
         if (this.curTable.querySelectorAll('.e-cell-select').length === 0) {
             const lastRow: Element = this.curTable.rows[this.curTable.rows.length - 1];
@@ -192,10 +192,14 @@ export class TableCommand {
                         allCells[minVal as number][i as number].setAttribute('rowspan', (parseInt(allCells[minVal as number][i as number].getAttribute('rowspan'), 10) + 1).toString());
                     }
                 } else {
-                    const tdElement: Element = createElement('td');
+                    const tdElement: HTMLElement = createElement('td');
                     tdElement.appendChild(createElement('br'));
                     newRow.appendChild(tdElement);
-                    tdElement.setAttribute('style', allCells[(isHeaderSelect && isBelow) ? allCells[(minVal + 1)] ? (minVal + 1) : minVal : minVal][i as number].getAttribute('style'));
+                    const styleValue: string = allCells[(isHeaderSelect && isBelow) ? allCells[(minVal + 1)] ? (minVal + 1) : minVal : minVal][i as number].getAttribute('style');
+                    if (styleValue) {
+                        const updatedStyle: string = this.cellStyleCleanup(styleValue);
+                        tdElement.style.cssText = updatedStyle;
+                    }
                 }
             }
             // eslint-disable-next-line
@@ -223,6 +227,26 @@ export class TableCommand {
         }
     }
 
+    private cellStyleCleanup(value: string): string {
+        const styles: string[] = value.split(';');
+        const newStyles: string[] = [];
+        const deniedFormats: string[] = ['background-color', 'vertical-align', 'text-align'];
+        for (let i: number = 0; i < styles.length; i++) {
+            const style: string = styles[i as number];
+            let isAllowed: boolean = true;
+            for (let j: number = 0; j < deniedFormats.length; j++) {
+                const deniedStyle: string = deniedFormats[j as number];
+                if (style.indexOf(deniedStyle) > -1) {
+                    isAllowed = false;
+                }
+            }
+            if (isAllowed) {
+                newStyles.push(style);
+            }
+        }
+        return newStyles.join(';');
+    }
+
     private insertColumn(e: IHtmlItem): void {
         let selectedCell: HTMLElement = e.item.selection.range.startContainer as HTMLElement;
         if (!(selectedCell.nodeName === 'TH' || selectedCell.nodeName === 'TD')) {
@@ -244,7 +268,12 @@ export class TableCommand {
         }
         for (let i: number = 0; i < allRows.length; i++) {
             curCell = allRows[i as number].querySelectorAll(':scope > td, :scope > th')[colIndex as number];
-            const colTemplate: Node = (curCell as HTMLElement).cloneNode(true);
+            const colTemplate: HTMLElement = (curCell as HTMLElement).cloneNode(true) as HTMLElement;
+            const style: string = (colTemplate as HTMLElement).getAttribute('style');
+            if (style) {
+                const updatedStyle: string = this.cellStyleCleanup(style);
+                colTemplate.style.cssText = updatedStyle;
+            }
             (colTemplate as HTMLElement).innerHTML = '';
             (colTemplate as HTMLElement).appendChild(createElement('br'));
             (colTemplate as HTMLElement).removeAttribute('class');
@@ -266,6 +295,27 @@ export class TableCommand {
                 requestType: e.item.subCommand,
                 editorMode: 'HTML',
                 event: e.event,
+                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
+            });
+        }
+    }
+
+    private setBGColor(args: IHtmlSubCommands): void {
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        // eslint-disable-next-line
+        const selection: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+        // eslint-disable-next-line
+        const selectedCells = this.curTable.querySelectorAll('.e-cell-select');
+        for (let i: number = 0; i < selectedCells.length; i++) {
+            (selectedCells[i as number] as HTMLElement).style.backgroundColor = args.value.toString();
+        }
+        this.parent.undoRedoManager.saveData();
+        if (args.callBack) {
+            args.callBack({
+                requestType: args.subCommand,
+                editorMode: 'HTML',
+                event: args.event,
                 range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
@@ -436,8 +486,8 @@ export class TableCommand {
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
         const selectedTable: HTMLElement = closest(selectedCell.parentElement, 'table') as HTMLElement;
         if (selectedTable) {
-            e.item.selection.restore();
             detach(selectedTable);
+            e.item.selection.restore();
         }
         if (e.callBack) {
             e.callBack({

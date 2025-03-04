@@ -7963,7 +7963,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (obj instanceof Node) {
                 if (independentObj) {
-                    if (obj.id !== 'helper') {
+                    // 939249: Duplicate Ports Added to Group After Grouping and Undoing.
+                    if (obj.id !== 'helper' && !(this.diagramActions & DiagramAction.UndoRedo)) {
                         const getDefaults: Function = getFunction(this.getNodeDefaults);
                         if (getDefaults) {
                             const defaults: NodeModel = getDefaults(obj, this);
@@ -12375,8 +12376,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             } else {
                 //path and decorators
-                for (let i: number = 0; i < 3; i++) {
-                    element.children[parseInt(i.toString(), 10)].visible = visible;
+                //942121: Visibility of BPMN flow connector not correctly applied
+                if (obj.shape.type === 'Bpmn') {
+                    for (let i: number = 0; i < 4; i++) {
+                        element.children[parseInt(i.toString(), 10)].visible = visible;
+                    }
+                }
+                else {
+                    for (let i: number = 0; i < 3; i++) {
+                        element.children[parseInt(i.toString(), 10)].visible = visible;
+                    }
                 }
             }
             if (obj.annotations) {

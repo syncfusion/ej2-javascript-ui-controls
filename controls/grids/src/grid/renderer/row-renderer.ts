@@ -246,6 +246,11 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         isFirstVisibleCell = false;
                     }
                 }
+                if (cell.cellType === CellType.Header && (row.cells[parseInt(i.toString(), 10)].colSpan > 1 ||
+                    row.cells[parseInt(i.toString(), 10)].rowSpan > 1)) {
+                    const cellMerge: CellMergeRender<T> = new CellMergeRender(this.serviceLocator, this.parent);
+                    td = cellMerge.render(<Object>row.cells[parseInt(i.toString(), 10)], row, i, td);
+                }
                 if (this.isSpan) {
                     const rowsObject: Row<Column>[] = this.parent.getRowsObject();
                     const isRtl: boolean = this.parent.enableRtl;

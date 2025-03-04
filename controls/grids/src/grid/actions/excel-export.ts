@@ -1078,7 +1078,7 @@ export class ExcelExport {
 
                 const gridCell: Cell<Column> = gridRows[parseInt(row.toString(), 10)].cells[parseInt(column.toString(), 10)];
 
-                if (gridCell.cellType === CellType.HeaderIndent || gridCell.cellType === CellType.DetailHeader) {
+                if (gridCell.isSpanned || gridCell.cellType === CellType.HeaderIndent || gridCell.cellType === CellType.DetailHeader) {
                     continue;
                 }
 
@@ -1094,9 +1094,11 @@ export class ExcelExport {
                 if (!isNullOrUndefined(gridCell.rowSpan) && gridCell.rowSpan !== 1) {
                     cell.rowSpan = gridCell.rowSpan;
                     for (let i: number = rowIndex; i < gridCell.rowSpan + rowIndex; i++) {
-                        const spannedCell: { rowIndex: number, columnIndex: number } = { rowIndex: 0, columnIndex: 0 };
+                        const spannedCell: { rowIndex: number, columnIndex: number, colSpan: number } = { rowIndex: 0, columnIndex: 0,
+                            colSpan: 0 };
                         spannedCell.rowIndex = i;
                         spannedCell.columnIndex = currentCellIndex;
+                        spannedCell.colSpan = gridCell.colSpan || 1;
                         spannedCells.push(spannedCell);
                     }
                 }
@@ -1105,7 +1107,6 @@ export class ExcelExport {
                     currentCellIndex = currentCellIndex + cell.colSpan - 1;
                 }
                 cell.value = gridCell.column.headerText;
-
                 style = this.getHeaderThemeStyle(this.theme);
                 if (!isNullOrUndefined(gridCell.column.textAlign)) {
                     style.hAlign = gridCell.column.textAlign.toLowerCase() as ExcelHAlign;
@@ -1116,6 +1117,20 @@ export class ExcelExport {
 
                 const excelHeaderCellArgs: ExcelHeaderQueryCellInfoEventArgs = { cell: cell, gridCell: gridCell, style: style };
                 gObj.trigger(events.excelHeaderQueryCellInfo, excelHeaderCellArgs);
+                if (gridCell.cellType === CellType.Header && cell.colSpan > 1) {
+                    currentCellIndex = currentCellIndex + cell.colSpan - 1;
+                    for (let j: number = 1; j < cell.colSpan; j++) {
+                        const nextCellIndex: number = column + j;
+                        if (nextCellIndex < gridRows[parseInt(row.toString(), 10)].cells.length) {
+                            gridRows[parseInt(row.toString(), 10)].cells[parseInt(nextCellIndex.toString(), 10)].isSpanned = true;
+                        }
+                    }
+                    for (let i: number = 0; i < spannedCells.length; i++) {
+                        if (spannedCells[parseInt(i.toString(), 10)].columnIndex  === cell.index) {
+                            spannedCells[parseInt(i.toString(), 10)].colSpan = cell.colSpan;
+                        }
+                    }
+                }
                 if (excelHeaderCellArgs.style.rotation) {
                     this.headerRotation(excelHeaderCellArgs);
                 }
@@ -1245,7 +1260,7 @@ export class ExcelExport {
     private getIndex(spannedCells: ISpannedCell[], rowIndex: number, columnIndex: number): { contains: boolean, index: number } {
         for (const spannedCell of spannedCells) {
             if ((spannedCell.rowIndex === rowIndex) && (spannedCell.columnIndex === columnIndex)) {
-                columnIndex = columnIndex + 1;
+                columnIndex += spannedCell.colSpan || 1;
                 return { contains: true, index: columnIndex };
             }
         }
@@ -1294,6 +1309,7 @@ interface SummaryData {
 interface ISpannedCell {
     rowIndex?: number;
     columnIndex?: number;
+    colSpan?: number;
 }
 
 interface IHeader {

@@ -141,7 +141,7 @@ export class LargeIconsView {
                 this.items = this.allItems = DataUtil.sort(this.items, this.parent.sortBy, this.comparer.bind(this) as Function);
             } else { this.items = this.allItems = getSortedData(this.parent, this.items); }
             iconsView.classList.remove(CLS.DISPLAY_NONE);
-            if (this.parent.enableVirtualization && this.allItems.length > 0) {
+            if (this.parent.enableVirtualization && this.allItems.length > 0 && !isNOU(this.parent.virtualizationModule)) {
                 this.parent.virtualizationModule.setUIVirtualization();
             }
             this.listElements = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.listObj);
@@ -182,7 +182,7 @@ export class LargeIconsView {
             this.getItemCount();
             this.addEventListener();
             this.wireEvents();
-            if (this.parent.enableVirtualization && this.allItems.length > 0) {
+            if (this.parent.enableVirtualization && this.allItems.length > 0 && !isNOU(this.parent.virtualizationModule)) {
                 this.parent.virtualizationModule.setUlElementHeight();
                 this.parent.virtualizationModule.wireScrollEvent(false);
             }

@@ -245,7 +245,7 @@ export class Clipboard implements IAction {
                             this.getCopyData(leftCols, false, '\t', withHeader);
                         }
                     }
-                } else {
+                } else if (this.parent.selectionModule && this.parent.selectionModule.selectedRowCellIndexes.length) {
                     const obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = this.checkBoxSelection();
                     if (obj.status) {
                         if (withHeader) {

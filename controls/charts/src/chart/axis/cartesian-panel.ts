@@ -1720,7 +1720,7 @@ export class CartesianAxisLayoutPanel {
                     }
                     break;
                 case 'Shift':
-                    if (i === len - 2) {
+                    if (i === len - 2 && axis.labelIntersectAction !== 'MultipleRows') {
                         if (anchor === 'start' || anchor === '') {
                             previousLabel = options.x + width; // For start anchor
                         } else if (anchor === 'middle') {

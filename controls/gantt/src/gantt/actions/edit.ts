@@ -597,7 +597,8 @@ export class Edit {
                 }else if ((key === tasks.segments) && (!isNullOrUndefined(ganttData.ganttProperties.segments))) {
                     ganttPropKey = 'segments';
                     /* eslint-disable-next-line */
-                    if (data && !isNullOrUndefined(data[this.parent.taskFields.segments]) && data[this.parent.taskFields.segments].length > 0) {
+                    if (data && !isNullOrUndefined(data[tasks.segments]) && data[tasks.segments].length > 0
+                        && data['ganttProperties'] && data['ganttProperties'].segments) {
                         if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
                             ganttData.ganttProperties.segments = data['ganttProperties'].segments;
                         }
@@ -677,8 +678,8 @@ export class Edit {
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 /* eslint-disable-next-line */
-                if (key === tasks.segments && data && !isNullOrUndefined(data[this.parent.taskFields.segments]) && data[this.parent.taskFields.segments].length > 0) {
-                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                if (key === tasks.segments && data && !isNullOrUndefined(data[tasks.segments]) && data[tasks.segments].length > 0) {
+                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && data['ganttProperties'] && data['ganttProperties'].segments) {
                         ganttData.ganttProperties.segments = data['ganttProperties'].segments;
                     }
                     ganttObj.dataOperation.setSegmentsInfo(ganttData, true);

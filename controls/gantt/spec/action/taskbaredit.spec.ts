@@ -8370,3 +8370,110 @@ describe('CR:929550-Console error occurred while taskbar drag with null duration
         }
     });
 });
+describe('Content menu split task  -', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [ {
+                    TaskName: 'New Task 2',
+                    StartDate: new Date('04/02/2024'),
+                    EndDate: new Date('04/04/2024'),
+                    Progress: 0,
+                    work: 0,
+                    resources: [],
+                    Segments: [{ StartDate: new Date('02/04/2024'), Duration: 2 },
+                        { StartDate: new Date('02/05/2024'), Duration: 5 },],
+                    TaskID: 'task_956caa3b-2946-4230-b251-20bab82abe7d',
+                  },
+                  {
+                    TaskName: 'New Task 1',
+                    StartDate: new Date('04/02/2024'),
+                    EndDate: new Date('04/04/2024'),
+                    Progress: 0,
+                    work: 0,
+                    resources: [],
+                    Segments: [{ StartDate: new Date('02/04/2024'), Duration: 2 },
+                        { StartDate: new Date('02/05/2024'), Duration: 5 },],
+                    TaskID: 'task_692b81b9-8bd2-4bf3-a6fa-d4ce4c997b70',
+                  }],
+                allowSorting: true,
+                includeWeekend: true,
+                enableContextMenu: true,
+                enableVirtualization: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    
+                ],
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    timelineUnitSize: 60,
+            weekStartDay: 1,
+            topTier: {
+              format: 'MMM dd, yyyy',
+              unit: 'Week',
+            },
+            bottomTier: {
+              unit: 'Day',
+              format: 'dd',
+              count: 1,
+            },
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+            }, done);
+    });
+    beforeEach(function (done) {
+        setTimeout(done, 100);
+    });
+    it('split task ', () => {
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container >div.e-segment-last') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 250, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.currentViewData[0].ganttProperties.segments.length).toBe(2);
+        expect(ganttObj.currentViewData[1].ganttProperties.segments.length).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

@@ -70,8 +70,9 @@ export class DropDownButtons {
      * @returns {void}
      * @hidden
      * @deprecated
+     * @param {HTMLElement} targetEle - specifies the arugument
      */
-    public renderDropDowns(args: IDropDownRenderArgs): void {
+    public renderDropDowns(args: IDropDownRenderArgs, targetEle?: HTMLElement): void {
         this.initializeInstance();
         const type: string = args.containerType;
         const tbElement: HTMLElement = args.container;
@@ -204,7 +205,7 @@ export class DropDownButtons {
                 case 'videolayoutoption':
                     this.renderDisplayDropDown(type, tbElement, targetElement, item);
                     break;
-                case 'tablerows': this.rowDropDown(type, tbElement, targetElement);
+                case 'tablerows': this.rowDropDown(type, tbElement, targetElement, targetEle);
                     break;
                 case 'tablecolumns': this.columnDropDown(type, tbElement, targetElement);
                     break;
@@ -331,16 +332,20 @@ export class DropDownButtons {
     private getEditNode(): HTMLElement {
         return this.parent.contentModule.getEditPanel() as HTMLElement;
     }
-    private rowDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
+    private rowDropDown(type: string, tbElement: HTMLElement, targetElement: Element, targetEle: HTMLElement): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_TableRows', tbElement);
+        const rowItems: IDropDownItemModel[] = Array.from(model.tableRowsItems);
         if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
             return;
+        }
+        if (targetEle.closest('th')) {
+            rowItems.shift();
         }
         this.tableRowsDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-table-rows e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
             itemName: 'TableRows',
-            items: model.tableRowsItems,
+            items: rowItems,
             element: targetElement
         } as IDropDownModel);
     }

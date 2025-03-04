@@ -1392,6 +1392,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             this.wireSelectOnDragEvent(true);
         }
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler, this);
+        if (this.contextMenuSettings.visible) {
+            this.element.addEventListener('scroll', this.onScrollHandler, true);
+        }
         this.keyboardModule = new KeyboardEvents(
             this.element,
             {
@@ -1405,8 +1408,17 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     private unWireEvents(): void {
         this.wireSelectOnDragEvent(false);
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler);
+        if (this.contextMenuSettings.visible) {
+            this.element.removeEventListener('scroll', this.onScrollHandler, true);
+        }
         this.keyboardModule.destroy();
     }
+
+    private onScrollHandler = (): void => {
+        if (!isNOU(this.contextmenuModule) && !isNOU(this.contextmenuModule.contextMenu)) {
+            this.contextmenuModule.contextMenu.close();
+        }
+    };
 
     private onDragStart(event: MouseEvent): void {
         if (this.viewElem) {

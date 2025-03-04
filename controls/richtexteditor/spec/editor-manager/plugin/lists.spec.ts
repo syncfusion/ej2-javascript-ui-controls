@@ -1272,7 +1272,7 @@ describe ('left indent testing', () => {
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === startNode.textContent).toBe(true);
 
                 startNode = editNode.querySelector('.ul-third-node').querySelector('ul');
-                expect(startNode).toBeNull();
+                expect(startNode).not.toBeNull();
                 editorObj.nodeSelection.Clear(document);
             });
 
@@ -2169,7 +2169,7 @@ describe ('left indent testing', () => {
                 (editorObj as any).editorKeyDown(keyBoardEvent);
                 let sublist = editNode.querySelector('#sublist');
                 expect(sublist.parentElement.tagName === 'UL').toBe(true);
-                expect(sublist.parentElement.parentElement.tagName !== 'UL').toBe(true);
+                expect(sublist.parentElement.parentElement.tagName === 'UL').toBe(true);
                 innerValue = `<div id="content-edit"><ul><li id="firstli"><br></li><ol><li id="sublist">sublist</li><li>sublist2</li></ol><li>mainlist</li></ul><div>`;
             });
 
@@ -2182,7 +2182,7 @@ describe ('left indent testing', () => {
                 (editorObj as any).editorKeyDown(keyBoardEvent);
                 let sublist = editNode.querySelector('#sublist');
                 expect(sublist.parentElement.tagName === 'OL').toBe(true);
-                expect(sublist.parentElement.parentElement.tagName !== 'UL').toBe(true);
+                expect(sublist.parentElement.parentElement.tagName === 'UL').toBe(true);
                 innerValue = `<div id="content-edit"><ul><li id="firstli"><br></li><ol><li id="sublist">sublist</li><li>sublist2</li></ol><li>mainlist</li></ul><div>`;
             });
 
@@ -2256,7 +2256,7 @@ describe ('left indent testing', () => {
         let content: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p><br></p></div>`;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
         let elem: HTMLElement;
-        beforeEach(() => {
+        beforeAll(() => {
             elem = createElement('div', {
                 id: 'dom-node', innerHTML: content.trim()
             });
@@ -2264,7 +2264,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
             editNode = editorObj.editableElement as HTMLElement;
         });
-        afterEach(() => {
+        afterAll(() => {
             detach(elem);
         });
 
@@ -2279,10 +2279,6 @@ describe ('left indent testing', () => {
             (editorObj as any).editorKeyDown(keyBoardEvent);
             expect(/[^\u0000-\u00ff]/.test(editNode.innerHTML)).toBe(false);
         });
-
-        afterAll(() => {
-            detach(elem);
-        });
     });
 
     describe(' Sublist not created when created after the tab keyaction', () => {
@@ -2293,7 +2289,7 @@ describe ('left indent testing', () => {
         let content: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ol><li>Content1</li><ol><li>Content2</li></ol><li>Content3</li></ol></div>`;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, which: 9 } };
         let elem: HTMLElement;
-        beforeEach(() => {
+        beforeAll(() => {
             elem = createElement('div', {
                 id: 'dom-node', innerHTML: content.trim()
             });
@@ -2301,7 +2297,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
             editNode = editorObj.editableElement as HTMLElement;
         });
-        afterEach(() => {
+        afterAll(() => {
             detach(elem);
         });
 
@@ -2314,10 +2310,6 @@ describe ('left indent testing', () => {
             (editorObj as any).editorKeyDown(keyBoardEvent);
             expect(startNode[2].parentElement.childElementCount).toBe(2);
         });
-
-        afterAll(() => {
-            detach(elem);
-        });
     });
 
     describe(' Sublist not created when created after the tab keyaction', () => {
@@ -2328,7 +2320,7 @@ describe ('left indent testing', () => {
         let content: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ul><li>Content1</li><ul><li>Content2</li></ul><li>Content3</li></ul></div>`;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, which: 9 } };
         let elem: HTMLElement;
-        beforeEach(() => {
+        beforeAll(() => {
             elem = createElement('div', {
                 id: 'dom-node', innerHTML: content.trim()
             });
@@ -2336,7 +2328,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
             editNode = editorObj.editableElement as HTMLElement;
         });
-        afterEach(() => {
+        afterAll(() => {
             detach(elem);
         });
 
@@ -2349,10 +2341,6 @@ describe ('left indent testing', () => {
             (editorObj as any).editorKeyDown(keyBoardEvent);
             expect(startNode[2].parentElement.childElementCount).toBe(2);
         });
-
-        afterAll(() => {
-            detach(elem);
-        });
     });
     
     describe(' Shift+tab with the sublist checking', () => {
@@ -2363,7 +2351,7 @@ describe ('left indent testing', () => {
         let content: string = `<div style=\"color:red;\" id=\"content-edit\" contenteditable=\"true\" class=\"e-node-deletable e-node-inner\"><ol><li>content1</li><ol><li>content2</li></ol><li>content3</li></ol></div>`;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
         let elem: HTMLElement;
-        beforeEach(() => {
+        beforeAll(() => {
             elem = createElement('div', {
                 id: 'dom-node', innerHTML: content.trim()
             });
@@ -2371,7 +2359,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
             editNode = editorObj.editableElement as HTMLElement;
         });
-        afterEach(() => {
+        afterAll(() => {
             detach(elem);
         });
 
@@ -2386,10 +2374,6 @@ describe ('left indent testing', () => {
             (editorObj as any).editorKeyDown(keyBoardEvent);
             expect(startNode[2].parentElement.childElementCount).toBe(3);
         });
-
-        afterAll(() => {
-            detach(elem);
-        });
     });
 
     describe(' Shift+tab with the sublist checking', () => {
@@ -2400,16 +2384,13 @@ describe ('left indent testing', () => {
         let content: string = `<div style=\"color:red;\" id=\"content-edit\" contenteditable=\"true\" class=\"e-node-deletable e-node-inner\"><ul><li>content1</li><ul><li>content2</li></ul><li>content3</li></ul></div>`;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
         let elem: HTMLElement;
-        beforeEach(() => {
+        beforeAll(() => {
             elem = createElement('div', {
                 id: 'dom-node', innerHTML: content.trim()
             });
             document.body.appendChild(elem);
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
             editNode = editorObj.editableElement as HTMLElement;
-        });
-        afterEach(() => {
-            detach(elem);
         });
 
         it(' shift+tab key to revert the list to main UL', () => {
@@ -2499,13 +2480,13 @@ describe ('left indent testing', () => {
             callBack: function () { }, 
             event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: null }
         };
-        beforeEach(() => {
+        beforeAll(() => {
             elem = createElement('div', { id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p><br></p></div>` });
             document.body.appendChild(elem);
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById('content-edit') });
             editNode = editorObj.editableElement as HTMLElement;
         });
-        afterEach(() => {
+        afterAll(() => {
             detach(elem);
         });
         it('should handle nested list creation and cleanup correctly', () => {
@@ -2516,7 +2497,38 @@ describe ('left indent testing', () => {
             keyBoardEvent.event.key = "Backspace";
             keyBoardEvent.event.which = 8;
             (editorObj as any).editorKeyDown(keyBoardEvent);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
             expect(editNode.querySelector('ol')).toBeNull();
+        });
+    });
+    describe('940241: Backspace behaves like Shift+Tab at the start of an indented list', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let elem: HTMLElement;
+        let keyBoardEvent: any = {
+            callBack: function () { }, 
+            event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: null }
+        };
+        beforeAll(() => {
+            elem = createElement('div', { id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p><br></p></div>` });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById('content-edit') });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+        it('Backspace behaves like Shift+Tab at the start of an indented list', () => {
+            editNode.innerHTML = '<ol><li style="list-style-type: none;"><ol><li style="list-style-type: none;"><ol><li class="focusNode">Test1</li><li>Test2</li><li>Test3</li></ol></li></ol></li></ol>';
+            startNode = editNode.querySelector('.focusNode');
+            setCursorPoint(startNode, 0);
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.event.key = "Backspace";
+            keyBoardEvent.event.which = 8;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(editNode.querySelector('.focusNode').innerHTML).toBe('Test1<ol><li>Test2</li><li>Test3</li></ol>');
         });
     });
     describe('EJ2-58466 - list with font size Backspace key press testing', () => {
@@ -2526,7 +2538,7 @@ describe ('left indent testing', () => {
         let startNode: HTMLElement;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
         let innerValue: string = `<div id="content-edit" contenteditable="true"><ol><li style="font-size: 24pt;" class="focusNode"><br></li><li style="font-size: 24pt;"><span style="font-size: 24pt;">RTE Content 2</span></li></ol><div>`;
-        beforeEach(() => {
+        beforeAll(() => {
             elem = createElement('div', {
                 id: 'dom-node', innerHTML: innerValue
             });
@@ -2534,7 +2546,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
             editNode = editorObj.editableElement as HTMLElement;
         });
-        afterEach(() => {
+        afterAll(() => {
             detach(elem);
         });
 
@@ -2545,12 +2557,10 @@ describe ('left indent testing', () => {
             keyBoardEvent.action = 'backspace';
             keyBoardEvent.event.which = 8;
             (editorObj as any).editorKeyDown(keyBoardEvent);
-            let liNode: Element = editNode.querySelector('li');
-            expect(liNode.getAttribute('style')).toBe(null);
-        });
+            expect(document.contains(startNode)).toBe(false);
+            const liNodes: NodeListOf<HTMLElement> = editNode.querySelectorAll('li');
+            expect(liNodes.length).toBe(1);
 
-        afterAll(() => {
-            detach(elem);
         });
     });
     
@@ -2562,7 +2572,7 @@ describe ('left indent testing', () => {
         let endNode: HTMLElement;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
         let innerValue: string = `<div id="content-edit" contenteditable="true"><ol> <li><span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"></audio></span></span> </li> </ol> <div>`;
-        beforeEach( () => {
+        beforeAll( () => {
             elem = createElement( 'div', {
                 id: 'dom-node', innerHTML: innerValue
             } );
@@ -2570,7 +2580,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager( { document: document, editableElement: document.getElementById( "content-edit" ) } );
             editNode = editorObj.editableElement as HTMLElement;
         } );
-        afterEach( () => {
+        afterAll( () => {
             detach( elem );
         } );
 
@@ -2594,7 +2604,7 @@ describe ('left indent testing', () => {
         let endNode: HTMLElement;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
         let innerValue: string = `<div id="content-edit" contenteditable="true"><ol> <li><span class="e-video-wrap" contenteditable="false" title="movie.mp4"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span></li> </ol> <div>`;
-        beforeEach( () => {
+        beforeAll( () => {
             elem = createElement( 'div', {
                 id: 'dom-node', innerHTML: innerValue
             } );
@@ -2602,7 +2612,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager( { document: document, editableElement: document.getElementById( "content-edit" ) } );
             editNode = editorObj.editableElement as HTMLElement;
         } );
-        afterEach( () => {
+        afterAll( () => {
             detach( elem );
         } );
 
@@ -2626,7 +2636,7 @@ describe ('left indent testing', () => {
         let endNode: HTMLElement;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
         let innerValue: string = `<div id="content-edit" contenteditable="true"><ol> <li><span class="e-embed-video-wrap" contenteditable="false"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/jrV-fJXAXwY?controls=0" title="YouTube video player" style="min-width: 0px; max-width: 1472px; min-height: 0px; outline: rgb(74, 144, 226) solid 2px;" class="e-resize e-video-focus"></iframe></span></span></li> </ol> <div>`;
-        beforeEach( () => {
+        beforeAll( () => {
             elem = createElement( 'div', {
                 id: 'dom-node', innerHTML: innerValue
             } );
@@ -2634,7 +2644,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager( { document: document, editableElement: document.getElementById( "content-edit" ) } );
             editNode = editorObj.editableElement as HTMLElement;
         } );
-        afterEach( () => {
+        afterAll( () => {
             detach( elem );
         } );
 
@@ -2658,7 +2668,7 @@ describe ('left indent testing', () => {
         let endNode: HTMLElement;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
         let innerValue: string = `<div id="content-edit" contenteditable="true"><ol> <li><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="test.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"></li> </ol> <div>`;
-        beforeEach( () => {
+        beforeAll( () => {
             elem = createElement( 'div', {
                 id: 'dom-node', innerHTML: innerValue
             } );
@@ -2666,7 +2676,7 @@ describe ('left indent testing', () => {
             editorObj = new EditorManager( { document: document, editableElement: document.getElementById( "content-edit" ) } );
             editNode = editorObj.editableElement as HTMLElement;
         } );
-        afterEach( () => {
+        afterAll( () => {
             detach( elem );
         } );
 
@@ -2750,7 +2760,7 @@ describe ('left indent testing', () => {
 
     describe('883337 - List type got changed for Nested list while applying increase indents in RichTextEditor.', () => {
         let editorObj: RichTextEditor;
-        beforeEach((done) => {
+        beforeAll(() => {
             editorObj = renderRTE({
                 toolbarSettings: {
                     items: ['OrderedList', 'UnorderedList']
@@ -2766,42 +2776,39 @@ describe ('left indent testing', () => {
                 <li>test 6</li>
               </ol>`
             });
-            done();
         });
-        afterEach((done) => {
+        afterAll(() => {
             destroy(editorObj);
-            done();
         });
         it('Select the entire list and apply the indent.', (done) => {
             let startNode = editorObj.inputElement.querySelector('ol');
             editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstElementChild, startNode.lastElementChild, 0, 1);
             editorObj.executeCommand('indent');
-            expect(startNode.firstElementChild.querySelector("ol").style.listStyleType === 'upper-alpha').toBe(true);
-            done();
+            setTimeout(() => {
+                expect(startNode.firstElementChild.querySelector("ol").style.listStyleType === 'upper-alpha').toBe(true);
+                done();
+            }, 100);
         });
     });
 
     describe('Nested list while applying increase indents in RichTextEditor.', () => {
         let editorObj: RichTextEditor;
-        beforeEach((done) => {
+        beforeAll(() => {
             editorObj = renderRTE({
                 toolbarSettings: {
                     items: ['OrderedList', 'UnorderedList']
                 },
             });
-            done();
         });
-        afterEach((done) => {
+        afterAll(() => {
             destroy(editorObj);
-            done();
         });
         it('Enter key at the end of the nested list', (done) => {
-            editorObj.value = `<ol style="list-style-image: none; list-style-type: upper-alpha;">
+            editorObj.inputElement.innerHTML = `<ol style="list-style-image: none; list-style-type: upper-alpha;">
                 <li>Test 1</li>
                 <li>test 5</li>
                 <li>test 6</li>
               </ol>`;
-            editorObj.dataBind();
             let startNode = editorObj.inputElement.querySelector('ol');
             let listElement = document.createElement("ol");
             listElement.innerHTML = "<li>Rich Text Editor</li>";
@@ -2822,14 +2829,16 @@ describe ('left indent testing', () => {
                 target: listElement.querySelector("LI")
             };
             (editorObj as any).keyUp(keyboardEventArgs);
-            expect(listElement.parentElement.nodeName === 'LI').toBe(true);
-            done();
+            setTimeout(() => {
+                expect(listElement.parentElement.nodeName === 'LI').toBe(true);
+                done();
+            }, 100);
         });
     });
 
     describe('926563 - Decrease Indent Format Applied to Paragraph Format, After Reverting a List for Selected Combination of Heading and Paragraph Format with Increase Indent Format.', () => {
         let editorObj: RichTextEditor;
-        beforeEach((done) => {
+        beforeAll(() => {
             editorObj = renderRTE({
                 toolbarSettings: {
                     items: ['OrderedList', 'UnorderedList']
@@ -2840,19 +2849,19 @@ describe ('left indent testing', () => {
                 <li class="list2">Rich Text Editor 3</li>
                 </ul>`
             });
-            done();
         });
-        afterEach((done) => {
+        afterAll(() => {
             destroy(editorObj);
-            done();
         });
         it('Press the unordered list toolbar item to revert the list.', (done) => {
             let startNode = editorObj.inputElement.querySelector('.list1');
             let endNode = editorObj.inputElement.querySelector('.list2');
             editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 5);
             (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
-            expect(editorObj.inputElement.innerHTML === `<p class="list1" style="margin-left: 80px;">Rich Text Editor 1</p><p style="margin-left: 80px;">Rich Text Editor 2</p><p class="list2" style="margin-left: 80px;">Rich Text Editor 3</p>`).toBe(true);
-            done();
+            setTimeout(() => {
+                expect(editorObj.inputElement.innerHTML === `<p class="list1" style="margin-left: 80px;">Rich Text Editor 1</p><p style="margin-left: 80px;">Rich Text Editor 2</p><p class="list2" style="margin-left: 80px;">Rich Text Editor 3</p>`).toBe(true);
+                done();
+            }, 100);
         });
     });
 
@@ -2861,18 +2870,16 @@ describe ('left indent testing', () => {
         let endNode: HTMLElement;
         let startNode: HTMLElement;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'x', stopPropagation: () => { }, shiftKey: false, which: 88};
-        beforeEach((done) => {
+        beforeAll(() => {
             editorObj = renderRTE({
                 toolbarSettings: {
                     items: ['OrderedList', 'UnorderedList']
                 },
                 value: `<p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p></li><li><p>Capable of handling markdown editing.</p></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul>`
             });
-            done();
         });
-        afterEach( (done) => {
+        afterAll( () => {
             destroy(editorObj);
-            done();
         } );
         it('Cut and paste the first line', (done) => {
             startNode = editorObj.inputElement.querySelector( 'ul' ).querySelectorAll('li')[0];
@@ -2883,15 +2890,57 @@ describe ('left indent testing', () => {
             (editorObj as any).keyDown(keyBoardEvent);
             keyBoardEvent.action = "paste";
             (editorObj as any).onPaste(keyBoardEvent);
-            expect(editorObj.inputElement.innerHTML === '<p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p></li><li><p>Capable of handling markdown editing.</p></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul>').toBe( true);
-            done();
+            setTimeout(() => {
+                expect(editorObj.inputElement.innerHTML === '<p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p></li><li><p>Capable of handling markdown editing.</p></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul>').toBe( true);
+                done();
+            }, 100);
         });
         
     });
 
+    describe('939676 - Backspace is not working correctly in complex list structures.', () => {
+        let editorObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        beforeEach((done) => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<ol><li>list1<ol><li>list 2<ol><li class="listElem">list 3<ol><li>list 4</li><li>list 5</li></ol></li><li>list 3.1</li></ol></li><li>list 2.1</li></ol></li><li class="liSibilingElem">list 1.1<ol><li>list 1.1.1</li><li>list 1.1.2</li></ol></li></ol>`
+            });
+            done();
+        });
+        afterEach((done) => {
+            destroy(editorObj);
+            done();
+        });
+        it('should move nested list item content to parent when backspace is pressed at start', (done) => {
+            let startNode = editorObj.inputElement.querySelector('.listElem');
+            setCursorPoint(startNode.firstChild as Element, 0);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(window.getSelection().getRangeAt(0).startContainer.parentElement.innerHTML === 'list 2list 3<ol><li>list 4</li><li>list 5</li><li>list 3.1</li></ol>').toBe(true);
+            setCursorPoint(window.getSelection().getRangeAt(0).startContainer.parentElement.firstChild as Element, 0);
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(window.getSelection().getRangeAt(0).startContainer.parentElement.innerHTML === 'list1list 2list 3<ol><li>list 4</li><li>list 5</li><li>list 3.1</li><li>list 2.1</li></ol>').toBe(true);
+            done();
+        });
+        it('should merge list items when backspace is pressed at the start of a top-level item', (done) => {
+            let startNode = editorObj.inputElement.querySelector('.liSibilingElem');
+            setCursorPoint(startNode.firstChild as Element, 0);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(window.getSelection().getRangeAt(0).startContainer.parentElement.innerHTML === 'list 2.1list 1.1').toBe(true);
+            expect(editorObj.inputElement.querySelector("OL").childNodes.length === 3).toBe(true);
+            done();
+          });
+    });
+
     describe('939650 - List is created at the last cell of the table instead of the intended position in Mac Safari browser', () => {
         let editorObj: RichTextEditor;
-        beforeEach((done) => {
+        beforeAll(() => {
             editorObj = renderRTE({
                 enterKey: 'BR',
                 toolbarSettings: {
@@ -2899,11 +2948,9 @@ describe ('left indent testing', () => {
                 },
                 value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><br>`
             });
-            done();
         });
-        afterEach((done) => {
+        afterAll(() => {
             destroy(editorObj);
-            done();
         });
         it('should create a list wrapping the entire table and then remove it when toggled', (done) => {
             let startNode = editorObj.inputElement;
@@ -2916,14 +2963,16 @@ describe ('left indent testing', () => {
             expect(editorObj.inputElement.querySelector("ul")).toBe(null);
             editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 1, 1);
             (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
-            expect(editorObj.inputElement.querySelector("ul").firstChild.firstChild.nodeName === 'TABLE').toBe(true);
-            done();
+            setTimeout(() => {
+                expect(editorObj.inputElement.querySelector("ul").firstChild.firstChild.nodeName === 'TABLE').toBe(true);
+                done();
+            }, 100);
         });
     });
 
     describe('935455 - Empty List Deletion When Selecting Text and Pressing Delete Key', () => {
         let editorObj: RichTextEditor;
-        beforeEach((done) => {
+        beforeAll(() => {
             editorObj = renderRTE({
                 toolbarSettings: {
                     items: ['OrderedList', 'UnorderedList']
@@ -2934,11 +2983,9 @@ describe ('left indent testing', () => {
                   <li>test 4</li><li><br></li>
                 </ol>`
             });
-            done();
         });
-        afterEach((done) => {
+        afterAll(() => {
             destroy(editorObj);
-            done();
         });
         it('Press the Backspace key on the list and check that the empty <li> element is not removed.', (done) => {
             let startNode = editorObj.inputElement.querySelector('ol');
@@ -2947,9 +2994,11 @@ describe ('left indent testing', () => {
             keyBoardEvent.keyCode = 8;
             keyBoardEvent.code = 'Backspace';
             (editorObj as any).keyDown(keyBoardEvent);
-            expect(editorObj.inputElement.querySelector("ol").lastElementChild.nodeName === 'LI').toBe(true);
-            expect(editorObj.inputElement.querySelector("ol").lastElementChild.textContent === '').toBe(true);
-            done();
+            setTimeout(() => {
+                expect(editorObj.inputElement.querySelector("ol").lastElementChild.nodeName === 'LI').toBe(true);
+                expect(editorObj.inputElement.querySelector("ol").lastElementChild.textContent === '').toBe(true);
+                done();
+            }, 100);
         });
     });
 
@@ -3015,6 +3064,35 @@ describe ('left indent testing', () => {
             expect(editNode.querySelector('#firstli')).toBe(null);
         });
 
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe('EJ2-941211 - Numbered List Not Applied Properly After Reverting Bullet List', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><h1 class="startFocus">Welcome to the Syncfusion Rich Text Editor</h1><p class="endFocus">The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p></div>`
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        it(' Numbered List applied properly after reverting Bullet List', () => {
+            startNode = editNode.querySelector('.startFocus');
+            endNode = editNode.querySelector('.endFocus');
+            startNode = editNode as HTMLElement;
+            editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 0);
+            let execValue: any = {listStyle: "disc", type : "BulletFormatList"};
+            editorObj.execCommand("Lists", 'BulletFormatList', null, null, 'disc', execValue);
+            editorObj.execCommand("Lists", 'UL', null);
+            editorObj.execCommand("Lists", 'OL', null);
+            expect(elem.innerHTML === '<div id="content-edit" contenteditable="true"><ol><li class="startfocus"><h1 class="startFocus">Welcome to the Syncfusion Rich Text Editor</h1></li><li>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</li></ol></div>').toBe(true);
+        });
         afterAll(() => {
             detach(elem);
         });

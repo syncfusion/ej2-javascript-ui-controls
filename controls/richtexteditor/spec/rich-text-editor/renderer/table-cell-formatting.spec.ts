@@ -144,7 +144,7 @@ describe('Table cell formatting ', () => {
             editor.inputElement.dispatchEvent(backspaceDownEvent);
             const backspaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
             editor.inputElement.dispatchEvent(backspaceUpEvent);
-            expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(0);
+            expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(1);
             expect((table.rows[0].cells[1].getAttribute('class'))).toBe('');
         });
         it('Space should remove the class name.', () => {

@@ -820,6 +820,33 @@ describe('Formats plugin', () => {
         });
     });
 
+    describe("942807: Block Quote Format Fails to Revert for Selected Table Area", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Blockquote']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 13.5417%;"> <tr style="height: 13.5417%;"> <th style="width: 12.1813%" class="e-cell-select e-multi-cells-select"><blockquote><p><span>S No</span><br></p></blockquote></th>     <th style="width: 21.1048%" class="e-cell-select e-multi-cells-select"><blockquote><p>Mode of Transport</p></blockquote></th> </tr> </thead> <tbody> <tr style="height: 17.1875%;"> <td style="width: 12.1813%" class="e-cell-select e-multi-cells-select"><blockquote><p>1</p></blockquote></td>     <td style="width: 21.1048%" class="e-cell-select e-multi-cells-select"><blockquote><p><span style="font-size: 14pt">🚴</span></p></blockquote></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%" class="e-cell-select e-multi-cells-select"><blockquote><p>2</p></blockquote></td>     <td style="width: 21.1048%" class="e-cell-select e-multi-cells-select e-cell-select-end"><blockquote><p><span style="font-size: 14pt"></span></p><p class=focusNode>🚗</p><p><br></p></blockquote></td> </tr>   </tbody></table>`
+            });
+            done();
+        });
+        it('Reverting the blockquotes for the table', (done: DoneFn) => {
+            rteEle = rteObj.element;
+            let start: Node = rteEle.querySelector('.focusNode').childNodes[0];
+            let end: Node = rteEle.querySelector('.focusNode').childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 2, 2);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.querySelectorAll('blockquote').length === 0).toBe(true);
+            done();
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
     describe(' Apply blockquotes after improvement', () => {
         let editorObj: EditorManager;
         let rteContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p id="startNode">Content 1</p><p>Content 2</p><p>Content 3</p><p>Content 4</p><p id="endNode">Content 5</p></div>`;

@@ -126,7 +126,11 @@ export class WorkbookEdit {
                     skipCellFormat: skipCellFormat
                 };
                 if (!isFormula) {
-                    this.parent.notify(checkDateFormat, dateEventArgs);
+                    const cellType: string = getTypeFromFormat(cell.format);
+                    const valArr: string[] = value ? value.toString().split('/') : [];
+                    if (cellType !== 'Fraction' ||  valArr.length !== 2) {
+                        this.parent.notify(checkDateFormat, dateEventArgs);
+                    }
                     if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
                         cell.value = <string>dateEventArgs.updatedVal;
                     } else if (this.parent.isEdit && value && !isNumber(value)) {

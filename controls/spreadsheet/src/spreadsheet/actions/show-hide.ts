@@ -28,16 +28,16 @@ export class ShowHide {
     private hideShow(args: HideShowEventArgs): void {
         const sheetIndex: number = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
-        if (isReadOnlyCells(this.parent, getRangeIndexes(this.parent.getActiveSheet().selectedRange))) {
-            this.parent.notify(readonlyAlert, null);
-            return;
-        }
         if (args.startIndex > args.endIndex) {
             const temp: number = args.startIndex;
             args.startIndex = args.endIndex; args.endIndex = temp;
         }
         let actionArgs: ActionEventArgs;
         if (args.actionUpdate) {
+            if (isReadOnlyCells(this.parent, getRangeIndexes(sheet.selectedRange))) {
+                this.parent.notify(readonlyAlert, null);
+                return;
+            }
             args.sheetIndex = sheetIndex;
             actionArgs = { eventArgs: args, action: 'hideShow' };
             this.parent.notify(beginAction, actionArgs);

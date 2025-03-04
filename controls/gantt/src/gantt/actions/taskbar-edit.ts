@@ -2659,13 +2659,15 @@ export class TaskbarEdit extends DateProcessor {
                         segment.startDate = this.parent.dataOperation.getStartDate(
                             segment.endDate, segment.duration, ganttProp.durationUnit, ganttProp);
                         // eslint-disable-next-line
-                        for (let i: number = segments.length - 2; i >= 0; i++) {
-                            const segment: ITaskSegment = segments[i as number];
-                            const eDate: Date = segment.endDate;
-                            eDate.setDate(eDate.getDate() - segment.offsetDuration);
-                            segment.endDate = eDate;
-                            segment.startDate = this.parent.dataOperation.getStartDate(
-                                segment.endDate, segment.duration, ganttProp.durationUnit, ganttProp);
+                        for (let i = segments.length - 2; i >= 0; i--) {
+                            const segment: ITaskSegment = { ...segments[i as number] };
+                            if (!isNullOrUndefined(segment)) {
+                                const eDate: Date = new Date(segment.endDate);
+                                eDate.setDate(eDate.getDate() - segment.offsetDuration);
+                                segment.endDate = eDate;
+                                segment.startDate = this.parent.dataOperation.getStartDate(segment.endDate, segment.duration,
+                                                                                           ganttProp.durationUnit, ganttProp);
+                            }
                         }
                     }
                 }

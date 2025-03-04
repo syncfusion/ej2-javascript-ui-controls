@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I689382` - Now, the backspace functionality works correctly within the table after the mention chip.
+
+- `#I691812` - Now, pressing the backspace key twice within the table does not remove the table in the Rich Text Editor.
+
+- `#I691805` - Now, the "Insert Row Before Header" option works properly by being disabled or removed when trying to insert a row above the header.
+
+- `#I691770` - Now, the Rich Text Editor works properly when inserting a link to an image via the quick toolbar, with validation applied to empty values and spaces in the web address field.
+
+- `#I691792` - Now, the Rich Text Editor works properly when using the Insert Link popup, removing the validation error when a valid web address is entered after an initial error.
+
+## 28.2.7 (2025-02-25)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I688646` - Now, the list will be removed when pressing backspace at the beginning of the text.
+
+- `#I688646` - Now, after applying a format using the `slash menu` in the Rich Text Editor, the toolbar updates correctly.
+
+- `#I688345` - Now, the cursor and backspace functionality work properly in the Rich Text Editor.
+
+- `#I687267` - Now, the screen reader works properly when navigating the color picker in the toolbar using the keyboard.
+
 ## 28.2.6 (2025-02-18)
 
 ### RichTextEditor
@@ -15,8 +45,6 @@
 - `#F195768` - Now, the font size will be preserved for numbered and bulleted lists in the Rich Text Editor.
 
 - `#F195933` - Now, the Add Table popup works properly when using two Rich Text Editors.
-
-- `#I687267` - Now, the screen reader works properly when navigating the color picker in the toolbar using the keyboard.
 
 ## 28.2.5 (2025-02-11)
 

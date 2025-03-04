@@ -887,7 +887,12 @@ export class DiagramScroller {
             }
             // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
             // Added below code to get the page bounds based on the scroll.
-            bounds = bounds || (isTrackpadScroll ? this.getPageBounds() : this.getPageBounds(true));
+            bounds = bounds || (isTrackpadScroll ? this.getPageBounds(false, undefined, true) : this.getPageBounds(true, undefined, true));
+            // 939223: Unable to Pan to the Extreme End of the Diagram When Scroll Padding is Applied
+            const eventHandler: string = 'eventHandler';
+            if (this.diagram[`${eventHandler}`].currentAction === 'Pan' && this.diagram[`${eventHandler}`].inAction) {
+                bounds = this.getPageBounds(false, undefined, true);
+            }
             bounds.x *= this.currentZoom;
             bounds.y *= this.currentZoom;
             bounds.width *= this.currentZoom;

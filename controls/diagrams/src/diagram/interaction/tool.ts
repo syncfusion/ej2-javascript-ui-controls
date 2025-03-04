@@ -562,22 +562,33 @@ export class ConnectTool extends ToolBase {
             (this.endPoint === 'ConnectorTargetEnd' &&
                 ((!Point.equals((args.source as SelectorModel).connectors[0].targetPoint, this.undoElement.connectors[0].targetPoint))
                     || ((args.source as SelectorModel).connectors[0].targetID !== this.undoElement.connectors[0].targetID))))) {
-
-            let oldValues: PointModel; let connector: ConnectorModel;
-            if (args.source && (args.source as SelectorModel).connectors) {
-                oldValues = { x: this.prevPosition.x, y: this.prevPosition.y };
+            let oldValues: PointModel; let newValues: PointModel; let connector: ConnectorModel;
+            if (args.source && (args.source as SelectorModel).connectors && this.endPoint === 'ConnectorSourceEnd') {
+                //941055: The sourcePointChange event's old and new values are the same
+                oldValues = { x: this.oldConnector.sourcePoint.x, y: this.oldConnector.sourcePoint.y };
                 connector = (args.source as SelectorModel).connectors[0];
+                newValues = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
+            }
+            else if (args.source && (args.source as SelectorModel).connectors && this.endPoint === 'ConnectorTargetEnd') {
+                oldValues = { x: this.oldConnector.targetPoint.x, y: this.oldConnector.targetPoint.y };
+                connector = (args.source as SelectorModel).connectors[0];
+                newValues = { x: connector.targetPoint.x, y: connector.targetPoint.y };
             }
             let targetPortName: string; let targetNodeNode: string;
             if (args.target) {
                 const target: NodeModel | PointPortModel = this.commandHandler.findTarget(
                     args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as NodeModel | PointPortModel;
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                (target instanceof PointPort) ? targetPortName = target.id : targetNodeNode = target.id;
+                targetNodeNode = target.id;
+                if (target instanceof PointPort) {
+                    //941055: The target node is undefined while connected to the port
+                    targetPortName = target.id;
+                    targetNodeNode = (args.target as NodeModel).id;
+                }
             }
             let arg: IEndChangeEventArgs = {
                 connector: connector, state: 'Completed', targetNode: targetNodeNode,
-                oldValue: oldValues, newValue: oldValues, cancel: false, targetPort: targetPortName
+                oldValue: oldValues, newValue: newValues, cancel: false, targetPort: targetPortName
             };
             const trigger: number = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
             this.commandHandler.triggerEvent(trigger, arg);
@@ -1001,10 +1012,10 @@ export class MoveTool extends ToolBase {
                     if (this.commandHandler.diagram.selectedItems.nodes.length !== nodes.length) {
                         nodes = this.commandHandler.diagram.selectedItems.nodes;
                     }
-                    //929543: To calculate the difference between the target lane bounds and selector bounds.
-                    // We use this difference values to set the margin left and margin top for the child nodes of lane.
-                    nodes = this.calculateDiff(this.commandHandler.diagram.selectedItems, this.currentTarget, this.commandHandler.diagram);
                     if(this.commandHandler.diagram.selectedItems.nodes.length > 1) {
+                        //929543: To calculate the difference between the target lane bounds and selector bounds.
+                        // We use this difference values to set the margin left and margin top for the child nodes of lane.
+                        nodes = this.calculateDiff(this.commandHandler.diagram.selectedItems, this.currentTarget, this.commandHandler.diagram);
                         (this.commandHandler.diagram as any).multiselect = true;
                     } else {
                         (this.commandHandler.diagram as any).multiselect = false;
@@ -1411,10 +1422,12 @@ export class RotateTool extends ToolBase {
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
         if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
-            const oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
+            //942139: Rotation change event old and new value same
+            const oldValue: SelectorModel = { rotateAngle: this.undoElement.rotateAngle };
+            const newValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
             const arg: IRotationEventArgs = {
                 source: args.source, state: 'Completed', oldValue: oldValue,
-                newValue: oldValue, cancel: false
+                newValue: newValue, cancel: false
             };
 
             this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);

@@ -46,7 +46,7 @@ import { PasteCleanup } from '../actions/paste-clean-up';
 import { ImportExport } from '../actions/import-export';
 import { EnterKeyAction } from '../actions/enter-key';
 import * as CONSTANT from '../../common/constant';
-import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
+import { IHtmlKeyboardEvent, IHtmlUndoRedoData } from '../../editor-manager/base/interface';
 import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';
 import { scrollToCursor } from '../../common/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
@@ -60,6 +60,8 @@ import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';
 import { SlashMenu} from '../renderer/slash-menu';
 import { mentionRestrictKeys } from '../../common/config';
 import { isSafari } from '../../common/util';
+import { NodeSelection } from '../../selection/index';
+import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';
 
 /**
  * Represents the Rich Text Editor component.
@@ -2252,6 +2254,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     tempElem.childNodes[0].textContent.length, tempElem.childNodes[0].textContent.length);
             }
         }
+        const currentStackIndex: number = this.formatter.getCurrentStackIndex();
+        if (currentStackIndex === 0) {
+            this.updateUndoRedoStack();
+        }
         this.notify(events.keyUp, { member: 'keyup', args: e });
         this.notify(events.tableModulekeyUp, { member: 'tableModulekeyUp', args: e });
         if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
@@ -2350,6 +2356,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.triggerEditArea(e);
     }
 
+    private updateUndoRedoStack(): void {
+        const undoRedoStack: IHtmlUndoRedoData[] | MarkdownUndoRedoData[] = this.formatter.getUndoRedoStack();
+        const currentStackIndex: number = this.formatter.getCurrentStackIndex();
+        if (undoRedoStack.length === 0 || currentStackIndex === 0) {
+            if (undoRedoStack.length === 0) {
+                this.formatter.saveData();
+            } else if (currentStackIndex === 0 && this.editorMode === 'HTML') {
+                const firstStackState: IHtmlUndoRedoData = undoRedoStack[0] as IHtmlUndoRedoData;
+                const save: NodeSelection = new NodeSelection(this.inputElement as HTMLElement)
+                    .save(this.getRange(), this.contentModule.getDocument());
+                firstStackState.range = save;
+            } else if (currentStackIndex === 0 && this.editorMode === 'Markdown') {
+                const markdownFirstStackState: MarkdownUndoRedoData = undoRedoStack[0] as MarkdownUndoRedoData;
+                const start: number = (this.inputElement as HTMLTextAreaElement).selectionStart;
+                const end: number = (this.inputElement as HTMLTextAreaElement).selectionEnd;
+                markdownFirstStackState.start = start;
+                markdownFirstStackState.end = end;
+            }
+        }
+    }
+
     private mouseUp(e: MouseEvent | TouchEvent): void {
         if (this.quickToolbarSettings.showOnRightClick && Browser.isDevice) {
             const target: Element = e.target as Element;
@@ -2362,9 +2389,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notifyMouseUp(e);
         this.setPlaceHolder();
         this.autoResize();
-        if (this.formatter.getUndoRedoStack().length === 0) {
-            this.formatter.saveData();
-        }
+        this.updateUndoRedoStack();
     }
 
     /**

@@ -2027,10 +2027,10 @@ export class WordExport {
             if (editElement[groupProperty[this.keywordIndex]] && editElement[groupProperty[this.keywordIndex]] !== '') {
                 writer.writeAttributeString('w', 'edGrp', this.wNamespace, editElement[groupProperty[this.keywordIndex]].toLowerCase());
             }
-            if (editElement[columnFirstProperty[this.keywordIndex]] && editElement[columnFirstProperty[this.keywordIndex]] !== -1) {
+            if (!isNullOrUndefined(editElement[columnFirstProperty[this.keywordIndex]]) && editElement[columnFirstProperty[this.keywordIndex]] !== -1) {
                 writer.writeAttributeString('w', 'colFirst', this.wNamespace, editElement[columnFirstProperty[this.keywordIndex]].toString());
             }
-            if (editElement[columnLastProperty[this.keywordIndex]] && editElement[columnLastProperty[this.keywordIndex]] !== -1) {
+            if (!isNullOrUndefined(editElement[columnLastProperty[this.keywordIndex]]) && editElement[columnLastProperty[this.keywordIndex]] !== -1) {
                 writer.writeAttributeString('w', 'colLast', this.wNamespace, editElement[columnLastProperty[this.keywordIndex]].toString());
             }
         }

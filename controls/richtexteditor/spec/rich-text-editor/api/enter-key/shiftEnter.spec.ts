@@ -167,7 +167,44 @@ describe('Shift Enter key support - When `DIV` is configured', () => {
         destroy(rteObj);
     });
 });
-
+describe('940762: Unwanted spacing with Enter and Shift+Enter around bullet points and images', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let keyboardEventArgs: any = {
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        ctrlKey: false,
+        shiftKey: false,
+        key: '',
+        which: 13,
+        code: 'Enter',
+        action: 'enter',
+        type: 'keydown'
+    };
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: '<ul><li>Bullet point 1</li></ul><p><br><br><img src="https://example.com/image.png" alt="Sample Image"/>&#8203;<br></p>'
+        });
+        rteEle = rteObj.element;
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Should not create unwanted spacing when pressing Enter and Shift+Enter', (done: Function) => {
+        rteObj.focusIn();
+        keyboardEventArgs.shiftKey = true;
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        const imageNode = rteObj.inputElement.querySelector('img');
+        new NodeSelection().setCursorPoint(document, imageNode.nextSibling as Element, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        const content = rteObj.inputElement.innerHTML;
+        expect(content).toBe('<ul><li>Bullet point 1</li></ul><p><br><br><img src="https://example.com/image.png" alt="Sample Image" class="e-rte-image e-imginline"><br>​<br></p>');
+        done();
+    });
+});
 describe('Shift Enter key support - When image is rendered', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = true;

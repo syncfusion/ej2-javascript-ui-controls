@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.9 (2025-03-04)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I685282` - The clear button has been disabled during the file upload process to prevent user interactions while the upload is in progress.
+
 ## 28.2.3 (2025-01-29)
 
 ### Form Validator

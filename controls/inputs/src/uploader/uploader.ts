@@ -1893,6 +1893,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.element.value = '';
         }
         this.checkActionButtonStatus();
+        if (this.actionButtons && this.clearButton && this.uploadWrapper) {
+            const progressBarElements: NodeListOf<Element> = this.uploadWrapper.querySelectorAll(
+                '.e-upload-progress-bar.e-upload-progress:not(.e-upload-success):not(.e-upload-fails)');
+            if (progressBarElements.length === 1 && selectedElement.contains(progressBarElements[0])
+                && this.clearButton.hasAttribute('disabled')) {
+                this.clearButton.removeAttribute('disabled');
+            }
+        }
     }
 
     private removeFilesData(file: FileInfo, customTemplate: boolean): void {
@@ -3214,6 +3222,15 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         const progressBar: HTMLElement = <HTMLElement>li.querySelector('.' + PROGRESSBAR);
         if (!isNullOrUndefined(progressBar)) {
             progressBar.classList.add(className);
+            if (this.actionButtons && this.clearButton && this.uploadWrapper) {
+                if (className === 'e-upload-progress' && !this.clearButton.hasAttribute('disabled')) {
+                    this.clearButton.setAttribute('disabled', 'disabled');
+                } else if ((className === 'e-upload-success' || className === 'e-upload-fails') && this.uploadWrapper.querySelectorAll(
+                    '.e-upload-progress-bar.e-upload-progress:not(.e-upload-success):not(.e-upload-fails)').length === 0 &&
+                    this.clearButton.hasAttribute('disabled')) {
+                    this.clearButton.removeAttribute('disabled');
+                }
+            }
         }
     }
 

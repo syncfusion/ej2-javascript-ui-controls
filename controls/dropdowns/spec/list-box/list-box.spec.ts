@@ -1311,6 +1311,21 @@ describe('ListBox', () => {
             expect(listObj.liCollections.length).toEqual(2);
             expect(listObj.liCollections[0].innerText).toEqual("McLaren Z1");
         });
+
+        it('941520 - Filtering data not properly displayed while filter with diacritic characters in Listbox.', () => {
+            let data: any = [
+                { text: 'Hennessey Venom', id: 'list-01' },
+                { text: 'ăgatti Chiron', id: 'list-02' },
+                { text: 'agatti Veyron Super Sport', id: 'list-03' }
+            ];
+            listObj = new ListBox({ dataSource: data, allowFiltering: true, filtering: (args) => {
+                console.log('filter event triggered');
+            } }, elem);
+            listObj.filterInput.value = 'ă';
+            listObj.KeyUp({ keyCode: 259, ctrlKey: false, text: 'ă', preventDefault: () => { } });
+            expect(listObj.liCollections.length).toEqual(1);
+            expect(listObj.liCollections[0].innerText).toEqual("ăgatti Chiron");
+        });
     });
 
     describe('Coverage improvement', () => {
