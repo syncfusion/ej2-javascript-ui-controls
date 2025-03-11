@@ -102,7 +102,7 @@ describe('Toolbar - view html', () => {
         it('check tooltiptext update with locale value', () => {
             rteObj.focusIn();
             let sourceCode: HTMLElement = <HTMLElement>document.body.querySelectorAll(".e-toolbar-items")[0].childNodes[0];
-            expect(sourceCode.title === 'Ver código').toBe(true);
+            expect(sourceCode.title === 'Ver código (Ctrl+Shift+H)').toBe(true);
             sourceCode.click();
             const preview: HTMLElement = <HTMLElement>document.body.querySelectorAll(".e-toolbar-items")[0].childNodes[0];
             expect(preview.title === 'Vista previa').toBe(true);

@@ -216,7 +216,7 @@ export class ImageSettings extends ChildProperty<ImageSettings> {
     /**
      * Defines the minimum width of the image.
      *
-     * @default 0
+     * @default '0'
      */
     @Property(0)
     public minWidth: string | number;
@@ -232,7 +232,7 @@ export class ImageSettings extends ChildProperty<ImageSettings> {
     /**
      * Defines the minimum height of the image.
      *
-     * @default 0
+     * @default '0'
      */
     @Property(0)
     public minHeight: string | number;
@@ -386,7 +386,7 @@ export class VideoSettings extends ChildProperty<VideoSettings> {
     /**
      * Defines the minimum width of the video.
      *
-     * @default 0
+     * @default '0'
      */
     @Property(0)
     public minWidth: string | number;
@@ -402,7 +402,7 @@ export class VideoSettings extends ChildProperty<VideoSettings> {
     /**
      * Defines the minimum height of the video.
      *
-     * @default 0
+     * @default '0'
      */
     @Property(0)
     public minHeight: string | number;
@@ -634,7 +634,7 @@ export class TableSettings extends ChildProperty<TableSettings> {
     /**
      * Defines the minimum width of the table.
      *
-     * @default 0
+     * @default '0'
      */
     @Property(0)
     public minWidth: string | number;

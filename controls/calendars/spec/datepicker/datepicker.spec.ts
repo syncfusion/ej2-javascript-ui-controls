@@ -4430,6 +4430,22 @@ describe('Masked DatePicker', () => {
             expect(datepicker.element.value).toBe('day/month/year day of the week');
             expect(datepicker.value).toBe(null);
         });
+	it('with format property - 6', () => {
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: "dd'.'ccc'.'MMM'.'yyyy"});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('day.day of the week.month.year');
+            expect(datepicker.value).toBe(null);
+        });
+        it('with format property - 7', () => {
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: "dd'.'cccc'.'MMM'.'yyyy"});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('day.day of the week.month.year');
+            expect(datepicker.value).toBe(null);
+        });
         it('Focusing the component', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
             document.body.appendChild(inputEle);

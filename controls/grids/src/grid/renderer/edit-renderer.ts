@@ -15,6 +15,7 @@ import { FocusStrategy } from '../services/focus-strategy';
 import { getComplexFieldID, getObject, appendChildren, parentsUntil, extendObjWithFn, padZero } from '../base/util';
 import * as events from '../base/constant';
 import * as literals from '../base/string-literals';
+import { VirtualContentRenderer } from './virtual-content-renderer';
 
 /**
  * Edit render module is used to render grid edit row.
@@ -127,6 +128,10 @@ export class EditRender {
                 && parentsUntil(elem, literals.addedRow))) && (!this.parent.editSettings.showAddNewRow ||
                     (this.parent.editSettings.showAddNewRow && (!parentsUntil(elem, literals.addedRow)) || this.parent.addNewRowFocus))) {
                 focusElement.focus();
+                if (this.parent.enableVirtualization && this.parent.contentModule &&
+                    (this.parent.contentModule as VirtualContentRenderer).content) {
+                    (this.parent.contentModule as VirtualContentRenderer).content.scrollTop += this.parent.getRowHeight();
+                }
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (focusElement as any).focus({ preventScroll: true });

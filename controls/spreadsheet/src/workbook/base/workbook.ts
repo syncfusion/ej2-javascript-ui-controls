@@ -1542,12 +1542,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {UndoRedoEventArgs} cellInformation - It holds the undoRedoCollections.
      * @param {boolean} isRedo - It holds the undo redo information.
      * @param {boolean} isDependentUpdate - Specifies whether dependent cells should also be updated.
+     * @param {boolean} isPublic - It holds whether updateCell public method is used.
      * @returns {void} - This method does not return a value.
      *
      * @hidden
      */
     public updateCellDetails(cell: CellModel, address?: string, cellInformation?: UndoRedoEventArgs, isRedo?: boolean,
-                             isDependentUpdate?: boolean): void {
+                             isDependentUpdate?: boolean, isPublic?: boolean): void {
         let range: number[];
         let sheetIdx: number;
         if (!address) {
@@ -1565,7 +1566,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         }
         const sheet: SheetModel = getSheet(this, sheetIdx);
         updateCell(this, sheet, { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
-        const val: string = isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
+        const val: string = isPublic ? cell.formula || (isNullOrUndefined(cell.value) ? null : cell.value) :
+            isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
         const valChange: boolean = val !== null;
         const cellModel: CellModel = getCell(range[0], range[1], sheet, false, true);
         if (valChange) {

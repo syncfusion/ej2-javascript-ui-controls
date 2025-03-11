@@ -1621,7 +1621,7 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private getStartEndDate(date: Date, isEnd: boolean): Date {
-        if (this.currentView() === 'Year' && !isNullOrUndefined(date)) {
+        if ((this.currentView() === 'Year' && !isNullOrUndefined(date)) || this.depth === 'Year') {
             return new Date(date.getFullYear(), date.getMonth() + (isEnd ? 1 : 0), isEnd ? 0 : 1);
         } else if (this.currentView() === 'Decade' && !isNullOrUndefined(date)) {
             return new Date(date.getFullYear(), isEnd ? 11 : 0, isEnd ? 31 : 1);

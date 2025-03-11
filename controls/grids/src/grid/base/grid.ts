@@ -5771,8 +5771,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private pushStackedColumns(columns?: Column[], index?: number, arr?: string[], col?: Column, stackedcol?: Object): void {
-        arr[parseInt(index.toString(), 10)] = col.headerText;
+    private pushStackedColumns(columns?: Column[], index?: number, arr?: frozenStackedColumn[], col?: Column, stackedcol?: Object): void {
+        arr[parseInt(index.toString(), 10)] = { headerText: col.headerText };
+        if (col.textAlign) {
+            arr[parseInt(index.toString(), 10)].textAlign = col.textAlign;
+        }
+        if (col.customAttributes) {
+            arr[parseInt(index.toString(), 10)].customAttributes = col.customAttributes;
+        }
         for (let i: number = 0; i < columns.length; i++) {
             if (columns[parseInt(i.toString(), 10)].columns) {
                 index = index + 1;
@@ -5781,7 +5787,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 index = index - 1;
             } else {
                 let stockCol: string[] = [];
-                stockCol = [...arr].slice(0, index + 1);
+                stockCol = [...arr].slice(0, index + 1) as string[];
                 if (columns[parseInt(i.toString(), 10)].freeze === 'Left' || columns[parseInt(i.toString(), 10)].isFrozen) {
                     this.stackedLeft.push(stockCol);
                     this.stackedarrayLeft.push(columns[parseInt(i.toString(), 10)] as Column);
@@ -5799,13 +5805,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private pushallcol(text?: string, text1?: string,
-                       col?: { headerText?: string, columns?: Column[]}, columns?: Column, isTrue?: boolean): void {
-        if (col.headerText === text1) {
+    private pushallcol(text?: frozenStackedColumn, text1?: string, col?: frozenStackedColumn, columns?: Column, isTrue?: boolean): void {
+        if (col.headerText === (text1 as frozenStackedColumn).headerText) {
             if (isTrue) {
                 col.columns.push(columns as Column);
             } else {
-                col.columns.push({ headerText: text, columns: [] } as Column);
+                const newColumn: frozenStackedColumn = { headerText: text.headerText, columns: [] };
+                if (text.textAlign) {
+                    newColumn.textAlign = text.textAlign;
+                }
+                if (text.customAttributes) {
+                    newColumn.customAttributes = text.customAttributes;
+                }
+                col.columns.push(newColumn as Column);
             }
         } else {
             if (col.columns && col.columns.length) {
@@ -5817,17 +5829,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private resetStackedColumns(headercol?: string[][], gridcolumns?: Column[], freeze?: string): void {
-        let col: { headerText?: string, columns?: Column[]} = {};
+        let col: frozenStackedColumn = {};
         const tempHead: string[] = [];
         for (let i: number = 1; i <= headercol.length; i++) {
             const firstcol: string[] = headercol[i - 1];
             for (let j: number = 0; j < firstcol.length; j++) {
                 if (!(<{ columns?: Column[] }>col).columns && i === 1) {
-                    col = { headerText: firstcol[parseInt(j.toString(), 10)], columns: [] };
+                    col = { headerText: (firstcol[parseInt(j.toString(), 10)] as frozenStackedColumn).headerText,
+                        textAlign: (firstcol[parseInt(j.toString(), 10)] as frozenStackedColumn).textAlign,
+                        customAttributes: (firstcol[parseInt(j.toString(), 10)] as frozenStackedColumn).customAttributes, columns: [] };
                     tempHead.push(firstcol[parseInt(j.toString(), 10)]);
                 } else {
                     if (tempHead.indexOf(firstcol[parseInt(j.toString(), 10)]) === -1) {
-                        this.pushallcol(firstcol[parseInt(j.toString(), 10)], firstcol[j - 1], col);
+                        this.pushallcol(firstcol[parseInt(j.toString(), 10)] as frozenStackedColumn, firstcol[j - 1], col);
                         tempHead.push(firstcol[parseInt(j.toString(), 10)]);
                     }
                 }
@@ -5835,7 +5849,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.pushallcol(null, firstcol[parseInt(j.toString(), 10)], col, gridcolumns[i - 1], true);
                     let count: number = 0;
                     while (count !== headercol.length - 1 && i !== headercol.length) {
-                        if (firstcol.toString() === headercol[parseInt(i.toString(), 10)].toString()) {
+                        const firstColHeaders: string = (firstcol as frozenStackedColumn[]).map((col: frozenStackedColumn) =>
+                            col.headerText).join(', ');
+                        const headerColHeaders: string = (headercol[parseInt(i.toString(), 10)] as frozenStackedColumn[]).map(
+                            (item: frozenStackedColumn) => item.headerText).join(', ');
+                        if (firstColHeaders === headerColHeaders) {
                             i++;
                             this.pushallcol(null, firstcol[parseInt(j.toString(), 10)], col, gridcolumns[i - 1], true);
                         }
@@ -5878,7 +5896,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.rightcount = 0;
                 this.movablecount = 0;
                 this.fixedcount = 0;
-                const arr: string[] = [];
+                const arr: frozenStackedColumn[] = [];
                 this.splitStackedColumns(columns[parseInt(i.toString(), 10)].columns as Column[]);
                 if (this.leftcount && !this.rightcount && !this.movablecount && !this.fixedcount) {
                     this.frozenLeftCount += this.leftcount;
@@ -5914,7 +5932,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.stackedarrayMovable = [];
                     this.pushStackedColumns(columns[parseInt(i.toString(), 10)].columns as Column[], 0, arr,
                                             columns[parseInt(i.toString(), 10)],
-                                            { headerText: columns[parseInt(i.toString(), 10)].headerText, columns: [] });
+                                            { headerText: columns[parseInt(i.toString(), 10)].headerText,
+                                                textAlign: columns[parseInt(i.toString(), 10)].textAlign,
+                                                customAttributes: columns[parseInt(i.toString(), 10)].customAttributes, columns: [] });
                     if (this.stackedarrayLeft.length) {
                         this.resetStackedColumns(this.stackedLeft, this.stackedarrayLeft, 'Left');
                     }
@@ -8837,4 +8857,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.setProperties({ groupSettings: { disablePageWiseAggregates: true } }, true);
         }
     }
+}
+
+interface frozenStackedColumn{
+    headerText?: string;
+    textAlign?: string;
+    customAttributes?: Object;
+    columns?: Column[]
 }

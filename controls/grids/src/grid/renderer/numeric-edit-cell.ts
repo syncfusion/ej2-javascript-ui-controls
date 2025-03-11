@@ -2,7 +2,7 @@ import { extend, Internationalization, KeyboardEventArgs } from '@syncfusion/ej2
 import { IGrid, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { isEditable, getComplexFieldID, getObject, createEditElement } from '../base/util';
+import { isEditable, getComplexFieldID, getObject, createEditElement, isCellHaveWidth, parentsUntil } from '../base/util';
 
 /**
  * `NumericEditCell` is used to handle numeric cell type editing.
@@ -46,7 +46,7 @@ export class NumericEditCell implements IEditCell {
                 value: parseFloat(getObject(args.column.field, args.rowData)),
                 enableRtl: this.parent.enableRtl,
                 placeholder: isInline ? '' : args.column.headerText,
-                enabled: isEditable(args.column, args.requestType, args.element),
+                enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
                 floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
                 locale: this.parent.locale,
                 cssClass: this.parent.cssClass ? this.parent.cssClass : null

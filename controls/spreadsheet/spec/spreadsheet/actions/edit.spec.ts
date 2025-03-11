@@ -1197,9 +1197,9 @@ describe('Editing ->', () => {
                 done();
             });
         });
-        describe('EJ2-71834, EJ2-853079, EJ2-861718', () => {
+        describe('EJ2-71834, EJ2-853079, EJ2-861718, EJ2-941712', () => {
             beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
+                helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}], calculationMode: 'Manual' }, done);
             });
             afterAll(() => {
                 helper.invoke('destroy');
@@ -1251,6 +1251,19 @@ describe('Editing ->', () => {
                         });
                     });
                 });
+            });
+
+            it('Formula not updating when using updateCell method in manual calculation mode.', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                spreadsheet.updateCell({ value: '45', formula: '=SUM(D3:D8)' }, 'A1');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe(145);
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).not.toBe(45);
+                expect(spreadsheet.sheets[0].rows[0].cells[0].formula).toBe('=SUM(D3:D8)');
+                spreadsheet.updateCell({ value: '500', formula: '=SUM(H3:H8)' }, 'A2');
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe(120);
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).not.toBe(500);
+                expect(spreadsheet.sheets[0].rows[1].cells[0].formula).toBe('=SUM(H3:H8)');
+                done();
             });
         });
         describe('EJ2-846321', () => {

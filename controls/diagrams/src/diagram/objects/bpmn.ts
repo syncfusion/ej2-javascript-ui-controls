@@ -174,7 +174,8 @@ export class BpmnDiagrams {
         const bpmnShape: PathElement = new PathElement();
         //set style
         this.setStyle(bpmnShape, node);
-        if ((node.constraints & NodeConstraints.Shadow) !== 0) {
+        //941052: Issue with visible property doesn't hide shadows
+        if ((node.constraints & NodeConstraints.Shadow) !== 0 && node.visible) {
             bpmnShape.shadow = node.shadow;
         }
         const bpmnShapeData: string = getBpmnShapePathData((node.shape as BpmnShape).shape);
@@ -539,7 +540,8 @@ export class BpmnDiagrams {
         }
         //set style
         this.setStyle(subprocessNode, node);
-        if ((node.constraints & NodeConstraints.Shadow) !== 0) {
+        //941052: Issue with visible property doesn't hide shadows
+        if ((node.constraints & NodeConstraints.Shadow) !== 0 && node.visible) {
             subProcessShapes.shadow = node.shadow;
         }
         const collapsedShape: PathElement = new PathElement();
@@ -1260,8 +1262,8 @@ export class BpmnDiagrams {
         child.style.strokeWidth = node.style.strokeWidth;
         child.style.strokeDashArray = node.style.strokeDashArray;
         child.style.opacity = node.style.opacity; child.style.gradient = node.style.gradient;
-
-        if ((node.constraints & NodeConstraints.Shadow) !== 0) {
+        //941052: Issue with visible property doesn't hide shadows
+        if ((node.constraints & NodeConstraints.Shadow) !== 0 && node.visible) {
             child.shadow = node.shadow;
         }
     }

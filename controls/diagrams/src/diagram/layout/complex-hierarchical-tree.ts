@@ -75,9 +75,12 @@ export class ComplexHierarchicalTree {
         for (let i: number = 0; i < nodes.length; i++) {
             node = nodes[parseInt(i.toString(), 10)];
             //885697:Position of root node without the child node in complex hierarchical layout is not proper
-            if (((node.inEdges.length + node.outEdges.length > 0) || (node.offsetX === 0 && node.offsetY === 0)) &&
-                !node['' + parentId] && !node['' + processId]) {
-                nodesCollection.push(node);
+            // 941582: ExcludeFromLayout Option Not Supported in Complex Hierarchical Tree
+            if (!node.excludeFromLayout) {
+                if (((node.inEdges.length + node.outEdges.length > 0) || (node.offsetX === 0 && node.offsetY === 0)) &&
+                    !node['' + parentId] && !node['' + processId]) {
+                    nodesCollection.push(node);
+                }
             }
         }
         return nodesCollection;
@@ -158,12 +161,20 @@ class HierarchicalLayoutUtil {
      */
     public getEdges(node: Vertex): IConnector[] {
         const edges: IConnector[] = [];
-        if (node) {
+        const node1: Node = this.nameTable[node.name];
+        // 941582: ExcludeFromLayout Option Not Supported in Complex Hierarchical Tree
+        if (node && !node1.excludeFromLayout) {
             for (let i: number = 0; node.inEdges.length > 0 && i < node.inEdges.length; i++) {
-                edges.push(this.nameTable[node.inEdges[parseInt(i.toString(), 10)]]);
+                const connector: IConnector = this.nameTable[node.inEdges[parseInt(i.toString(), 10)]];
+                if (!this.nameTable[connector.sourceID].excludeFromLayout) {
+                    edges.push(connector);
+                }
             }
             for (let i: number = 0; node.outEdges.length > 0 && i < node.outEdges.length; i++) {
-                edges.push(this.nameTable[node.outEdges[parseInt(i.toString(), 10)]]);
+                const connector: IConnector = this.nameTable[node.outEdges[parseInt(i.toString(), 10)]];
+                if (!this.nameTable[connector.targetID].excludeFromLayout) {
+                    edges.push(connector);
+                }
             }
         }
         return edges;
@@ -348,20 +359,24 @@ class HierarchicalLayoutUtil {
         this.vertices = [];
         const filledVertexSet: {} = {};
         for (let i: number = 0; i < nodes.length; i++) {
-            const node: Vertex = this.createVertex(nodes[parseInt(i.toString(), 10)], nodes[parseInt(i.toString(), 10)].id, 0, 0,
-                                                   nodes[parseInt(i.toString(), 10)].actualSize.width,
-                                                   nodes[parseInt(i.toString(), 10)].actualSize.height);
-            this.vertices.push(node);
-            if ((nodes[parseInt(i.toString(), 10)] as INode).inEdges.length > 0
-                || (nodes[parseInt(i.toString(), 10)] as INode).outEdges.length > 0) {
-                nodeWithMultiEdges.push((nodes[parseInt(i.toString(), 10)] as INode));
-            }
-            filledVertexSet[node.name] = node;
-            if (matrixModel) {
-                const outEdges: string[] = nodes[parseInt(i.toString(), 10)].outEdges.slice();
-                for (let j: number = 0; j < outEdges.length; j++) {
-                    const outEdge: Connector = nameTable[outEdges[parseInt(j.toString(), 10)]];
-                    matrixModel.setEdgeMapper({ key: outEdge, value: [] });
+            const node1: Node = this.nameTable[nodes[parseInt(i.toString(), 10)].id];
+            // 941582: ExcludeFromLayout Option Not Supported in Complex Hierarchical Tree
+            if (!node1.excludeFromLayout) {
+                const node: Vertex = this.createVertex(nodes[parseInt(i.toString(), 10)], nodes[parseInt(i.toString(), 10)].id, 0, 0,
+                                                       nodes[parseInt(i.toString(), 10)].actualSize.width,
+                                                       nodes[parseInt(i.toString(), 10)].actualSize.height);
+                this.vertices.push(node);
+                if ((nodes[parseInt(i.toString(), 10)] as INode).inEdges.length > 0
+                    || (nodes[parseInt(i.toString(), 10)] as INode).outEdges.length > 0) {
+                    nodeWithMultiEdges.push((nodes[parseInt(i.toString(), 10)] as INode));
+                }
+                filledVertexSet[node.name] = node;
+                if (matrixModel) {
+                    const outEdges: string[] = nodes[parseInt(i.toString(), 10)].outEdges.slice();
+                    for (let j: number = 0; j < outEdges.length; j++) {
+                        const outEdge: Connector = nameTable[outEdges[parseInt(j.toString(), 10)]];
+                        matrixModel.setEdgeMapper({ key: outEdge, value: [] });
+                    }
                 }
             }
         }
@@ -3517,7 +3532,7 @@ class MatrixModel {
                                 break;
                             }
                         }
-                        if ((edgeMapper[parseInt(key.toString(), 10)] as EdgeMapperObject).value.length > 0) {
+                        if (key && (edgeMapper[parseInt(key.toString(), 10)] as EdgeMapperObject).value.length > 0) {
                             const edgePoint: Point = edgeMapper[parseInt(key.toString(), 10)].value[0];
                             const dxValue1: number = edgePoint.x + margin.left;
                             const dyValue1: number = edgePoint.y + margin.top;
@@ -3582,7 +3597,7 @@ class MatrixModel {
                                 break;
                             }
                         }
-                        if (edgeMapper[parseInt(key.toString(), 10)].value.length > 0
+                        if (key && edgeMapper[parseInt(key.toString(), 10)].value.length > 0
                             && !this.containsValue(modifiedConnectors, internalConnector)) {
                             const edgePt: Point = edgeMapper[parseInt(k.toString(), 10)].value[0];
                             const dx1: number = edgePt.x + margin.left;

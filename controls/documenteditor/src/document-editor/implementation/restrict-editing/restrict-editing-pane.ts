@@ -432,6 +432,7 @@ export class RestrictEditing {
                 break;
         }
         this.highlightCheckBox.checked = this.documentHelper.owner.documentEditorSettings.highlightEditableRanges;
+        this.documentHelper.selection.isHighlightEditRegion = this.documentHelper.owner.documentEditorSettings.highlightEditableRanges;
         this.addedUser.enablePersistence = true;
         this.addedUser.dataSource = this.usersCollection.slice();
         this.addedUser.dataBind();

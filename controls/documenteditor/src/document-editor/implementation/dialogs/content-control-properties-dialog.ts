@@ -372,7 +372,7 @@ export class ContentControlPropertiesDialog {
         }
     }
     private loadPropertiesdialog = (): void => {
-        this.currentContentControl = this.documentHelper.owner.editor.getContentControl();
+        this.currentContentControl = this.documentHelper.owner.selection.currentContentControl;
         if (!isNullOrUndefined(this.currentContentControl)) {
             this.contentEditedCheckBox.checked = this.currentContentControl.contentControlProperties.lockContents;
             this.contentDeletedCheckBox.checked = this.currentContentControl.contentControlProperties.lockContentControl;

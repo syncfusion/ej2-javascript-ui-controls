@@ -1381,6 +1381,40 @@ describe('filter menu module =>', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2: 942488 => "Not Equal" Filter in Menu Type Filtering Fails for Date and DateTime type Columns. => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 5),
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', width: 100, headerText: 'Order ID' },
+                        { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd' },
+                        { field: 'Freight', width: 110, format: 'C2', headerText: 'Freight' },
+                        { field: 'ShipCountry', width: 130, headerText: 'Ship Country' }
+                    ]
+                }, done);
+        });
+
+        it('Filter the date column', (done: Function) => {
+            let actionComplete = () => {
+                expect(gridObj.currentViewData.length).toBe(4);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj as any).filterModule.filterByColumn('OrderDate', 'notEqual', (gridObj as any).dataSource[3].OrderDate, 'and', true);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 

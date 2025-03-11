@@ -2573,9 +2573,6 @@ export class DocumentHelper {
         if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer || this.owner.isTableMarkerDragging) {
             return;
         }
-        if (this.isMappedContentControlUpdated) {
-            this.mapContentControls();
-        }
         event.preventDefault();
         this.isListTextSelected = false;
         let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
@@ -2634,7 +2631,7 @@ export class DocumentHelper {
             }
             let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
             if(!isNullOrUndefined(this.owner.editorModule) && !isNullOrUndefined(this.owner.selectionModule)){
-                let contentControl: ContentControl = this.owner.editorModule.getContentControl();
+                let contentControl: ContentControl = this.owner.selection.currentContentControl;
                 let iscontentControl: boolean = this.owner.selectionModule.checkContentControlLocked();
                 if ((!isNullOrUndefined(contentControl) && !contentControl.contentControlProperties.lockContents && iscontentControl && event.button === 0) || (!isNullOrUndefined(contentControl) && !contentControl.contentControlProperties.lockContents && this.protectionType == 'FormFieldsOnly' && event.button === 0)) {
                     if (!this.owner.isReadOnly) {
@@ -2705,7 +2702,7 @@ export class DocumentHelper {
                     }      
                 }
                 if (!formField && this.isFormFillProtectedMode) {
-                    let contentControl: ContentControl = this.owner.editor.getContentControl();
+                    let contentControl: ContentControl = this.owner.selection.currentContentControl;
                     let canEditContentControl = false;
                     if ((!isNullOrUndefined(contentControl) && contentControl instanceof ContentControl && !contentControl.contentControlProperties.lockContentControl)) {
                         canEditContentControl = true;
@@ -2892,23 +2889,6 @@ export class DocumentHelper {
             }
         }
         return false;
-    }
-    private mapContentControls(): void {
-        if (this.contentControlCollection.length > 0) {
-            for (let i = 0; i < this.contentControlCollection.length; i++) {
-                for (let j = i + 1; j < this.contentControlCollection.length; j++) {
-                    if (!isNullOrUndefined(this.contentControlCollection[i].contentControlProperties.xmlMapping) && !isNullOrUndefined(this.contentControlCollection[j].contentControlProperties.xmlMapping) &&
-                        this.contentControlCollection[i].contentControlProperties.xmlMapping.xPath === this.contentControlCollection[i].contentControlProperties.xmlMapping.xPath) {
-                        let contentControlText1 = this.owner.editor.getResultContentControlText(this.contentControlCollection[i]);
-                        let contentControlText2 = this.owner.editor.getResultContentControlText(this.contentControlCollection[j]);
-                        if (contentControlText1 === contentControlText2) {
-                            this.owner.xmlPaneModule.mappedContentControl = this.contentControlCollection[i];
-                        }
-                    }
-                }
-            }
-            this.isMappedContentControlUpdated = false;
-        }
     }
     public isInShapeBorder(floatElement: ShapeBase, cursorPoint: Point): boolean {
         if (!isNullOrUndefined(floatElement)) {
@@ -3314,12 +3294,6 @@ export class DocumentHelper {
         }
         if (page.footerWidgetIn) {
             page.footerWidgetIn.page = undefined;
-        }
-        if (page.headerWidget) {
-            page.headerWidget.page = undefined;
-        }
-        if (page.footerWidget) {
-            page.footerWidget.page = undefined;
         }
         let index: number = this.pages.indexOf(page);
         if (index > -1) {

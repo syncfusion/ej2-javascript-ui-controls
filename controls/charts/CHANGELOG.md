@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I696021` - Now, the chart SVG height and width are set correctly for the rotated axis label.
+
 ## 28.2.9 (2025-03-04)
 
 ### Chart

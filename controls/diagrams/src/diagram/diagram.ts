@@ -1648,6 +1648,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public deleteDependentConnector: boolean = true;
     /** @private */
     public pathDataStorage: Map<string, PointModel[]> = new Map();
+    // To check current action is undo or redo
+    private isUndo: boolean = false;
     /**
      * Constructor for creating the widget
      */
@@ -3796,7 +3798,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.canEnableBlazorObject = true;
         this.callBlazorModel = false;
         if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo)) {
+            this.isUndo = true;
             this.undoRedoModule.undo(this);
+            this.isUndo = false;
         } else if (this.constraints & DiagramConstraints.UndoRedo) {
             console.warn('[WARNING] :: Module "UndoRedo" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
         }
@@ -8079,7 +8083,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const node: Node | Connector = (this.nameTable[obj.children[parseInt(i.toString(), 10)]]);
                     if (node) { node.parentId = obj.id; }
                 }
-                if (!this.isLoading && obj.rotateAngle && !obj.container) {
+                // 941671: Undo not functioning correctly after Group, Rotate, and Ungroup Actions in Diagram
+                if (!this.isLoading && obj.rotateAngle && !obj.container && !this.isUndo) {
                     this.commandHandler.rotateObjects(obj, [obj], obj.rotateAngle, { x: obj.offsetX, y: obj.offsetY }, false);
                 }
                 this.preventNodesUpdate = false; this.preventConnectorsUpdate = false;
@@ -11641,9 +11646,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
         if (node.tooltip !== undefined) { this.updateTooltip(actualObject, node); }
         if (update) {
-            if (this.bpmnModule !== undefined && offsetChanged && !sizeChanged && !angleChanged && !(this as any).sizeUndo) {
+            if (this.bpmnModule !== undefined && (offsetChanged || sizeChanged) && !angleChanged) {
                 // eslint-disable-next-line max-len
-                this.updateBpmnAnnotationPosition(oldBpmnOffsetX, oldBpmnOffsetY, newBpmnOffsetX, newBpmnOffsetY, actualObject, actualObject.wrapper, (actualObject.shape as BpmnShape), (actualObject.shape as BpmnShape).shape === 'TextAnnotation');
+                this.updateBpmnAnnotationPosition(oldBpmnOffsetX, oldBpmnOffsetY, newBpmnOffsetX, newBpmnOffsetY, actualObject, actualObject.wrapper, (actualObject.shape as BpmnShape), (actualObject.shape as BpmnShape).shape === 'TextAnnotation',oldObject, sizeChanged, (this as any).sizeUndo);
             }
             if (this.checkSelectedItem(actualObject) && actualObject.wrapper.children[0] instanceof TextElement) {
                 (actualObject.wrapper.children[0] as TextElement).refreshTextElement();
@@ -11839,11 +11844,136 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
     }
+    //Get resize handle name based on the old and new size properties of node.
+    private getResizeHandle(oldX: number, oldY: number, oldWidth: number, oldHeight: number,
+                            newX: number, newY: number, newWidth: number, newHeight: number): string | null {
+        const dx: number = newX - oldX;
+        const dy: number = newY - oldY;
+        const dw: number = newWidth - oldWidth;
+        const dh: number = newHeight - oldHeight;
+        if (dh === 0 && ((dx > 0 && dw > 0) || (dx < 0 && dw < 0))) {
+            return  'ResizeEast';
+        }
+        if (dh=== 0 && ((dx > 0 && dw < 0) || (dx < 0 && dw > 0))) {
+            return  'ResizeWest';
+        }
+        // **North & South Handles (Height Change Only)**
+        if (dw === 0 && ((dy > 0 && dh < 0) || (dy < 0 && dh > 0))) {
+            return 'ResizeNorth';
+        }
+        if (dw === 0 && ((dy > 0 && dh > 0) || (dy < 0 && dh < 0))) {
+            return 'ResizeSouth';
+        }
+
+        // **Diagonal Resizing (Both Width & Height Change)**
+        if (((dx > 0 && dw > 0) || (dx < 0 && dw < 0)) && ((dy > 0 && dh > 0) || (dy < 0 && dh < 0))) {
+            return 'ResizeSouthEast'; // Bottom-right
+        }
+        if (((dx > 0 && dw < 0) || (dx < 0 && dw > 0)) && ((dy > 0 && dh > 0) || (dy < 0 && dh < 0))) {
+            return 'ResizeSouthWest'; // Bottom-left
+        }
+        if (((dx > 0 && dw > 0) || (dx < 0 && dw < 0)) && ((dy > 0 && dh < 0) || (dy < 0 && dh > 0))) {
+            return 'ResizeNorthEast'; // Top-right
+        }
+        if (((dx > 0 && dw < 0) || (dx < 0 && dw > 0)) && ((dy > 0 && dh < 0) || (dy < 0 && dh > 0))) {
+            return 'ResizeNorthWest'; // Top-left
+        }
+        return null;
+    }
+    /**
+     * To get new offset used to calculate the text annotation offset while resizing the parent node.
+     * getTextAnnotationOffset method \
+     *
+     * @param {Node} actualObject - The current state of the parent node being resized.
+     * @param {NodeModel} textAnnotation - The text annotation attached to the parent node.
+     * @param {Node} oldObject - The previous state of the parent node before resizing.
+     * @param {number} oldBpmnOffsetX - The previous X offset.
+     * @param {number} oldBpmnOffsetY - The previous Y offset.
+     * @returns { PointModel }    - Returns new offset
+     *
+     * @private
+     */
+    public getTextAnnotationOffset( actualObject: Node, textAnnotation: NodeModel, oldObject: Node,
+                                    oldBpmnOffsetX: number, oldBpmnOffsetY: number) {
+        const sx = actualObject.width - oldObject.width;
+        const sy = actualObject.height - oldObject.height;
+        const side: string = this.getTextAnnotationQuadrant(actualObject, textAnnotation);
+        const resizeSide = this.getResizeHandle(oldObject.offsetX, oldObject.offsetY, oldObject.width, oldObject.height,
+                                                actualObject.offsetX, actualObject.offsetY, actualObject.width, actualObject.height);
+        let dx = 0;
+        let dy = 0;
+        const needsXAdjustment = (side: string) => {
+            if (resizeSide === 'ResizeEast' || resizeSide === 'ResizeNorthEast' || resizeSide === 'ResizeSouthEast') {
+                return side.includes('East');
+            }
+            if (resizeSide === 'ResizeWest' || resizeSide === 'ResizeNorthWest' || resizeSide === 'ResizeSouthWest') {
+                return side.includes('West');
+            }
+            return false;
+        };
+        const needsYAdjustment = (side: string) => {
+            if (resizeSide === 'ResizeSouth' || resizeSide === 'ResizeSouthWest' || resizeSide === 'ResizeSouthEast') {
+                return side.includes('South');
+            }
+            if (resizeSide === 'ResizeNorth' || resizeSide === 'ResizeNorthWest' || resizeSide === 'ResizeNorthEast') {
+                return side.includes('North');
+            }
+            return false;
+        };
+        if (needsXAdjustment(side)) {
+            dx = (resizeSide.includes('West') ? -sx : sx);
+        }
+        if (needsYAdjustment(side)) {
+            dy = (resizeSide.includes('North') ? -sy : sy);
+        }
+        return { x: oldBpmnOffsetX + dx, y: oldBpmnOffsetY + dy };
+    }
+    //To get which side the text annotation node is placed based on its parent node
+    private getTextAnnotationQuadrant(parent: NodeModel, textAnnotation: NodeModel) {
+        const left: number = parent.wrapper.bounds.left;
+        const right: number  = parent.wrapper.bounds.right;
+        const top: number  = parent.wrapper.bounds.top;
+        const bottom: number  = parent.wrapper.bounds.bottom;
+        const textX: number  = textAnnotation.wrapper.bounds.center.x;
+        const textY: number  = textAnnotation.wrapper.bounds.center.y;
+        // Check if exactly aligned with any edge
+        if (textX >= left && textX <= right) {
+            if (textY < top) {
+                return 'North';
+            }
+            if (textY > bottom) {
+                return 'South';
+            }
+        }
+        if (textY >= top && textY <= bottom) {
+            if (textX < left) {
+                return 'West';
+            }
+            if (textX > right) {
+                return 'East';
+            }
+        }
+        // Quadrants
+        if (textX < left && textY < top) {
+            return 'NorthWest';
+        }
+        if (textX > right && textY < top) {
+            return 'NorthEast';
+        }
+        if (textX < left && textY > bottom) {
+            return 'SouthWest';
+        }
+        if (textX > right && textY > bottom) {
+            return 'SouthEast';
+        }
+        return '';
+    }
     //To update text annotation position while dragging the text annotation's parent node.
     private updateBpmnAnnotationPosition(oldX: number, oldY: number, newX: number, newY: number, node: NodeModel,
-                                         wrapper: Container, shape: BpmnShape, isTextAnnotation: boolean) {
-        const x = newX > oldX ? Math.abs(newX - oldX) : Math.abs(oldX - newX);
-        const y = newY > oldY ? Math.abs(newY - oldY) : Math.abs(oldY - newY);
+                                         wrapper: Container, shape: BpmnShape, isTextAnnotation: boolean, oldObject: Node,
+                                         sizeChanged: boolean, isUndo: boolean) {
+        let x = newX > oldX ? Math.abs(newX - oldX) : Math.abs(oldX - newX);
+        let y = newY > oldY ? Math.abs(newY - oldY) : Math.abs(oldY - newY);
         let laneX; let laneY;
         if ((x === 0 && y === 0) || (Number.isNaN(x) && Number.isNaN(y))) {
             if ((node as any).laneMargin) {
@@ -11911,10 +12041,25 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const targetNode: Node = this.nameTable[connector.targetID];
                     const textAnnotationTargetId: string = (targetNode.shape as BpmnShape).textAnnotation.textAnnotationTarget;
                     const textAnnotationTarget: Node = this.nameTable[`${textAnnotationTargetId}`];
+                    if (sizeChanged && !isUndo) {
+                        const newResizeOffset: PointModel = this.getTextAnnotationOffset(node as Node, targetNode, oldObject, oldX, oldY);
+                        newX = newResizeOffset.x; newY = newResizeOffset.y;
+                        x = newX > oldX ? Math.abs(newX - oldX) : Math.abs(oldX - newX);
+                        y = newY > oldY ? Math.abs(newY - oldY) : Math.abs(oldY - newY);
+                    }
                     if ((targetNode.shape as BpmnShape).shape === 'TextAnnotation' && !isSelected(this, targetNode)
                         && isSelected(this, textAnnotationTarget)) {
                         let oldValue; let newValue;
-                        if (laneX !== undefined && laneY !== undefined) {
+                        if ((node as any).isResized) {
+                            oldValue = { margin: { left: targetNode.margin.left, top: targetNode.margin.top } };
+                            const resizeOffset: PointModel = (node as any).resizeDif[targetNode.id];
+                            if (resizeOffset) {
+                                targetNode.margin.left += resizeOffset.x;
+                                targetNode.margin.top += resizeOffset.y;
+                                newValue = { margin: { left: targetNode.margin.left, top: targetNode.margin.top } };
+                            }
+                        }
+                        else if (laneX !== undefined && laneY !== undefined) {
                             if (targetNode.parentId) {
                                 oldValue = { margin: { left: targetNode.margin.left, top: targetNode.margin.top } };
                                 targetNode.margin.left += laneX;

@@ -135,14 +135,19 @@ export class ScheduleTouch {
                     EventHandler.add(this.element, 'touchend', this.preventEventClick, this);
                 }
                 this.parent.quickPopup.tapHoldEventPopup(e.originalEvent);
+                this.triggerResizeStart(e.originalEvent);
             } else if (['Agenda', 'MonthAgenda', 'Year'].indexOf(this.parent.currentView) < 0) {
                 this.parent.selectedElements = [];
                 this.parent.eventBase.getSelectedEventElements(target);
-                if (this.parent.resizeModule && closest(e.originalEvent.target as Element, '.' + cls.EVENT_RESIZE_CLASS)) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    this.parent.resizeModule.resizeStart(e.originalEvent as any);
-                }
+                this.triggerResizeStart(e.originalEvent);
             }
+        }
+    }
+
+    private triggerResizeStart(e: Event): void {
+        if (this.parent.resizeModule && closest(e.target as Element, '.' + cls.EVENT_RESIZE_CLASS)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.parent.resizeModule.resizeStart(e as any);
         }
     }
 

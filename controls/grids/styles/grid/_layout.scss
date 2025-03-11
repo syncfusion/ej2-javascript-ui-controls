@@ -3631,8 +3631,7 @@
         border-left: $grid-freezeline-border $grid-freezeline-right-border;
       }
 
-      .e-rowcell.e-freezeline,
-      .e-gridheader .e-filterbarcell.e-freezeline {
+      .e-rowcell.e-freezeline {
         position: relative;
       }
 

@@ -582,7 +582,7 @@ describe('FileManager control Details view', () => {
                     sourceElement.element.querySelectorAll('li')[2].click();
                     setTimeout(function () {
                         expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(3);
-                        expect(document.getElementById('file_tree').querySelectorAll('li')[1].innerText).toBe('Documents')
+                        expect(document.getElementById('file_tree').querySelectorAll('li')[1].innerText).toBe('Downloads');
                         done();
                     }, 500);
                 }, 500);
@@ -905,6 +905,39 @@ describe('FileManager control Details view', () => {
                                     done();
                                 }, 500);
                             }, 500);
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+        it('TreeView right click copy and layout paste testing', (done) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
+            expect((li[0] as Element).classList.contains('e-active')).toBe(true);
+            mouseEventArgs.originalEvent.target = li[2].querySelector('.e-fullrow');
+            mouseEventArgs.originalEvent.which = 3;
+            treeObj.clickHandler(mouseEventArgs);
+            setTimeout(function () {
+                let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+                let sourceElement: any = el.ej2_instances[0];
+                let evt = document.createEvent('MouseEvents')
+                evt.initEvent('contextmenu', true, true);
+                li[2].querySelector('.e-fullrow').dispatchEvent(evt);
+                expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+                sourceElement.element.querySelectorAll('li')[1].click();
+                expect(feObj.selectedNodes.length).toBe(1);
+                expect(feObj.actionRecords.length).toBe(1);
+                setTimeout(function () {
+                    let Layout: Element = (<any>feObj.detailsviewModule.gridObj.contentModule).contentPanel.firstElementChild;
+                    Layout.dispatchEvent(evt);
+                    expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Paste');
+                    sourceElement.element.querySelectorAll('li')[0].click();
+                    setTimeout(function () {
+                        expect(document.getElementById('file_extn_dialog').querySelector("#file_extn_dialog_title").textContent).toBe('File/Folder exists')
+                        document.getElementById('file_extn_dialog').querySelectorAll('button')[1].click();
+                        setTimeout(function () {
+                            expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
+                            done();
                         }, 500);
                     }, 500);
                 }, 500);

@@ -5217,3 +5217,79 @@ describe('935213: Script error occurs when updating dataSource with frozen colum
         gridObj = null;
     });
 });
+
+describe('Coverage for skips the hidden cell focus', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                width: 400,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 'auto' },
+                    { headerText: 'CustomerID', field: 'CustomerID', width: 150 },
+                    {headerText: 'Freight', field: 'Freight', width: 150},
+                    { headerText: 'ShipCountry', field: 'ShipCountry', width: 'auto'},
+                    { headerText: 'EmployeeID', field: 'EmployeeID', width: 150 },
+                    { headerText: 'ShipCity', field: 'ShipCity', width: 'auto'},
+                ],
+            }, done);
+    });
+
+    it ('Coverage for navigation of last cell to next row first cell', (done: Function) => {
+        gridObj.focusModule.content.getTable().rows[0].cells[4].click();
+        var e = { target:gridObj.focusModule.currentInfo.elementToFocus, preventDefault: new Function(), action:'tab' };
+        (gridObj.focusModule as any).onKeyPress(e);
+        expect(gridObj.focusModule.active.matrix.current.toString() === [1, 1].toString()).toBeTruthy();
+        done();
+    });
+
+    it ('Coverage for first to previous row last visible cell', (done: Function) => {
+        var e = { target:gridObj.focusModule.currentInfo.elementToFocus, preventDefault: new Function(), action:'shiftTab' };
+        (gridObj.focusModule as any).onKeyPress(e);
+        expect(gridObj.focusModule.active.matrix.current.toString() === [0, 4].toString()).toBeTruthy();
+        done();
+    });
+
+    it ('Coverage for navigation of first cell to header focus', (done: Function) => {
+        gridObj.focusModule.content.getTable().rows[0].cells[1].click();
+        var e = { target:gridObj.focusModule.currentInfo.elementToFocus, preventDefault: new Function(), action:'shiftTab' };
+        (gridObj.focusModule as any).onKeyPress(e);
+        expect(gridObj.focusModule.header.matrix.current.toString() === [0, 4].toString()).toBeTruthy();
+        done();
+    });
+
+    it ('Coverage for last header cell to first content cell', (done: Function) => {
+        var e = { target:gridObj.focusModule.currentInfo.elementToFocus, preventDefault: new Function(), action:'tab' };
+        (gridObj.focusModule as any).onKeyPress(e);
+        expect(gridObj.focusModule.content.matrix.current.toString() === [0, 1].toString()).toBeTruthy();
+        done();
+    });
+
+    it ('Coverage for lefttArrow key action', (done: Function) => {
+        gridObj.focusModule.content.getTable().rows[0].cells[4].click();
+        var e = { target:gridObj.focusModule.currentInfo.elementToFocus, preventDefault: new Function(), action:'leftArrow' };
+        (gridObj.focusModule as any).onKeyPress(e);
+        expect(gridObj.focusModule.content.matrix.current.toString() === [0, 2].toString()).toBeTruthy();
+        done();
+    });
+
+    it ('Coverage for rightArrow key action', (done: Function) => {
+        var e = { target:gridObj.focusModule.currentInfo.elementToFocus, preventDefault: new Function(), action:'rightArrow' };
+        (gridObj.focusModule as any).onKeyPress(e);
+        expect(gridObj.focusModule.content.matrix.current.toString() === [0, 4].toString()).toBeTruthy();
+        done();
+    });
+
+    it ('Tab navigation coverage for last content cell', (done: Function) => {
+        gridObj.focusModule.content.getTable().rows[gridObj.focusModule.active.matrix.matrix.length -1].cells[4].click();
+        var e = { target:gridObj.focusModule.currentInfo.elementToFocus, preventDefault: new Function(), action:'tab' };
+        (gridObj.focusModule as any).onKeyPress(e);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -96,13 +96,15 @@ export class Resize {
             this.parent.element.style.height = (<MouseEvent>e).clientY - boundRect.top + 'px';
             this.parent.element.style.width = (!this.parent.enableRtl) ? (<MouseEvent>e).clientX - boundRect.left + 'px' :
                 boundRect.right - (<MouseEvent>e).clientX + 'px';
-            const toolBarEle: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
-            if (!isNullOrUndefined(toolBarEle) && !isNullOrUndefined(toolBarEle.parentElement)) {
-                if (toolBarEle.parentElement.classList.contains(classes.CLS_TB_FLOAT) && this.parent.toolbarSettings.enableFloating &&
-                this.parent.getToolbar() && !this.parent.inlineMode.enable) {
-                    const contentPanel: HTMLElement = this.parent.contentModule.getPanel() as HTMLElement;
-                    const contentPanelWidth : number = contentPanel.getBoundingClientRect().width;
-                    toolBarEle.style.width = contentPanelWidth + 'px';
+            if (this.parent.toolbarModule) {
+                const toolBarEle: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
+                if (!isNullOrUndefined(toolBarEle) && !isNullOrUndefined(toolBarEle.parentElement)) {
+                    if (toolBarEle.parentElement.classList.contains(classes.CLS_TB_FLOAT) && this.parent.toolbarSettings.enableFloating &&
+                    this.parent.getToolbar() && !this.parent.inlineMode.enable) {
+                        const contentPanel: HTMLElement = this.parent.contentModule.getPanel() as HTMLElement;
+                        const contentPanelWidth : number = contentPanel.getBoundingClientRect().width;
+                        toolBarEle.style.width = contentPanelWidth + 'px';
+                    }
                 }
             }
         } else {

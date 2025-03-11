@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.2.9 (2025-03-04)
+## 28.2.11 (2025-03-11)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I679119` - The issue with filtering the `Date` column by month or day value has been resolved.
+
+## 28.1.33 (2024-12-12)
 
 ### DataManager
 

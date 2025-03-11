@@ -25,10 +25,6 @@ export class XmlPane {
     /**
      * @private
      */
-    public mappedContentControl: ContentControl;
-    /**
-     * @private
-     */
     public isAddedDocumentXml: boolean = false;
     /**
      * @private
@@ -296,7 +292,7 @@ export class XmlPane {
     * @returns {void}
     */
     private contextMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
-        let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+        let contentControl: ContentControl = this.documentHelper.owner.selection.currentContentControl;
         let contentControlImage: ElementBox = this.documentHelper.owner.getImageContentControl();
         let content: string[] = this.treeviewObject.selectedNodes;
         let node = this.treeviewObject.getNode(content[0]);
@@ -330,7 +326,7 @@ export class XmlPane {
                 this.applyContentControl(item);
                 break;
             case 'MapToSelectedContentControl':
-                let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+                let contentControl: ContentControl = this.documentHelper.owner.selection.currentContentControl;
                 let contentControlImage: ElementBox = this.documentHelper.owner.getImageContentControl();
                 if (!isNullOrUndefined(contentControl) || !isNullOrUndefined(contentControlImage)) {
                     this.documentHelper.owner.isXmlMapCC = true;
@@ -338,9 +334,8 @@ export class XmlPane {
                         this.getXmlPath();
                     }
                     this.documentHelper.owner.selection.selectContentInternal(contentControl);
-                    this.mappedContentControl = contentControl;
                     if (contentControl.contentControlProperties.type !== 'CheckBox') {
-                        this.insertContent();
+                        this.insertContent(contentControl);
                     }
                 }
                 break;
@@ -360,7 +355,7 @@ export class XmlPane {
         if (this.documentHelper.owner.isXmlMapCC && !isNullOrUndefined(this.documentHelper.owner.editor.xmlData.length) && this.documentHelper.owner.editor.xmlData.length > 0) {
             this.getXmlPath();
         }
-        let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+        let contentControl: ContentControl = this.documentHelper.owner.selection.currentContentControl;
         let contentControlImage: ElementBox = this.documentHelper.owner.getImageContentControl();
         if (!isNullOrUndefined(contentControl) || !isNullOrUndefined(contentControlImage)) {
             const localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
@@ -412,14 +407,22 @@ export class XmlPane {
     * To insert Content inside the content control.
     * @returns {void}
     */
-    private insertContent() {
+    private insertContent(contentControl?: ContentControl) {
         let selectedNode = this.treeviewObject.selectedNodes.toString();
         for (let i = 1; i < this.documentHelper.owner.editor.xmlData.length; i++) {
             let xmlID = this.documentHelper.owner.editor.xmlData[i].id.toString();
             if (selectedNode == xmlID) {
                 if (!isNullOrUndefined(this.documentHelper.owner.editor.xmlData[i].displayValue)) {
                     let content = this.documentHelper.owner.editor.xmlData[i].displayValue.toString();
-                    this.documentHelper.owner.editor.insertText(content);
+                    if (contentControl) {
+                        const text: string = this.documentHelper.owner.editor.getResultContentControlText(contentControl);
+                        if (text !== content) {
+                            this.documentHelper.owner.editor.insertText(content);
+                            this.documentHelper.owner.editor.addXmlProperties(contentControl.contentControlProperties, this.documentHelper.owner.xPathString);
+                        }
+                    } else {
+                        this.documentHelper.owner.editor.insertText(content);
+                    }
                 }
             }
         }
@@ -442,7 +445,10 @@ export class XmlPane {
             for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
                 let contentControl = this.documentHelper.contentControlCollection[i];
                 if (contentControl.contentControlProperties.xmlMapping && contentControl.contentControlProperties.xmlMapping.xPath === xpath && contentControl.contentControlProperties.type !== 'CheckBox') {
-                    this.updateContentControl(contentControl, updatedText);
+                    const text: string = this.documentHelper.owner.editor.getResultContentControlText(contentControl);
+                    if (text !== updatedText) {
+                        this.updateContentControl(contentControl, updatedText);
+                    }
                 }
             }
             this.documentHelper.selection.selectRange(start, end);

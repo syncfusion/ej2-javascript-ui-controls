@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I625957` - The issue with the "enableItems" and "insertAfter" methods not functioning correctly when the "enableScrolling" property of the context menu is enabled has been resolved.
+
+### Menu
+
+#### Bug Fixes
+
+- `#I695706` - The accessibility violation issue encountered when opening the submenu of the menu component has been resolved.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I689782` - An issue with the toolbar focus style not being applied in Tailwind 3 and Fluent 2 themes while using keyboard navigation in the Mac Safari browser has been resolved.
+
 ## 28.2.6 (2025-02-18)
 
 ### Toolbar

@@ -1518,6 +1518,49 @@ describe('ContextMenu', () => {
         let contextMenu: any;
         let div: HTMLElement;
         let ul: HTMLElement;
+        let scrollMenuItems: MenuItemModel[] = [
+            {
+              text: 'Cut',
+              iconCss: 'e-cm-icons e-cut',
+            },
+            {
+              text: 'Copy',
+              iconCss: 'e-cm-icons e-copy',
+            },
+            {
+              text: 'Paste',
+              iconCss: 'e-cm-icons e-paste',
+              items: [
+                {
+                  text: 'Paste Text',
+                  iconCss: 'e-cm-icons e-pastetext',
+                },
+                {
+                  text: 'Paste Special',
+                  iconCss: 'e-cm-icons e-pastespecial',
+                },
+              ],
+            },
+            {
+              separator: true,
+            },
+            {
+              text: 'Link',
+              iconCss: 'e-cm-icons e-link',
+            },
+            {
+              text: 'New Comment',
+              iconCss: 'e-cm-icons e-comment',
+            },
+            {
+              text: 'Cut',
+              iconCss: 'e-cm-icons e-cut',
+            },
+            {
+              text: 'Copy',
+              iconCss: 'e-cm-icons e-copy',
+            }
+        ];
     
         beforeEach(() => {
             div = document.createElement('div');
@@ -1712,6 +1755,60 @@ describe('ContextMenu', () => {
             '#contextmenu');
             contextMenu.open(40, 62);
             const menuElement = document.querySelectorAll('.e-menu-vscroll')[0];
+        });
+
+        it('Context Menu With scroll enabled and hide items', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu(
+                {
+                    target: '#target',
+                    items: scrollMenuItems,
+                    enableScrolling: true,
+                    beforeOpen: (args: MenuEventArgs) => {
+                        args.element.parentElement.style.height = '150px';
+                    }
+                },
+            '#contextmenu');
+            contextMenu.open(40, 62);
+            contextMenu.hideItems(['Cut', 'Copy']);
+            expect(contextMenu.element.querySelectorAll('li.e-menu-hide').length).toBe(2);
+        });
+
+        it('Context Menu With scroll enabled and disabled items', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu(
+                {
+                    target: '#target',
+                    items: scrollMenuItems,
+                    enableScrolling: true,
+                    beforeOpen: (args: MenuEventArgs) => {
+                        args.element.parentElement.style.height = '150px';
+                    }
+                },
+            '#contextmenu');
+            contextMenu.open(40, 62);
+            contextMenu.enableItems(['Cut'], false);
+            expect(contextMenu.element.querySelectorAll('li.e-disabled').length).toBe(1);
+        });
+
+        it('Context Menu With scroll enabled and insert items', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu(
+                {
+                    target: '#target',
+                    items: scrollMenuItems,
+                    enableScrolling: true,
+                    beforeOpen: (args: MenuEventArgs) => {
+                        args.element.parentElement.style.height = '150px';
+                    }
+                },
+            '#contextmenu');
+            contextMenu.open(40, 62);
+            contextMenu.insertAfter([{ text: 'Inserted Item' }], 'Paste');
+            expect(contextMenu.element.querySelectorAll('li').length).toBe(9);
         });
     });
 

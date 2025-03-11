@@ -1868,7 +1868,56 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
-
+    describe('939792 - Image Caption is Editable in Rich Text Editor After Posting', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image e-imginline" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span></p>`
+            });
+        });
+        it('Image Caption is Editable in Rich Text Editor After Posting', () => {
+            expect(rteObj.inputElement.innerHTML).toBe('<p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image e-imginline" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span></p>');
+                expect(rteObj.getHtml()).toBe('<p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image e-imginline" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;"><span class="e-img-inner" contenteditable="false">Caption</span></span></span></p>');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('942812 - RichTextEditor Image Interaction', () => {
+        let rteObj: RichTextEditor;
+        let changeSpy: jasmine.Spy;
+        let rteEle: HTMLElement;
+        beforeAll((done: Function) => {
+            changeSpy = jasmine.createSpy('change');
+            rteObj = renderRTE({
+                value: '<img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image e-imginline" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;">',
+                change: (args: any) => changeSpy(args),
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should not trigger change event when clicking and unfocusing image', (done: Function) => {
+            (rteObj as any).cloneValue = '<p><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image e-imginline" alt="RTE-Overview" width="553" height="312" style="min-width: 0px; max-width: 553px; min-height: 0px;"></p>';
+            let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).not.toBe(null);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-imageboxmark').length).toBe(4);
+            rteObj.focusOut();
+            setTimeout(() => {
+                expect(changeSpy).not.toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+    });
     describe('937051 - Text format gets collapsed when we press backspace within the list elements in the RichTextEditor.', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {

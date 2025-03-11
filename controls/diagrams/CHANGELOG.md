@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I692003` - Undo and redo now working correctly for group nodes after `grouping`, `rotating`, and `ungrouping`.
+- `#I692517` - `excludeFromLayout` now works in complex hierarchical tree Layout.
+
 ## 28.2.9 (2025-03-04)
 
 ### Diagram

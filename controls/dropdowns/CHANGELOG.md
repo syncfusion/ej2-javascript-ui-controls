@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I695096` - Fixed an issue where data was not displaying correctly during scrolling.
+
 ## 28.2.9 (2025-03-04)
 
 ### ComboBox
@@ -19,6 +27,8 @@
 ### MultiSelect
 
 #### Bug Fixes
+
+- `#I694022` - Fixed an issue where the `ValueTemplate` was not functioning correctly for the preselected value when virtualization was enabled.
 
 - `#I688364` - Fixed an issue with the positioning issue of the Multi select component popup while enabling the RTL mode.
 

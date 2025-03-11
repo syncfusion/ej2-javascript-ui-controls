@@ -1105,6 +1105,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (this.isMenu) {
                 this.popupWrapper = this.createElement('div', {
                     className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-ej2menu-' + elemId + '-popup' });
+                this.popupWrapper.setAttribute('role', 'navigation');
+                this.popupWrapper.setAttribute('aria-label', item.text + '-menu-popup');
                 if (this.hamburgerMode) {
                     top = (li as HTMLElement).offsetHeight; li.appendChild(this.popupWrapper);
                 } else {
@@ -1547,6 +1549,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     args.item.classList.add(SEPARATOR);
                     if (!(args.curData.htmlAttributes as obj).role) {
                         args.item.setAttribute('role', 'separator');
+                    }
+                    if (!(args.curData.htmlAttributes as obj).ariaLabel) {
+                        args.item.setAttribute('aria-label', 'separator');
                     }
                 }
                 if (showIcon && !(<obj>args.curData)[args.fields.iconCss as string]
@@ -2117,7 +2122,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         item.splice(idx, 1);
         const uls: HTMLCollection = this.getWrapper().children;
         if (navIdx.length < uls.length) {
-            detach(uls[navIdx.length].children[idx as number]);
+            if (this.enableScrolling && !uls[navIdx.length].classList.contains('e-menu-parent')) {
+                const ul: HTMLElement = uls[navIdx.length].querySelector('.e-menu-parent');
+                detach(ul.children[idx as number]);
+            } else {
+                detach(uls[navIdx.length].children[idx as number]);
+            }
         }
     }
 
@@ -2392,7 +2402,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
                             ul.children[idx + 1].classList.add(disabled);
                         } else {
-                            ul.children[idx as number].classList.add(disabled);
+                            if (this.enableScrolling && !ul.classList.contains('e-menu-parent')) {
+                                const mainUl: Element = ul.querySelector('.e-menu-parent');
+                                mainUl.children[idx as number].classList.add(disabled);
+                            } else {
+                                ul.children[idx as number].classList.add(disabled);
+                            }
                         }
                     }
                 }
@@ -2433,6 +2448,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             ul = this.getUlByNavIdx(navIdx.length);
             item = this.getItems(navIdx);
             if (ul) {
+                if (this.enableScrolling && !ul.classList.contains('e-menu-parent')) {
+                    ul = ul.querySelector('.e-menu-parent');
+                }
                 const validUl: string = isUniqueId ? ul.children[index as number].id : item[index as number].text.toString();
                 if (ishide && validUl === items[i as number]) {
                     ul.children[index as number].classList.add(HIDE);
@@ -2494,6 +2512,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let navIdx: number[];
         let iitems: MenuItemModel[];
         let menuitem: MenuItem;
+        let parentUl: HTMLElement;
         for (let i: number = 0; i < items.length; i++) {
             navIdx = this.getIndex(text, isUniqueId);
             idx = navIdx.pop();
@@ -2506,11 +2525,20 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (!isNullOrUndefined(idx) && navIdx.length < uls.length) {
                 idx = isAfter ? idx + 1 : idx;
                 li = this.createItems(iitems).children[idx as number];
-                const ul: HTMLElement = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
+                let ul: HTMLElement = parentUl = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
+                if (this.enableScrolling && !ul.classList.contains('e-menu-parent')) {
+                    ul = ul.querySelector('.e-menu-parent');
+                }
                 ul.insertBefore(li, ul.children[idx as number]);
                 if (i === items.length - 1 && !this.isMenu && ul.style.display === 'block') {
-                    this.setPosition(null, ul, parseFloat(ul.style.top), parseFloat(ul.style.left));
-                    ul.style.display = 'block';
+                    if (this.enableScrolling) {
+                        this.setPosition(null, ul, parseFloat(parentUl.style.top), parseFloat(parentUl.style.left));
+                        const scrollElem: HTMLElement = closest(ul, '.e-vscroll') as HTMLElement;
+                        if (scrollElem) { scrollElem.style.display = 'block'; }
+                    } else {
+                        this.setPosition(null, ul, parseFloat(ul.style.top), parseFloat(ul.style.left));
+                        ul.style.display = 'block';
+                    }
                 }
             }
         }

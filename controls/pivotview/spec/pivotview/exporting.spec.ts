@@ -4,7 +4,7 @@ import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
 import { createElement, remove, EmitType} from '@syncfusion/ej2-base';
-import { VirtualScroll } from '../../src/pivotview/actions';
+import { Pager, VirtualScroll } from '../../src/pivotview/actions';
 import { PDFExport } from '../../src/pivotview/actions/pdf-export';
 import { ExcelExport } from '../../src/pivotview/actions/excel-export';
 import { Toolbar } from '../../src/common/popups/toolbar';
@@ -115,7 +115,7 @@ describe('PDF Export', () => {
                 remove(document.getElementById(elem.id));
             }
             document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll, ExcelExport);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
                     dataSource: pivot_dataset as IDataSet[],
@@ -127,6 +127,7 @@ describe('PDF Export', () => {
                 height: 800,
                 width: '100%',
                 allowPdfExport: true,
+                allowExcelExport: true,
                 showFieldList: true,
                 toolbar: ['Export'],
                 showToolbar: true,
@@ -155,7 +156,13 @@ describe('PDF Export', () => {
                 done();
             }, 1000);
         });
-
+        it('Excel Export', (done: Function) => {
+            pivotGridObj.excelExport();
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange);
@@ -2273,6 +2280,107 @@ describe('PDF Export', () => {
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                 util.triggerEvent(li, 'mouseover');
                 (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+    describe('Excel Export with paging', () => {
+        let pivotGridObj: PivotView;
+        let excelExportProperties: ExcelExportProperties = {
+            header: {
+                headerRows: 2,
+                rows: [
+                    { cells: [{ colSpan: 4, value: "Pivot Table", style: { fontColor: '#C67878', fontSize: 20, hAlign: 'Center', bold: true, underline: true } }] }
+                ]
+            },
+            footer: {
+                footerRows: 4,
+                rows: [
+                    { cells: [{ colSpan: 4, value: "Thank you for your business!", style: { hAlign: 'Center', bold: true } }] },
+                    { cells: [{ colSpan: 4, value: "!Visit Again!", style: { hAlign: 'Center', bold: true } }] }
+                ]
+            }
+        };
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll, Pager);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: [
+                        { row: 'row1', column1: 'column1', column2: 'column1', value: 1 },
+                        { row: 'row2', column1: 'column2', column2: 'column2', value: 2 },
+                        { row: 'row3', column1: 'column3', column2: 'column3', value: 3 },
+                        { row: 'row4', column1: 'column4', column2: 'column4', value: 4 },
+                    ],
+                    columns: [{ name: 'column1' }, { name: 'column2' }],
+                    rows: [],
+                    values: [{ name: 'value' }],
+                    valueAxis: 'row'
+                },
+                allowPdfExport: true,
+                allowExcelExport: true,
+                enablePaging: true
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Export ensuring for row axis.', (done: Function) => {
+            pivotGridObj.pdfExport();
+            setTimeout(() => {
+                pivotGridObj.dataSourceSettings = {
+                    dataSource: [
+                        { row: 'row1', column1: 'column1', column2: 'column1', value: 1 },
+                        { row: 'row2', column1: 'column2', column2: 'column2', value: 2 },
+                        { row: 'row3', column1: 'column3', column2: 'column3', value: 3 },
+                        { row: 'row4', column1: 'column4', column2: 'column4', value: 4 },
+                    ],
+                    columns: [],
+                    rows: [{ name: 'row' }],
+                    values: [{ name: 'value' }],
+                    valueAxis: 'column'
+                }
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('Export ensuring for column axis.', (done: Function) => {
+            pivotGridObj.pdfExport();
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('Excel Export with header and footer.', (done: Function) => {
+            pivotGridObj.excelExport(excelExportProperties);
+            setTimeout(() => {
+                expect(1).toBe(1);
                 done();
             }, 1000);
         });

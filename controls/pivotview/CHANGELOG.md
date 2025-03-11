@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 28.2.9 (2025-03-04)
+## 28.2.11 (2025-03-11)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I694587` - The cell border will now be applied correctly to empty cells in the exported Excel document.
+- `#I696261` - Localization will now be applied correctly to the Grand Total legend text in the Pivot Chart.
+
+## 28.2.7 (2025-02-25)
 
 ### Pivot Table
 

@@ -278,6 +278,28 @@ export function checkParentAsContainer(diagram: Diagram, obj: NodeModel | Connec
 export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): void {
     const parentNode: NodeModel = diagram.nameTable[(obj as Node).parentId];
     (obj as any).laneMargin = { left: obj.margin.left, right: obj.margin.right, top: obj.margin.top, bottom: obj.margin.bottom };
+    //To handle the resize of bpmn node which has text annotation inside swimlane
+    if ((obj as any).hasTextAnnotation) {
+        for (let i: number = 0; i < (obj as Node).outEdges.length; i++) {
+            const connector: ConnectorModel = diagram.nameTable[(obj as Node).outEdges[parseInt(i.toString(), 10)]];
+            if ((connector as any).isBpmnAnnotationConnector) {
+                const textNode: Node = diagram.nameTable[connector.targetID];
+                const oldObject: any = {width: obj.wrapper.actualSize.width, height: obj.wrapper.actualSize.height,
+                    offsetX: obj.wrapper.offsetX, offsetY: obj.wrapper.offsetY};
+                const oldX: number = obj.wrapper.offsetX; const oldY: number = obj.wrapper.offsetY;
+                const offset: PointModel =  diagram.getTextAnnotationOffset(obj as Node, textNode, oldObject, oldX, oldY);
+                const difX: number = offset.x - oldX;
+                const difY: number = offset.y - oldY;
+                if (difX || difY || obj.width !== obj.wrapper.actualSize.width || obj.height !== obj.wrapper.actualSize.height) {
+                    (obj as any).isResized = true;
+                    if (!(obj as any).resizeDif) {
+                        (obj as any).resizeDif = [];
+                    }
+                    (obj as any).resizeDif[textNode.id] = {x: difX, y: difY};
+                }
+            }
+        }
+    }
     if (parentNode.container.type === 'Canvas') {
         obj.margin.left = (obj.offsetX - parentNode.wrapper.bounds.x - (obj.width / 2));
         obj.margin.top = (obj.offsetY - parentNode.wrapper.bounds.y - (obj.height / 2));
@@ -439,7 +461,7 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                 diagram.addHistoryEntry(entry);
             }
         }
-        else if (!isUndo) {
+        else if (!isUndo && (diagram as any).multiselect) {
             considerSwimLanePadding(diagram, node, 20);
             diagram.updateDiagramElementQuad();
         }

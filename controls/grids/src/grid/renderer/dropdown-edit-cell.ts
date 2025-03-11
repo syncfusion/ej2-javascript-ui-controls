@@ -3,7 +3,7 @@ import { IGrid, EJ2Intance, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { DropDownList, DropDownListModel, FilteringEventArgs, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Query, DataManager, DataUtil, Predicate } from '@syncfusion/ej2-data';
-import { isEditable, getComplexFieldID, getObject } from '../base/util';
+import { isEditable, getComplexFieldID, getObject, isCellHaveWidth } from '../base/util';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import { parentsUntil } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
@@ -50,7 +50,7 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
             {
                 dataSource: this.parent.dataSource instanceof DataManager ?
                     this.parent.dataSource : new DataManager(this.parent.dataSource),
-                query: new Query().where(pred).select(args.column.field), enabled: isEditable(args.column, args.requestType, args.element),
+                query: new Query().where(pred).select(args.column.field), enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
                 fields: { value: args.column.field },
                 value: getObject(args.column.field, args.rowData),
                 enableRtl: this.parent.enableRtl,

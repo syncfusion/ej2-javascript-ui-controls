@@ -386,6 +386,20 @@ export class InsertHtml {
                 node.parentNode.replaceChild(fragment, node);
             }
         }
+        if (lastSelectionNode instanceof Element && lastSelectionNode.nodeName === 'GOOGLE-SHEETS-HTML-ORIGIN') {
+            const tableEle: HTMLTableElement | null = lastSelectionNode.querySelector('table');
+            const colGroup: HTMLElement | null = tableEle.querySelector('colgroup');
+            if (colGroup) {
+                for (let i: number = 0; i < tableEle.rows.length; i++) {
+                    for (let k: number = 0; k < tableEle.rows[i as number].cells.length; k++) {
+                        if (colGroup.querySelectorAll('col')[k as number].hasAttribute('width')) {
+                            const width: string = colGroup.querySelectorAll('col')[k as number].getAttribute('width');
+                            tableEle.rows[i as number].cells[k as number].style.width = width + 'px';
+                        }
+                    }
+                }
+            }
+        }
         if (lastSelectionNode && lastSelectionNode.nodeName === 'TABLE') {
             const pTag: HTMLElement = createElement('p');
             pTag.appendChild(createElement('br'));

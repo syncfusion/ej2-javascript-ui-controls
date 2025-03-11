@@ -1254,10 +1254,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        if (this.documentEditor.documentHelper.contentControlCollection.length > 0) {
-            this.documentEditor.selection.isHighlightContentControlEditRegion = true;
-            this.documentEditor.selection.onHighlightContentControl();
-        }
         let eventArgs: ContainerDocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
         this.updateStyleCollection();

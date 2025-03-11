@@ -194,8 +194,8 @@ export class BaseToolbar {
                 const tooltipText : string = items[num as number].tooltipText;
                 let shortCutKey : string;
                 const isMacDev: boolean = window.navigator.platform.toLocaleLowerCase().includes('mac');
-                if (windowKeys[`${tooltipText}`] && (!isNullOrUndefined(items[num as number].id) || !isNullOrUndefined(items[num as number].cssClass))) {
-                    const shortcuts: string[] = windowKeys[`${tooltipText}`].split(','); // Handle multiple shortcuts
+                if (windowKeys[`${(items[num as number] as IToolbarItems).subCommand}`] && (!isNullOrUndefined(items[num as number].id) || !isNullOrUndefined(items[num as number].cssClass))) {
+                    const shortcuts: string[] = windowKeys[`${(items[num as number] as IToolbarItems).subCommand}`].split(','); // Handle multiple shortcuts
                     shortCutKey = shortcuts.map((shortcut: string) =>
                         isMacDev
                             ? shortcut.replace('Ctrl+', '⌘').replace('Shift+', '⇧').replace('Alt+', '⌥')

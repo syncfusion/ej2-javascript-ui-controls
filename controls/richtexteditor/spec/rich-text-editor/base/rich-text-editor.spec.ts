@@ -3345,8 +3345,8 @@ describe('RTE base module', () => {
         });
         it('Ensure Locale property', () => {
             let rteEle: HTMLElement = rteObj.element;
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("fett");
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("kursiv");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("fett (Ctrl+B)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("kursiv (Ctrl+I)");
         });
         it('ensure through onproperty change - Locale property', () => {
             rteObj.locale = 'en-US';
@@ -9116,6 +9116,27 @@ describe('942278 - Cursor is misplaced after performing undo action', () => {
         done();
     });
 });
+
+describe('945044: Cursor Position Incorrect on Mac After Resetting Form Validation Sample Editor', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: ``,
+        });
+    });
+    it('should clear the editor value and check the cursor position', (done: Function) => {
+        rteObj.value = null;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML === '<p><br></p>').toBe(true);
+        expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toBe(true);
+        done();
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+});
+
 describe('942278 - Cursor is misplaced after performing undo action', () => {
     let rteObj: RichTextEditor;
     beforeEach(() => {
@@ -9144,6 +9165,38 @@ Rich Text Editor 3`
     afterEach((done: DoneFn) => {
         destroy(rteObj);
         done();
+    });
+});
+describe("943056 - Script error throws when using resizable Iframe Editor while toolbar is in disabled mode in RichTextEditor", () => {
+    let rteObj: RichTextEditor;
+    let originalConsoleError: { (...data: any[]): void; (...data: any[]): void; };
+    let errorSpy: jasmine.Spy;
+    beforeAll(() => {
+        originalConsoleError = console.error;
+        errorSpy = jasmine.createSpy('error');
+        console.error = errorSpy;
+        rteObj = renderRTE({
+            height: '330px',
+            toolbarSettings: {
+                enable: false,
+                items: ['CreateTable']
+            },
+            iframeSettings: {
+                enable: true,
+            },
+            enableResize: false,
+            enableRtl: true
+        });
+        const ele = createElement('div', { id: 'rteTarget' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        console.error = originalConsoleError;
+        document.body.innerHTML = "";
+        rteObj.destroy();
+    });
+    it("enableResize", () => {
+        expect(errorSpy).not.toHaveBeenCalled();
     });
 });
 });

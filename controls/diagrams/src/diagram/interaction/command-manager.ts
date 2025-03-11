@@ -1597,6 +1597,8 @@ export class CommandHandler {
                         (clonedNode as Connector).sourceID = temp[(clonedNode as Connector).sourceID];
                         (clonedNode as Connector).targetID = temp[(clonedNode as Connector).targetID];
                         connector.splice(connector.indexOf(i), 1);
+                        //937235: Copy paste subprocess with connector, the connector disappears.
+                        (clonedNode as Connector).zIndex = Number.MIN_VALUE;
                         this.diagram.add(clonedNode);
                     }
                 }

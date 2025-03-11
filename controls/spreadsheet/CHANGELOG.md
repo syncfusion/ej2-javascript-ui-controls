@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I690915` - Issue with "the formula cell range being incorrect while importing an Excel file containing a user-defined function" has been resolved.
+
 ## 28.1.35 (2024-12-18)
 
 ### Spreadsheet

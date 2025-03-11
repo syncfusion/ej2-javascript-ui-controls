@@ -269,10 +269,13 @@ export class SfdtReader {
             this.parseBody(data[continuationSeparatorProperty[this.keywordIndex]], endnote.continuationSeparator);
         }
     }
-    private parseCustomXml(data: any): void {
+    /**
+     * @private
+     */
+    public parseCustomXml(data: any): void {
         for (let i: number = 0; i < data[customXmlProperty[this.keywordIndex]].length; i++) {
             const xmlData: any = data[customXmlProperty[this.keywordIndex]][i];
-            if (!this.revisionCollection.containsKey(xmlData[itemIDProperty[this.keywordIndex]])) {
+            if (!this.documentHelper.customXmlData.containsKey(xmlData[itemIDProperty[this.keywordIndex]])) {
                 this.documentHelper.customXmlData.add(xmlData[itemIDProperty[this.keywordIndex]], xmlData[xmlProperty[this.keywordIndex]]);
             }
         }
@@ -872,13 +875,10 @@ export class SfdtReader {
                         blocks.push(paragraph);
                     } else if (isSectionBreak && data.length === 1) {
                         blocks.push(paragraph);
-                    } else if (isSectionBreak && block === data[data.length - 1] && block[inlinesProperty[this.keywordIndex]].length === 0 && !hasValidElmts && breakCode != 'NoBreak') {
-                        var dataIndex = data.indexOf(block);
-                        var previousData = data[dataIndex - 1];
-                        if (!isNullOrUndefined(previousData) && previousData.hasOwnProperty(rowsProperty[this.keywordIndex])) {
-                            blocks.push(paragraph);
-                            paragraph.isSectionBreak = true;
-                        }
+                    } else {
+                        // If section last paragraph is empty then we need to layout the paragraph in the previous widget which is handled similar to MS word.
+                        paragraph.isSectionBreak = true;
+                        blocks.push(paragraph);
                     }
                     paragraph.index = blocks.length - 1;
                     paragraph.containerWidget = container;
@@ -1017,13 +1017,18 @@ export class SfdtReader {
                     this.isPageBreakInsideTable = false;
                 }
             }
-            table.childWidgets.push(row);
-            row.containerWidget = table;
+            if(row.childWidgets.length > 0) {
+                table.childWidgets.push(row);
+                row.containerWidget = table;
+            }
         }
         table.containerWidget = section;
-        blocks.push(table);
+        if(table.childWidgets.length > 0) {
+            blocks.push(table);
+        }
         table.isGridUpdated = false;
     }
+
     private parseTablePositioning(block: any, table: TableWidget): void {
         table.wrapTextAround = !isNullOrUndefined(block[wrapTextAroundProperty[this.keywordIndex]]) ? HelperMethods.parseBoolValue(block[wrapTextAroundProperty[this.keywordIndex]]) : false;
         if (table.wrapTextAround) {

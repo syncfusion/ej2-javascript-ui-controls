@@ -1010,3 +1010,46 @@ export function applyPredicates(dataManager: DataManager, predicates: Predicate[
 export function isReadOnly(cell: CellModel, column: ColumnModel, row: RowModel): boolean {
     return (cell && cell.isReadOnly) || (row && row.isReadOnly) || (column && column.isReadOnly);
 }
+
+/**
+ * Updated the top border of the adjacent merged cells
+ *
+ * @param {Workbook} context - The spreadsheet instance.
+ * @param {number[]} rowIndexes - An array of row indexes that top border need to be updated.
+ * @param {number[]} colIndexes - An array of col indexes that top border need to be updated.
+ * @returns {void}
+ * @hidden
+ */
+export function updateMergeBorder(context: Workbook, rowIndexes: number[], colIndexes?: number[]): void {
+    if (!rowIndexes.length) {
+        return;
+    }
+    const sheet: SheetModel = context.getActiveSheet(); let style: CellStyleModel;
+    const parent: ExtendedWorkbook = context as ExtendedWorkbook; const frozenCol: number = context.frozenColCount(sheet);
+    const startCol: number = (colIndexes && colIndexes[0]) ||
+        (frozenCol ? getCellIndexes(sheet.topLeftCell)[1] : parent.viewport.leftIndex);
+    const endCol: number = (colIndexes && colIndexes[1]) || parent.viewport.rightIndex;
+    rowIndexes.forEach((rowIdx: number) => {
+        for (let col: number = startCol; col <= endCol; col++) {
+            if (col === frozenCol) {
+                col += parent.viewport.leftIndex;
+            }
+            const prevModel: CellModel = getCell(rowIdx - 1, col, sheet, false, true);
+            if (((!prevModel.rowSpan || prevModel.rowSpan === 1)
+                || (!prevModel.colSpan || prevModel.colSpan === 1)) &&
+                (!prevModel.style || !prevModel.style.borderBottom || prevModel.style.borderBottom === 'none')) {
+                style = getCell(rowIdx, col, sheet, false, true).style;
+                if (style && style.borderTop) {
+                    const prevCell: HTMLElement = context.getCell(rowIdx - 1, col);
+                    if (prevCell && prevCell.style.borderBottom) {
+                        const curCell: HTMLElement = context.getCell(rowIdx, col);
+                        if (curCell) {
+                            prevCell.style.borderBottom = '';
+                            curCell.style.borderTop = style.borderTop;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}

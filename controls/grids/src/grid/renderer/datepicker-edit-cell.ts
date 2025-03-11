@@ -2,7 +2,7 @@ import { extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IEditCell, IGrid } from '../base/interface';
 import { DatePicker, DateTimePicker, PopupEventArgs, MaskedDateTime } from '@syncfusion/ej2-calendars';
-import { isEditable, getObject, getCustomDateFormat } from '../base/util';
+import { isEditable, getObject, getCustomDateFormat, parentsUntil, isCellHaveWidth } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 import { Edit } from '../actions/edit';
 
@@ -58,7 +58,7 @@ function dateanddatetimerender(args: {
         format: format,
         placeholder: isInline ?
             '' : args.column.headerText, enableRtl: rtl,
-        enabled: isEditable(args.column, args.requestType, args.element),
+        enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
         cssClass: css ? css : null,
         close: datePickerClose.bind(datePickerEditCell)
     };

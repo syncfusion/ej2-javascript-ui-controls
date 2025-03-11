@@ -328,7 +328,6 @@ export class FormDesigner {
             } else {
                 element.template = htmlElement.appendChild(this.createInputElement(formFieldAnnotationType, drawingObject));
             }
-            this.isSetFormFieldMode = false;
             const divElement: HTMLElement = document.createElement('div');
             divElement.id = drawingObject.id + '_designer_name';
             divElement.style.fontSize = this.defaultFontSize + 'px';
@@ -423,9 +422,12 @@ export class FormDesigner {
             if (!this.pdfViewer.isFormFieldsLoaded || isAddedProgrammatically) {
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
             }
-            const pageIndex: number = this.pdfViewerBase.activeElements.activePageID ?
-                this.pdfViewerBase.activeElements.activePageID : field.pageNumber - 1;
-            this.pdfViewer.fireFormFieldAddEvent('formFieldAdd', field as IFormField , pageIndex);
+            if (this.isSetFormFieldMode || isAddedProgrammatically) {
+                const pageIndex: number = this.pdfViewerBase.activeElements.activePageID ?
+                    this.pdfViewerBase.activeElements.activePageID : field.pageNumber - 1;
+                this.pdfViewer.fireFormFieldAddEvent('formFieldAdd', field as IFormField , pageIndex);
+            }
+            this.isSetFormFieldMode = false;
         } else {
             const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
             this.updateFormDesignerFieldInSessionStorage(point, element, formFieldAnnotationType, drawingObject);
@@ -2807,6 +2809,7 @@ export class FormDesigner {
                     }
                     else {
                         this.updateFormFieldsInCollections(formFieldId, options);
+                        this.updateDesignerSession(formFieldId, options);
                         this.rerenderFormFields((formFieldId as any).pageIndex);
                     }
                     break;
@@ -2819,6 +2822,7 @@ export class FormDesigner {
                     }
                     else {
                         this.updateFormFieldsInCollections(formFieldId, options);
+                        this.updateDesignerSession(formFieldId, options);
                     }
                     break;
                 }
@@ -2830,6 +2834,7 @@ export class FormDesigner {
                     }
                     else {
                         this.updateFormFieldsInCollections(formFieldId, options);
+                        this.updateDesignerSession(formFieldId, options);
                     }
                     break;
                 }
@@ -2838,6 +2843,72 @@ export class FormDesigner {
         }
         else {
             this.updateFormFieldsInCollections(formFieldId, options);
+            this.updateFormFieldsInFieldsSession(formFieldId, options);
+        }
+    }
+
+    /**
+     * Update the form field in the form designer session.
+     *
+     * @param {any} formFieldId - It describes about the form field id
+     * @param {any} options - It describes about the options
+     * @returns {void}
+     */
+    private updateDesignerSession(formFieldId: any, options: any): void {
+        const fieldId: any = (typeof formFieldId === 'object') ? formFieldId.id : formFieldId;
+        const actualObject: any = (this.pdfViewer.nameTable as any)[`${fieldId}`];
+        const bound: any = (actualObject as any).bounds;
+        const wrapper: DiagramHtmlElement = actualObject.wrapper.children[0];
+        const type : string = actualObject.formFieldAnnotationType;
+        if (!isNullOrUndefined(options.customData) && (actualObject as any).customData !== options.customData) {
+            (actualObject as any).customData = options.customData;
+        }
+        if (!isNullOrUndefined(options.name) && (actualObject as any).name !== options.name) {
+            (actualObject as any).name = options.name;
+        }
+        if (!isNullOrUndefined(options.borderColor) && (actualObject as any).borderColor !== options.borderColor) {
+            (actualObject as any).borderColor = options.borderColor;
+        }
+        if (!isNullOrUndefined(options.backgroundColor) && (actualObject as any).backgroundColor !== options.backgroundColor) {
+            (actualObject as any).backgroundColor = options.backgroundColor;
+        }
+        if (!isNullOrUndefined(options.value) && (actualObject as any).value !== options.value) {
+            (actualObject as any).value = options.value;
+        }
+        this.updateFormDesignerFieldInSessionStorage(bound, wrapper, type, actualObject);
+    }
+
+    /**
+     * Update the form field in the form field session.
+     *
+     * @param {any} formFieldId - It describes about the form field id
+     * @param {any} options - It describes about the options
+     * @returns {void}
+     */
+    private updateFormFieldsInFieldsSession(formFieldId: any, options: any): void {
+        const fieldsData: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        if (!isNullOrUndefined(fieldsData)) {
+            const data: any = JSON.parse(fieldsData);
+            for (let x: number = 0; x < data.length; x++) {
+                if (data[`${x}`].FieldName === formFieldId.name) {
+                    if (!isNullOrUndefined(options.customData) && data[`${x}`].CustomData !== options.customData) {
+                        data[`${x}`].CustomData = options.customData;
+                    }
+                    if (!isNullOrUndefined(options.backgroundColor) && data[`${x}`].BackColor !== options.backgroundColor) {
+                        data[`${x}`].BackColor = this.getRgbCode(options.backgroundColor);
+                    }
+                    if (!isNullOrUndefined(options.borderColor) && data[`${x}`].BorderColor !== options.borderColor) {
+                        data[`${x}`].BorderColor = this.getRgbCode(options.borderColor);
+                    }
+                    if (!isNullOrUndefined(options.name) && data[`${x}`].Name !== options.name) {
+                        data[`${x}`].Name = options.name;
+                    }
+                    if (!isNullOrUndefined(options.value) && data[`${x}`].Value !== options.value) {
+                        data[`${x}`].Value = options.value;
+                    }
+                }
+            }
+            this.pdfViewerBase.setItemInSessionStorage(data, '_formfields');
         }
     }
 
@@ -2893,6 +2964,9 @@ export class FormDesigner {
                     (this.pdfViewer.nameTable as { [key: string]: { backgroundColor: string } })[`${id}`].backgroundColor = backColor;
                 }
             }
+        }
+        if (!isNullOrUndefined(options.customData) && currentData.customData !== options.customData) {
+            currentData.customData = options.customData;
         }
         if (!isNullOrUndefined(options.isReadOnly) && currentData.isReadonly !== options.isReadOnly) {
             currentData.isReadOnly = options.isReadOnly;
@@ -4442,10 +4516,10 @@ export class FormDesigner {
      */
     public downloadFormDesigner(): string {
         const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
-        if (data) {
-            const formFieldsData: any = JSON.parse(data);
+        if (data || (this.pdfViewer.formDesignerModule && this.pdfViewer.formFieldCollections.length > 0)) {
+            const formFieldsData: any =  !isNullOrUndefined(data) ? JSON.parse(data) : [];
             // Get Formfields present in non rendered pages
-            if (formFieldsData.length !== this.pdfViewer.formFieldCollections.length) {
+            if (formFieldsData && formFieldsData.length !== this.pdfViewer.formFieldCollections.length) {
                 const formFieldNotContains: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(
                     ({ id: id1 }: { id: string }) =>
                         !this.pdfViewer.formFieldCollection.some(
@@ -4636,10 +4710,10 @@ export class FormDesigner {
      * @returns {any} - any
      */
     private loadedFormFieldValue(currentData: any): any {
-        const backgroundColor: number[] = this.hexToRgb(currentData.backgroundColor);
+        const backgroundColor: any = this.getRgbCode(currentData.backgroundColor);
         const bounds: any = currentData.bounds;
-        const backColor: any = currentData.backgroundColor ? { r: backgroundColor[0], g: backgroundColor[1],
-            b: backgroundColor[2], a: backgroundColor[3] } : { r: 218, g: 234, b: 247, a: 100 };
+        const backColor: any = currentData.backgroundColor ? { r: backgroundColor.r, g: backgroundColor.g,
+            b: backgroundColor.b, a: backgroundColor.a } : { r: 218, g: 234, b: 247, a: 100 };
         const fontColor: number[] = this.hexToRgb(currentData.color);
         const foreColor: any = currentData.color ? { r: fontColor[0], g: fontColor[1], b: fontColor[2], a: 100 } :
             { r: 0, g: 0, b: 0, a: 100 };
@@ -4742,7 +4816,8 @@ export class FormDesigner {
             isRequired: currentData.isRequired ? currentData.isRequired : false, textAlign: currentData.alignment,
             formFieldAnnotationType: currentData.type,
             zoomValue: 1, option: options, maxLength: currentData.maxLength ? currentData.maxLength : 0,
-            visibility: currentData.visibility, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+            visibility: currentData.visibility, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false },
+            customData: currentData.customData
         };
         if (finalSignBounds) {
             fieldProperties.signatureBound = finalSignBounds;
@@ -4763,7 +4838,8 @@ export class FormDesigner {
                     currentData.isRequired : false,
                 textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomValue: 1,
                 maxLength: currentData.maxLength ? currentData.maxLength : 0, visibility: currentData.visibility,
-                font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+                font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false },
+                customData: currentData.customData
             };
             fieldProperties.radiobuttonItem.push(field);
         } else {

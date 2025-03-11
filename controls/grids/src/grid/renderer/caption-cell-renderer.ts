@@ -100,6 +100,8 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             const isReactPrintGrid: boolean = this.parent.printGridParent && this.parent.printGridParent.isReact;
             if (isReactCompiler || isReactChild || isReactPrintGrid) {
                 const tempID: string = gObj.element.id + 'captionTemplate';
+                const groupKey: string = 'groupKey'; const key: string = 'key';
+                data[`${groupKey}`] = data[`${key}`];
                 templateCompiler(gObj.groupSettings.captionTemplate as string)(data, this.parent, 'captionTemplate', tempID, null, null, node);
                 this.parent.renderTemplates();
             } else if (this.parent.isVue

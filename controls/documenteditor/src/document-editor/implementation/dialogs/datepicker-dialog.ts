@@ -57,7 +57,7 @@ export class DatePickerDialog {
     private valueChange(args: ChangedEventArgs): void {
         if (args.event){
             const value : string = args.value.toLocaleDateString();
-            const contenControl : ContentControl = this.documentHelper.owner.editor.getContentControl();
+            const contenControl : ContentControl = this.documentHelper.owner.selection.currentContentControl;
             this.documentHelper.owner.editor.dropDownChange(contenControl, value);
             this.documentHelper.hideDialog();
         }

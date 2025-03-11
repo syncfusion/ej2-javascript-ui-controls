@@ -121,7 +121,7 @@ describe('Chart - ', () => {
         it('empty column', (done: Function) => {
             util.triggerMouseEvent((document.querySelectorAll('.e-remove')[2] as HTMLElement), 'click');
             setTimeout(() => {
-                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:1450, ');
+                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:1450, Grand Total');
                 expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + Canada');
                 done();
             }, 1000);
@@ -130,7 +130,7 @@ describe('Chart - ', () => {
         it('remove Country from row', function (done) {
             util.triggerMouseEvent((document.querySelectorAll('.e-remove')[0] as HTMLElement), 'click');
             setTimeout(function () {
-                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Alabama:250, ');
+                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Alabama:250, Grand Total');
                 done();
             }, 1000);
         })
@@ -138,9 +138,9 @@ describe('Chart - ', () => {
         it('empty row', (done: Function) => {
             util.triggerMouseEvent((document.querySelectorAll('.e-remove')[0] as HTMLElement), 'click');
             setTimeout(() => {
-                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:4600, ');
+                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:4600, Grand Total');
                 expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_0')[0].textContent).toBe('Total Sum of Amount');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_0')).toBe(null);
+                expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('Grand Total');
                 done();
             }, 1000);
         })

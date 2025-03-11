@@ -1774,7 +1774,7 @@ export class Table {
                 element.parentNode.removeChild(element);
             }
         });
-        if (!curTable.style.width) {
+        if (parseInt(curTable.style.width, 10) === 0) {
             curTable.style.width = curTable.offsetWidth + 'px';
         }
         const colGroup: HTMLElement | null  = curTable.querySelector('colgroup');

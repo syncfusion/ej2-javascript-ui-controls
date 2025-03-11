@@ -45,42 +45,26 @@
           border-color: $tbar-btn-focus-border-color;
           border-style: $tbar-border-nav-type;
           border-width: $tbar-btn-hover-border-size;
-
-          @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
-            box-shadow: none;
-          }
-          @else {
-            box-shadow: $tbar-ext-btn-focus-box-shadow;
-          }
-
+          box-shadow: $tbar-ext-btn-focus-box-shadow;
+          
           .e-icons {
             color: $tbar-btn-icons-focus-color;
+            @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+              color: $tbar-default-icon-color;
+            }
           }
   
           .e-tbar-btn-text {
             color: $tbar-btn-text-focus-color;
-            
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
               color: $tbar-btn-icons-focus-color;
             }
-          }
-        }
-
-        @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
-          &:focus-visible {
-            background: $tbar-default-bg;
-            box-shadow: $tbar-ext-btn-focus-box-shadow;
-
-            .e-icons {
-              color: $tbar-default-icon-color;
-            }
-
-            .e-tbar-btn-text {
+            @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
               color: $tbar-default-font;
             }
           }
         }
-  
+
         &:hover {
           background: $tbar-hover-bg;
           border-color: $tbar-hover-border-color;
@@ -303,33 +287,21 @@
             border-color: $tbar-btn-focus-border-color;
             border-style: $tbar-border-nav-type;
             border-width: $tbar-popup-btn-hover-border-size;
-
-            @if ($skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3') {
-              box-shadow: none;
-            }
-            @else {
-              box-shadow: $tbar-popup-btn-focus-box-shadow;
-            }
-
-            @if $skin-name == 'bootstrap5.3' {
-              .e-tbar-btn-text,
-              .e-icons.e-btn-icon {
-                color: $tbar-btn-active-icons-color;
-              }
-            }
-          }
-
-          @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
-            &:focus-visible {
-              background: $tbar-popup-btn-focus-bg;
-              box-shadow: $tbar-popup-btn-focus-box-shadow;
-
+            box-shadow: $tbar-popup-btn-focus-box-shadow;
+            
+            @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
               .e-icons {
                 color: $tbar-popup-nav-hover-icons-color;
               }
 
               .e-tbar-btn-text {
                 color: $tbar-popup-btn-text-focus-color;
+              }
+            }
+            @if $skin-name == 'bootstrap5.3' {
+              .e-tbar-btn-text,
+              .e-icons.e-btn-icon {
+                color: $tbar-btn-active-icons-color;
               }
             }
           }
@@ -362,12 +334,16 @@
               border-color: $tbar-btn-focus-border-color;
               border-style: $tbar-border-nav-type;
               border-width: $tbar-btn-hover-border-size;
-
+              box-shadow: $tbar-ext-btn-focus-box-shadow;
+              
               @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
-                box-shadow: none;
-              }
-              @else {
-                box-shadow: $tbar-ext-btn-focus-box-shadow;
+                .e-icons {
+                  color: $tbar-default-icon-color;
+                }
+
+                .e-tbar-btn-text {
+                  color: $tbar-default-font;
+                }
               }
               @if $skin-name == 'bootstrap5.3' {
                 .e-tbar-btn-text,
@@ -377,21 +353,6 @@
               }
             }
 
-            @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
-              &:focus-visible {
-                background: $tbar-default-bg;
-                box-shadow: $tbar-ext-btn-focus-box-shadow;
-
-                .e-icons {
-                  color: $tbar-default-icon-color;
-                }
-
-                .e-tbar-btn-text {
-                  color: $tbar-default-font;
-                }
-              }
-            }
-  
             &:hover {
               background: $tbar-hover-bg;
               border-radius: $tbar-btn-border-radius;

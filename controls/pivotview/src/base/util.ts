@@ -513,10 +513,11 @@ export class PivotUtil {
      * @param {string[]} values - It contains the headers.
      * @param {PivotChart} chartModule - It contains the instance of pivot chart.
      * @param {boolean} isColumnHeader - It determines whether the specified header is column or row.
+     * @param {IAxisSet} cell - It contains the cell information.
      * @returns {string} - It returns the formatted header.
      * @hidden
      */
-    public static formatChartHeaders(values: string[], chartModule: PivotChart, isColumnHeader: boolean): string {
+    public static formatChartHeaders(values: string[], chartModule: PivotChart, isColumnHeader: boolean, cell?: IAxisSet): string {
         const formattedValues: string[] = [];
         for (let i: number = 0, j: number = values.length; i < j; i++) {
             const fieldName: string = isColumnHeader ? ((chartModule.parent.dataSourceSettings.columns.length > 0 &&
@@ -534,6 +535,8 @@ export class PivotUtil {
                         values[i as number] as string, fieldName as string).formattedText
                     );
                 }
+            } else if (cell && cell.isGrandSum) {
+                formattedValues.push(chartModule.parent.localeObj.getConstant('grandTotal'));
             } else {
                 formattedValues.push(values[i as number] as string);
             }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I696366` - Resolved the issue with copying and pasting a folder from the navigation pane to the layout pane in File Manager component.
+- `#I691585` - Resolved the selection doesn't persist issue when both virtualization and persistence are enabled.
+
 ## 28.2.9 (2025-03-04)
 
 ### FileManager
@@ -9,6 +18,7 @@
 #### Bug Fixes
 
 - `#I691585` - Resolved the errors in the File Manager component while selecting multiple file items with virtualization support.
+- `#I683396` - The issue context menu is not closed when scrolling in the FileManager component layout content has been resolved.
 
 ## 28.2.6 (2025-02-18)
 
@@ -17,7 +27,6 @@
 #### Bug Fixes
 
 - `#I656917` - The issue with the selected item count when enabling range selection in the File Manager component has been resolved.
-- `#I683396` - The issue context menu is not closed when scrolling in the FileManager component layout content has been resolved.
 
 ## 28.2.5 (2025-02-11)
 

@@ -195,7 +195,7 @@ export interface ImageSettingsModel {
     /**
      * Defines the minimum width of the image.
      *
-     * @default 0
+     * @default '0'
      */
     minWidth?: string | number;
 
@@ -209,7 +209,7 @@ export interface ImageSettingsModel {
     /**
      * Defines the minimum height of the image.
      *
-     * @default 0
+     * @default '0'
      */
     minHeight?: string | number;
 
@@ -349,7 +349,7 @@ export interface VideoSettingsModel {
     /**
      * Defines the minimum width of the video.
      *
-     * @default 0
+     * @default '0'
      */
     minWidth?: string | number;
 
@@ -363,7 +363,7 @@ export interface VideoSettingsModel {
     /**
      * Defines the minimum height of the video.
      *
-     * @default 0
+     * @default '0'
      */
     minHeight?: string | number;
 
@@ -578,7 +578,7 @@ export interface TableSettingsModel {
     /**
      * Defines the minimum width of the table.
      *
-     * @default 0
+     * @default '0'
      */
     minWidth?: string | number;
 

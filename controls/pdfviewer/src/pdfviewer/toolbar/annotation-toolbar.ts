@@ -2078,6 +2078,9 @@ export class AnnotationToolbar {
             if (elements.left + elements.width > mainContainerBounds.width) {
                 colorElement.element.parentElement.style.left = (elements.left - elements.width) + buttonBounds.width + 'px';
             }
+            if (((elements.left - elements.width) + buttonBounds.width) < 0) {
+                colorElement.element.parentElement.style.left = mainContainerBounds.left + buttonBounds.width + 'px';
+            }
         }
     };
 

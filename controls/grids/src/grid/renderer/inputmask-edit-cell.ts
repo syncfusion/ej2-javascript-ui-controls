@@ -2,7 +2,7 @@ import { extend } from '@syncfusion/ej2-base';
 import { IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { MaskedTextBox  } from '@syncfusion/ej2-inputs';
-import { isEditable, getObject } from '../base/util';
+import { isEditable, getObject, isCellHaveWidth, parentsUntil } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 
 /**
@@ -23,7 +23,7 @@ export class MaskedTextBoxCellEdit extends EditCellBase implements IEditCell {
                 value: getObject(args.column.field, args.rowData),
                 floatLabelType: isInlineEdit ? 'Never' : 'Always',
                 mask: '000-000-0000',
-                enabled: isEditable(args.column, args.requestType, args.element),
+                enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
                 cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             args.column.edit.params));

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception encountered while parsing the destination from the document link annotations.
+- Resolved an issue with preserving the line annotation caption text in appearance when updating the measure dictionary as a custom entry.
+
 ## 28.2.9 (2025-03-04)
 
 ### PDF Parser

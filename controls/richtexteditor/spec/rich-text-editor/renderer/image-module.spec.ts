@@ -6348,4 +6348,57 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').classList.contains('e-error')).toBe(false); 
         });
         });
+    describe('942858 -EnableAutoUrl does not apply for the links added with inserted image in the RichTextEditor ',function(){
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableAutoUrl: true,
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                iframeSettings: {
+                    enable: true
+                }
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll((done:Function) => { 
+            setTimeout(() => {
+            destroy(rteObj);
+            done();
+        }, 2000);
+        });
+        it(" insert image  and add link value to it", () => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+            item.click();
+            setTimeout(() => {
+                let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
+                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+                (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                let trg = (iframeBody.querySelector('.e-rte-image') as HTMLElement);
+                expect(!isNullOrUndefined(trg)).toBe(true);
+                expect(iframeBody.querySelectorAll('img').length).toBe(1);
+                expect((iframeBody.querySelector('img') as HTMLImageElement).src).toBe('https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png');
+                (iframeBody.querySelector('img') as HTMLImageElement).style.width = '100px';
+                (iframeBody.querySelector('img') as HTMLImageElement).style.height = '100px';
+                (rteObj.contentModule.getPanel() as HTMLElement).focus();
+                dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+                dispatchEvent((iframeBody.querySelector('img') as HTMLElement), 'mouseup');
+                setTimeout(() => {
+                    let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_InsertLink");
+                    imageBtn.parentElement.click();
+                    let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                    let urlInput: HTMLInputElement = dialog.querySelector(".e-input.e-img-link");
+                    urlInput.value = "defaultimage";
+                    let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
+                    insertButton.click();
+                    expect((iframeBody.querySelector('a').getAttribute('href') === 'defaultimage')).toBe(true);
+            }, 200);
+        }, 200);
+        });
+    });
 });

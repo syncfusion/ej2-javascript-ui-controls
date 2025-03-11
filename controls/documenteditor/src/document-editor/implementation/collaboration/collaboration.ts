@@ -621,12 +621,12 @@ export class CollaborativeEditingHandler {
                 if (op2.text === (CONTROL_CHARACTERS.Marker_Start.toString() + CONTROL_CHARACTERS.Marker_End.toString())) {
                     this.updateOperation(op2);
                 } else if (op2.text === CONTROL_CHARACTERS.Marker_Start && !isNullOrUndefined(op2.format)) {
-                    const contentcontrol: ContentControl = this.documentEditor.editorModule.getContentControl();
+                    const contentcontrol: ContentControl = this.documentEditor.selection.currentContentControl;
                     if (contentcontrol) {
                         this.documentEditor.editorModule.assignContentControl(contentcontrol.contentControlProperties, JSON.parse(op2.format));
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.Marker_Start && !isNullOrUndefined(op2.markerData) && op2.markerData.type === 'ContentControlCheckBox') {
-                    const contentcontrol: ContentControl = this.documentEditor.editorModule.getContentControl();
+                    const contentcontrol: ContentControl = this.documentEditor.selection.currentContentControl;
                     if (contentcontrol && contentcontrol.contentControlProperties.type === 'CheckBox') {
                         this.documentEditor.editorModule.toggleContentControlCheckBox(contentcontrol, markerData.checkBoxValue);
                     }
@@ -746,11 +746,6 @@ export class CollaborativeEditingHandler {
             }
         }
         contentControlProperties = undefined;
-        if (this.documentEditor.documentHelper.contentControlCollection.length > 0) {
-            this.documentEditor.selectionModule.contentControleditRegionHighlighters.clear();
-            this.documentEditor.selectionModule.isHighlightContentControlEditRegion = true;
-            this.documentEditor.selectionModule.onHighlightContentControl();
-        }
         if (this.documentEditor.editor.isFieldOperation) {
             this.documentEditor.editorModule.layoutWholeDocument();
             this.documentEditor.editor.isFieldOperation = false;

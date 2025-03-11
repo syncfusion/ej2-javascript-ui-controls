@@ -3506,6 +3506,22 @@ describe('Datetimepicker', () => {
             expect(datetimepicker.element.value).toBe('day/month/year day of the week');
             expect(datetimepicker.value).toBe(null);
         });
+	it('With format property - 6 ', () => {
+            let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
+            document.body.appendChild(inputEle);
+            datetimepicker = new DateTimePicker({enableMask: true , format: "dd'.'ccc'.'MMM'.'yyyy' 'HH':'mm':'ss"});
+            datetimepicker.appendTo('#datetimepicker');
+            expect(datetimepicker.element.value).toBe('day.day of the week.month.year hour:minute:second');
+            expect(datetimepicker.value).toBe(null);
+        });
+        it('with format property - 7', () => {
+            let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
+            document.body.appendChild(inputEle);
+            datetimepicker = new DateTimePicker({enableMask: true , format: "dd'.'cccc'.'MMM'.'yyyy' 'HH':'mm':'ss"});
+            datetimepicker.appendTo('#datetimepicker');
+            expect(datetimepicker.element.value).toBe('day.day of the week.month.year hour:minute:second');
+            expect(datetimepicker.value).toBe(null);
+        });
         // it('Clear button', () => { 
         //     let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
         //     document.body.appendChild(inputEle);

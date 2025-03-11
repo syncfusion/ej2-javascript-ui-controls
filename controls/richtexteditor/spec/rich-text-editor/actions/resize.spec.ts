@@ -439,4 +439,48 @@ describe("Resize - Actions Module", () => {
             }, 2000);
         });
     });
+    describe('942836: Script error throws when resizing the RichTextEditor', ()=> {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let clickEvent: any;
+        let originalConsoleError: { (...data: any[]): void; (...data: any[]): void; };
+        let errorSpy: jasmine.Spy;
+
+        beforeEach((done: Function) => {
+            originalConsoleError = console.error;
+            errorSpy = jasmine.createSpy('error');
+            console.error = errorSpy;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: false,
+                    items: ['CreateTable']
+                },
+                enableResize: true,
+                enableRtl: true
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterEach((done: Function) => {
+            console.error = originalConsoleError;
+            destroy(rteObj);
+            done();
+        });
+        it('resizing RTE', (done) => {
+            let trg = (rteObj.element.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.resizeModule as any).resizeStart(clickEvent);
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("mousemove", false, true);
+                trg.dispatchEvent(clickEvent);
+                (rteObj.resizeModule as any).performResize(clickEvent);
+                setTimeout(() => {
+                    expect(errorSpy).not.toHaveBeenCalled();
+                    done();
+                }, 100);
+        });
+    });
 });

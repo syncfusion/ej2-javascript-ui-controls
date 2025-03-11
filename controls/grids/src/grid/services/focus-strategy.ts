@@ -72,7 +72,7 @@ export class FocusStrategy {
                     this.rowModelGen.generateRows({ rows: [new Row<Column>({ isDataRow: true })] }),
                     this.getContent().selector, false);
         }
-        const current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
+        const current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator(), this.active);
         this.getContent().matrix.select(current[0], current[1]);
         if (this.skipFocus && !(e && e.target === this.parent.element)) {
             this.focus(e);
@@ -400,6 +400,18 @@ export class FocusStrategy {
                 if (this.active.matrix.matrix[lastHeaderCellIndex[0]][lastHeaderCellIndex[1]] === 0) {
                     lastHeaderCellIndex = findCellIndex(this.active.matrix.matrix, lastHeaderCellIndex, false);
                 }
+                const nextCell: Element = getValue(`${nextHeaderCellIndex[0]}.cells.${nextHeaderCellIndex[1]}`, this.active.matrix.getRowsFromIndex(nextHeaderCellIndex[0], this.active));
+                if (nextCell && nextCell.getBoundingClientRect().width === 0
+                    && this.active.matrix.matrix.length - 1 === nextHeaderCellIndex[0]) {
+                    lastHeaderCellIndex = this.active.matrix.nextVisibleCellFocus(
+                        nextHeaderCellIndex[0],
+                        nextHeaderCellIndex[1],
+                        e.action,
+                        this.active.keyActions[e.action],
+                        this.active,
+                        this.active.matrix.current[1]
+                    );
+                }
                 if (this.active.matrix.current.toString() === lastHeaderCellIndex.toString() && this.content.matrix.matrix.length) {
                     returnVal = true;
                     this.setActive(true);
@@ -409,6 +421,17 @@ export class FocusStrategy {
                     }
                     if (this.active.matrix.matrix[firstContentCellIndex[0]][firstContentCellIndex[1]] === 0) {
                         firstContentCellIndex = findCellIndex(this.active.matrix.matrix, [0, 0], true);
+                    }
+                    const firstCell: Element = getValue(`${firstContentCellIndex[0]}.cells.${firstContentCellIndex[1]}`, this.active.matrix.getRowsFromIndex(firstContentCellIndex[0], this.active));
+                    if (firstCell && firstCell.getBoundingClientRect().width === 0) {
+                        firstContentCellIndex = this.active.matrix.nextVisibleCellFocus(
+                            firstContentCellIndex[0],
+                            firstContentCellIndex[1],
+                            e.action,
+                            this.active.keyActions[e.action],
+                            this.active,
+                            this.active.matrix.current[1]
+                        );
                     }
                     this.active.matrix.current = this.parent.editSettings.mode === 'Batch' ?
                         this.isValidBatchEditCell(firstContentCellIndex) ? firstContentCellIndex :
@@ -427,13 +450,35 @@ export class FocusStrategy {
                 }
             }
             if (e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
-                const previousCellIndex: number[] = findCellIndex(this.active.matrix.matrix, this.active.matrix.current, false);
+                let previousCellIndex: number[] = findCellIndex(this.active.matrix.matrix, this.active.matrix.current, false);
+                const prevCell: Element = getValue(`${previousCellIndex[0]}.cells.${previousCellIndex[1]}`, this.active.matrix.getRowsFromIndex(previousCellIndex[0], this.active));
+                if (prevCell && prevCell.getBoundingClientRect().width === 0 && previousCellIndex[0] === 0) {
+                    previousCellIndex = this.active.matrix.nextVisibleCellFocus(
+                        previousCellIndex[0],
+                        previousCellIndex[1],
+                        e.action,
+                        this.active.keyActions[e.action],
+                        this.active,
+                        this.active.matrix.current[1]
+                    );
+                }
                 if (previousCellIndex.toString() === this.active.matrix.current.toString()) {
                     this.focusOutFromHeader(e);
                     return;
                 }
                 if (this.active.matrix.current.toString() !== previousCellIndex.toString() && !returnVal) {
                     returnVal = true;
+                    const prevCell: Element = getValue(`${previousCellIndex[0]}.cells.${previousCellIndex[1]}`, this.active.matrix.getRowsFromIndex(previousCellIndex[0], this.active));
+                    if (prevCell && prevCell.getBoundingClientRect().width === 0 && previousCellIndex[0] === 0) {
+                        previousCellIndex = this.active.matrix.nextVisibleCellFocus(
+                            previousCellIndex[0],
+                            previousCellIndex[1],
+                            e.action,
+                            this.active.keyActions[e.action],
+                            this.active,
+                            this.active.matrix.current[1]
+                        );
+                    }
                     this.active.matrix.current = previousCellIndex;
                 }
             }
@@ -457,6 +502,17 @@ export class FocusStrategy {
                 let firstContentCellIndex: number[] = [0, 0];
                 if (this.active.matrix.matrix[firstContentCellIndex[0]][firstContentCellIndex[1]] === 0) {
                     firstContentCellIndex = findCellIndex(this.active.matrix.matrix, [0, 0], true);
+                }
+                const firstCell: Element = getValue(`${firstContentCellIndex[0]}.cells.${firstContentCellIndex[1]}`, this.active.matrix.getRowsFromIndex(firstContentCellIndex[0], this.active));
+                if (firstCell && firstCell.getBoundingClientRect().width === 0) {
+                    firstContentCellIndex = this.active.matrix.nextVisibleCellFocus(
+                        firstContentCellIndex[0],
+                        firstContentCellIndex[1],
+                        e.action,
+                        this.active.keyActions[e.action],
+                        this.active,
+                        this.active.matrix.current[1]
+                    );
                 }
                 if (!returnVal && (firstContentCellIndex.toString() === this.active.matrix.current.toString()
                     || (this.parent.editSettings.mode === 'Batch'
@@ -532,6 +588,17 @@ export class FocusStrategy {
         while (!cellIndexObtain) {
             const prevTempCellIndex: number[] = tempCellIndex;
             tempCellIndex = findCellIndex(this.active.matrix.matrix, tempCellIndex, next);
+            const tempCell: Element = getValue(`${tempCellIndex[0]}.cells.${tempCellIndex[1]}`, this.active.getTable().rows);
+            if (tempCell && tempCell.getBoundingClientRect().width === 0) {
+                tempCellIndex = this.active.matrix.nextVisibleCellFocus(
+                    tempCellIndex[0],
+                    tempCellIndex[1],
+                    this.activeKey,
+                    this.active.keyActions[this.activeKey],
+                    this.active,
+                    this.active.matrix.current[1]
+                );
+            }
             if ((prevTempCellIndex.toString() === tempCellIndex.toString())
                 || (limitRow && prevTempCellIndex[0] !== tempCellIndex[0])) {
                 cellIndexObtain = true;
@@ -550,6 +617,17 @@ export class FocusStrategy {
             this.active.matrix.matrix[this.active.matrix.matrix.length - 1].length - 1];
         if (this.active.matrix.matrix[lastContentCellIndex[0]][lastContentCellIndex[1]] === 0) {
             lastContentCellIndex = findCellIndex(this.active.matrix.matrix, lastContentCellIndex, false);
+        }
+        const lastCell: Element = getValue(`${lastContentCellIndex[0]}.cells.${lastContentCellIndex[1]}`, this.active.getTable().rows);
+        if (lastCell && lastCell.getBoundingClientRect().width === 0) {
+            lastContentCellIndex = this.active.matrix.nextVisibleCellFocus(
+                lastContentCellIndex[0],
+                lastContentCellIndex[1],
+                this.activeKey,
+                this.active.keyActions[this.activeKey],
+                this.active,
+                this.active.matrix.current[1]
+            );
         }
         this.active.matrix.current = lastContentCellIndex;
     }
@@ -1213,7 +1291,8 @@ export class Matrix {
         this.matrix[parseInt(rowIndex.toString(), 10)][parseInt(columnIndex.toString(), 10)] = allow ? 1 : 0;
     }
 
-    public get(rowIndex: number, columnIndex: number, navigator: number[], action?: string, validator?: Function): number[] {
+    public get(rowIndex: number, columnIndex: number, navigator: number[], action?: string, validator?: Function,
+               active?: IFocus ): number[] {
         const tmp: number = columnIndex; if (rowIndex + navigator[0] < 0) { return [rowIndex, columnIndex]; }
         rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
         let emptyTable: boolean = true;
@@ -1226,6 +1305,16 @@ export class Matrix {
         const val: number = getValue(`${rowIndex}.${columnIndex}`, this.matrix);
         if (rowIndex === this.rows && (action === 'downArrow' || action === 'enter')) {
             navigator[0] = -1;
+        }
+        let cell: Element;
+        if (active) {
+            const rows: HTMLTableRowElement | HTMLCollectionOf<HTMLTableRowElement> = this.getRowsFromIndex(rowIndex, active);
+            cell = getValue(`${rowIndex}.cells.${columnIndex}`, rows);
+        }
+        if (cell && cell.getBoundingClientRect().width === 0) {
+            const current: number[] = this.nextVisibleCellFocus(rowIndex, columnIndex, action, navigator, active, tmp);
+            rowIndex = current[0];
+            columnIndex = current[1];
         }
         if (first === null) {
             for (let i: number = 0; i < this.rows; i++) {
@@ -1241,6 +1330,69 @@ export class Matrix {
         }
         return this.inValid(val) || !validator(rowIndex, columnIndex, action) ?
             this.get(rowIndex, tmp, navigator, action, validator) : [rowIndex, columnIndex];
+    }
+
+    public getRowsFromIndex(rowIndex: number, active: IFocus): HTMLTableRowElement | HTMLCollectionOf<HTMLTableRowElement> {
+        return active.getTable().rows[parseInt(rowIndex.toString(), 10)].classList.contains('e-addedrow') ?
+            active.getTable().rows[parseInt(rowIndex.toString(), 10)].querySelector('table').rows : active.getTable().rows;
+    }
+
+    public nextVisibleCellFocus(rowIndex: number, columnIndex: number, action: string, navigator: number[],
+                                active: IFocus, tmp: number): number[] {
+        let rows: HTMLTableRowElement | HTMLCollectionOf<HTMLTableRowElement> = this.getRowsFromIndex(rowIndex, active);
+        let cell: HTMLTableCellElement = getValue(`${rowIndex}.cells.${columnIndex}`, rows);
+        const rowMatrix: number[][] = active.matrix.matrix;
+        const maxRow: number = rowMatrix.length - 1;
+        const isTab: boolean = action === 'tab';
+        const isShiftTab: boolean = action === 'shiftTab';
+        while (cell && cell.getBoundingClientRect().width === 0) {
+            if ((isTab && rowIndex === maxRow && columnIndex === rowMatrix[parseInt(rowIndex.toString(), 10)].lastIndexOf(1)) ||
+                (isShiftTab && rowIndex === 0 && columnIndex === rowMatrix[parseInt(rowIndex.toString(), 10)].indexOf(1))) {
+                columnIndex = tmp;
+                return [rowIndex, columnIndex];
+            }
+            if (isTab) {
+                if (columnIndex === rowMatrix[parseInt(rowIndex.toString(), 10)].lastIndexOf(1)) {
+                    rowIndex++;
+                    columnIndex = rowMatrix[parseInt(rowIndex.toString(), 10)].indexOf(1);
+                    columnIndex = this.first(this.matrix[parseInt(rowIndex.toString(), 10)], columnIndex, navigator, true, action);
+                    rows = this.getRowsFromIndex(rowIndex, active);
+                } else {
+                    columnIndex++;
+                    columnIndex = this.first(this.matrix[parseInt(rowIndex.toString(), 10)], columnIndex, navigator, true, action);
+                }
+            } else if (isShiftTab) {
+                if (columnIndex === rowMatrix[parseInt(rowIndex.toString(), 10)].indexOf(1)) {
+                    rowIndex--;
+                    columnIndex = rowMatrix[parseInt(rowIndex.toString(), 10)].lastIndexOf(1);
+                    columnIndex = this.first(this.matrix[parseInt(rowIndex.toString(), 10)], columnIndex, navigator, true, action);
+                    rows = this.getRowsFromIndex(rowIndex, active);
+                } else {
+                    columnIndex--;
+                    columnIndex = this.first(this.matrix[parseInt(rowIndex.toString(), 10)], columnIndex, navigator, true, action);
+                }
+            } else if ((action === 'rightArrow' || action === 'shiftRight')) {
+                if (columnIndex === rowMatrix[parseInt(rowIndex.toString(), 10)].lastIndexOf(1)) {
+                    columnIndex = tmp;
+                }
+                else {
+                    columnIndex++;
+                    columnIndex = this.first(this.matrix[parseInt(rowIndex.toString(), 10)], columnIndex, navigator, true, action);
+                }
+            } else if ((action === 'leftArrow' || action === 'shiftLeft')) {
+                if (columnIndex === rowMatrix[parseInt(rowIndex.toString(), 10)].indexOf(1)) {
+                    columnIndex = tmp;
+                } else {
+                    columnIndex--;
+                    columnIndex = this.first(this.matrix[parseInt(rowIndex.toString(), 10)], columnIndex, navigator, true, action);
+                }
+            } else if (action === null) {
+                columnIndex++;
+                columnIndex = this.first(this.matrix[parseInt(rowIndex.toString(), 10)], columnIndex, navigator, true, action);
+            }
+            cell = getValue(`${rowIndex}.cells.${columnIndex}`, rows);
+        }
+        return [rowIndex, columnIndex];
     }
 
     public first(vector: number[], index: number, navigator: number[], moveTo?: boolean, action?: string): number {
@@ -1423,7 +1575,7 @@ export class ContentFocus implements IFocus {
             rowIndex = lastContentCellIndex[0];
             cellIndex = lastContentCellIndex[1] + 1;
         }
-        const current: number[] = this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());
+        const current: number[] = this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator(), this);
         return current;
     }
 

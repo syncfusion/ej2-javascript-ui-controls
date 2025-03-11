@@ -150,7 +150,10 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
             htmlObject.appendChild(tspanElement);
         }
     }
-    const axisSvgObject: Element = chart.svgRenderer.createSvg({ id: 'AxisLabelMax_svg' });
+    const axisSvgObject: Element = chart.svgRenderer.createSvg({
+        id: 'AxisLabelMax_svg', width: chart.availableSize.width,
+        height: chart.availableSize.height
+    });
     document.body.appendChild(axisSvgObject);
     axisSvgObject.appendChild(htmlObject);
     const box: ClientRect = htmlObject.getBoundingClientRect();

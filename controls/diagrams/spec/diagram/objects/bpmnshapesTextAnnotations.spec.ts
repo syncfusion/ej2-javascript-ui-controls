@@ -929,5 +929,314 @@ describe('Diagram Control', () => {
             expect(connector.sourceID === '').toBe(true);
             done();
         });
-    });  
+    });
+    describe('Bug 871558-Bpmn text annotation node position not updated properly while resizing its parent node', () => {
+
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramBpmnTextParentResize' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [ 
+                {
+                    id: 'dataObject', width: 150, height: 150, offsetX: 400, offsetY: 250, // Reduced 50px
+                    shape: {
+                        type: 'Bpmn', shape: 'DataObject',
+                        dataObject: { collection: false, type: 'Input' },
+                    },
+                },
+                // East
+                {
+                    id: 'textAnEast', offsetX: 630, offsetY: 250, width: 100, height: 60, // Reduced 50px
+                    annotations: [{ content: 'East' }],
+                    shape: { type: 'Bpmn', shape: 'TextAnnotation', textAnnotation: { textAnnotationDirection: 'Auto', textAnnotationTarget: 'dataObject' } }
+                },
+                // West
+                {
+                    id: 'textAnWest', offsetX: 160, offsetY: 250, width: 100, height: 60, // Reduced 50px
+                    annotations: [{ content: 'West' }],
+                    shape: { type: 'Bpmn', shape: 'TextAnnotation', textAnnotation: { textAnnotationDirection: 'Auto', textAnnotationTarget: 'dataObject' } }
+                },
+                // North
+                {
+                    id: 'textAnNorth', offsetX: 400, offsetY: 70, width: 100, height: 60, // Reduced 50px
+                    annotations: [{ content: 'North' }],
+                    shape: { type: 'Bpmn', shape: 'TextAnnotation', textAnnotation: { textAnnotationDirection: 'Bottom', textAnnotationTarget: 'dataObject' } }
+                },
+                // South
+                {
+                    id: 'textAnSouth', offsetX: 400, offsetY: 450, width: 100, height: 60, // Reduced 50px
+                    annotations: [{ content: 'South' }],
+                    shape: { type: 'Bpmn', shape: 'TextAnnotation', textAnnotation: { textAnnotationDirection: 'Top', textAnnotationTarget: 'dataObject' } }
+                },
+                // North-East
+                {
+                    id: 'textAnNorthEast', offsetX: 590, offsetY: 100, width: 100, height: 60, // Reduced 50px
+                    annotations: [{ content: 'North-East' }],
+                    shape: { type: 'Bpmn', shape: 'TextAnnotation', textAnnotation: { textAnnotationDirection: 'Auto', textAnnotationTarget: 'dataObject' } }
+                },
+                // North-West
+                {
+                    id: 'textAnNorthWest', offsetX: 200, offsetY: 100, width: 100, height: 60, // Reduced 50px
+                    annotations: [{ content: 'North-West' }],
+                    shape: { type: 'Bpmn', shape: 'TextAnnotation', textAnnotation: { textAnnotationDirection: 'Auto', textAnnotationTarget: 'dataObject' } }
+                },
+                // South-East
+                {
+                    id: 'textAnSouthEast', offsetX: 600, offsetY: 400, width: 100, height: 60, // Reduced 50px
+                    annotations: [{ content: 'South-East' }],
+                    shape: { type: 'Bpmn', shape: 'TextAnnotation', textAnnotation: { textAnnotationDirection: 'Left', textAnnotationTarget: 'dataObject' } }
+                },
+                // South-West
+                {
+                    id: 'textAnSouthWest', offsetX: 200, offsetY: 400, width: 100, height: 60, // Reduced 50px
+                    annotations: [{ content: 'South-West' }],
+                    shape: { type: 'Bpmn', shape: 'TextAnnotation', textAnnotation: { textAnnotationDirection: 'Right', textAnnotationTarget: 'dataObject' } }
+                },
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        orientation: 'Horizontal',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 600,
+                                children: [
+
+
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas2',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 60, width: 100
+                                    },
+                                    {
+                                        id: 'paymentondebitcreditcard',
+                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 60, width: 100
+                                    }
+                                ],
+                            },
+
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                            {
+                                id: 'phase2', offset: 450,
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 1200, offsetY: 470,
+                    height: 100,
+                    width: 850
+                },
+            ];
+            diagram = new Diagram({
+                width: 1800, height: 1000, nodes: nodes,
+                selectedItems:{handleSize:30}
+            });
+            diagram.appendTo('#diagramBpmnTextParentResize');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Resizing dataObject with text annotation in north and south', (done: Function) => {
+            const dataObject = diagram.nameTable['dataObject'];
+            const diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let textAnSouth = diagram.nameTable['textAnSouth'];
+            let southOldOffsetY = textAnSouth.offsetY;
+            let textAnNorth = diagram.nameTable['textAnNorth'];
+            let northOldOffsetY = textAnNorth.offsetY;
+            diagram.select([dataObject]);
+            //NorthSide
+            const thumb1 = document.getElementById('resizeSouth');
+            const thumbBounds1: any = thumb1.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, thumbBounds1.x + (thumbBounds1.width/2), thumbBounds1.y + (thumbBounds1.height/2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, thumbBounds1.x + (thumbBounds1.width/2), thumbBounds1.y + 75);
+            mouseEvents.mouseUpEvent(diagramCanvas, thumbBounds1.x + (thumbBounds1.width/2), thumbBounds1.y + 75);
+
+            const thumb2 = document.getElementById('resizeNorth');
+            const thumbBounds2: any = thumb2.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, thumbBounds2.x + (thumbBounds2.width/2), thumbBounds2.y + (thumbBounds2.height/2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, thumbBounds2.x + (thumbBounds2.width/2), thumbBounds2.y - 75);
+            mouseEvents.mouseUpEvent(diagramCanvas, thumbBounds2.x + (thumbBounds2.width/2), thumbBounds2.y - 75);
+            let southNewOffsetY = textAnSouth.offsetY;
+            let northNewOffsetY = textAnNorth.offsetY;
+            expect(southOldOffsetY < southNewOffsetY && northOldOffsetY > northNewOffsetY).toBe(true);
+            done();
+        });
+
+        it('Resizing dataObject with text annotation in east and west', (done: Function) => {
+            const diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let textAnEast = diagram.nameTable['textAnEast'];
+            let eastOldOffsetX = textAnEast.offsetX;
+            let textAnWest = diagram.nameTable['textAnWest'];
+            let westOldOffsetX = textAnWest.offsetX;
+            // EastSide
+            const resizeEast = document.getElementById('resizeEast');
+            const eastBounds: any = resizeEast.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, eastBounds.x + (eastBounds.width / 2), eastBounds.y + (eastBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, eastBounds.x + 75, eastBounds.y + (eastBounds.height / 2));
+            mouseEvents.mouseUpEvent(diagramCanvas, eastBounds.x + 75, eastBounds.y + (eastBounds.height / 2));
+
+            // WestSide
+            const resizeWest = document.getElementById('resizeWest');
+            const westBounds: any = resizeWest.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, westBounds.x + (westBounds.width / 2), westBounds.y + (westBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, westBounds.x - 75, westBounds.y + (westBounds.height / 2));
+            mouseEvents.mouseUpEvent(diagramCanvas, westBounds.x - 75, westBounds.y + (westBounds.height / 2));
+            let eastNewOffsetX = textAnEast.offsetX;
+            let westNewOffsetX = textAnWest.offsetX;
+            expect(eastOldOffsetX < eastNewOffsetX && westOldOffsetX > westNewOffsetX).toBe(true);
+            done();
+        });
+
+        it('Resizing dataObject with text annotation in north-east and north-west', (done: Function) => {
+            const diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let textAnNothEast = diagram.nameTable['textAnNorthEast'];
+            let northEastOldOffsetX = textAnNothEast.offsetX;
+            let northEastOldOffsetY = textAnNothEast.offsetY;
+
+            let textAnNothWest = diagram.nameTable['textAnNorthWest'];
+            let northWestOldOffsetX = textAnNothWest.offsetX;
+            let northWestOldOffsetY = textAnNothWest.offsetY;
+
+            // NorthEast
+            const resizeNorthEast = document.getElementById('resizeNorthEast');
+            const northEastBounds: any = resizeNorthEast.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, northEastBounds.x + (northEastBounds.width / 2), northEastBounds.y + (northEastBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, northEastBounds.x - 100, northEastBounds.y + 100);
+            mouseEvents.mouseUpEvent(diagramCanvas, northEastBounds.x - 100, northEastBounds.y + 100);
+
+            // NorthWest
+            const resizeNorthWest = document.getElementById('resizeNorthWest');
+            const northWestBounds: any = resizeNorthWest.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, northWestBounds.x + (northWestBounds.width / 2), northWestBounds.y + (northWestBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, northWestBounds.x + 100, northWestBounds.y + 100);
+            mouseEvents.mouseUpEvent(diagramCanvas, northWestBounds.x + 100, northWestBounds.y + 100);
+            let northEastNewOffsetX = textAnNothEast.offsetX;
+            let northEastNewOffsetY = textAnNothEast.offsetY;
+            let northWestNewOffsetX = textAnNothWest.offsetX;
+            let northWestNewOffsetY = textAnNothWest.offsetY;
+            expect(northEastOldOffsetX > northEastNewOffsetX && northEastOldOffsetY < northEastNewOffsetY).toBe(true);
+            expect(northWestOldOffsetX < northWestNewOffsetX && northWestOldOffsetY < northWestNewOffsetY).toBe(true);
+            done();
+        });
+
+        it('Resizing dataObject with text annotation in south-east and south-west', (done: Function) => {
+            const diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let textAnsouthEast = diagram.nameTable['textAnSouthEast'];
+            let southEastOldOffsetX = textAnsouthEast.offsetX;
+            let southEastOldOffsetY = textAnsouthEast.offsetY;
+
+            let textAnsouthWest = diagram.nameTable['textAnSouthWest'];
+            let southWestOldOffsetX = textAnsouthWest.offsetX;
+            let southWestOldOffsetY = textAnsouthWest.offsetY;
+
+            // SouthEast
+            const resizeSouthEast = document.getElementById('resizeSouthEast');
+            const southEastBounds: any = resizeSouthEast.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, southEastBounds.x + (southEastBounds.width / 2), southEastBounds.y + (southEastBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, southEastBounds.x + 50, southEastBounds.y + 50);
+            mouseEvents.mouseUpEvent(diagramCanvas, southEastBounds.x + 50, southEastBounds.y + 50);
+
+            // SouthWest
+            const resizeSouthWest = document.getElementById('resizeSouthWest');
+            const southWestBounds: any = resizeSouthWest.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, southWestBounds.x + (southWestBounds.width / 2), southWestBounds.y + (southWestBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, southWestBounds.x - 50, southWestBounds.y + 50);
+            mouseEvents.mouseUpEvent(diagramCanvas, southWestBounds.x - 50, southWestBounds.y + 50);
+            let southEastNewOffsetX = textAnsouthEast.offsetX;
+            let southEastNewOffsetY = textAnsouthEast.offsetY;
+            let southWestNewOffsetX = textAnsouthWest.offsetX;
+            let southWestNewOffsetY = textAnsouthWest.offsetY;
+            expect(southEastOldOffsetX < southEastNewOffsetX && southEastOldOffsetY < southEastNewOffsetY).toBe(true);
+            expect(southWestOldOffsetX > southWestNewOffsetX && southWestOldOffsetY < southWestNewOffsetY).toBe(true);
+            done();
+        });
+
+        it('Text annotation-parent-resize inside swimlane', (done: Function) => {
+            const diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let dataObjectElement = document.getElementById('dataObject_groupElement');
+            let dataBounds: any = dataObjectElement.getBoundingClientRect();
+            let swimElement = document.getElementById('swimlanestackCanvas11_groupElement');
+            let swimBounds: any = swimElement.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, dataBounds.x + (dataBounds.width / 2),  dataBounds.y + (dataBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, dataBounds.x + (dataBounds.width / 2) + 400,  dataBounds.y + (dataBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, swimBounds.x + (swimBounds.width / 2) + 400,  swimBounds.y + (swimBounds.height / 2));
+            mouseEvents.mouseUpEvent(diagramCanvas, swimBounds.x + (swimBounds.width / 2) + 400,  swimBounds.y + (swimBounds.height / 2));
+            done();
+        });
+
+        it('Resizing dataObject with text annotation in east and west inside swimlane', (done: Function) => {
+            const diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let textAnEast = diagram.nameTable['textAnEast'];
+            let eastOldOffsetX = textAnEast.offsetX;
+            let textAnWest = diagram.nameTable['textAnWest'];
+            let westOldOffsetX = textAnWest.offsetX;
+            // EastSide
+            const resizeEast = document.getElementById('resizeEast');
+            const eastBounds: any = resizeEast.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, eastBounds.x + (eastBounds.width / 2), eastBounds.y + (eastBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, eastBounds.x + 25, eastBounds.y + (eastBounds.height / 2));
+            mouseEvents.mouseUpEvent(diagramCanvas, eastBounds.x + 25, eastBounds.y + (eastBounds.height / 2));
+
+            // WestSide
+            const resizeWest = document.getElementById('resizeWest');
+            const westBounds: any = resizeWest.getBoundingClientRect();
+            mouseEvents.mouseOverEvent(diagramCanvas);
+            mouseEvents.mouseDownEvent(diagramCanvas, westBounds.x + (westBounds.width / 2), westBounds.y + (westBounds.height / 2));
+            mouseEvents.mouseMoveEvent(diagramCanvas, westBounds.x - 25, westBounds.y + (westBounds.height / 2));
+            mouseEvents.mouseUpEvent(diagramCanvas, westBounds.x - 25, westBounds.y + (westBounds.height / 2));
+            let eastNewOffsetX = textAnEast.offsetX;
+            let westNewOffsetX = textAnWest.offsetX;
+            expect(eastOldOffsetX < eastNewOffsetX && westOldOffsetX > westNewOffsetX).toBe(true);
+            done();
+        });
+    });
 });

@@ -544,7 +544,7 @@ export class WorkbookFormula {
                     for (let k: number = range[1]; k <= range[3]; k++) {
                         const cell: CellModel = getCell(j, k, this.parent.getActiveSheet());
                         cell.formula = '';
-                        this.parent.updateCell({ value: '', formula: ''}, getRangeAddress([j, k]));
+                        this.parent.updateCellDetails({ value: '', formula: ''}, getRangeAddress([j, k]), undefined, undefined, true);
                     }
                 }
             }

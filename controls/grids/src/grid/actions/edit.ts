@@ -992,6 +992,18 @@ export class Edit implements IAction {
                                 }
                             }
                         }
+                        const firstCell: Element = getValue(`${rowIndex}.cells.${firstCellIndex}`, this.parent.focusModule.active.matrix.getRowsFromIndex(rowIndex, this.parent.focusModule.active));
+                        if (firstCell && firstCell.getBoundingClientRect().width === 0) {
+                            const firstContentCellIndex: number[] = this.parent.focusModule.active.matrix.nextVisibleCellFocus(
+                                rowIndex,
+                                firstCellIndex,
+                                e.action,
+                                this.parent.focusModule.active.keyActions[e.action],
+                                this.parent.focusModule.active,
+                                this.parent.focusModule.active.matrix.current[1]
+                            );
+                            firstCellIndex = firstContentCellIndex[1];
+                        }
                         this.parent.focusModule.active.matrix.current = [rowIndex, firstCellIndex];
                     }
                 }

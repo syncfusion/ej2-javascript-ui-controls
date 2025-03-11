@@ -403,6 +403,37 @@ describe('Stacked header render module', () => {
         });
     });
 
-
-
+    describe('EJ2-941822 - CustomAttributes Not Applied When Splitting Stacked Header Column with Frozen Columns', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    frozenColumns: 2,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, customAttributes: { class: 'custom-css' } },
+                        {
+                            headerText: 'Order Details', textAlign: 'Center', customAttributes: { class: 'custom-css' }, columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', width: 135, format: 'yMd', customAttributes: { class: 'custom-css' } },
+                                { field: 'Freight', headerText: 'Freight($)', width: 120, format: 'C2', customAttributes: { class: 'custom-css' } }
+                            ]
+                        },
+                        {
+                            headerText: 'Ship Details', customAttributes: { class: 'custom-css' }, columns: [
+                                { field: 'ShipAddress', headerText: 'Ship Address', width: 145, format: 'yMd', customAttributes: { class: 'custom-css' } },
+                                { field: 'ShipCountry', headerText: 'Ship Country', width: 140, customAttributes: { class: 'custom-css' } }
+                            ]
+                        }
+                    ]
+                }, done);
+        });
+        it('check the custom attributes', (done: Function) => {
+            expect(gridObj.getHeaderContent().querySelector('.e-stackedheadercell.e-leftfreeze').classList.contains('custom-css')).toBeTruthy();
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

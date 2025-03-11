@@ -1,5 +1,5 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
-import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, completeAction } from '../common/index';
+import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, completeAction, CellRenderArgs } from '../common/index';
 import { setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
@@ -47,13 +47,13 @@ export class CellFormat {
                     this.setLeftBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first, sheet);
                     this.setTopBorder(
                         args.style.border, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first,
-                        args.lastCell, args.manualUpdate, sheet);
+                        args.lastCell, args.manualUpdate, sheet, <CellRenderArgs>args);
                     delete curStyle.border;
                 }
                 if (curStyle.borderTop !== undefined) {
                     this.setTopBorder(
                         args.style.borderTop, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first,
-                        args.lastCell, args.manualUpdate, sheet);
+                        args.lastCell, args.manualUpdate, sheet, <CellRenderArgs>args);
                     delete curStyle.borderTop;
                 }
                 if (curStyle.borderLeft !== undefined) {
@@ -235,7 +235,7 @@ export class CellFormat {
     }
     private setTopBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, pRow: HTMLElement, pHRow: HTMLElement, actionUpdate: boolean,
-        first: string, lastCell: boolean, manualUpdate: boolean, sheet: SheetModel): void {
+        first: string, lastCell: boolean, manualUpdate: boolean, sheet: SheetModel, args: CellRenderArgs): void {
         if (first && first.includes('Row')) { return; }
         let col: number = colIdx;
         let model: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
@@ -258,6 +258,9 @@ export class CellFormat {
                     model = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
                     if (model.style && model.style.borderBottom && model.style.borderBottom !== 'none') { return; }
                     cell.style.borderTop = border;
+                    if (args.mergeBorderRows !== undefined && args.mergeBorderRows.indexOf(rowIdx) === -1) {
+                        args.mergeBorderRows.push(rowIdx);
+                    }
                 }
             } else {
                 if (isHiddenRow(sheet, rowIdx - 1)) {

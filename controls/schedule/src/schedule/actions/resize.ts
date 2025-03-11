@@ -41,6 +41,7 @@ export class Resize extends ActionBase {
             !closest(e.target as Element, '.' + cls.APPOINTMENT_BORDER))) {
             return;
         }
+        this.parent.eventBase.removeSelectedAppointmentClass();
         this.actionObj.action = 'resize';
         this.actionObj.slotInterval = this.parent.activeViewOptions.timeScale.interval / this.parent.activeViewOptions.timeScale.slotCount;
         this.actionObj.interval = this.actionObj.slotInterval;

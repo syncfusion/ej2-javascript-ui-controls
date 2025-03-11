@@ -313,6 +313,7 @@ export interface CellRenderArgs {
     fillType?: string;
     isSortAction?: boolean;
     action?: string;
+    mergeBorderRows?: number[];
 }
 /** @hidden */
 export interface IAriaOptions<T> {

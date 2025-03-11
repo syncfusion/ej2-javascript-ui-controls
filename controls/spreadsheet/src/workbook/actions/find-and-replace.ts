@@ -408,7 +408,8 @@ export class WorkbookFindAndReplace {
                     }
                 });
             } else {
-                this.parent.updateCell({ value: cellValue }, eventArgs.addressCollection[index as number]);
+                this.parent.updateCellDetails({ value: cellValue }, eventArgs.addressCollection[index as number],
+                                              undefined, undefined, true);
             }
         };
         const checkMatch: (cellval: string) => boolean = (cellval: string): boolean => {

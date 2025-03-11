@@ -2272,11 +2272,11 @@ export class Filter {
                             filterModel.value.push(getPredicateValue(predicate.value));
                             filterModel.dataType.push(type);
                         } else {
-                            filterModel.value.push(predicate.value);
+                            filterModel.value.push(<string | number>predicate.value);
                             filterModel.dataType.push('custom');
                         }
                     } else {
-                        filterModel.value.push(predicate.value);
+                        filterModel.value.push(<string | number>predicate.value);
                         filterModel.dataType.push(predicate.type);
                     }
                     filterModel.predicates.push(predicate.predicate);

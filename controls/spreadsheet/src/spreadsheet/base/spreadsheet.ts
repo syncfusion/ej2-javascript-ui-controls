@@ -2091,7 +2091,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (isNullOrUndefined(enableDependentCellUpdate)) {
             enableDependentCellUpdate = true;
         }
-        this.updateCellInfo(cell, address, enableDependentCellUpdate);
+        this.updateCellInfo(cell, address, enableDependentCellUpdate, undefined, undefined, true);
     }
 
     /**
@@ -2102,17 +2102,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {boolean} isDependentUpdate - Specifies whether dependent cells should also be updated.
      * @param {UndoRedoEventArgs} cellInformation - It holds the undoRedoCollections.
      * @param {boolean} isRedo - It holds the undo redo information.
+     * @param {boolean} isPublic - It holds whether updateCell public method is used.
      * @returns {void} - This method does not return a value.
      *
      * @hidden
      */
     public updateCellInfo(cell: CellModel, address?: string, isDependentUpdate?: boolean, cellInformation?: UndoRedoEventArgs,
-                          isRedo?: boolean): void {
+                          isRedo?: boolean, isPublic?: boolean): void {
         address = address || this.getActiveSheet().activeCell;
         if (isReadOnlyCells(this, getRangeIndexes(address))) {
             return;
         }
-        super.updateCellDetails(cell, address, cellInformation, isRedo, isDependentUpdate);
+        super.updateCellDetails(cell, address, cellInformation, isRedo, isDependentUpdate, isPublic);
     }
 
     /**

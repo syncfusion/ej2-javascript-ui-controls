@@ -2,7 +2,7 @@ import { extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IEditCell } from '../base/interface';
 import { TimePicker } from '@syncfusion/ej2-calendars';
-import { isEditable, getObject } from '../base/util';
+import { isEditable, getObject, parentsUntil, isCellHaveWidth } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 
 /**
@@ -23,7 +23,7 @@ export class TimePickerEditCell extends EditCellBase implements IEditCell {
                     value: rowDataValue,
                     placeholder: isInlineEdit ?
                         '' : args.column.headerText, enableRtl: this.parent.enableRtl,
-                    enabled: isEditable(args.column, args.requestType, args.element),
+                    enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
                     cssClass: this.parent.cssClass ? this.parent.cssClass : null
                 },
                 args.column.edit.params));

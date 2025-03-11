@@ -2610,6 +2610,7 @@ export interface IFocus {
     onFocus?: Function;
     lastIdxCell: boolean;
     target?: HTMLElement;
+    keyActions?: Object;
     focusType?: FocusType;
     currentTarget?: HTMLElement;
     action?: string;

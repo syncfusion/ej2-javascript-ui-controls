@@ -672,7 +672,7 @@ export class UndoRedo {
                             if (j === rangeIdx[0] && k === rangeIdx[1]) {
                                 k = k + 1;
                             }
-                            this.parent.updateCell({value: ''}, getRangeAddress([j, k]));
+                            this.parent.updateCellInfo({value: ''}, getRangeAddress([j, k]), true);
                         }
                     }
                 }
@@ -687,14 +687,14 @@ export class UndoRedo {
                         for (let k: number = range[0]; k <= range[2]; k++) {
                             for (let l: number = range[1]; l <= range[3]; l++) {
                                 if (i !== k || j !== l) {
-                                    this.parent.updateCell({value: ''}, getCellAddress(i, j));
+                                    this.parent.updateCellInfo({value: ''}, getCellAddress(i, j), true);
                                 }
                             }
                         }
                     }
                 }
                 cell.value = '#SPILL!';
-                this.parent.updateCell(cell, getCellAddress(rangeIdx[0], rangeIdx[1]));
+                this.parent.updateCellInfo(cell, getCellAddress(rangeIdx[0], rangeIdx[1]), true);
             }
             if (!eventArgs.isSpill && uniqueArgs.uniqueRange !== '') {
                 const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
@@ -703,7 +703,7 @@ export class UndoRedo {
                         if (j === indexes[0] && k === indexes[1]) {
                             k = k + 1;
                         }
-                        this.parent.updateCell({value: ''}, getRangeAddress([j, k]));
+                        this.parent.updateCellInfo({value: ''}, getRangeAddress([j, k]), true);
                     }
                 }
                 this.parent.notify(reApplyFormula, null);
@@ -767,10 +767,10 @@ export class UndoRedo {
                         for (let j: number = indexes[0]; j <= indexes[2]; j++) {
                             for (let k: number = indexes[1]; k <= indexes[3]; k++) {
                                 if (j === indexes[0] && k === indexes[1]) {
-                                    this.parent.updateCell({value: '#SPILL!'}, getRangeAddress([indexes[0], indexes[1]]));
+                                    this.parent.updateCellInfo({value: '#SPILL!'}, getRangeAddress([indexes[0], indexes[1]]), true);
                                     k = k + 1;
                                 }
-                                this.parent.updateCell({value: ''}, getRangeAddress([j, k]));
+                                this.parent.updateCellInfo({value: ''}, getRangeAddress([j, k]), true);
                             }
                         }
                     }
@@ -792,7 +792,7 @@ export class UndoRedo {
                     if (!Skip) {
                         const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
                         cell.value = '';
-                        this.parent.updateCell(cell, getCellAddress(indexes[0], indexes[1]));
+                        this.parent.updateCellInfo(cell, getCellAddress(indexes[0], indexes[1]), true);
                         this.parent.notify(reApplyFormula, null);
                     }
                 }

@@ -894,7 +894,7 @@ export class ContextMenu {
         let isCrossRefField: boolean = false;
         acceptChange.style.display = 'none';
         rejectChange.style.display = 'none';
-        let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+        let contentControl: ContentControl = this.documentHelper.owner.selection.currentContentControl;
         let contentControlImage: ElementBox = this.documentHelper.owner.getImageContentControl();
         if ((!isNullOrUndefined(contentControl) && contentControl instanceof ContentControl && !contentControl.contentControlProperties.lockContentControl && !this.documentHelper.owner.isReadOnlyMode) || (contentControlImage instanceof ContentControl && !contentControlImage.contentControlProperties.lockContentControl && contentControlImage.contentControlProperties.type == 'Picture' && !this.documentHelper.owner.isReadOnlyMode)) {
             removeContentControl.style.display = 'block';

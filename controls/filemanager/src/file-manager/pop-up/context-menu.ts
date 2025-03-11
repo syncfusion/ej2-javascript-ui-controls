@@ -416,7 +416,9 @@ export class ContextMenu {
         this.parent.trigger('menuClick', eventArgs, (menuClickArgs: MenuClickEventArgs) => {
             let sItems: string[];
             if (!menuClickArgs.cancel) {
-                this.isMenuItemClicked = true;
+                if (itemText !== 'cut' && itemText !== 'copy') {
+                    this.isMenuItemClicked = true;
+                }
                 switch (itemText) {
                 case 'cut':
                     cutFiles(this.parent);

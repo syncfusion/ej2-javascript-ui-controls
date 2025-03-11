@@ -544,7 +544,7 @@ export class Edit {
                     const index: number[] = getRangeIndexes(this.uniqueColl);
                     for (let i: number = index[0]; i <= index[2]; i++) {
                         for (let j: number = index[1]; j <= index[3]; j++) {
-                            this.parent.updateCell({value: '', formula: ''}, getRangeAddress([i, j]));
+                            this.parent.updateCellInfo({value: '', formula: ''}, getRangeAddress([i, j]), true);
                         }
                     }
                     this.parent.notify(removeUniquecol, null);
@@ -1189,12 +1189,12 @@ export class Edit {
             for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
                 if (skip) {
                     if (j === rangeIdx[0] && k === rangeIdx[1]) {
-                        this.parent.updateCell({value: '#SPILL!'}, getRangeAddress([j, k]));
+                        this.parent.updateCellInfo({value: '#SPILL!'}, getRangeAddress([j, k]), true);
                     } else {
                         if (getRangeAddress([j, k]).split(':')[0] === this.editCellData.addr) {
-                            this.parent.updateCell({value: value}, getRangeAddress([j, k]));
+                            this.parent.updateCellInfo({value: value}, getRangeAddress([j, k]), true);
                         } else {
-                            this.parent.updateCell({value: ''}, getRangeAddress([j, k]));
+                            this.parent.updateCellInfo({value: ''}, getRangeAddress([j, k]), true);
                         }
                     }
                 }
@@ -1205,7 +1205,7 @@ export class Edit {
     private reApplyFormula(): void {
         const cellIdx: number[] = getRangeIndexes(this.uniqueColl);
         const cell: CellModel = getCell(cellIdx[0], cellIdx[1], this.parent.getActiveSheet());
-        this.parent.updateCell({value: ''}, getRangeAddress([cellIdx[0], cellIdx[1]]));
+        this.parent.updateCellInfo({value: ''}, getRangeAddress([cellIdx[0], cellIdx[1]]), true);
         const sheets: SheetModel[] = this.parent.sheets; let formula: string = cell.formula;
         for (let i: number = 0; i < sheets.length; i++) {
             if (formula.indexOf(sheets[i as number].name) > - 1) {

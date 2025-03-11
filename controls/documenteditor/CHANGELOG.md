@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#F196134` - Fixed a script error that occurred when copying content containing checkbox content control properties.
+- `#I688686` - Fixed the selection issue when applying upper-case formatting to text.
+- `#I644193` - Fixed the XML mapping issue when copy pasting content controls within Document Editor.
+- `#I691211` - Fixed the incorrect drop down list display by using the display text instead of the value.
+- `#I691064` - Fixed the issue of removing and adding highlights to editable ranges using the `highlightEditableRanges` property.
+- `#I686376` - Fixed a script error that occurred when undoing after performing Enter and Apply Style actions.
+- `#I693248` - Fixed the issue where the editing region moved out of the viewport when the keyboard opened on mobile devices.
+- `#I684310`, `#I693656` - Fixed the border rendering issue for nested content controls.
+- `#I691211` - Improved typing performance inside a table when the document contains more than 400 content controls.
+
 ## 28.2.9 (2025-03-04)
 
 ### DocumentEditor

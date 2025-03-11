@@ -9,6 +9,7 @@ import { RenderType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { KeyboardEvents } from '../actions/keyboard';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { resetContentEditableElements, cleanupInternalElements } from '../base/util';
 
 /**
  * Content module is used to render Rich Text Editor content
@@ -156,7 +157,7 @@ export class ViewSource {
                 }
                 rteContent.appendChild(this.previewElement);
                 this.parent.rootContainer.appendChild(rteContent);
-                (this.getPanel() as HTMLTextAreaElement).value = this.getTextAreaValue();
+                (this.getPanel() as HTMLTextAreaElement).value = cleanupInternalElements(this.getTextAreaValue(), this.parent.editorMode);
                 this.parent.isBlur = false;
                 this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
                 this.parent.enableToolbarItem('SourceCode');
@@ -167,7 +168,8 @@ export class ViewSource {
                 this.wireEvent(this.previewElement);
                 this.unWireBaseKeyDown();
                 this.previewElement.focus();
-                this.parent.inputElement.innerHTML = this.replaceAmpersand(this.parent.inputElement.innerHTML);
+                this.parent.inputElement.innerHTML = cleanupInternalElements(this.replaceAmpersand(this.parent.inputElement.innerHTML),
+                                                                             this.parent.editorMode);
                 this.parent.updateValue();
                 this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
                 this.parent.invokeChangeEvent();
@@ -198,7 +200,7 @@ export class ViewSource {
                     baseToolbar: this.parent.getBaseToolbarObject()
                 });
                 if (!isNOU(editHTML)) {
-                    editHTML.value = this.replaceAmpersand(editHTML.value);
+                    editHTML.value = resetContentEditableElements(this.replaceAmpersand(editHTML.value), this.parent.editorMode);
                 }
                 const serializeValue: string = this.parent.serializeValue(editHTML.value);
                 let value: string;
@@ -213,7 +215,8 @@ export class ViewSource {
                 } else {
                     value = serializeValue;
                 }
-                this.contentModule.getEditPanel().innerHTML = this.replaceAmpersand(value);
+                this.contentModule.getEditPanel().innerHTML = resetContentEditableElements(this.replaceAmpersand(value),
+                                                                                           this.parent.editorMode);
                 this.parent.isBlur = false;
                 this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
                 if (this.parent.getToolbar()) {

@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-## 28.2.9 (2025-03-04)
+## 28.2.11 (2025-03-11)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I693788` - The issue with `MaxDate` in the Recurrence Editor not working correctly has been fixed.
+
+- `#I689726` - The issue where selecting one event and then attempting to resize or drag another event caused a problem with the previously selected appointment has been fixed.
+
+## 28.2.7 (2025-02-25)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I678690` - The issue with event resizing in the Scheduler not functioning correctly on touchscreens has been fixed.
+
+## 28.2.6 (2025-02-18)
 
 ### Schedule
 

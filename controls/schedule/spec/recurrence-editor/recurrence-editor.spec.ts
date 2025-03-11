@@ -255,8 +255,8 @@ describe('Recurrence Editor Base Module', () => {
             const start: Date = new Date(2018, 1, 1);
             const end: Date = new Date(2018, 1, 31);
             schObj.setProperties({ minDate: start, maxDate: end });
-            expect((<any>schObj).untilDateObj.minDate.getTime()).toBe(start.getTime());
-            expect((<any>schObj).untilDateObj.maxDate.getTime()).toBe(end.getTime());
+            expect((<any>schObj).untilDateObj.min.getTime()).toBe(start.getTime());
+            expect((<any>schObj).untilDateObj.max.getTime()).toBe(end.getTime());
         });
         it('ensuring the property changes for date format', () => {
             schObj.setProperties({ dateFormat: 'yyyy/MM/dd' });
@@ -476,6 +476,36 @@ describe('Recurrence Editor Base Module', () => {
         });
     });
 
+    describe('Recurrence Editor - minDate and maxDate property changes', () => {
+        let recObj: RecurrenceEditor;
+        const elem: HTMLElement = createElement('div', { id: 'RecurrenceEditor' });
+
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            recObj = new RecurrenceEditor();
+            recObj.appendTo('#RecurrenceEditor');
+        });
+
+        afterAll(() => {
+            if (recObj) {
+                recObj.destroy();
+            }
+            remove(elem);
+        });
+
+        it('should update the minDate of untilDateObj when minDate property changes', () => {
+            const newMinDate = new Date(2022, 0, 1);
+            recObj.setProperties({ minDate: newMinDate });
+            expect((<any>recObj).untilDateObj.min.getTime()).toBe(newMinDate.getTime());
+        });
+
+        it('should update the maxDate of untilDateObj when maxDate property changes', () => {
+            const newMaxDate = new Date(2030, 11, 31);
+            recObj.setProperties({ maxDate: newMaxDate });
+            expect((<any>recObj).untilDateObj.max.getTime()).toBe(newMaxDate.getTime());
+        });
+    });
+    
     /**
      * Method to get selected days
      *

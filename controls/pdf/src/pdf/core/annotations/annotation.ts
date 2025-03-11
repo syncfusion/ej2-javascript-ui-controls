@@ -3837,13 +3837,13 @@ export class PdfLineAnnotation extends PdfComment {
             let captionPosition: number[];
             const height: number = font._metrics._getHeight();
             if (this.caption.type === PdfLineCaptionType.top) {
-                if (this._dictionary.has('Measure')) {
+                if (this._measure) {
                     captionPosition = this._getAxisValue(centerPoint, (angle + 90), 2 * height);
                 } else {
                     captionPosition = this._getAxisValue(centerPoint, (angle + 90), height);
                 }
             } else {
-                if (this._dictionary.has('Measure')) {
+                if (this._measure) {
                     captionPosition = this._getAxisValue(centerPoint, (angle + 90), 3 * (height / 2));
                 } else {
                     captionPosition = this._getAxisValue(centerPoint, (angle + 90), (height / 2));
@@ -8616,13 +8616,17 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
         return destination;
     }
     _extractDestination(ref: any, document: PdfDocument): any[] { // eslint-disable-line
-        let dict: _PdfDictionary;
+        let dict: any; // eslint-disable-line
         let destinationArray: any[]; // eslint-disable-line
         if (ref && ref instanceof _PdfReference) {
             dict = document._crossReference._fetch(ref);
         }
-        if (dict && dict.has('D')) {
-            destinationArray = dict.getRaw('D');
+        if (dict) {
+            if (dict instanceof _PdfDictionary && dict.has('D')) {
+                destinationArray = dict.getRaw('D');
+            } else if (Array.isArray(dict)) {
+                destinationArray = dict;
+            }
         }
         return destinationArray ? destinationArray : ref;
     }

@@ -636,6 +636,82 @@ export function getLocaleFontFormat(self: IRichTextEditor, localeItems: { [ket: 
 }
 
 /**
+ * @param {string} value - specifies the string value
+ * @param {string} editorMode - specifies the string value
+ * @returns {string} - returns the string value
+ * @hidden
+ */
+export function resetContentEditableElements(value: string, editorMode: string): string {
+    if (editorMode && editorMode === 'HTML' && value) {
+        const valueElementWrapper: HTMLElement = document.createElement('div');
+        valueElementWrapper.innerHTML = value;
+        valueElementWrapper.querySelectorAll('.e-img-inner').forEach((el: Element) => {
+            el.setAttribute('contenteditable', 'true');
+        });
+        value = valueElementWrapper.innerHTML;
+        valueElementWrapper.remove();
+    }
+    return value;
+}
+
+/**
+ * @param {string} value - specifies the string value
+ * @param {string} editorMode - specifies the string value
+ * @returns {string} - returns the string value
+ * @hidden
+ */
+export function cleanupInternalElements(value: string, editorMode: string): string {
+    if (value && editorMode) {
+        const valueElementWrapper: HTMLElement = document.createElement('div');
+        if (editorMode === 'HTML') {
+            valueElementWrapper.innerHTML = value;
+            valueElementWrapper.querySelectorAll('.e-img-inner').forEach((el: Element) => {
+                el.setAttribute('contenteditable', 'false');
+            });
+            const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize, .e-vid-resize');
+            if (item.length > 0) {
+                for (let i: number = 0; i < item.length; i++) {
+                    detach(item[i as number]);
+                }
+            }
+            removeSelectionClassStates(valueElementWrapper);
+        } else {
+            valueElementWrapper.textContent = value;
+        }
+        return (editorMode === 'Markdown') ? valueElementWrapper.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : valueElementWrapper.innerHTML;
+    }
+    return value;
+}
+
+/**
+ * @param {HTMLElement} element - specifies the element
+ * @returns {void}
+ * @hidden
+ */
+export function removeSelectionClassStates(element: HTMLElement): void {
+    const classNames: string[] = [classes.CLS_IMG_FOCUS, classes.CLS_TABLE_SEL,
+        classes.CLS_TABLE_MULTI_CELL, classes.CLS_TABLE_SEL_END, classes.CLS_VID_FOCUS,
+        classes.CLS_AUD_FOCUS, classes.CLS_RESIZE, classes.CLS_RTE_DRAG_IMAGE];
+    for (let i: number = 0; i < classNames.length; i++) {
+        const item: NodeListOf<Element> = element.querySelectorAll('.' + classNames[i as number]);
+        removeClass(item, classNames[i as number]);
+        if (item.length === 0) { continue; }
+        for (let j: number = 0; j < item.length; j++) {
+            if (item[j as number].classList.length === 0) {
+                item[j as number].removeAttribute('class');
+            }
+            if ((item[j as number].nodeName === 'IMG' || item[j as number].nodeName === 'VIDEO') &&
+                (item[j as number] as HTMLElement).style.outline !== '') {
+                (item[j as number] as HTMLElement).style.outline = '';
+            }
+        }
+    }
+    element.querySelectorAll('[class=""]').forEach((el: Element) => {
+        el.removeAttribute('class');
+    });
+}
+
+/**
  * @param {IRichTextEditor} self - specifies the rte
  * @returns {void}
  * @hidden

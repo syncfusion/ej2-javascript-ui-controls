@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I694952` - Now, the change event works properly when the value changes in the Rich Text Editor.
+
+- `#I691323` - Now, the image caption is handled properly in the Rich Text Editor after posting.
+
+- `#I942836` - Now, the Rich Text Editor works properly when disabling the toolbar and resizing the editor.
+
+- `#I943056` - Now, the Rich Text Editor works properly when resizing the `iframe` editor and disabling the toolbar, preventing a script error on initial rendering.
+
+- `#I695002` - Now, the Rich Text Editor works properly when pasting content copied from Google Sheets.
+
+- `#I649583` - Now, the tooltip descriptions work properly when shortcut keys are displayed in a localized environment.
+
 ## 28.2.9 (2025-03-04)
 
 ### RichTextEditor
@@ -9,6 +27,12 @@
 #### Bug Fixes
 
 - `#I689382` - Now, the backspace functionality works correctly within the table after the mention chip.
+
+- `#I676899` -  Now, the background color functionality works properly when applied to pasted content in the Rich Text Editor.
+
+- `#I691820` - Now, the backspace functionality works properly when applied to indented bullet lists in the Rich Text Editor.
+
+- `#I692332` - Now, the `shift + enter` functionality works properly when applied after an image with `<br>` tag in the Rich Text Editor.
 
 - `#I691812` - Now, pressing the backspace key twice within the table does not remove the table in the Rich Text Editor.
 

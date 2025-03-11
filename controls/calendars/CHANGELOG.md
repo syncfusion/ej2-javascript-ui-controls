@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#F196127` - Fixed an issue where the change event was not triggered correctly upon the second update of time using the keyboard.
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#FD65170` - Fixed an issue where the day of the week value was not displayed correctly when using `ccc` in the date format.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#FD65170` - Fixed an issue where the day of the week value was not displayed correctly when using `ccc` in the date format.
+
 ## 28.2.9 (2025-03-04)
 
 ### DateRangePicker

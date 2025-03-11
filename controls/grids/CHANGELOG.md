@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### Grid
+
+#### Bug fixes
+
+- `#F195594` - Resolved a script error that occurred when focusing on hidden cells after clicking the scrollbar.
+- `#I679119` - The issue with filtering the `Date` column by month or day value has been resolved.
+- `#I684300` - Fixed an issue where virtual scrolling did not conclude properly when adding a new record at the bottom.
+- `#I695471` - The issue where the `notEqual` filter in menu filtering failed for `Date` and `DateTime` columns has been resolved.
+- `#I691688` - Resolved the issue where the grid `captionTemplate` key value conflicted with React `key` prop.
+- `#I693712` - Resolved the issue where `customAttributes` were not applied when splitting stacked header columns with frozen columns.
+
 ## 28.2.9 (2025-03-04)
 
 ### Grid

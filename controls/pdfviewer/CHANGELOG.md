@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.2.11 (2025-03-11)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I696432` - Now, the form fields no longer disappear when reloading the PDF document after a pinch zoom without the form designer module.
+- `#I695167` - Now, the custom data value is updated properly for non-rendered pages using the `updateFormField` API.
+- `#I695648` - Now, the exception did not occur when saving the provided document without scrolling.
+
+#### Breaking Changes
+
+-`#I695236` - The `validateFormFields` API will no longer be triggered after completing the required form fields and initiating `download` or `saveAsBlob`. To proceed with `download` or `saveAsBlob` without filling in the required fields, simply disable the `validateFormFields` event by setting [`enableFormFieldsValidation`](https://helpej2.syncfusion.com/documentation/api/pdfviewer/#enableformfieldsvalidation) to false.
+
 ## 28.2.9 (2025-03-04)
 
 ### PDF Viewer

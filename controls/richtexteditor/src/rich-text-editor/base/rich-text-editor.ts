@@ -60,6 +60,7 @@ import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';
 import { SlashMenu} from '../renderer/slash-menu';
 import { mentionRestrictKeys } from '../../common/config';
 import { isSafari } from '../../common/util';
+import { cleanupInternalElements, removeSelectionClassStates, resetContentEditableElements } from '../base/util';
 import { NodeSelection } from '../../selection/index';
 import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';
 
@@ -2262,7 +2263,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.tableModulekeyUp, { member: 'tableModulekeyUp', args: e });
         if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
         this.inputElement.innerHTML === '<br>')) {
-            this.inputElement.innerHTML = getEditValue(getDefaultValue(this), this);
+            this.inputElement.innerHTML = resetContentEditableElements(getEditValue(getDefaultValue(this), this), this.editorMode);
         }
         const isMention: boolean = this.inputElement.classList.contains('e-mention');
         const allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46 || e.which === 9 && isMention;
@@ -2690,9 +2691,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const currentRange: Range = this.getRange();
             const targetElm: HTMLElement = currentRange.endContainer.nodeName === '#text' ?
                 currentRange.endContainer.parentElement : currentRange.endContainer as HTMLElement;
-            const x: number = currentRange.getClientRects()[0].left;
-            const y: number = currentRange.getClientRects()[0].top;
-            this.quickToolbarModule.showInlineQTBar(x, y, (targetElm as HTMLElement));
+            let rects: DOMRect[] = Array.from(currentRange.getClientRects(), (rect: DOMRect) => rect as DOMRect);
+            if (rects.length === 0) {
+                rects = [(currentRange.startContainer as HTMLElement).getBoundingClientRect() as DOMRect];
+            }
+            if (rects.length > 0) {
+                const x: number = rects[0].left;
+                const y: number = rects[0].top;
+                this.quickToolbarModule.showInlineQTBar(x, y, (targetElm as HTMLElement));
+            }
         }
     }
 
@@ -2917,7 +2924,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.valueContainer.value = (this.enableHtmlEncode) ? this.value : value;
             }
             if (this.editorMode === 'HTML' && this.inputElement && this.inputElement.innerHTML.trim() !== value.trim()) {
-                this.inputElement.innerHTML = value;
+                this.inputElement.innerHTML = resetContentEditableElements(value, this.editorMode);
             } else if (this.editorMode === 'Markdown' && this.inputElement
                 && (this.inputElement as HTMLTextAreaElement).value.trim() !== value.trim()) {
                 (this.inputElement as HTMLTextAreaElement).value = value;
@@ -2927,12 +2934,25 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 getTextArea.value = '';
             }
             if (this.editorMode === 'HTML') {
+                this.inputElement.innerHTML = '';
+                const brElement: HTMLElement = this.createElement('br');
                 if (this.enterKey === 'DIV') {
-                    this.inputElement.innerHTML = '<div><br/></div>';
+                    const divElement: HTMLElement = this.createElement('DIV');
+                    divElement.appendChild(brElement);
+                    this.inputElement.appendChild(divElement);
                 } else if (this.enterKey === 'BR') {
-                    this.inputElement.innerHTML = '<br/>';
+                    this.inputElement.appendChild(brElement);
                 } else {
-                    this.inputElement.innerHTML = '<p><br/></p>';
+                    const pElement: HTMLElement = this.createElement('P');
+                    pElement.appendChild(brElement);
+                    this.inputElement.appendChild(pElement);
+                }
+                if (this.formatter && this.formatter.editorManager && this.formatter.editorManager.nodeSelection) {
+                    this.formatter.editorManager.nodeSelection.setCursorPoint(
+                        this.contentModule.getDocument(),
+                        brElement,
+                        0
+                    );
                 }
             } else {
                 (this.inputElement as HTMLTextAreaElement).value = '';
@@ -3249,7 +3269,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         append([item], this.displayTempElem);
                     }
                     this.renderTemplates(() => {
-                        this.inputElement.innerHTML = (this.displayTempElem.childNodes[0] as HTMLElement).innerHTML;
+                        this.inputElement.innerHTML = resetContentEditableElements(
+                            (this.displayTempElem.childNodes[0] as HTMLElement).innerHTML, this.editorMode);
                         this.setProperties({ value: this.inputElement.innerHTML.trim() });
                     });
                 } else {
@@ -3345,7 +3366,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @public
      */
     public getHtml(): string {
-        const htmlValue: string = this.removeResizeElement(this.contentModule.getEditPanel().innerHTML);
+        const htmlValue: string = cleanupInternalElements(this.contentModule.getEditPanel().innerHTML, this.editorMode);
         return (this.enableXhtml && (htmlValue === '<p><br></p>' || htmlValue === '<div><br></div>' ||
         htmlValue === '<br>') ? null : this.serializeValue(htmlValue));
     }
@@ -3358,7 +3379,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @public
      */
     public getXhtml(): string {
-        let currentValue: string = this.removeResizeElement(this.value);
+        let currentValue: string = cleanupInternalElements(this.value, this.editorMode);
         if (!isNOU(currentValue) && this.enableXhtml) {
             currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
         }
@@ -3610,7 +3631,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
             this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
-                    this.encode(decode(this.removeResizeElement(this.inputElement.innerHTML))) : this.inputElement.innerHTML;
+                    this.encode(decode(cleanupInternalElements(this.inputElement.innerHTML, this.editorMode))) :
+                    this.inputElement.innerHTML;
             if (this.enableHtmlSanitizer && !isNOU(value) && /&(amp;)*((times)|(divide)|(ne))/.test(value)) {
                 value = value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2');
             }
@@ -3622,7 +3644,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 (this.inputElement as HTMLTextAreaElement).value;
         }
         if (value != null && !this.enableHtmlEncode) {
-            value = this.removeResizeElement(value);
+            value = cleanupInternalElements(value, this.editorMode);
         }
         return value;
     }
@@ -3641,7 +3663,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private cleanupResizeElements(args: CleanupResizeElemArgs): void {
-        const value: string = this.removeResizeElement(args.value);
+        const value: string = cleanupInternalElements(args.value, this.editorMode);
         args.callBack(value);
     }
 
@@ -3657,23 +3679,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         return valueElementWrapper.innerHTML;
-    }
-
-    private removeResizeElement(value: string): string {
-        const valueElementWrapper: HTMLElement = document.createElement('div');
-        if (this.editorMode === 'HTML') {
-            valueElementWrapper.innerHTML = value;
-            const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize');
-            if (item.length > 0) {
-                for (let i: number = 0; i < item.length; i++) {
-                    detach(item[i as number]);
-                }
-            }
-            this.removeSelectionClassStates(valueElementWrapper);
-        } else {
-            valueElementWrapper.textContent = value;
-        }
-        return (this.editorMode === 'Markdown') ? valueElementWrapper.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : valueElementWrapper.innerHTML;
     }
 
     private updateStatus(e: StatusArgs): void {
@@ -3734,7 +3739,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.isBlur && isNOU(trg)) {
             removeClass([this.element], [classes.CLS_FOCUS]);
-            this.removeSelectionClassStates(this.inputElement);
+            removeSelectionClassStates(this.inputElement);
             this.notify(events.focusChange, {});
             const value: string = this.getUpdatedValue();
             if (!this.rootContainer.classList.contains('e-source-code-enabled')) {
@@ -3806,7 +3811,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             value: currentValue,
             isInteracted: this.isValueChangeBlurhandler
         };
-        if (this.value !== this.cloneValue) {
+        if (this.value !== cleanupInternalElements(this.cloneValue, this.editorMode)) {
             this.trigger('change', eventArgs);
             this.cloneValue = this.value;
         }
@@ -3913,7 +3918,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 const iframe: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
                 const otherElemHeight: number = (this.enableResize || this.showCharCount) ? 20 : 0;
                 // Three added because of border top of the e-rte-container, bottom of the toolbar wrapper and then bottom of the e-rte-container.
-                if (iframe) {
+                if (iframe && this.toolbarModule) {
                     iframe.style.height = this.element.clientHeight - (this.toolbarModule.getToolbarHeight() + otherElemHeight + 3) + 'px';
                 }
             }
@@ -4121,24 +4126,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 (!(toolbarItem[i as number] as HTMLElement).hasAttribute('tabindex') ||
                 (toolbarItem[i as number] as HTMLElement).getAttribute('tabindex') !== '-1')) {
                     (toolbarItem[i as number] as HTMLElement).setAttribute('tabindex', '-1');
-                }
-            }
-        }
-    }
-
-    private removeSelectionClassStates(element: HTMLElement): void {
-        const classNames: string[] = [classes.CLS_IMG_FOCUS, classes.CLS_TABLE_SEL,
-            classes.CLS_TABLE_MULTI_CELL, classes.CLS_TABLE_SEL_END, classes.CLS_VID_FOCUS, classes.CLS_AUD_FOCUS];
-        for (let i: number = 0; i < classNames.length; i++) {
-            const item: NodeListOf<Element> = element.querySelectorAll('.' + classNames[i as number]);
-            removeClass(item, classNames[i as number]);
-            if (item.length === 0) { continue; }
-            for (let j: number = 0; j < item.length; j++) {
-                if (item[j as number].classList.length === 0) {
-                    item[j as number].removeAttribute('class');
-                }
-                if (item[j as number].nodeName === 'IMG' && (item[j as number] as HTMLElement).style.outline !== '') {
-                    (item[j as number] as HTMLElement).style.outline = '';
                 }
             }
         }

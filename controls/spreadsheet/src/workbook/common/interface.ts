@@ -345,6 +345,7 @@ export interface CellFormatArgs {
     outsideViewport?: boolean;
     formatColor?: string;
     isFromAutoFillOption?: boolean;
+    mergeBorderRows?: number[];
 }
 
 /** @hidden */

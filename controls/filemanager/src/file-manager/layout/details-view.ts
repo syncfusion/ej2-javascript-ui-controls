@@ -175,6 +175,9 @@ export class DetailsView {
             }
             this.gridObj.isStringTemplate = true;
             this.gridObj.appendTo('#' + this.parent.element.id + CLS.GRID_ID);
+            if (this.parent.selectedItems.length !== 0 && this.parent.enableVirtualization && this.parent.enablePersistence) {
+                this.isLoaded = true;
+            }
             this.wireEvents();
             this.adjustHeight();
             this.emptyArgs = args;
@@ -434,7 +437,7 @@ export class DetailsView {
     /* istanbul ignore next */
     private onDataBound(): void {
         this.createDragObj();
-        if ((this.parent.selectedItems.length !== 0 && !this.parent.enableVirtualization)) {
+        if ((this.parent.selectedItems.length !== 0 && !this.parent.enableVirtualization) || this.isLoaded) {
             this.selectRecords(this.parent.selectedItems);
         }
         if (this.isPasteOperation === true && (!isNullOrUndefined(this.gridObj.getDataRows()) && this.gridObj.getDataRows().length > 0)) {
@@ -504,7 +507,7 @@ export class DetailsView {
     }
 
     private selectRecords(nodes: string[]): void {
-        const gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
+        const gridRecords: Object[] = this.gridObj.dataSource as Object[];
         const sRecords: number[] = [];
         for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
             const node: string = this.parent.hasId ? getValue('id', gridRecords[i as number]) : getName(this.parent, gridRecords[i as number]);

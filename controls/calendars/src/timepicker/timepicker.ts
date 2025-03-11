@@ -1603,8 +1603,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         } else {
             if (!isNavigation) {
-                if ((this.prevValue !== this.inputElement.value) || isNullOrUndefined(this.checkDateValue(this.value))) {
-                    this.valueProcess(event, this.compareFormatChange(this.inputElement.value));
+                const value: Date = this.compareFormatChange(this.inputElement.value);
+                if ((+this.prevDate !== +value) || isNullOrUndefined(this.checkDateValue(this.value))) {
+                    this.valueProcess(event, value);
                 }
             } else {
                 const value: Date = this.getDateObject(new Date(this.timeCollections[this.activeIndex]));

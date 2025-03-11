@@ -718,6 +718,15 @@ export function isEditable(col: Column, type: string, elem: Element): boolean {
 }
 
 /**
+ * @param {Element} elem - Defines th element
+ * @returns {boolean} Returns is Editable
+ * @hidden
+ */
+export function isCellHaveWidth(elem: Element): boolean {
+    return elem.getBoundingClientRect().width === 0 ? false : true;
+}
+
+/**
  * @param {IGrid} inst - Defines the IGrid
  * @returns {boolean} Returns is action prevent in boolean
  * @hidden
@@ -1019,6 +1028,7 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string, is
         const predicates: Predicate = new Predicate(prevObj.field, prevObj.operator, dateOnlyString, false);
         datePredicate = predicates;
     } else {
+        filterObject.operator = filterObject.operator.toLowerCase();
         if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
             if (type === 'datetime') {
                 prevDate = new Date(value.setSeconds(value.getSeconds() - 1));

@@ -2326,6 +2326,7 @@ export function considerSwimLanePadding(diagram: Diagram, node: NodeModel, paddi
         swimLane.wrapper.arrange(swimLane.wrapper.desiredSize);
         node.offsetX = node.wrapper.offsetX; node.offsetY = node.wrapper.offsetY;
         diagram.nodePropertyChange(node as Node, {} as Node, { margin: { left: node.margin.left, top: node.margin.top } } as Node);
+        (node as any).isResized = false;
         //EJ2-68372- Text-Annotation in event node is not positioned properly while drag the swimlane
         // if (diagram.bpmnModule && node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations &&  (node.shape as BpmnShapeModel).annotations.length > 0) {
         //     diagram.nodePropertyChange(node as Node, {} as Node, { margin: { left: node.margin.left, top: node.margin.top } } as Node);

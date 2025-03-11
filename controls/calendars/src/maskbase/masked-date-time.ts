@@ -48,7 +48,7 @@ export class MaskedDateTime {
     private isNavigate : boolean = false;
     private navigated : boolean = false;
     private isBlur : boolean = false;
-    private formatRegex : RegExp = /EEEEE|EEEE|EEE|EE|E|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yyy|yy|y|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzzz|zzz|zz|z|'[^']*'|'[^']*'/g;
+    private formatRegex : RegExp = /EEEEE|EEEE|EEE|EE|E|cccc|ccc|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yyy|yy|y|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzzz|zzz|zz|z|'[^']*'|'[^']*'/g;
     private isDeletion: boolean = false;
     private isShortYear: boolean = false;
     private isDeleteKey: boolean = false;
@@ -576,9 +576,11 @@ export class MaskedDateTime {
             case 'E' :
             case 'EE':
             case 'EEE':
+            case 'ccc':
                 result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysAbbreviated[dayKeyAbbreviated[proxy.maskDateValue.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
                 break;
             case 'EEEE':
+            case 'cccc':
                 result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysWide[dayKeyWide[proxy.maskDateValue.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
                 break;
             case 'EEEEE':

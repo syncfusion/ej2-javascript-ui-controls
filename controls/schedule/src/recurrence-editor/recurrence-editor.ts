@@ -1175,10 +1175,10 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                 this.repeatType.setProperties({ index: this.selectedType });
                 break;
             case 'minDate':
-                this.untilDateObj.setProperties({ minDate: this.minDate });
+                this.untilDateObj.setProperties({ min: this.minDate });
                 break;
             case 'maxDate':
-                this.untilDateObj.setProperties({ maxDate: this.maxDate });
+                this.untilDateObj.setProperties({ max: this.maxDate });
                 break;
             case 'value':
                 if (this.getRecurrenceRule() !== this.value) {

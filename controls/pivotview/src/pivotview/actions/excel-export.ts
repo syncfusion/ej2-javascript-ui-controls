@@ -179,7 +179,7 @@ export class ExcelExport {
                                             lastCell.value = type === 'Excel' ? null : '';
                                         }
                                         styles.numberFormat = typeof cellValue === 'string' ? undefined : styles.numberFormat;
-                                        lastCell.style = !isNullOrUndefined(lastCell.value) ? styles : { bold: false, wrapText: true };
+                                        lastCell.style = styles;
                                     } else {
                                         lastCell.style = headerStyle;
                                         if (pivotCell.axis === 'row' && cCnt === 0) {

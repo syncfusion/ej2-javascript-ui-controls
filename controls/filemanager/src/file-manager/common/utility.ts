@@ -562,7 +562,7 @@ export function getFullPath(parent: IFileManager, data: Object, path: string): s
     const filePath: string = getValue(parent.hasId ? 'id' : 'name', data) + '/';
     const fPath: string = getValue(parent.hasId ? 'filterId' : 'filterPath', data);
     if (!isNOU(fPath)) {
-        return fPath.replace(/\\/g, '/') + filePath;
+        return fPath.replace(/\\/g, '/').replace(/^.*?(?=\/)/, '') + filePath;
     } else {
         return path + filePath;
     }

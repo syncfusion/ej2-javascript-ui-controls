@@ -1,7 +1,7 @@
 import { isNullOrUndefined, extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IEditCell, EJ2Intance } from '../base/interface';
 import { Column } from '../models/column';
-import { isEditable, createEditElement } from '../base/util';
+import { isEditable, createEditElement, parentsUntil, isCellHaveWidth } from '../base/util';
 import { TextBox }  from '@syncfusion/ej2-inputs';
 import { EditCellBase } from './edit-cell-base';
 
@@ -33,7 +33,7 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
         const isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
         const props: Object = {
             element: args.element as HTMLInputElement, floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
-            enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element),
+            enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
             placeholder: isInline ? '' : args.column.headerText,
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         };

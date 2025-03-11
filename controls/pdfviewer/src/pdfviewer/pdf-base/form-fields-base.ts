@@ -1549,7 +1549,7 @@ export class FormFieldsBase {
         formFields.Multiline = textBox.multiLine;
         formFields.RotationAngle = this.GetRotateAngle(textBox.page.rotation);
         if (textBox._dictionary.has('CustomData')) {
-            formFields.customData = JSON.parse(textBox._dictionary.get('CustomData'));
+            formFields.CustomData = JSON.parse(textBox._dictionary.get('CustomData'));
         }
         formFields.TextList = [];
         this.PdfRenderedFormFields.push(formFields);
@@ -1602,7 +1602,7 @@ export class FormFieldsBase {
         formFields.RotationAngle = this.GetRotateAngle(comboBoxField.page.rotation);
         formFields.Alignment = comboBoxField.textAlignment;
         if (comboBoxField._dictionary.has('CustomData')) {
-            formFields.customData = JSON.parse(comboBoxField._dictionary.get('CustomData'));
+            formFields.CustomData = JSON.parse(comboBoxField._dictionary.get('CustomData'));
         }
         formFields.TextList = [];
         if (comboBoxField._dictionary.has('Opt')) {
@@ -1696,7 +1696,7 @@ export class FormFieldsBase {
         }
         formFields.RotationAngle = this.GetRotateAngle(chkField.page.rotation);
         if (chkField._dictionary.has('CustomData')) {
-            formFields.customData = JSON.parse(chkField._dictionary.get('CustomData'));
+            formFields.CustomData = JSON.parse(chkField._dictionary.get('CustomData'));
         }
         this.PdfRenderedFormFields.push(formFields);
     }
@@ -1762,7 +1762,7 @@ export class FormFieldsBase {
         }
         formFields.RotationAngle = this.GetRotateAngle(listBoxField.page.rotation);
         if (listBoxField._dictionary.has('CustomData')) {
-            formFields.customData = JSON.parse(listBoxField._dictionary.get('CustomData'));
+            formFields.CustomData = JSON.parse(listBoxField._dictionary.get('CustomData'));
         }
         this.PdfRenderedFormFields.push(formFields);
     }
@@ -1796,7 +1796,7 @@ export class FormFieldsBase {
         formFields.Visible = parent.visibility;
         formFields.RotationAngle = this.GetRotateAngle(item.page.rotation);
         if (parent._dictionary.has('CustomData')) {
-            formFields.customData = JSON.parse(parent._dictionary.get('CustomData'));
+            formFields.CustomData = JSON.parse(parent._dictionary.get('CustomData'));
         }
         this.PdfRenderedFormFields.push(formFields);
     }
@@ -2107,7 +2107,7 @@ export class FormFieldsBase {
             formFields.IsInitialField = initialField;
         }
         if (signatureField._dictionary.has('CustomData')) {
-            formFields.customData = JSON.parse(signatureField._dictionary.get('CustomData'));
+            formFields.CustomData = JSON.parse(signatureField._dictionary.get('CustomData'));
         }
         this.PdfRenderedFormFields.push(formFields);
     }
@@ -2315,7 +2315,7 @@ export class PdfRenderedFields {
     public IsAutoSize: boolean;
     public TabIndex: number;
     public FontFamily: string;
-    public customData: object;
+    public CustomData: object;
     constructor() {
         this.ActualFieldName = null;
         this.FontColor = { R: 0, G: 0, B: 0 };
@@ -2357,6 +2357,6 @@ export class PdfRenderedFields {
         this.ToolTip = null;
         this.Value = null;
         this.Visible = 0;
-        this.customData = null;
+        this.CustomData = null;
     }
 }

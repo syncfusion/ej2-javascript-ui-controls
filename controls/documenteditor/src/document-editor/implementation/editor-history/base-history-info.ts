@@ -426,13 +426,14 @@ export class BaseHistoryInfo {
         const contentcontrol: ContentControl = contentControlInfo.contentcontrol;
         if (this.editorHistory.isUndoing) {
             const markerData: MarkerInfo = this.owner.editorModule.getMarkerData(contentcontrol);
-            this.documentHelper.contentControlCollection.push(contentcontrol);
             this.markerData.push(markerData);
             contentcontrol.line.children.splice(contentControlInfo.startIndex, 0, contentcontrol);
+            this.documentHelper.owner.editorModule.insertContentControlInCollection(contentcontrol);
             //const previousNode: ElementBox = contentControl.previousNode;
             this.markerData.push(markerData);
             contentcontrol.reference.line.children.splice(contentControlInfo.endIndex, 0, contentcontrol.reference);
             this.owner.editorModule.updatePropertiesToBlock(contentcontrol, true);
+            this.owner.selectionModule.updateContentControlHighlightSelection();
             this.editorHistory.recordChanges(this);
             this.viewer.updateScrollBars();
             this.owner.editorModule.fireContentChange();
@@ -542,7 +543,7 @@ export class BaseHistoryInfo {
             const selectionStartTextPosition: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(start);
             const selectionEndTextPosition: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(end);
             this.owner.selectionModule.selectRange(selectionStartTextPosition, selectionEndTextPosition);
-            const contentcontrol: ContentControl = this.owner.editorModule.getContentControl();
+            const contentcontrol: ContentControl = this.owner.selection.currentContentControl;
             if (contentcontrol) {
                 if (contentcontrol.contentControlProperties.type === 'CheckBox' && this.modifiedProperties.length === 0) {
                     const contentControlInfo: any = this.removedNodes[0];
@@ -1788,6 +1789,8 @@ export class BaseHistoryInfo {
         if (this.action === 'ClearCharacterFormat' || this.action === 'ClearParagraphFormat') {
             this.owner.editorModule.getOffsetValue(this.documentHelper.selection);
         }
+        this.owner.editorModule.startParagraph = undefined;
+        this.owner.editorModule.endParagraph = undefined;
     }
      public addModifiedCellOptions(applyFormat: WCellFormat, format: WCellFormat, table: TableWidget): WCellFormat {
         let currentFormat: WCellFormat;

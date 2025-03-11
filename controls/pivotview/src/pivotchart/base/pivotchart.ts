@@ -424,14 +424,14 @@ export class PivotChart {
                                 colHeaders = cell.columnHeaders.toString().split(/~~|::/).join(' - ');
                             } else {
                                 const values: string[] = cell.columnHeaders.toString().split(delimiter);
-                                colHeaders = PivotUtil.formatChartHeaders(values, this, true);
+                                colHeaders = PivotUtil.formatChartHeaders(values, this, true, cell);
                             }
                             let rowHeaders: string = '';
                             if (this.parent.dataType === 'olap') {
                                 rowHeaders = cell.rowHeaders.toString().split(/~~|::/).join(' - ');
                             } else {
                                 const values: string[] = cell.rowHeaders.toString().split(delimiter);
-                                rowHeaders = PivotUtil.formatChartHeaders(values, this, false);
+                                rowHeaders = PivotUtil.formatChartHeaders(values, this, false, cell);
                             }
                             const columnSeries: string = colHeaders + ' | ' + actualText;
                             this.chartSeriesInfo[colHeaders as string] = { uniqueName: colHeaders, caption: cell.hierarchyName && cell.hierarchyName.toString().split(delimiter).join(' - '), colorIndex: [] };
@@ -1342,15 +1342,16 @@ export class PivotChart {
             this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
                 valueFormat.toString() : (valueFormat as IAxisSet).formattedText :
             formattedText;
-        let text: string | number | Date = (this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet).columnHeaders;
-        let columnText : string = '';
+        const cell: IAxisSet = this.parent.pivotValues[rowIndex as number][colIndex as number];
+        let text: string | number | Date = cell.columnHeaders;
+        let columnText: string = '';
         if (isNullOrUndefined(text)) {
             columnText = undefined;
         } else if (this.parent.dataType === 'olap') {
             columnText = this.chartSeriesInfo[text.toString().split(/~~|::/).join(' - ')].uniqueName;
         } else {
             const values: string[] = text.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter);
-            text = PivotUtil.formatChartHeaders(values, this, true);
+            text = PivotUtil.formatChartHeaders(values, this, true, cell);
             columnText = this.chartSeriesInfo[text.toString()].uniqueName;
         }
         const rowText: Object = args.point.x;

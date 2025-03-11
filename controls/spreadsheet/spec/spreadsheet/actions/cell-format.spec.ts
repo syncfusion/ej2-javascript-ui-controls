@@ -805,6 +805,139 @@ describe('Cell Format ->', () => {
                 });
             });
         });
+        
+        describe('EJ2-939706 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    {
+                        sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                        beforeDataBound: (): void => {
+                            const spreadsheet: Spreadsheet = helper.getInstance();
+                            spreadsheet.merge("Sheet1!E3:G3");
+                            spreadsheet.merge("Sheet1!C4:F4");
+                            spreadsheet.cellFormat({ borderTop: '1px solid #000000' }, 'Sheet1!A3:M3');
+                            spreadsheet.cellFormat({ borderTop: '1px solid #000000' }, 'Sheet1!A4:M4');
+                            spreadsheet.cellFormat({ borderTop: '1px solid #000000' }, 'Sheet1!A5:M5');
+                        }
+                    }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Border not rendered properly in merged cells - Initial Rendering', (done: Function) => {
+                expect(helper.invoke('getCell', [1, 2]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 3]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 4]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 5]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 6]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 7]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 8]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 9]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [2, 2]).style.borderTop).toBe('');
+                expect(helper.invoke('getCell', [2, 3]).style.borderTop).toBe('');
+                expect(helper.invoke('getCell', [2, 4]).style.borderTop).toBe('');
+                expect(helper.invoke('getCell', [2, 5]).style.borderTop).toBe('');
+                expect(helper.invoke('getCell', [2, 6]).style.borderTop).toBe('');
+                expect(helper.invoke('getCell', [2, 7]).style.borderTop).toBe('');
+                expect(helper.invoke('getCell', [2, 8]).style.borderTop).toBe('');
+                expect(helper.invoke('getCell', [3, 2]).style.borderBottom).toBe('');
+                expect(helper.invoke('getCell', [3, 3]).style.borderBottom).toBe('');
+                expect(helper.invoke('getCell', [3, 4]).style.borderBottom).toBe('');
+                expect(helper.invoke('getCell', [3, 5]).style.borderBottom).toBe('');
+                expect(helper.invoke('getCell', [3, 6]).style.borderBottom).toBe('');
+                expect(helper.invoke('getCell', [3, 7]).style.borderBottom).toBe('');
+                expect(helper.invoke('getCell', [3, 8]).style.borderBottom).toBe('');
+                expect(helper.invoke('getCell', [3, 2]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 3]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 4]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 5]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 6]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 7]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 8]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 9]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                done();
+            });
+
+            it('Border not rendered properly in merged cells - Vertical Scrolling', (done: Function) => {
+                helper.invoke('goTo', ['Sheet1!A60']);
+                setTimeout(() => {
+                    helper.invoke('goTo', ['Sheet1!A7']);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 2]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 3]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 4]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 5]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 6]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 7]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 8]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 9]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [2, 2]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 3]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 4]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 5]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 6]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 7]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 8]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [3, 2]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 3]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 4]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 5]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 6]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 7]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 8]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 2]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 3]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 4]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 5]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 6]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 7]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 8]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 9]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        done();
+                    }, 10);
+                }, 10);
+            });
+
+            it('Border not rendered properly in merged cells - Horizontal Scrolling', (done: Function) => {
+                helper.invoke('goTo', ['Sheet1!BA2']);
+                setTimeout(() => {
+                    helper.invoke('goTo', ['Sheet1!A2']);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 2]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 3]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 4]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 5]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 6]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 7]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 8]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [1, 9]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [2, 2]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 3]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 4]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 5]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 6]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 7]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [2, 8]).style.borderTop).toBe('');
+                        expect(helper.invoke('getCell', [3, 2]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 3]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 4]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 5]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 6]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 7]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 8]).style.borderBottom).toBe('');
+                        expect(helper.invoke('getCell', [3, 2]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 3]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 4]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 5]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 6]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 7]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 8]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        expect(helper.invoke('getCell', [3, 9]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+                        done();
+                    }, 10);
+                }, 10);
+            });
+        });
     });
     describe('EJ2-58338, EJ2-840548 ->', () => {
         beforeEach((done: Function) => {

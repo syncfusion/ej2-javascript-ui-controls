@@ -2739,7 +2739,8 @@ export class Node extends NodeBase implements IElement {
         }
         // 923325: Grey area visible while drawing "Freehand" connector with DragSegmentThumb enabled
         if (canShadow(this as NodeModel) && ((this as unknown as ConnectorModel).type !== 'Freehand')) {
-            if ((this.constraints & NodeConstraints.Shadow) !== 0) {
+            //941052: Issue with visible property doesn't hide shadows
+            if ((this.constraints & NodeConstraints.Shadow) !== 0 && this.visible) {
                 content.shadow = this.shadow;
             }
         }

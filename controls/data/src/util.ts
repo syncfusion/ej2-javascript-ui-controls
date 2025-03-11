@@ -661,8 +661,11 @@ export class DataUtil {
     private static getVal(array: Object[], index: number, field?: string): Object {
         return field ? this.getObject(field, array[index]) : array[index];
     }
-    private static toLowerCase(val: string | number | boolean): string {
-        return val ? typeof val === 'string' ? val.toLowerCase() : val.toString() : (val === 0 || val === false) ? val.toString() : '';
+    private static toLowerCase(val: string | number | boolean | Date): string {
+        if (isNullOrUndefined(val)) return '';
+        if (typeof val === 'string') return val.toLowerCase();
+        if (val instanceof Date) return val.toString().toLowerCase();
+        return val.toString();
     }
     /**
      * Specifies the Object with filter operators.

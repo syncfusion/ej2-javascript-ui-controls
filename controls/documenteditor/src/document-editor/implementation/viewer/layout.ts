@@ -346,10 +346,18 @@ export class Layout {
                 bodyWidget = lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget as BodyWidget;
             }
             /* eslint-disable-next-line max-len */
-            if (i > 0 && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.lastChild) && !(bodyWidget.lastChild instanceof TableWidget) && ((this.documentHelper.compatibilityMode === 'Word2013' && (bodyWidget.lastChild as ParagraphWidget).isEndsWithPageBreak || (bodyWidget.lastChild as ParagraphWidget).isEndsWithColumnBreak)) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
-                const removedPages = this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
-                removedPages[0].destroy();
-                lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+            // If page break next para is section last para and it is empty then ms word will layout in the section break in previous para. So checking the next para into existing behaviour.
+            if (i > 0 && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.lastChild) && !(bodyWidget.lastChild instanceof TableWidget)) {
+                let lastChild: ParagraphWidget = bodyWidget.lastChild as ParagraphWidget;
+                const previousWidget: Widget = lastChild.previousRenderedWidget;
+                if (lastChild.isSectionBreak && previousWidget instanceof ParagraphWidget && previousWidget.isEndsWithPageBreak) {
+                    lastChild = previousWidget;
+                }
+                if ((this.documentHelper.compatibilityMode === 'Word2013' && (lastChild.isEndsWithPageBreak || lastChild.isEndsWithColumnBreak)) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
+                    const removedPages = this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
+                    removedPages[0].destroy();
+                    lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+                }
             }
             let breakCode: string = section.sectionFormat.breakCode;
             let prevSection: BodyWidget = undefined;
@@ -370,7 +378,18 @@ export class Layout {
             if (!section.isWord2010NextColumn && breakCode !== 'NoBreak') {
                 breakCode = 'NewPage';
             }
-            if ((i === 0 && !isContinuousSection) || (i !== 0 && !section.isWord2010NextColumn && (isNullOrUndefined(breakCode) || breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (!isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild) && (lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild as ParagraphWidget).isEndsWithPageBreak)))) {
+            // We are layouting the section last paragraph in previous paragraph if its empty So if previous paragraph is page break then we need to create new page.
+            let lastChild: Widget;
+            if (i !== 0) {
+                lastChild = lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild as Widget;
+                if (lastChild) {
+                    const previousWidget: Widget = lastChild.previousRenderedWidget;
+                    if (lastChild instanceof ParagraphWidget && lastChild.isSectionBreak && previousWidget instanceof ParagraphWidget) {
+                        lastChild = previousWidget;
+                    }
+                }
+            }
+            if ((i === 0 && !isContinuousSection) || (i !== 0 && !section.isWord2010NextColumn && (isNullOrUndefined(breakCode) || breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (!isNullOrUndefined(lastChild) && (lastChild as ParagraphWidget).isEndsWithPageBreak)))) {
                 page = this.viewer.createNewPage(section);
             } else {
                 let clientY: number = this.documentHelper.viewer.clientActiveArea.y;
@@ -800,11 +819,15 @@ export class Layout {
         let height: number = 0;
         let updatedHeight: number = 0;
         while (body && body.childWidgets.length > 0) {
-            height = (body.lastChild as BlockWidget).height;
-            if (body.lastChild instanceof TableWidget) {
-                height = this.getHeight(body.lastChild);
+            let lastChild: BlockWidget = body.lastChild as BlockWidget;
+            if (lastChild instanceof ParagraphWidget && lastChild.isSectionBreak && lastChild.previousRenderedWidget instanceof TableWidget && this.documentHelper.compatibilityMode !== 'Word2013') {
+                lastChild = lastChild.previousRenderedWidget as BlockWidget;
             }
-            height += (body.lastChild as BlockWidget).y;
+            height = lastChild.height;
+            if (lastChild instanceof TableWidget) {
+                height = this.getHeight(lastChild);
+            }
+            height += lastChild.y;
             if (height > updatedHeight) {
                 updatedHeight = height;
             }
@@ -847,6 +870,10 @@ export class Layout {
             for (let i: number = 0; i < section.childWidgets.length; i++) {
                 let block: BlockWidget = section.childWidgets[i] as BlockWidget;
                 if (block instanceof ParagraphWidget) {
+                    //In ms word last paragraph of body widget is renderd in previous paragraph. So no need to calculate the last para
+                    if (block.isSectionBreak) {
+                        continue;
+                    }
                     for (let j: number = 0; j < block.childWidgets.length; j++) {
                         let lineWidget: LineWidget = block.childWidgets[j] as LineWidget;
                         lineMargin = 0;
@@ -1876,6 +1903,9 @@ export class Layout {
             }
             paragraph.isFieldCodeBlock = true;
             return paragraph;
+        } else if (paragraph.isSectionBreak && paragraph.previousRenderedWidget instanceof TableWidget && this.documentHelper.compatibilityMode !== 'Word2013') {
+            // If compatibility mode is not 2013 the MS word will not render the last paragraph if the previous widget is table. 
+            return paragraph;
         }
         paragraph.x = 0;
         paragraph.textWrapWidth = false;
@@ -2327,7 +2357,11 @@ export class Layout {
             }
             if (element instanceof ContentControl && this.documentHelper.contentControlCollection.indexOf(element) === -1) {
                 if (element.type === 0) {
-                    this.documentHelper.contentControlCollection.push(element);
+                    if (this.isInitialLoad) {
+                        this.documentHelper.contentControlCollection.push(element);
+                    } else {
+                        this.documentHelper.owner.editorModule.insertContentControlInCollection(element);
+                    }
                 } else if (element.type === 1) {
                     let endPage: Page = element.paragraph.bodyWidget.page;
                     for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
@@ -2589,7 +2623,11 @@ export class Layout {
                         this.moveToNextPage(this.viewer, element.line.nextLine, false);
                         this.layoutEmptyLineWidget(element.line.nextLine.paragraph, false, element.line.nextLine, true);
                     } else {
-                        this.moveToNextPage(this.viewer, element.line, true);
+                        // We are layouting the section last paragraph and if previous widget is page break then we need to move the create new page.
+                        const nextWidget: Widget = paragraph.nextWidget;
+                        if (!(text === '\f' && nextWidget instanceof ParagraphWidget && nextWidget.isSectionBreak)) {
+                            this.moveToNextPage(this.viewer, element.line, true);
+                        }
                     }
                 } else if (!isNullOrUndefined(element.line.nextLine)) {
                     this.moveToNextPage(this.viewer, element.line.nextLine, false);
@@ -3913,9 +3951,63 @@ export class Layout {
             //Empty line is displayed in cell for the last empty paragraph (Cell mark - last paragraph in cell) after a nested table.
             lineWidget.height = 0;
         }
-        this.viewer.cutFromTop(this.viewer.clientActiveArea.y + lineWidget.height);
+        const previousWidget: Widget = paragraph.previousRenderedWidget;
+        // In MS word behaviour if the section break last para is empty. Then they will render in the last para in the previous para. 
+        if (paragraph.isSectionBreak && previousWidget instanceof ParagraphWidget && paragraph.index > 0) {
+            this.layoutSectionBreakParagraph(paragraph, previousWidget);
+            if (previousWidget.isEndsWithPageBreak) {
+                // If pagebreak next para is section last para and it empty then will render next to the page break. 
+                // In layout element method skipped to movetonext page and now it will move to next page.
+                this.moveToNextPage(this.viewer, lineWidget, true);
+            }
+        } else {
+            this.viewer.cutFromTop(this.viewer.clientActiveArea.y + lineWidget.height);
+            const previousWidget: Widget = paragraph.previousRenderedWidget;
+            if (previousWidget) {
+                const previousSplitWidget: Widget[] = previousWidget.getSplitWidgets();
+                if (paragraph.isSectionBreak && previousSplitWidget.length > 0 && previousSplitWidget[previousSplitWidget.length - 1] instanceof TableWidget && (previousSplitWidget[previousSplitWidget.length - 1] as TableWidget).wrapTextAround) {
+                    this.viewer.cutFromTop(previousSplitWidget[previousSplitWidget.length - 1].y + previousSplitWidget[previousSplitWidget.length - 1].height);
+                }
+            }
+        }
         this.wrapPosition = [];
         //Clears the previous line elements from collection.
+    }
+    private layoutSectionBreakParagraph(paragraph: ParagraphWidget, previousParagraph: ParagraphWidget): void {
+        let lastLine: LineWidget = previousParagraph.lastChild as LineWidget;
+        let lineWidget: LineWidget = paragraph.firstChild as LineWidget;
+        if(lastLine.margin) {
+            lineWidget.margin = new Margin(0, lastLine.margin.top, 0, lastLine.margin.bottom);
+        }
+        lineWidget.height = lastLine.height;
+        paragraph.height = lastLine.height;
+        paragraph.y = this.getLineYPosition(previousParagraph);
+        paragraph.width = previousParagraph.width;
+        paragraph.x = this.getLineXPosition(previousParagraph);
+    }
+
+    private getLineYPosition(paragraph: ParagraphWidget): number {
+        let yPosition: number = paragraph.y;
+        for (let i: number = 0; i < paragraph.childWidgets.length - 1; i++) {
+            yPosition += (paragraph.childWidgets[i] as LineWidget).height;
+        }
+        return yPosition;
+    }
+
+    private getLineXPosition(paragraph: ParagraphWidget): number {
+        let lastLine: LineWidget = paragraph.lastChild as LineWidget;
+        const paragraphMarkSize: TextSizeInfo = this.documentHelper.textHelper.getParagraphMarkSize(paragraph.characterFormat);
+        return paragraph.x + this.getLineWidth(lastLine) + paragraphMarkSize.Width;
+    }
+
+    private getLineWidth(linewidget: LineWidget): number {
+        let width: number = 0;
+        for (let i: number = 0; i < linewidget.children.length; i++) {
+            if (!(linewidget.children[i] instanceof ShapeElementBox)) {
+                width += linewidget.children[i].width;
+            }
+        }
+        return width;
     }
 
     private isUpdateMarginForCurrentLine(line: LineWidget): void {
@@ -10835,6 +10927,20 @@ export class Layout {
     private shiftWidgetsForPara(paragraph: ParagraphWidget, viewer: LayoutViewer, footnoteCollection?: BodyWidget[]): void {
         if (paragraph.height > (viewer.clientArea.height + viewer.clientArea.y) && !this.documentHelper.owner.enableHeaderAndFooter) {
             return;
+        } else if (paragraph.isEmpty()) {
+            //Handled sections last paragraph need to be layouted in previous paragraph if the paragraph is empty. Similar to Ms word
+            const previousWidget: Widget = paragraph.previousRenderedWidget;
+            if (paragraph.isSectionBreak && paragraph.index > 0) {
+                if (previousWidget instanceof ParagraphWidget) {
+                    this.layoutSectionBreakParagraph(paragraph, previousWidget);
+                    if (!previousWidget.isEndsWithPageBreak && this.viewer.clientActiveArea.y <= paragraph.y) {
+                        this.viewer.cutFromTop(paragraph.y + paragraph.height);
+                    }
+                    return;
+                } else if (previousWidget instanceof TableWidget && this.documentHelper.compatibilityMode !== 'Word2013') {
+                    return;
+                }
+            }
         }
         const bodywid: BodyWidget = paragraph.bodyWidget;
         const prevBodyObj: BodyWidgetInfo = this.getBodyWidgetOfPreviousBlock(paragraph, 0);

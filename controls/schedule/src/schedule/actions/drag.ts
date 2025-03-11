@@ -193,6 +193,9 @@ export class DragAndDrop extends ActionBase {
         if (!isNullOrUndefined(eventObj)) {
             this.startTime = (eventObj[this.parent.eventFields.startTime] as Date).getTime();
         }
+        if (!this.parent.allowMultiDrag) {
+            this.parent.eventBase.removeSelectedAppointmentClass();
+        }
         const dragArgs: DragEventArgs = {
             cancel: false,
             data: eventObj,

@@ -194,7 +194,7 @@ export class CellEdit {
             } else if (column.field === this.parent.taskFields.startDate) {
                 this.startDateEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.endDate) {
-                this.endDateEdited(editedArgs);
+                this.endDateEdited(editedArgs, args['previousData']);
             } else if (column.field === this.parent.taskFields.duration) {
                 this.durationEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.resourceInfo) {
@@ -332,9 +332,10 @@ export class CellEdit {
      * To update task end date cell with new value
      *
      * @param {ITaskbarEditedEventArgs} args .
+     * @param {Date} previousValue .
      * @returns {void} .
      */
-    private endDateEdited(args: ITaskbarEditedEventArgs): void {
+    private endDateEdited(args: ITaskbarEditedEventArgs, previousValue: Date): void {
         const ganttProb: ITaskData = args.data.ganttProperties;
         let currentValue: Date = args.data[this.parent.taskFields.endDate];
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
@@ -346,7 +347,8 @@ export class CellEdit {
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
         } else {
             let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentValue);
-            if ((currentValue.getHours() === 0 && dayEndTime !== 86400)) {
+            if ((currentValue.getHours() === 0 || (previousValue &&
+                currentValue.toTimeString().slice(0, 5) === previousValue.toTimeString().slice(0, 5))) && dayEndTime !== 86400) {
                 this.parent.dateValidationModule.setTime(dayEndTime, currentValue);
             }
             currentValue = this.parent.dateValidationModule.checkEndDate(currentValue, ganttProb, ganttProb.isMilestone);

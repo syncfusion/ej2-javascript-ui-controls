@@ -1789,6 +1789,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (!isNullOrUndefined(model.documentEditorSettings.highlightEditableRanges)) {
                         if (this.documentHelper && this.documentHelper.restrictEditingPane) {
                             this.documentHelper.restrictEditingPane.highlightCheckBox.checked = model.documentEditorSettings.highlightEditableRanges;
+                            this.documentHelper.selection.isHighlightEditRegion = model.documentEditorSettings.highlightEditableRanges;
                         }
                     }
                     if (!isNullOrUndefined(model.documentEditorSettings.colorPickerSettings)) {
@@ -3843,7 +3844,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public exportContentControlData(): ContentControlInfo[] {
         this.selection.contentControleditRegionHighlighters.clear();
-        this.selection.isHighlightContentControlEditRegion = true;
+        this.selection.onHighlightContentControl();
         const data: ContentControlInfo[] = [];
         const properties: ContentControl[] = this.documentHelper.contentControlCollection;
         for (const contentControl of properties) {

@@ -105,6 +105,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isClearAllItem: boolean;
     private previousFocusItem: HTMLElement;
     private isRemoveSelection: boolean;
+    private isaddNonPresentItems: boolean;
     private resizer: HTMLElement;
     private storedSelectAllHeight: number = 0;
     private isResizing: boolean;
@@ -1213,10 +1214,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 for (let i: number = 0; i < valuecheck.length; i++) {
                     const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ?
                         this.fields.value : '', (valuecheck[i as number] as string)) : (valuecheck[i as number] as string);
-                    if (i === 0) {
-                        predicate = new Predicate(field, 'notequal', (value));
+                    if (this.isaddNonPresentItems) {
+                        predicate = i === 0 ? new Predicate(field, 'equal', (valuecheck[i as number] as string))
+                            : predicate.or(field, 'equal', (valuecheck[i as number] as string));
                     } else {
-                        predicate = predicate.and(field, 'notequal', (value));
+                        predicate = i === 0 ? predicate = new Predicate(field, 'notequal', (value))
+                            : predicate.and(field, 'notequal', (value));
                     }
                 }
                 return new Query().where(predicate);
@@ -1290,8 +1293,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             valuecheck = this.presentItemValue(this.ulElement);
         }
         if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
-        && this.listData != null && !this.enableVirtualization) {
+        && this.listData != null) {
+            this.isaddNonPresentItems = true;
             this.addNonPresentItems(valuecheck, this.ulElement, this.listData);
+            this.isaddNonPresentItems = false;
         }
         else {
             this.updateActionList(ulElement, list, e);
@@ -1656,6 +1661,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             filterQuery.take(takeValue);
         }
         filterQuery.requiresCount();
+        this.customFilterQuery = null;
         return filterQuery;
     }
 
@@ -4345,6 +4351,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.isCustomRendered = false;
         this.isRemoteSelection = false;
         this.isSelectAllTarget = true;
+        this.isaddNonPresentItems = false;
         this.viewPortInfo = {
             currentPageNumber: null,
             direction: null,
@@ -6135,10 +6142,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 valuecheck = this.presentItemValue(this.ulElement);
             }
             if (prop === 'value' && valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
-                && this.listData != null && !this.enableVirtualization) {
+                && this.listData != null) {
                 this.mainData = null;
                 this.setDynValue = true;
+                this.isaddNonPresentItems = true;
                 this.addNonPresentItems(valuecheck, this.ulElement, this.listData);
+                this.isaddNonPresentItems = false;
             }
             else {
                 if (prop === 'text') {
@@ -6154,8 +6163,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                     const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
                     this.onActionComplete(list, this.mainData);
                 }
-                if (!this.enableVirtualization || (this.enableVirtualization && (!(this.dataSource instanceof DataManager)))){
+                if (!this.enableVirtualization) {
                     this.initialValueUpdate();
+                } else if (this.enableVirtualization && (!(this.dataSource instanceof DataManager))) {
+                    this.initialValueUpdate(this.dataSource, true);
                 } else if (!this.isInitRemoteVirtualData) {
                     this.isDynamicRemoteVirtualData = true;
                     this.initialValueUpdate(this.listData, true);

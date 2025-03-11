@@ -632,7 +632,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             placeHolderBottom > wrapperBottom && !this.diff) {
             this.diff = placeHolderBottom - wrapperBottom;
         }
-        if (this.diff && (this.currentInfo.page === lastPage) && placeHolderBottom > wrapperBottom) {
+        if (this.diff && (this.currentInfo.page === lastPage) && placeHolderBottom > wrapperBottom &&
+            !(this.isAdd && this.parent.editSettings.newRowPosition === 'Bottom')) {
             virtualHeight -= this.diff;
             this.heightChange = true;
         }

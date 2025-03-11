@@ -6,7 +6,7 @@ import { isCountRequired, isScheduledTask } from './utils';
 import { Gantt } from './gantt';
 import { DateProcessor } from './date-processor';
 import { TaskFieldsModel, ColumnModel, ResourceFieldsModel } from '../models/models';
-import { CObject } from './enum';
+import { CObject, DurationUnit } from './enum';
 import { WeekWorkingTimeModel } from '../models/week-working-time-model';
 
 /**
@@ -1080,7 +1080,9 @@ export class TaskProcessor extends DateProcessor {
             this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
         }
         if (!isNullOrUndefined(taskSettings.work)) {
-            this.parent.setRecordValue('durationUnit', this.parent.durationUnit, ganttProperties, true);
+            const durationUnit : DurationUnit = this.parent.taskFields.durationUnit && data[taskSettings.durationUnit] ?
+                data[taskSettings.durationUnit] : this.parent.durationUnit;
+            this.parent.setRecordValue('durationUnit', durationUnit, ganttProperties, true);
             if (isNaN(work) || isNullOrUndefined(work)) {
                 this.parent.setRecordValue('work', 0, ganttProperties, true);
                 this.parent.setRecordValue('duration', 0, ganttProperties, true);

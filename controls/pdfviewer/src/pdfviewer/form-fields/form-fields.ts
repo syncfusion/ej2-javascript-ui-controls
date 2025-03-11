@@ -179,9 +179,24 @@ export class FormFields {
                                 }
                                 const indicatorSettings: any = (currentData['Name'] === 'SignatureField') ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings : this.pdfViewer.initialFieldSettings.initialIndicatorSettings;
                                 const fieldProperties: any = {
-                                    bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'] ? currentData['ActualFieldName'] : currentData['FieldName'], tooltip: currentData['ToolTip'],
-                                    value: elementValue, insertSpaces: currentData['InsertSpaces'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
-                                    isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? 'hidden' : 'visible', font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }, isTransparent: currentData.IsTransparent, customData: !isNullOrUndefined(currentData.CustomData) || !isNullOrUndefined(currentData.customData) ? (this.pdfViewerBase.clientSideRendering ? currentData.CustomData ? currentData.CustomData : currentData.customData : JSON.parse(currentData.CustomData)) : '', signatureIndicatorSettings: indicatorSettings
+                                    bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width,
+                                        Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1,
+                                    name: currentData['ActualFieldName'] ? currentData['ActualFieldName'] : currentData['FieldName'],
+                                    tooltip: currentData['ToolTip'], value: elementValue, insertSpaces: currentData['InsertSpaces'],
+                                    isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily,
+                                    fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB,
+                                    thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline,
+                                    rotateAngle: rotateFieldAngle, isReadOnly: currentData['IsReadonly'],
+                                    isRequired: currentData['IsRequired'], alignment: textAlignment,
+                                    options: this.getListValues(currentData), selectedIndex: this.selectedIndex,
+                                    maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? 'hidden' : 'visible',
+                                    font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ?
+                                        font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false,
+                                    isUnderline: !isNullOrUndefined(font) ? font.Underline : false },
+                                    isTransparent: currentData.IsTransparent,
+                                    customData: !isNullOrUndefined(currentData['CustomData']) ? typeof currentData['CustomData'] ===
+                                        'object' ? currentData['CustomData'] : JSON.parse(currentData['CustomData']) : '',
+                                    signatureIndicatorSettings: indicatorSettings
                                 };
                                 if (!currentData.id && this.pdfViewer.formFieldCollections[parseInt(i.toString(), 10)] && !isNullOrUndefined(currentData['ActualFieldName'])) {
                                     fieldProperties.id = this.pdfViewer.formFieldCollections[parseInt(i.toString(), 10)].id;
@@ -679,9 +694,21 @@ export class FormFields {
             const borderWidth: number = currentData['BorderWidth'];
             this.selectedIndex = [];
             const fieldProperties: any = {
-                bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
-                value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline,
-                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], insertSpaces: currentData['InsertSpaces'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible === 1 ? 'hidden' : 'visible', font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }, pageIndex : currentData['PageIndex'], isTransparent : currentData['IsTransparent'], rotationAngle : currentData['RotationAngle'], signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : '', signatureIndicatorSettings : currentData['SignatureIndicatorSettings'], zIndex: currentData['zIndex'], customData: currentData['customData'] ? currentData['customData'] : this.pdfViewerBase.clientSideRendering ? currentData['CustomData'] : JSON.parse(currentData['CustomData'])
+                bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height },
+                pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
+                value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily,
+                fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth,
+                fontSize: fontSize, isMultiline: currentData.Multiline,
+                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], insertSpaces: currentData['InsertSpaces'],
+                alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex,
+                maxLength: currentData.MaxLength, visibility: currentData.Visible === 1 ? 'hidden' : 'visible',
+                font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false,
+                    isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ?
+                        font.Underline : false }, pageIndex : currentData['PageIndex'], isTransparent : currentData['IsTransparent'],
+                rotationAngle : currentData['RotationAngle'], signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : '',
+                signatureIndicatorSettings : currentData['SignatureIndicatorSettings'], zIndex: currentData['zIndex'],
+                customData: typeof currentData['CustomData'] === 'object' ? currentData['CustomData'] :
+                    JSON.parse(currentData['CustomData'])
             };
             if (currentData.Name === 'DropDown' || currentData.Name === 'ListBox') {
                 fieldProperties.value = currentData['SelectedValue'];

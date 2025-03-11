@@ -1805,4 +1805,54 @@ describe('Timeline view events dragging', () => {
             triggerMouseEvent(dragElement, 'mouseup');
         });
     });
+
+    describe('events dragging', () => {
+        let schObj: Schedule;
+        const EventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Event-1',
+                StartTime: new Date(2018, 3, 29, 10, 0),
+                EndTime: new Date(2018, 3, 29, 12, 30)
+            },
+            {
+                Id: 2,
+                Subject: 'Event-2',
+                StartTime: new Date(2018, 4, 1, 10, 0),
+                EndTime: new Date(2018, 4, 1, 12, 30)
+            },
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '500px',
+                height: '500px',
+                selectedDate: new Date(2018, 4, 1),
+                views: ['Week'],
+                showQuickInfo: false
+            };
+            schObj = util.createSchedule(schOptions, EventData, done);
+        });
+    
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('removes appointment border on dragging another event', (done: DoneFn) => {
+            const appointments = schObj.element.querySelectorAll('.e-appointment');
+            expect(appointments.length).toBeGreaterThan(0);
+            const firstAppointment = appointments[0] as HTMLElement;
+            const secondAppointment = appointments[1] as HTMLElement;
+            firstAppointment.click();
+            expect(firstAppointment.classList.contains('e-appointment-border')).toBeTruthy(); 
+            const dragStartEvent = new MouseEvent('mousedown', { bubbles: true });
+            const dragMoveEvent = new MouseEvent('mousemove', { bubbles: true, clientX: 100, clientY: 0 });
+            const dragEndEvent = new MouseEvent('mouseup', { bubbles: true });
+            secondAppointment.dispatchEvent(dragStartEvent);
+            document.dispatchEvent(dragMoveEvent);
+            document.dispatchEvent(dragEndEvent);
+            setTimeout(() => {
+                expect(firstAppointment.classList.contains('e-appointment-border')).toBeFalsy();
+                done();
+            }, 100);
+        });
+    });
 });

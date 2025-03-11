@@ -1230,7 +1230,9 @@ export class Image {
             removeClass([e.link], 'e-error');
         }
         if (!this.isUrl(url)) {
-            url = 'http://' + url;
+            if (!this.parent.enableAutoUrl) {
+                url = url.indexOf('http') > -1 ? url : 'http://' + url;
+            }
         } else {
             removeClass([e.link], 'e-error');
         }

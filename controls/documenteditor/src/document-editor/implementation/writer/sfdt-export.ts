@@ -243,10 +243,22 @@ export class SfdtExport {
             }
             let nextBlock: BlockWidget;
             if ((isSameCell && !this.isPartialExport) || isNullOrUndefined(startCell)) {
-                let paragraph: any = this.createParagraph(line.paragraph);
-                section[blocksProperty[this.keywordIndex]].push(paragraph);
                 let lastBlock: BlockWidget = line.paragraph;
-                nextBlock = this.writeParagraph(line.paragraph, paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
+                const paraEndOffset: number = this.owner.selection.getLineLength(endPara.lastChild as LineWidget);
+                const isBlockContentControl = startPara === endPara && this.endOffset === paraEndOffset + 1;
+                if (this.owner.documentHelper.isCopying && !isNullOrUndefined(startPara.contentControlProperties) && (startOffset === 0 || startOffset === 1) && (startPara !== endPara || (isBlockContentControl))) {
+                    this.isContentControl = true;
+                    nextBlock = this.writeBlock(lastBlock, 0, section[blocksProperty[this.keywordIndex]]);
+                    if (isBlockContentControl) {
+                        let paragraph: any = this.createParagraph(line.paragraph);
+                        section[blocksProperty[this.keywordIndex]].push(paragraph);
+                    }
+                    this.isContentControl = false;
+                } else {
+                    let paragraph: any = this.createParagraph(line.paragraph);
+                    section[blocksProperty[this.keywordIndex]].push(paragraph);
+                    nextBlock = this.writeParagraph(line.paragraph, paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
+                }
                 if (this.isPartialExport) {
                     nextBlock = this.getNextBlock(nextBlock, lastBlock);
                     section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
@@ -263,7 +275,16 @@ export class SfdtExport {
                         continue;
                     }
                     lastBlock = nextBlock;
-                    nextBlock = this.writeBlock(nextBlock, 0, section[blocksProperty[this.keywordIndex]]);
+                    if (this.owner.documentHelper.isCopying && nextBlock instanceof ParagraphWidget && !isNullOrUndefined(nextBlock.contentControlProperties) && nextBlock === endPara && this.endOffset !== paraEndOffset + 1) {
+                        this.isContentControl = true;
+                        let paragraph: any = this.createParagraph(nextBlock);
+                        section[blocksProperty[this.keywordIndex]].push(paragraph);
+                        const offset: number = !nextBlock.isEmpty() ? this.owner.selection.getNextValidOffset(nextBlock.firstChild as LineWidget, 0) : 0;
+                        nextBlock = this.writeParagraph(nextBlock, paragraph, section[blocksProperty[this.keywordIndex]], 0, offset);
+                        this.isContentControl = false;
+                    } else {
+                        nextBlock = this.writeBlock(nextBlock, 0, section[blocksProperty[this.keywordIndex]]);
+                    }
                     if (this.isPartialExport && isNullOrUndefined(nextBlock)) {
                         nextBlock = this.getNextBlock(nextBlock, lastBlock);
                         section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
@@ -434,18 +455,18 @@ export class SfdtExport {
             }
         } while (next instanceof BodyWidget && next.index === bodyWidget.index);
         // While importing, If the last paragraph is empty and the section break is present, then the empty paragraph is removed. So, added the empty paragraph at the end of the section while exporting.
-        let islastEmptyParagraph: boolean;
-        if (!isNullOrUndefined(bodyWidget.lastChild) && bodyWidget.lastChild instanceof ParagraphWidget) {
-            islastEmptyParagraph = (bodyWidget.lastChild as ParagraphWidget).isEmpty();
-            if (bodyWidget.lastChild.isSectionBreak && !isNullOrUndefined(bodyWidget.lastChild.previousRenderedWidget) && bodyWidget.lastChild.previousRenderedWidget instanceof TableWidget) {
-                islastEmptyParagraph = false;
-            }
-        } 
-        if (!isNullOrUndefined(next) && next instanceof BodyWidget && bodyWidget.sectionIndex !== next.sectionIndex && islastEmptyParagraph) {
-            var paragraph = {};
-            paragraph[inlinesProperty[this.keywordIndex]] = [];
-            section[blocksProperty[this.keywordIndex]].push(paragraph);
-        }
+        // let islastEmptyParagraph: boolean;
+        // if (!isNullOrUndefined(bodyWidget.lastChild) && bodyWidget.lastChild instanceof ParagraphWidget) {
+        //     islastEmptyParagraph = (bodyWidget.lastChild as ParagraphWidget).isEmpty();
+        //     if (bodyWidget.lastChild.isSectionBreak && !isNullOrUndefined(bodyWidget.lastChild.previousRenderedWidget) && bodyWidget.lastChild.previousRenderedWidget instanceof TableWidget) {
+        //         islastEmptyParagraph = false;
+        //     }
+        // } 
+        // if (!isNullOrUndefined(next) && next instanceof BodyWidget && bodyWidget.sectionIndex !== next.sectionIndex && islastEmptyParagraph) {
+        //     var paragraph = {};
+        //     paragraph[inlinesProperty[this.keywordIndex]] = [];
+        //     section[blocksProperty[this.keywordIndex]].push(paragraph);
+        // }
         return next;
     }
     private writeHeaderFooters(hfs: HeaderFooters, section: any): void {
@@ -800,7 +821,7 @@ export class SfdtExport {
         let next: BlockWidget = paragraphWidget;
         while (next instanceof ParagraphWidget) {
             if (this.writeLines(next, lineIndex, start, paragraph[inlinesProperty[this.keywordIndex]])) {
-                if (this.endLine === next.lastChild && this.endOffset === this.owner.selection.getLineLength(next.lastChild as LineWidget) + 1 && next.paragraphFormat.listFormat.listId === -1) {
+                if (this.endLine === next.lastChild && this.endOffset === this.owner.selection.getLineLength(next.lastChild as LineWidget) + 1 && next.paragraphFormat.listFormat.listId === -1 && !this.isContentControl) {
                     blocks.push(this.createParagraph(next));
                 }
                 return undefined;
@@ -1463,7 +1484,7 @@ export class SfdtExport {
                 if (this.endLine === child && paragraph.paragraphFormat.bidi && this.startLine !== this.endLine) {
                     this.endOffset = child.getEndOffset();
                 }
-                this.writeLine(child, (this.startLine !== this.endLine && child !== this.startLine) ? 0 : offset, inlines);
+                this.writeLine(child, (this.startLine !== this.endLine && child !== this.startLine && !this.isContentControl) ? 0 : offset, inlines);
             } else {
                 this.writeInlines(paragraph, child, inlines);
             }

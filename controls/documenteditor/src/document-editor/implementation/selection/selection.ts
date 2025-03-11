@@ -111,6 +111,7 @@ export class Selection {
     private isMoveDownOrMoveUp: boolean = false;
     private pasteDropDwn: DropDownButton;
     private isSelectBookmark: boolean = false;
+    private isHighlightContentControlEditRegionIn: boolean = true;
     /**
      * @private
      * This will holds the selection html content to set data in clipboard. Avoid to use this field for other purpose.
@@ -154,10 +155,6 @@ export class Selection {
      * @private
      */
     public isHighlightEditRegionIn: boolean = false;
-    /**
-     * @private
-     */
-    public isHighlightContentControlEditRegionIn: boolean = false;
     /**
      * @private
      */
@@ -231,7 +228,7 @@ export class Selection {
     /**
      * @private
      */
-    public contentControl: ContentControl = undefined;
+    public contentControls: ContentControl[] = [];
     /**
      * @private
      */
@@ -267,7 +264,6 @@ export class Selection {
      */
     public set isHighlightContentControlEditRegion(value: boolean) {
         this.isHighlightContentControlEditRegionIn = value;
-        this.onHighlightContentControl();
     }
     /**
      * @private
@@ -2904,8 +2900,7 @@ export class Selection {
         if (!isNullOrUndefined(previousContentControl) && previousContentControl.contentControlProperties) {
             let data = { 'Text': this.owner.editor.getResultContentControlText(previousContentControl) };
             this.owner.trigger(aftercontentControlFillEvent, data);
-            if (!isNullOrUndefined(previousContentControl.contentControlProperties.xmlMapping) && !isNullOrUndefined(this.owner.xmlPaneModule.mappedContentControl)
-                && this.owner.xmlPaneModule.mappedContentControl.contentControlProperties && previousContentControl.contentControlProperties.xmlMapping.xPath === this.owner.xmlPaneModule.mappedContentControl.contentControlProperties.xmlMapping.xPath) {
+            if (!isNullOrUndefined(previousContentControl.contentControlProperties.xmlMapping)) {
                 let xpath = previousContentControl.contentControlProperties.xmlMapping.xPath;
                 this.owner.xmlPaneModule.updateContent(data.Text, xpath);
             }
@@ -7759,7 +7754,7 @@ export class Selection {
         if(isSelectionChanged) {
             this.previousSelectedContentControl = this.currentContentControl;
         }
-        if (this.documentHelper.contentControlCollection.length > 0 && !this.owner.editor.isRemoteAction) {
+        if (this.documentHelper.contentControlCollection.length > 0) {
             this.currentContentControl = this.owner.editor.getContentControl();
         } else {
             this.currentContentControl = undefined;
@@ -7767,9 +7762,7 @@ export class Selection {
         if (!this.skipFormatRetrieval && !(!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isBuildHeading)) {
             this.retrieveCurrentFormatProperties();
         }
-        if (this.documentHelper.contentControlCollection.length > 0 && !(!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isBuildHeading)) {
-            this.contentControl = this.owner.editor.getContentControl();
-        }
+        this.updateContentControlHighlightSelection();
         this.documentHelper.clearSelectionHighlight();
         this.hideToolTip();
         if (this.owner.isLayoutEnabled && !this.owner.isShiftingEnabled) {
@@ -7798,6 +7791,26 @@ export class Selection {
         if (this.owner.rulerHelper && this.owner.documentEditorSettings && this.owner.documentEditorSettings.showRuler &&
             !this.owner.isReadOnlyMode) {
             this.owner.rulerHelper.updateRuler(this.owner, false);
+        }
+    }
+    /**
+     * Notify selection change event
+     * @private
+     */
+    public updateContentControlHighlightSelection(): void {
+        this.contentControleditRegionHighlighters.clear();
+        if (!this.isHighlightContentControlEditRegion) {
+            return;
+        }
+        if (this.documentHelper.contentControlCollection.length > 0 && !(!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isBuildHeading)) {
+            this.contentControls = this.owner.editor.getContentControls();
+        } else {
+            this.contentControls = [];
+        }
+        if (this.contentControls && this.contentControls.length > 0) {
+            for (let i: number = 0; i < this.contentControls.length; i++) {
+                this.highlightContentControlEditRegionInternal(this.contentControls[parseInt(i.toString(), 10)]);
+            }
         }
     }
     //Formats Retrieval
@@ -7929,7 +7942,7 @@ export class Selection {
     * its title, tag, value, editability, deletability, type, and any XML mapping if applicable.
     */
     public getContentControlInfo(): ContentControlInfo {
-        let contentControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+        let contentControl: ContentControl = this.currentContentControl;
         if (!isNullOrUndefined(contentControl)) {
             let ccValue: string = '';
             if (contentControl.contentControlProperties.type === 'Text') {
@@ -8017,7 +8030,7 @@ export class Selection {
         if (!isNullOrUndefined(this.owner.editor) && !isNullOrUndefined(this.owner.editor.documentHelper) &&
             this.owner.editor.documentHelper.contentControlCollection &&
             this.owner.editor.documentHelper.contentControlCollection.length > 0) {
-            let contentControl: ContentControl = this.owner.editor.getContentControl();
+            let contentControl: ContentControl = this.currentContentControl;
             let contentControlImage: ElementBox = this.owner.getImageContentControl();
             if (!isNullOrUndefined(contentControl) || !isNullOrUndefined(contentControlImage)) {
                 let type: ContentControlType = contentControl ? contentControl.contentControlProperties.type :
@@ -10090,8 +10103,8 @@ export class Selection {
         if (isNullOrUndefined(this.owner.sfdtExportModule)) {
             return;
         }
-        this.htmlContent = this.getHtmlContent();
         this.documentHelper.isCopying = true;
+        this.htmlContent = this.getHtmlContent();
         this.copyToClipboard();
         this.documentHelper.isCopying = false;
         if (isCut && this.owner.editorModule) {
@@ -10308,13 +10321,15 @@ export class Selection {
         let caretPosition: Point = this.end.location;
         let page: Page = this.getSelectionPage(this.end);
         if (page && !isNullOrUndefined(this.caret)) {
-            this.caret.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.documentHelper.zoomFactor) + 'px';
+            let left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.documentHelper.zoomFactor) + 'px';
+            this.caret.style.left = left;
             let caretInfo: CaretHeightInfo = this.updateCaretSize(this.owner.selectionModule.end);
             let topMargin: number = caretInfo.topMargin;
             //let caretHeight: number = caretInfo.height;
             let viewer: LayoutViewer = this.viewer;
 
-            let pageTop: number = (page.boundingRectangle.y - (viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1)) * this.documentHelper.zoomFactor + (viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1);
+            let top: number = (page.boundingRectangle.y - (viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1)) * this.documentHelper.zoomFactor + (viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1);
+            let pageTop: number = top;
             this.caret.style.top = pageTop + (Math.round(caretPosition.y + topMargin) * this.documentHelper.zoomFactor) + 'px';
             if (this.owner.selectionModule.characterFormat.baselineAlignment === 'Subscript') {
                 this.caret.style.top = parseFloat(this.caret.style.top) + (parseFloat(this.caret.style.height) / 2) + 'px';
@@ -10327,6 +10342,11 @@ export class Selection {
                 this.documentHelper.touchEnd.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.documentHelper.zoomFactor - 14) + 'px';
                 this.documentHelper.touchEnd.style.top = pageTop + ((caretPosition.y + caretInfo.height) * this.documentHelper.zoomFactor) + 'px';
             }
+            if(Browser.isDevice)
+                {
+                    this.documentHelper.editableDiv.style.left = left + "px";
+                    this.documentHelper.editableDiv.style.top = top + "px";
+                }
         }
         this.showHidePasteOptions(this.caret.style.top, this.caret.style.left);
     }
@@ -10913,7 +10933,11 @@ export class Selection {
         if (this.selectedWidgets) {
             this.selectedWidgets.clear();
         }
-        this.contentControl = undefined;
+        if (this.contentControleditRegionHighlighters) {
+            this.contentControleditRegionHighlighters.clear();
+        }
+        this.contentControls = [];
+        this.currentContentControl = undefined;
     }
 
     /**
@@ -10998,9 +11022,12 @@ export class Selection {
         if (!isNullOrUndefined(this.formFieldHighlighters)) {
             this.formFieldHighlighters.destroy();
         }
+        if (!isNullOrUndefined(this.contentControleditRegionHighlighters)) {
+            this.contentControleditRegionHighlighters.destroy();
+        }
         this.isCellPrevSelected = undefined;
         this.currentFormField = undefined;
-        this.contentControl = undefined;
+        this.contentControls = [];
     }
     /**
      * Returns the cells in between the bounds.
@@ -11513,7 +11540,7 @@ export class Selection {
      * @returns {void}
      */
     public onHighlightContentControl(): void {
-        if (this.isHighlightContentControlEditRegionIn) {
+        if (this.isHighlightContentControlEditRegion) {
             if (this.documentHelper.contentControlCollection.length > 0) {
                 for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
                     if(this.documentHelper.contentControlCollection[i].paragraph.isInHeaderFooter && this.documentHelper.owner.layoutType === "Continuous"){

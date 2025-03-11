@@ -123,7 +123,7 @@ export class ContentControlPopUp {
     private initDropDownList(): HTMLElement {
         this.dropDownDiv = createElement('div', { className: 'e-de-ddl-field' });
         const dropDownInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
-        const ddl: DropDownList = new DropDownList({ fields: { text: 'value' } });
+        const ddl: DropDownList = new DropDownList({ fields: { text: 'displayText' } });
         this.dropDownInput = dropDownInput;
         this.textBoxButtonDiv = createElement('div', { className: 'e-de-cmt-action-button' });
         this.textBoxOkButton = createElement('button') as HTMLButtonElement;

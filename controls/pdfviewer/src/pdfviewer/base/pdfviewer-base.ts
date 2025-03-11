@@ -2573,7 +2573,11 @@ export class PdfViewerBase {
             this.dowonloadRequestHandler = new AjaxHandler(this.pdfViewer);
             this.dowonloadRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.download;
             this.dowonloadRequestHandler.responseType = 'text';
-            if (this.clientSideRendering) {
+            if (this.validateForm && this.pdfViewer.enableFormFieldsValidation) {
+                this.pdfViewer.fireValidatedFailed(proxy.pdfViewer.serverActionSettings.download);
+                this.validateForm = false;
+            }
+            else if (this.clientSideRendering) {
                 const data: Uint8Array = this.pdfViewer.pdfRendererModule.getDocumentAsBase64(jsonObject);
                 const resultdata: any = proxy.saveAsBlobFile(data, proxy);
                 resolve(resultdata);
@@ -2725,6 +2729,7 @@ export class PdfViewerBase {
         }
         if (magnificationModule) {
             magnificationModule.isMagnified = false;
+            magnificationModule.isFormFieldPageZoomed = false;
             magnificationModule.clearIntervalTimer();
         }
         if (textSelectionModule) {
@@ -6579,6 +6584,15 @@ export class PdfViewerBase {
         return updatedCollections;
     }
 
+    private isGroupedSignatureFields(fieldName: string): boolean {
+        const formFieldsData: any[] = this.pdfViewer.retrieveFormFields();
+        let isGroupedFields: boolean = false;
+        if (!isNullOrUndefined(fieldName)) {
+            isGroupedFields = formFieldsData.filter((field: any) => field.name === fieldName).length > 1;
+        }
+        return isGroupedFields;
+    }
+
     /**
      * @private
      * @param {any} fieldArray - The form field bounds.
@@ -6627,7 +6641,9 @@ export class PdfViewerBase {
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 if (formFieldsData[parseInt(i.toString(), 10)].type === 'SignatureField' || formFieldsData[parseInt(i.toString(), 10)].type === 'InitialField') {
                     const fieldBounds: any = formFieldsData[parseInt(i.toString(), 10)].bounds;
-                    if (this.isSignatureWithInRect(this.canvasRectArray(fieldBounds), this.canvasRectArray(annotation.Bounds))) {
+                    const fieldName: string = formFieldsData[parseInt(i.toString(), 10)].name;
+                    if (this.isSignatureWithInRect(this.canvasRectArray(fieldBounds), this.canvasRectArray(annotation.Bounds))
+                        && !this.isGroupedSignatureFields(fieldName)) {
                         if (annotationCollection) {
                             updatedCollections = this.removeAnnotFromDoc(annotation, annotationCollection);
                         }
