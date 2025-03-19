@@ -440,7 +440,9 @@ class HierarchicalLayoutUtil {
                 }
                 dnode.offsetX += x - dnode.offsetX;
                 dnode.offsetY += y - dnode.offsetY;
-                matrixModel.nodePropertyChange(dnode);
+                if (layoutProp.horizontalAlignment !== 'Stretch' || layoutProp.verticalAlignment !== 'Stretch') {
+                    matrixModel.nodePropertyChange(dnode);
+                }
             }
         }
         if (!checkLinear) {
@@ -1835,7 +1837,6 @@ class HierarchicalLayoutUtil {
      * @private
      */
     public getEdgesBetween(source: Vertex, target: Vertex, directed: boolean): IConnector[] {
-        directed = (directed != null) ? directed : false;
         const edges: IConnector[] = this.getEdges(source);
         const result: IConnector[] = [];
         for (let i: number = 0; i < edges.length; i++) {
@@ -2276,12 +2277,11 @@ class MultiParentModel {
      * @private
      */
     public clone(obj: Object, transients: string[], shallow: boolean): Object {
-        shallow = (shallow != null) ? shallow : false;
         if (obj != null && typeof (obj.constructor) === 'function') {
             const clonedObj: Object = obj.constructor();
             for (const i of Object.keys(obj)) {
                 if (i !== 'layoutObjectId' && (transients == null || transients.indexOf(i) < 0)) {
-                    if (!shallow && typeof (obj[`${i}`]) === 'object') {
+                    if (!shallow /*&& typeof (obj[`${i}`]) === 'object'*/) {
                         //not used
                         //  _clone[i] = $.extend(true, {}, obj[i]);
                     } else {
@@ -2843,6 +2843,8 @@ class MatrixModel {
     /** @private */
     public edgeMapper: EdgeMapperObject[];
 
+    private seenCells: MatrixCellGroupObject[];
+
     /** @private */
     public diagram: Diagram;
 
@@ -2907,9 +2909,16 @@ class MatrixModel {
             const row: MatrixCellGroupObject[] = matrixModel.matrix[parseInt(k.toString(), 10)].value;
             for (let i: number = 0; i < row.length; i++) {
                 const cell: MatrixCellGroupObject = row[parseInt(i.toString(), 10)];
-                if (cell.visitedParents.length > 1) {
-                    let firstParent: MatrixCellGroupObject = cell.visitedParents[0];
-                    let lastParent: MatrixCellGroupObject = cell.visitedParents[cell.visitedParents.length - 1];
+                const parents: MatrixCellGroupObject[] = cell.visitedParents.slice();
+                for (let i: number = 0; i < cell.visitedParents.length; i++) {
+                    const cellIgnoredParent = cell.visitedParents[parseInt(i.toString(), 10)];
+                    if (cellIgnoredParent && this.containsValue(cellIgnoredParent.ignoredChildren, cell)) {
+                        parents.splice(parents.indexOf(cellIgnoredParent), 1);
+                    }
+                }
+                if (parents.length > 1) {
+                    let firstParent: MatrixCellGroupObject = parents[0];
+                    let lastParent: MatrixCellGroupObject = parents[parents.length - 1];
                     const firstVertexParent: MatrixCellGroupObject = this.findParentVertexCellGroup(firstParent);
                     const lastVertexParent: MatrixCellGroupObject = this.findParentVertexCellGroup(lastParent);
 
@@ -2925,11 +2934,13 @@ class MatrixModel {
                     const availOffsetMin: number = cell.initialOffset;
                     const availOffsetMax: number = cell.offset;
                     if (!(availOffsetMax === availOffsetMin)) {
+                        this.seenCells = [];
                         if (newoffset >= availOffsetMin && newoffset <= availOffsetMax) {
                             this.translateMatrixCells(newoffset - cell.offset, cell);
                         } else if (newoffset < availOffsetMin) {
                             this.translateMatrixCells(availOffsetMin - cell.offset, cell);
                         }
+                        this.seenCells = [];
                     }
                 }
             }
@@ -3195,15 +3206,17 @@ class MatrixModel {
             if (cell.visitedParents.length === 1) {
                 cell.initialOffset = cell.offset;
             }
-
-            if (matrixIndex + 1 < matrixRow.length) {
-                const nextCell: MatrixCellGroupObject = matrixRow[matrixIndex + 1];
-                if (nextCell.visitedParents.length > 0) {
-                    if (!this.containsValue(cell.visitedParents, parent)) {
-                        cell.visitedParents.push(parent);
-                        parent.ignoredChildren.push(cell);
-                        return;
-                    }
+            if (!this.containsValue(cell.visitedParents, parent)) {
+                const lastParent = cell.visitedParents[cell.visitedParents.length - 1];
+                const parentMatrixRow = matrix[lastParent.level].value;
+                const lastParentIndex = parentMatrixRow.indexOf(lastParent);
+                const parentIndex = parentMatrixRow.indexOf(parent);
+                const nextCell = matrixIndex + 1 < matrixRow.length ? matrixRow[matrixIndex + 1] : undefined;
+                if (lastParent.ignoredChildren.indexOf(cell) !== -1 || parentIndex - lastParentIndex !== 1 ||
+                    (nextCell && nextCell.visitedParents.length > 0)) {
+                    cell.visitedParents.push(parent);
+                    parent.ignoredChildren.push(cell);
+                    return;
                 }
             }
         }
@@ -3228,14 +3241,15 @@ class MatrixModel {
             if (cell.visitedChildren.length > 0) {
                 const children: MatrixCellGroupObject[] = cell.visitedChildren.slice();
                 for (let i: number = 0; i < cell.ignoredChildren.length; i++) {
-                    //let cellIgnoredChild: MatrixCellGroupObject = cell.ignoredChildren[i];
-                    children.splice(0, 1);
-                    cell.visitedChildren.splice(0, 1);
+                    const cellIgnoredChild = cell.ignoredChildren[parseInt(i.toString(), 10)];
+                    if (this.containsValue(children, cellIgnoredChild)) {
+                        children.splice(children.indexOf(cellIgnoredChild), 1);
+                    }
                 }
 
                 if (children.length > 0) {
-                    const firstChild: MatrixCellGroupObject = cell.visitedChildren[0];
-                    const lastChild: MatrixCellGroupObject = cell.visitedChildren[cell.visitedChildren.length - 1];
+                    const firstChild: MatrixCellGroupObject = children[0];
+                    const lastChild: MatrixCellGroupObject = children[children.length - 1];
                     const x1: number = firstChild.offset - (firstChild.size / 2);
                     const x2: number = lastChild.offset + (lastChild.size / 2);
                     const newoffset: number = (x1 + x2) / 2;
@@ -3267,10 +3281,17 @@ class MatrixModel {
 
     private translateMatrixCells(value: number, cell: MatrixCellGroupObject): void {
         if (!(value === 0)) {
+            if (this.seenCells.indexOf(cell) !== -1) {
+                return;
+            }
+            this.seenCells.push(cell);
             cell.offset += value;
             if (cell.visitedChildren.length > 0) {
                 for (let i: number = 0; i < cell.visitedChildren.length; i++) {
                     const cellVisitedChild: MatrixCellGroupObject = cell.visitedChildren[parseInt(i.toString(), 10)];
+                    if (cell.ignoredChildren.indexOf(cellVisitedChild) !== -1) {
+                        continue;
+                    }
                     this.translateMatrixCells(value, cellVisitedChild);
                 }
             }
@@ -3449,36 +3470,47 @@ class MatrixModel {
 
             if (shiftChildren) {
                 if (startingCell.visitedChildren.length > 0) {
-                    this.shiftMatrixCells(
-                        value,
-                        startingCell.visitedChildren[0],
-                        true,
-                        startingCell,
-                        matrixModel);
+                    let firstChild: MatrixCellGroupObject | undefined = undefined;
+                    for (let i = 0; i < startingCell.visitedChildren.length; i++) {
+                        const child = startingCell.visitedChildren[parseInt(i.toString(), 10)];
+                        if (startingCell.ignoredChildren.indexOf(child) !== -1) {
+                            continue;
+                        }
+
+                        firstChild = child;
+                        break;
+                    }
+
+                    if (firstChild) {
+                        this.shiftMatrixCells(value, firstChild, true, startingCell, matrixModel);
+                    }
                 } else {
                     let i: number = 1;
                     let nextSibilingwithChild: MatrixCellGroupObject = null;
                     while (index + i < matrixRow.length) {
                         const nextCell: MatrixCellGroupObject = matrixRow[index + i];
-                        if (parentCell != null && this.containsValue(nextCell.visitedParents, parentCell)) {
-                            if (nextCell.visitedChildren.length > 0) {
-                                nextSibilingwithChild = nextCell;
-                            } else {
-                                i++;
-                                continue;
-                            }
+                        if (nextCell.visitedChildren.length > 0 && nextCell.visitedChildren.length > nextCell.ignoredChildren.length) {
+                            nextSibilingwithChild = nextCell;
+                            break;
                         }
-
-                        break;
+                        i++;
                     }
 
                     if (nextSibilingwithChild != null) {
-                        this.shiftMatrixCells(
-                            value,
-                            nextSibilingwithChild.visitedChildren[0],
-                            true,
-                            nextSibilingwithChild,
-                            matrixModel);
+                        let firstChild: MatrixCellGroupObject | undefined = undefined;
+                        for (let j = 0; j < nextSibilingwithChild.visitedChildren.length; j++) {
+                            const child = nextSibilingwithChild.visitedChildren[parseInt(j.toString(), 10)];
+                            if (nextSibilingwithChild.ignoredChildren.indexOf(child) !== -1) {
+                                continue;
+                            }
+
+                            firstChild = child;
+                            break;
+                        }
+
+                        if (firstChild) {
+                            this.shiftMatrixCells(value, firstChild, true, nextSibilingwithChild, matrixModel);
+                        }
                     }
                 }
             }
@@ -3534,8 +3566,8 @@ class MatrixModel {
                         }
                         if (key && (edgeMapper[parseInt(key.toString(), 10)] as EdgeMapperObject).value.length > 0) {
                             const edgePoint: Point = edgeMapper[parseInt(key.toString(), 10)].value[0];
-                            const dxValue1: number = edgePoint.x + margin.left;
-                            const dyValue1: number = edgePoint.y + margin.top;
+                            const dxValue1: number = edgePoint.x + layout.marginX;
+                            const dyValue1: number = edgePoint.y + layout.marginY;
                             let x1: number = dxValue1; let y1: number = dyValue1;
                             if (layout.orientation === 'BottomToTop') {
                                 y1 = modelBounds.height - dyValue1;
@@ -3543,14 +3575,13 @@ class MatrixModel {
                             else if (layout.orientation === 'RightToLeft') {
                                 x1 = modelBounds.width - dxValue1;
                             }
-                            if (modelBounds.x < 0) {
-                                x1 -= modelBounds.x;
-                            }
-                            if (modelBounds.y < 0) {
-                                y1 -= modelBounds.y;
-                            }
 
                             intermediatePoint = this.getPointvalue(x1, y1);
+                            internalConnector.segments = [];
+                            this.diagram.connectorPropertyChange(internalConnector as Connector, {} as Connector, {
+                                type: 'Orthogonal',
+                                segments: internalConnector.segments
+                            } as Connector);
                         }
 
                         let pts: PointModel[] = [];
@@ -3600,8 +3631,8 @@ class MatrixModel {
                         if (key && edgeMapper[parseInt(key.toString(), 10)].value.length > 0
                             && !this.containsValue(modifiedConnectors, internalConnector)) {
                             const edgePt: Point = edgeMapper[parseInt(k.toString(), 10)].value[0];
-                            const dx1: number = edgePt.x + margin.left;
-                            const dy1: number = edgePt.y + margin.top;
+                            const dx1: number = edgePt.x + layout.marginX;
+                            const dy1: number = edgePt.y + layout.marginY;
                             // eslint-disable-next-line one-var
                             let x1: number = dx1, y1 = dy1;
                             if (layout.orientation === 'BottomToTop') {
@@ -3610,14 +3641,12 @@ class MatrixModel {
                             else if (layout.orientation === 'RightToLeft') {
                                 x1 = modelBounds.width - dx1;
                             }
-
-                            if (modelBounds.x < 0) {
-                                x1 -= modelBounds.x;
-                            }
-                            if (modelBounds.y < 0) {
-                                y1 -= modelBounds.y;
-                            }
                             intermediatePoint = this.getPointvalue(x1, y1);
+                            internalConnector.segments = [];
+                            this.diagram.connectorPropertyChange(internalConnector as Connector, {} as Connector, {
+                                type: 'Orthogonal',
+                                segments: internalConnector.segments
+                            } as Connector);
                         }
 
                         let pts: PointModel[] = [];

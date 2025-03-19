@@ -2331,7 +2331,6 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
      */
     constructor() {
         super();
-        setValue('beforeSend', UrlAdaptor.prototype.beforeSend, this);
     }
     public insert(dm: DataManager, data: Object, tableName: string, query: Query, position?: number): Object {
         this.pvt.position = position;
@@ -2436,6 +2435,19 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
     public addParams(options: { dm: DataManager, query: Query, params: ParamOption[], reqParams: { [key: string]: Object } }): void {
         const urlParams: UrlAdaptor = new UrlAdaptor();
         urlParams.addParams(options);
+    }
+
+    /**
+     * Method will trigger before send the request to server side.
+     * Used to set the custom header or modify the request options.
+     *
+     * @param  {DataManager} dm
+     * @param  {Request} request
+     * @param  {Fetch} settings?
+     * @returns void
+     */
+    public beforeSend(dm: DataManager, request: Request, settings?: Fetch): void {
+        // need to extend this method
     }
 }
 

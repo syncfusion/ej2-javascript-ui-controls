@@ -674,6 +674,9 @@ export class Toolbar {
             }
             this.updateTotalPage();
             this.updateToolbarItems();
+            if ( this.pdfViewer.toolbarModule && this.annotationToolbarModule) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.updateFontSizeInIcon(16);
+            }
             if (this.annotationToolbarModule) {
                 this.annotationToolbarModule.clear();
             } else {

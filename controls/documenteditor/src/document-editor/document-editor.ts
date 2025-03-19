@@ -1253,7 +1253,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         dateTime: this.editor.parseDateTime(replyComment.createdDate)
                     };
                     const commentText: string = HelperMethods.parseCommentAsText(replyComment);
-                    const newComment: Comment = new Comment(comment.commentId, replyCommentProperties, commentText);
+                    const newComment: Comment = new Comment(replyComment.commentId, replyCommentProperties, commentText);
                     tempData.push(newComment);
                 }
                 const commentInfo: CommentInfo = {
@@ -3525,15 +3525,46 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     private async convertFromBlob(blob: Blob): Promise<string> {
         const formData: FormData = new FormData();
-        const name: string[] = blob.type.split('/');
-        let type: string = null;
-        if (name[name.length - 1] === 'html' || name[name.length - 1] === 'rtf') {
-            type = '.' + name[name.length - 1];
-        } else {
-            type = blob.type;
-        }
+        let type: string = this.getBlobType(blob.type);
+        type = type === '' ? blob.type : type;
         formData.append('files', blob, type);
         return await this.send(formData);
+    }
+    private getBlobType(type: string): string {
+        let contentType: string = '';
+        switch (type) {
+        case 'text/html':
+            contentType = '.html';
+            break;
+        case 'text/plain':
+            contentType = '.txt';
+            break;
+        case 'application/rtf':
+            contentType = '.rtf';
+            break;
+        case 'application/xml':
+            contentType = '.xml';
+            break;
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.template':
+            contentType = '.dotx';
+            break;
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            contentType = '.docx';
+            break;
+        case 'application/msword':
+            contentType = '.doc';
+            break;
+        case 'application/vnd.ms-word.document.macroEnabled.12':
+            contentType = '.docm';
+            break;
+        case 'application/vnd.ms-word.template.macroenabled.12':
+            contentType = '.dotm';
+            break;
+        case 'application/vnd.oasis.opendocument.text':
+            contentType = '.odt';
+            break;
+        }
+        return contentType;
     }
     private send(formData: FormData): Promise<string> {
         const serviceUrl: string = this.serviceUrl + this.serverActionSettingsImport;

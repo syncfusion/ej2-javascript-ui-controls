@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 28.2.11 (2025-03-11)
+## 28.2.12 (2025-03-19)
+
+### Common
+
+#### Bug Fixes
+
+- `#I701045` - Resolved the security vulnerability in the `setValue` method of the base package.
+
+## 28.2.9 (2025-03-04)
 
 ### Common
 

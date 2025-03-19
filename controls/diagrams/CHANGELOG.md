@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.12 (2025-03-19)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I693646` -  Node overlapping, stretching, and incorrect positioning will no longer occur in complex hierarchical tree layouts.
+
 ## 28.2.11 (2025-03-11)
 
 ### Diagram

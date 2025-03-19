@@ -391,7 +391,9 @@ export class PdfRenderer {
     public getDocumentAsBase64(jsonObject: { [key: string]: string }): Uint8Array {
         this.loadedDocument = new PdfDocument(this.loadedByteArray, this.password);
         let clonedDocument: PdfDocument = null;
-        if (Object.prototype.hasOwnProperty.call(jsonObject, 'digitalSignatureDocumentEdited') && !jsonObject.digitalSignatureDocumentEdited) {
+        if ((Object.prototype.hasOwnProperty.call(jsonObject, 'digitalSignatureDocumentEdited') &&
+        !jsonObject.digitalSignatureDocumentEdited) ||
+        (Object.prototype.hasOwnProperty.call(jsonObject, 'isPdfEdited') && !jsonObject.isPdfEdited)) {
             return this.loadedDocument.save();
         }
         else {

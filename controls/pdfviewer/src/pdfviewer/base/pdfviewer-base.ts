@@ -2566,6 +2566,13 @@ export class PdfViewerBase {
                     jsonObject['digitalSignatureDocumentEdited'] = false;
                 }
             }
+            if ((proxy.pdfViewer.isDocumentEdited || proxy.pdfViewer.pageOrganizer.isDocumentModified) &&
+            (jsonObject.isAnnotationsExist || jsonObject.isFormFieldAnnotationsExist)) {
+                jsonObject['isPdfEdited'] = true;
+            }
+            else {
+                jsonObject['isPdfEdited'] = false;
+            }
             if (!isNullOrUndefined(this.pdfViewer.pageOrganizer) &&
              !isNullOrUndefined(this.pdfViewer.pageOrganizer.organizePagesCollection) && this.pdfViewer.pageOrganizer.isDocumentModified) {
                 jsonObject['organizePages'] = JSON.stringify(this.pdfViewer.pageOrganizer.organizePagesCollection);
@@ -8022,6 +8029,13 @@ export class PdfViewerBase {
                 } else {
                     jsonObject['digitalSignatureDocumentEdited'] = false;
                 }
+            }
+            if ((proxy.pdfViewer.isDocumentEdited || proxy.pdfViewer.pageOrganizer.isDocumentModified) &&
+            (jsonObject.isAnnotationsExist || jsonObject.isFormFieldAnnotationsExist)) {
+                jsonObject['isPdfEdited'] = true;
+            }
+            else {
+                jsonObject['isPdfEdited'] = false;
             }
             if (!isNullOrUndefined(this.pdfViewer.pageOrganizer) &&
             !isNullOrUndefined(this.pdfViewer.pageOrganizer.organizePagesCollection) && this.pdfViewer.pageOrganizer.isDocumentModified) {

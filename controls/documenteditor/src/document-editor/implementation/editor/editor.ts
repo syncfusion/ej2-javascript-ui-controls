@@ -1521,7 +1521,9 @@ export class Editor {
         if (restrictPane && restrictPane.style.display === 'block') {
             this.documentHelper.restrictEditingPane.showStopProtectionPane(true);
             this.documentHelper.restrictEditingPane.loadPaneValue();
-            this.documentHelper.dialog.hide();
+            if (this.documentHelper.dialog.visible) {
+                this.documentHelper.dialog.hide();
+            }
         }
         this.owner.notify(protectionTypeChangeEvent, {});
         if (protectionType === 'RevisionsOnly') {
@@ -1696,7 +1698,9 @@ export class Editor {
             this.owner.editorHistoryModule.clearHistory();
         }
         this.owner.notify(protectionTypeChangeEvent, {});
-        this.documentHelper.dialog.hide();
+        if (this.documentHelper.dialog.visible) {
+            this.documentHelper.dialog.hide();
+        }
         this.owner.showHideRulers();
         if (!this.documentHelper.owner.enableCollaborativeEditing) {
             this.fireContentChange();
@@ -6794,7 +6798,7 @@ export class Editor {
         }
         return blcks;
     }
-    private updateListIdForBlocks(blocks: any, abstractList: any, list: WList, id: number, idToUpdate: number): boolean {
+    private updateListIdForBlocks(blocks: any, abstractList: any, list: WList, id: number, idToUpdate: number, isPrevParaListFormat?: boolean, uniqueNsid?: number): boolean {
         let update: boolean = false;
         for (let i: number = 0; i < blocks.length; i++) {
             let obj: any = blocks[i];
@@ -6806,6 +6810,10 @@ export class Editor {
                     if (isNullOrUndefined(existingList)) {
                         update = true;
                         format[listIdProperty[this.keywordIndex]] = idToUpdate;
+                    } else if (isPrevParaListFormat) {
+                        update = true;
+                        format[listIdProperty[this.keywordIndex]] = idToUpdate;
+                        format[nsidProperty] = uniqueNsid;
                     } else {
                         if (!format.isUpdated) {
                             format[listIdProperty[this.keywordIndex]] = existingList.listId;
@@ -6857,6 +6865,7 @@ export class Editor {
             });
             uniqueAbsLstId = sortedPasteAbsList[sortedPasteAbsList.length - 1][abstractListIdProperty[this.keywordIndex]] + 1;
         }
+        const pastedListCount: number = pasteContent[listsProperty[this.keywordIndex]].length;
         for (let k: number = 0; k < pasteContent[listsProperty[this.keywordIndex]].length; k++) {
             let list: WList = pasteContent[listsProperty[this.keywordIndex]][k];
             let abstractList: any = pasteContent[abstractListsProperty[this.keywordIndex]].filter((obj: any) => {
@@ -6866,7 +6875,15 @@ export class Editor {
                 return obj.listId === list[listIdProperty[this.keywordIndex]];
             });
             if (!isNullOrUndefined(abstractList)) {
-                let isUpdate: boolean = this.updateListIdForBlocks(pasteContent[sectionsProperty[this.keywordIndex]][sectionId][blocksProperty[this.keywordIndex]], abstractList, lstDup[0], list[listIdProperty[this.keywordIndex]], uniqueListId);
+                let isPrevParaListFormat: boolean = false;
+                let uniqueNsid: number = 0;
+                if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start.paragraph)) {
+                    isPrevParaListFormat = this.getPreviousParagraphListFormat(this.selection.start.paragraph, pastedListCount);
+                    if (isPrevParaListFormat) {
+                        uniqueNsid = HelperMethods.generateUniqueId(this.documentHelper.lists);
+                    }
+                }
+                let isUpdate: boolean = this.updateListIdForBlocks(pasteContent[sectionsProperty[this.keywordIndex]][sectionId][blocksProperty[this.keywordIndex]], abstractList, lstDup[0], list[listIdProperty[this.keywordIndex]], uniqueListId, isPrevParaListFormat, uniqueNsid);
                 if (isUpdate) {
                     let absListId: number = abstractList[abstractListIdProperty[this.keywordIndex]];
                     // iterate the list object from pasteContent and update the abstractListId with new value.
@@ -6878,6 +6895,9 @@ export class Editor {
                     }
                     abstractList[abstractListIdProperty[this.keywordIndex]] = uniqueAbsLstId;
                     list[listIdProperty[this.keywordIndex]] = uniqueListId;
+                    if (isPrevParaListFormat && uniqueNsid !== 0) {
+                        abstractList[nsidProperty] = list[nsidProperty] = uniqueNsid;
+                    }
                     uniqueListId++;
                     uniqueAbsLstId++;
                 } else {
@@ -6892,6 +6912,18 @@ export class Editor {
             let blck: any = blocks[i];
             delete blck[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]].isUpdated;
         }
+    }
+    private getPreviousParagraphListFormat(paragraph: ParagraphWidget, pastedListCount: number): boolean {
+        if (!isNullOrUndefined(this.documentHelper.layout)) {
+            let previousParagraph: ParagraphWidget = this.selection.getPreviousParagraphBlock(paragraph);
+            while (!isNullOrUndefined(previousParagraph) && (previousParagraph.isEmpty() || !this.documentHelper.layout.hasValidElement(previousParagraph))) {
+                previousParagraph = this.selection.getPreviousParagraphBlock(previousParagraph)
+            }
+            if (!isNullOrUndefined(previousParagraph) && previousParagraph.paragraphFormat.listFormat.listId === -1 && pastedListCount === 1) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * @private
@@ -8428,6 +8460,7 @@ export class Editor {
     public handleCut(selection: Selection): void {
         let startPosition: TextPosition = selection.start;
         let endPosition: TextPosition = selection.end;
+        let removedCommentStart: CommentCharacterElementBox[] = this.checkAndRemoveComments();
         if (!selection.isForward) {
             startPosition = selection.end;
             endPosition = selection.start;
@@ -8441,7 +8474,6 @@ export class Editor {
             let inline: ElementBox = currentInline.element;
             image = inline as ImageElementBox;
         }
-        let removedCommentStart: CommentCharacterElementBox[] = this.checkAndRemoveComments();
         let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
         selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         this.initHistory('Cut');
@@ -10437,6 +10469,7 @@ export class Editor {
                 || this.editorHistory.currentHistoryInfo.action === 'PageBreak')) {
             } else {
                 this.shiftFootnoteContent();
+                this.selection.updateContentControlHighlightSelection();
                 return;
             }
         }
@@ -10447,6 +10480,7 @@ export class Editor {
             this.documentHelper.removeEmptyPages();
             this.documentHelper.layout.updateFieldElements();
             this.documentHelper.layout.checkAndShiftEndnote(true);
+            this.selection.updateContentControlHighlightSelection();
             /*  if (!isNullOrUndefined(selection.start.paragraph.bodyWidget.page.footnoteWidget)) {
                   let foot: FootNoteWidget = selection.start.paragraph.bodyWidget.page.footnoteWidget;
                   //this.documentHelper.layout.layoutfootNote(foot);
@@ -20008,9 +20042,12 @@ export class Editor {
 
                 isDelete = (!isNullOrUndefined(this.owner.editorHistoryModule.currentBaseHistoryInfo) && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'Delete');
             }
-            if (endOffset === 1 && !isDelete) {
-                this.selection.start.movePreviousPosition();
-                this.selection.end.setPositionInternal(this.selection.start);
+            //Update cursor position to insert removed content
+            if (endOffset === 1 && this.selection.isEmpty) {
+                if (!isDelete) {
+                    this.selection.start.movePreviousPosition();
+                    this.selection.end.setPositionInternal(this.selection.start);
+                }
             } else {
                 this.updateCursorForInsertRevision(currentElement, indexInInline, endOffset);
             }
@@ -22124,92 +22161,113 @@ export class Editor {
         if (!isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             this.editorHistory.currentBaseHistoryInfo.insertedFormat = startPos.paragraph.associatedCell.cellFormat.borders;
         }
-        if (this.selection.isEmpty) {
-            //Apply borders for current selected cell initially.
-            if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
-                settings.type === 'LeftBorder') {
-                endCell.cellFormat.borders.left.copyFormat(border);
+        if (this.documentHelper.selection.isTableSelected()) {
+            if (settings.type === 'TopBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
+                table.tableFormat.borders.top.copyFormat(border);
             }
-            if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
-                settings.type === 'TopBorder') {
-                endCell.cellFormat.borders.top.copyFormat(border);
+            if (settings.type === 'BottomBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
+                table.tableFormat.borders.bottom.copyFormat(border);
             }
-            if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
-                settings.type === 'RightBorder') {
-                endCell.cellFormat.borders.right.copyFormat(border);
+            if (settings.type === 'LeftBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
+                table.tableFormat.borders.left.copyFormat(border);
             }
-            if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
-                settings.type === 'BottomBorder') {
-                endCell.cellFormat.borders.bottom.copyFormat(border);
+            if (settings.type === 'RightBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
+                table.tableFormat.borders.right.copyFormat(border);
             }
-            if (settings.type === 'AllBorders' || settings.type === 'InsideBorders'
-                || settings.type === 'InsideVerticalBorder') {
-                endCell.cellFormat.borders.vertical.copyFormat(border);
+            if (settings.type === 'InsideHorizontalBorder' || settings.type === 'AllBorders' || settings.type === 'InsideBorders') {
+                table.tableFormat.borders.horizontal.copyFormat(border);
             }
-            if (settings.type === 'AllBorders' || settings.type === 'InsideBorders'
-                || settings.type === 'InsideHorizontalBorder') {
-                endCell.cellFormat.borders.horizontal.copyFormat(border);
-            }
-            if (settings.type === 'NoBorder') {
-                this.clearAllBorderValues(endCell.cellFormat.borders);
+            if (settings.type === 'InsideVerticalBorder' || settings.type === 'AllBorders' || settings.type === 'InsideBorders') {
+                table.tableFormat.borders.vertical.copyFormat(border);
             }
         } else {
-            if (settings.type === 'OutsideBorders' || settings.type === 'TopBorder') {
-                const selectedCell: TableCellWidget[] = this.getTopBorderCellsOnSelection();
-                for (let i: number = 0; i < selectedCell.length; i++) {
-                    selectedCell[i].cellFormat.borders.top.copyFormat(border);
+            if (this.selection.isEmpty) {
+                //Apply borders for current selected cell initially.
+                if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
+                    settings.type === 'LeftBorder') {
+                    endCell.cellFormat.borders.left.copyFormat(border);
                 }
-            }
-            if (settings.type === 'OutsideBorders' || settings.type === 'LeftBorder') {
-                const selectedCell: TableCellWidget[] = this.getLeftBorderCellsOnSelection();
-                for (let i: number = 0; i < selectedCell.length; i++) {
-                    selectedCell[i].cellFormat.borders.left.copyFormat(border);
+                if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
+                    settings.type === 'TopBorder') {
+                    endCell.cellFormat.borders.top.copyFormat(border);
                 }
-            }
-            if (settings.type === 'OutsideBorders' || settings.type === 'RightBorder') {
-                const selectedCell: TableCellWidget[] = this.getRightBorderCellsOnSelection();
-                for (let i: number = 0; i < selectedCell.length; i++) {
-                    selectedCell[i].cellFormat.borders.right.copyFormat(border);
+                if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
+                    settings.type === 'RightBorder') {
+                    endCell.cellFormat.borders.right.copyFormat(border);
                 }
-            }
-            if (settings.type === 'OutsideBorders' || settings.type === 'BottomBorder') {
-                const selectedCell: TableCellWidget[] = this.getBottomBorderCellsOnSelection();
-                for (let i: number = 0; i < selectedCell.length; i++) {
-                    selectedCell[i].cellFormat.borders.bottom.copyFormat(border);
+                if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
+                    settings.type === 'BottomBorder') {
+                    endCell.cellFormat.borders.bottom.copyFormat(border);
                 }
-            }
-        }
-        //Apply Only borders property to selected cells
-        if (settings.type === 'BottomBorder' || settings.type === 'AllBorders' || settings.type === 'OutsideBorders'
-            || settings.type === 'NoBorder') {
-            cells = this.getAdjacentCellToApplyBottomBorder();
-            for (let i: number = 0; i < cells.length; i++) {
-                const cell: TableCellWidget = cells[i];
+                if (settings.type === 'AllBorders' || settings.type === 'InsideBorders'
+                    || settings.type === 'InsideVerticalBorder') {
+                    endCell.cellFormat.borders.vertical.copyFormat(border);
+                }
+                if (settings.type === 'AllBorders' || settings.type === 'InsideBorders'
+                    || settings.type === 'InsideHorizontalBorder') {
+                    endCell.cellFormat.borders.horizontal.copyFormat(border);
+                }
                 if (settings.type === 'NoBorder') {
-                    cell.cellFormat.borders.top.copyFormat(this.clearBorder());
-                } else {
-                    cell.cellFormat.borders.top.copyFormat(border);
+                    this.clearAllBorderValues(endCell.cellFormat.borders);
+                }
+            } else {
+                if (settings.type === 'OutsideBorders' || settings.type === 'TopBorder') {
+                    const selectedCell: TableCellWidget[] = this.getTopBorderCellsOnSelection();
+                    for (let i: number = 0; i < selectedCell.length; i++) {
+                        selectedCell[i].cellFormat.borders.top.copyFormat(border);
+                    }
+                }
+                if (settings.type === 'OutsideBorders' || settings.type === 'LeftBorder') {
+                    const selectedCell: TableCellWidget[] = this.getLeftBorderCellsOnSelection();
+                    for (let i: number = 0; i < selectedCell.length; i++) {
+                        selectedCell[i].cellFormat.borders.left.copyFormat(border);
+                    }
+                }
+                if (settings.type === 'OutsideBorders' || settings.type === 'RightBorder') {
+                    const selectedCell: TableCellWidget[] = this.getRightBorderCellsOnSelection();
+                    for (let i: number = 0; i < selectedCell.length; i++) {
+                        selectedCell[i].cellFormat.borders.right.copyFormat(border);
+                    }
+                }
+                if (settings.type === 'OutsideBorders' || settings.type === 'BottomBorder') {
+                    const selectedCell: TableCellWidget[] = this.getBottomBorderCellsOnSelection();
+                    for (let i: number = 0; i < selectedCell.length; i++) {
+                        selectedCell[i].cellFormat.borders.bottom.copyFormat(border);
+                    }
                 }
             }
-        }
-        if (settings.type === 'AllBorders' || settings.type === 'OutsideBorders' || settings.type === 'RightBorder'
-            || settings.type === 'NoBorder') {
-            cells = this.getAdjacentCellToApplyRightBorder();
-            for (let i: number = 0; i < cells.length; i++) {
-                const cell: TableCellWidget = cells[i];
-                if (settings.type === 'NoBorder') {
-                    cell.cellFormat.borders.left.copyFormat(this.clearBorder());
-                } else {
-                    cell.cellFormat.borders.left.copyFormat(border);
+            //Apply Only borders property to selected cells
+            if (settings.type === 'BottomBorder' || settings.type === 'AllBorders' || settings.type === 'OutsideBorders'
+                || settings.type === 'NoBorder') {
+                cells = this.getAdjacentCellToApplyBottomBorder();
+                for (let i: number = 0; i < cells.length; i++) {
+                    const cell: TableCellWidget = cells[i];
+                    if (settings.type === 'NoBorder') {
+                        cell.cellFormat.borders.top.copyFormat(this.clearBorder());
+                    } else {
+                        cell.cellFormat.borders.top.copyFormat(border);
+                    }
                 }
             }
-        }
-        if (settings.type === 'AllBorders' || settings.type === 'NoBorder') {
-            this.applyAllBorders(border, settings.type);
-        }
-        if (settings.type === 'InsideBorders' || settings.type === 'InsideVerticalBorder'
-            || settings.type === 'InsideHorizontalBorder' || settings.type === 'NoBorder') {
-            this.applyInsideBorders(border, settings.type, table);
+            if (settings.type === 'AllBorders' || settings.type === 'OutsideBorders' || settings.type === 'RightBorder'
+                || settings.type === 'NoBorder') {
+                cells = this.getAdjacentCellToApplyRightBorder();
+                for (let i: number = 0; i < cells.length; i++) {
+                    const cell: TableCellWidget = cells[i];
+                    if (settings.type === 'NoBorder') {
+                        cell.cellFormat.borders.left.copyFormat(this.clearBorder());
+                    } else {
+                        cell.cellFormat.borders.left.copyFormat(border);
+                    }
+                }
+            }
+            if (settings.type === 'AllBorders' || settings.type === 'NoBorder') {
+                this.applyAllBorders(border, settings.type);
+            }
+            if (settings.type === 'InsideBorders' || settings.type === 'InsideVerticalBorder'
+                || settings.type === 'InsideHorizontalBorder' || settings.type === 'NoBorder') {
+                this.applyInsideBorders(border, settings.type, table);
+            }
         }
         this.updateGridForTableDialog(table, false);
         this.reLayout(this.selection, false);
@@ -24421,12 +24479,26 @@ export class Editor {
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             this.editorHistory.currentBaseHistoryInfo.setContentControlCheckBox(contentControl, value);
         }
-        let checkBoxText: TextElementBox = contentControl.nextNode as TextElementBox;
+        let checkBoxText: ElementBox = contentControl.nextNode;
         if (checkBoxText instanceof EditRangeStartElementBox || checkBoxText instanceof EditRangeEndElementBox) {
             checkBoxText = checkBoxText.nextNode as TextElementBox;
         }
+        if (!(checkBoxText instanceof TextElementBox) && !isNullOrUndefined(this.selection)) {
+            checkBoxText = this.selection.getNextTextElement(checkBoxText);
+        }
         checkBoxText.isWidthUpdated = false;
-        checkBoxText.text = value ? String.fromCharCode(9746) : String.fromCharCode(9744);
+        const state: CheckBoxState = value ? contentControl.contentControlProperties.checkedState
+            : contentControl.contentControlProperties.uncheckedState;
+
+        if (!isNullOrUndefined(state.font) && !isNullOrUndefined(state.value)) {
+            checkBoxText.characterFormat.fontFamily = state.font;
+            checkBoxText.characterFormat.fontFamilyAscii = state.font;
+            checkBoxText.characterFormat.fontFamilyFarEast = state.font;
+            checkBoxText.characterFormat.fontFamilyNonFarEast = state.font;
+            (checkBoxText as TextElementBox).text = state.value;
+        } else {
+            (checkBoxText as TextElementBox).text = String.fromCharCode(value ? 9746 : 9744);
+        }
         contentControl.contentControlProperties.isChecked = value;
         this.reLayout(this.selection, true);
     }

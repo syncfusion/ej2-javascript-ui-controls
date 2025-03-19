@@ -7458,7 +7458,7 @@ export class Layout {
             let cellWidget: TableCellWidget = tableRowWidget.childWidgets[i] as TableCellWidget;
             if (i === 0 && cellWidget.childWidgets.length > 0 && cellWidget.columnIndex === 0
                 && cellWidget.cellFormat.rowSpan === 1 && this.documentHelper.compatibilityMode === 'Word2013'
-                && this.documentHelper.splittedCellWidgets.length === 0) {
+                && this.documentHelper.splittedCellWidgets.length === 0 && rowCollection.length === 1) {
                 const firstBlock: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(cellWidget as TableCellWidget);
                 if (!isNullOrUndefined(firstBlock) && firstBlock.paragraphFormat.keepWithNext && !isNullOrUndefined(this.getPreviousBlock(tableRowWidget))) {
                     return tableRowWidget;

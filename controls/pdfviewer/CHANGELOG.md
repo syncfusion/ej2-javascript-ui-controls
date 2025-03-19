@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 28.2.12 (2025-03-19)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I693186` - Now, the Angular change detection event does not trigger continuously while zooming.
+- `#I686925` - Now, the text search works correctly when searching for multiple words in Unicode text.
+- `#I689380` - Now, the File size will not increase when saving the document without making any changes.
+
 ## 28.2.11 (2025-03-11)
 
 ### PDF Viewer

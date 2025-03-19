@@ -716,6 +716,7 @@ export class DocumentHelper {
         for (let i = 0; i < arr.length; i++) {
             if (i === arr.length - 1 && arr[i].length === 0) {
                 paragraph1.childWidgets.push(line1);
+                paragraph1.index = i;
                 paragraph1.containerWidget = bodyWidget;
                 bodyWidget.childWidgets.push(paragraph1);
                 continue;
@@ -755,6 +756,7 @@ export class DocumentHelper {
                 }
             }
             paragraph.childWidgets.push(line);
+            paragraph.index = i;
             paragraph.containerWidget = bodyWidget;
             bodyWidget.childWidgets.push(paragraph);
         }
@@ -2750,7 +2752,7 @@ export class DocumentHelper {
                 else if (this.selection.selectedWidgets.length > 0) {
                     for (let i = 0; i < this.selection.selectedWidgets.values.length; i++) {
                         let selectedWidgetInfo: SelectionWidgetInfo = this.selection.selectedWidgets.values[i] as SelectionWidgetInfo;
-                        if (selectedWidgetInfo.floatingItems.length > 0) {
+                        if (!isNullOrUndefined(selectedWidgetInfo.floatingItems) && selectedWidgetInfo.floatingItems.length > 0) {
                             for (let j = 0; j < selectedWidgetInfo.floatingItems.length; j++) {
                                 if (selectedWidgetInfo.floatingItems[j] instanceof ImageElementBox && selectedWidgetInfo.floatingItems[j].textWrappingStyle !== "Inline") {
                                     this.isDragStarted = false;
@@ -3294,6 +3296,12 @@ export class DocumentHelper {
         }
         if (page.footerWidgetIn) {
             page.footerWidgetIn.page = undefined;
+        }
+        if (page.headerWidget && page.headerWidget.page === page) {
+            page.headerWidget.page = undefined;
+        }
+        if (page.footerWidget && page.footerWidget.page === page) {
+            page.footerWidget.page = undefined;
         }
         let index: number = this.pages.indexOf(page);
         if (index > -1) {

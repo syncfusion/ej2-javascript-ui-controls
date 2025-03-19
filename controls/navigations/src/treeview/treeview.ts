@@ -1976,7 +1976,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const checkBoxEle: Element = element.getElementsByClassName(CHECKBOXWRAP)[0];
             let count: number = nodes.length;
             let checkedCount: number = checkedNodes.length;
-            let matchedChildNodes: { [key: string]: Object }[][] = [];
+            let matchedChildNodes: { [key: string]: Object }[] = [];
             let oldChildCount: { [key: string]: Object }[] = [];
             const dataUid: string = element.getAttribute('data-uid');
             let rootNodeChecked: boolean = true;
@@ -1996,8 +1996,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 const oldCheckedNodes: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.OldCheckedData).executeLocal(new Query().where('parentID', 'equal', dataUid, true));
                 checkedCount = oldCheckedNodes.length;
                 const parentNode: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.OldCheckedData).executeLocal(new Query().where('hasChildren', 'equal', true, true));
-                if (parentNode.length > 0
-                    && (this.OldCheckedData.some((oldNode: { id: string }) => oldNode.id === dataUid) && childNodeChecked)) {
+                if (parentNode.length > 0 && childNodeChecked && (
+                    (this.OldCheckedData.some((oldNode: { id: string }) => oldNode.id === dataUid)) ||
+                    this.parentNodeCheck.indexOf(dataUid) !== -1)) {
                     checkedCount = parentNode.length;
                     parentNodeChecked = true;
                 }
@@ -2012,7 +2013,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
 
             if (this.autoCheck && this.showCheckBox && !(this.fields.dataSource instanceof DataManager)) {
-                const selectedChildNodeDetails: { [key: string]: object }[][] = this.getSelectedChildNodeDetails(dataUid);
+                const selectedChildNodeDetails: { [key: string]: object }[] = this.getSelectedChildNodeDetails(dataUid);
                 matchedChildNodes = selectedChildNodeDetails;
                 oldChildCount = <{ [key: string]: Object }[]> new DataManager(this.checkActionNodes)
                     .executeLocal(new Query().where('parentID', 'equal', dataUid, true));
@@ -2021,9 +2022,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (count === 0 && checkedCount === 0) {
                 return;
             }
-            else if (count === checkedCount || ((parentNodeChecked && count > 0) && (oldChildCount.length === matchedChildNodes.length)
-                    && (oldChildCount.length !== 0 && matchedChildNodes.length !== 0) && rootNodeChecked
-                    && (this.autoCheck && this.showCheckBox))) {
+            else if (count === checkedCount || ((parentNodeChecked && count > 0) && ((oldChildCount.length === matchedChildNodes.length)
+                || (oldChildCount.length !== matchedChildNodes.length))
+                && (oldChildCount.length !== 0 && matchedChildNodes.length !== 0) && rootNodeChecked
+                && (this.autoCheck && this.showCheckBox))) {
                 this.changeState(checkBoxEle, 'check', null, true, true);
             }
             else if ((checkedCount > 0 && !parentNodeChecked && (this.autoCheck && this.showCheckBox))) {
@@ -2041,28 +2043,36 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
     }
-    private getSelectedChildNodeDetails(dataUid: string): { [key: string]: Object }[][] {
+
+    private getSelectedChildNodeDetails(dataUid: string): {[key: string]: Object}[] {
         const childKey: string = typeof this.fields.child === 'string' ? this.fields.child : null;
         const dataId: string = this.fields.id;
         const parentKey: string = this.fields.parentID;
+
+        const matchesDataUid: (childNode: { [key: string]: any }) => boolean = (childNode: { [key: string]: any }): boolean => {
+            if (!isNOU(childKey) && childKey in childNode && Array.isArray(childNode[childKey as keyof typeof childNode])) {
+                const matchNode: string = childNode[dataId as keyof typeof childNode];
+                if (!isNOU(matchNode)) {
+                    return matchNode.toString() === dataUid;
+                }
+            } else {
+                const childNodePid: string = childNode[parentKey as keyof typeof childNode];
+                if (!isNOU(childNodePid)) {
+                    return childNodePid.toString() === dataUid;
+                }
+            }
+            return false;
+        };
+
         return this.checkedNodes
-            .map((checkedNodeId: string | number): { [key: string]: any }[] => {
-                return <{ [key: string]: Object }[]> new DataManager(this.DDTTreeData)
-                    .executeLocal(new Query().where('id', 'equal', checkedNodeId, true))[0];
+            .map((checkedNodeId: string): { [key: string]: any } => {
+                return this.getNodeObject(checkedNodeId);
             })
             .filter((childNode: object | null | undefined): boolean => {
-                if (childNode && typeof childNode === 'object' && (parentKey in childNode || childKey in childNode)) {
-                    if (!isNOU(childKey) && childKey in childNode && Array.isArray(childNode[childKey as keyof typeof childNode])) {
-                        const matchNode: string = childNode[dataId as keyof typeof childNode];
-                        if (!isNOU(matchNode)) {
-                            return matchNode.toString() === dataUid;
-                        }
-                    } else {
-                        const childNodePid: string = childNode[parentKey as keyof typeof childNode];
-                        if (!isNOU(childNodePid)) {
-                            return childNodePid.toString() === dataUid;
-                        }
-                    }
+                if (childNode && typeof childNode === 'object' && (childKey in childNode)) {
+                    return matchesDataUid(childNode);
+                } else if (this.dataType !== 2 && typeof childNode === 'object' && (parentKey in childNode || childKey in childNode)) {
+                    return matchesDataUid(childNode);
                 }
                 return false;
             });

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.12 (2025-03-19)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I694965` - Resolved an issue where the parent node check state was not maintained in nested data after filtering when Select All was used in the `DropdownTree` component.
+
 ## 28.2.11 (2025-03-11)
 
 ### ContextMenu

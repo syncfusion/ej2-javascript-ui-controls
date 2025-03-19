@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 28.2.12 (2025-03-19)
+
+### Grid
+
+#### Bug Fixes
+
+- `#FB65738` - The issue where using the `greater than or equal to` operator to filter the value zero also filtered out `null` or `undefined` values has been resolved.
+
 ## 28.2.11 (2025-03-11)
 
 ### DataManager

@@ -626,6 +626,10 @@ function createCircle(start: number, end: number, easing: Function, duration: nu
     const diameter: number = getSize((spinnerInfo.globalInfo[spinnerInfo.uniqueID].radius * 2) + '');
     const strokeSize: number = getStrokeSize(diameter);
     const rotate: number = -90 * (spinnerInfo.globalInfo[spinnerInfo.uniqueID].count || 0);
+    if (!isNullOrUndefined(globalTimeOut[spinnerInfo.uniqueID]) && globalTimeOut[spinnerInfo.uniqueID].timeOut) {
+        clearTimeout(globalTimeOut[spinnerInfo.uniqueID].timeOut);
+        globalTimeOut[spinnerInfo.uniqueID].timeOut = null;
+    }
     matAnimation(spinnerInfo);
     /**
      * @param {SpinnerInfo} spinnerInfo - The SpinnerInfo.
@@ -633,10 +637,15 @@ function createCircle(start: number, end: number, easing: Function, duration: nu
      */
     function matAnimation(spinnerInfo: SpinnerInfo): void {
         const currentTime: number = Math.max(0, Math.min(new Date().getTime() - startTime, duration));
+        if (isNullOrUndefined(globalTimeOut[spinnerInfo.uniqueID]) || isNullOrUndefined(globalTimeOut[spinnerInfo.uniqueID].timeOut)) {
+            return;
+        }
         updatePath( easing(currentTime, start, change, duration), spinnerInfo.container);
         if (id === spinnerInfo.globalInfo[spinnerInfo.uniqueID].previousId && currentTime < duration) {
-            globalTimeOut[spinnerInfo.uniqueID].timeOut = setTimeout(matAnimation.bind(null, spinnerInfo), 1);
+            globalTimeOut[spinnerInfo.uniqueID].timeOut = requestAnimationFrame(() => matAnimation(spinnerInfo));
         } else {
+            clearTimeout(globalTimeOut[spinnerInfo.uniqueID].timeOut);
+            globalTimeOut[spinnerInfo.uniqueID].timeOut = null;
             animateMaterial(spinnerInfo);
         }
     }

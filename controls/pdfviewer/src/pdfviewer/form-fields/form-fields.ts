@@ -194,8 +194,9 @@ export class FormFields {
                                         font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false,
                                     isUnderline: !isNullOrUndefined(font) ? font.Underline : false },
                                     isTransparent: currentData.IsTransparent,
-                                    customData: !isNullOrUndefined(currentData['CustomData']) ? typeof currentData['CustomData'] ===
-                                        'object' ? currentData['CustomData'] : JSON.parse(currentData['CustomData']) : '',
+                                    customData: !isNullOrUndefined(currentData['CustomData']) ? typeof currentData['CustomData'] === 'object'
+                                        ? currentData['CustomData'] : currentData['CustomData'].trim() !== ''
+                                            ? JSON.parse(currentData['CustomData']) : '' : '',
                                     signatureIndicatorSettings: indicatorSettings
                                 };
                                 if (!currentData.id && this.pdfViewer.formFieldCollections[parseInt(i.toString(), 10)] && !isNullOrUndefined(currentData['ActualFieldName'])) {
@@ -707,8 +708,9 @@ export class FormFields {
                         font.Underline : false }, pageIndex : currentData['PageIndex'], isTransparent : currentData['IsTransparent'],
                 rotationAngle : currentData['RotationAngle'], signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : '',
                 signatureIndicatorSettings : currentData['SignatureIndicatorSettings'], zIndex: currentData['zIndex'],
-                customData: typeof currentData['CustomData'] === 'object' ? currentData['CustomData'] :
-                    JSON.parse(currentData['CustomData'])
+                customData: !isNullOrUndefined(currentData['CustomData']) ? typeof currentData['CustomData'] === 'object'
+                    ? currentData['CustomData'] : currentData['CustomData'].trim() !== ''
+                        ? JSON.parse(currentData['CustomData']) : '' : ''
             };
             if (currentData.Name === 'DropDown' || currentData.Name === 'ListBox') {
                 fieldProperties.value = currentData['SelectedValue'];

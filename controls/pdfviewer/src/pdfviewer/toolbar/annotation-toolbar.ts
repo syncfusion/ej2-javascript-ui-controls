@@ -2130,7 +2130,13 @@ export class AnnotationToolbar {
         }
         const fontSize: number = parseFloat(currentValue);
         if (this.pdfViewer.selectedItems.annotations.length === 1 && currentValue) {
-            this.pdfViewer.annotation.modifyFontSize(fontSize, isInteracted);
+            const selectedAnnotationId: string = this.pdfViewer.selectedItems.annotations[0].id;
+            const selectedAnnotation: any = this.pdfViewer.annotationCollection.filter(
+                (annotation: any) => annotation.uniqueKey === selectedAnnotationId
+            )[0];
+            if (selectedAnnotation && selectedAnnotation.fontSize !== fontSize) {
+                this.pdfViewer.annotation.modifyFontSize(fontSize, isInteracted);
+            }
         } else {
             this.pdfViewer.freeTextSettings.fontSize = fontSize;
             this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();

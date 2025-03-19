@@ -56,11 +56,8 @@ With our commitment to at least four major updates per year, you receive the mos
 
 The Essential JS 2 is also offered in following list of frameworks.
 
-* [Angular](https://www.syncfusion.com/products/angular?utm_source=npm&utm_campaign=ej2-base)
-* [React](https://www.syncfusion.com/products/react?utm_source=npm&utm_campaign=ej2-base)
-* [Vue.js](https://www.syncfusion.com/products/vue?utm_source=npm&utm_campaign=ej2-base)
-* [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore?utm_source=npm&utm_campaign=ej2-base)
-* [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc?utm_source=npm&utm_campaign=ej2-base)
+| [<img src="https://ej2.syncfusion.com/github/images/angular-new.svg" height="50" />](https://www.syncfusion.com/products/angular?utm_source=npm&utm_campaign=ej2-base)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/products/angular?utm_source=npm&utm_campaign=ej2-base)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/products/react?utm_source=npm&utm_campaign=ej2-base)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/products/react?utm_source=npm&utm_campaign=ej2-base)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/products/vue?utm_source=npm&utm_campaign=ej2-base)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/products/vue?utm_source=npm&utm_campaign=ej2-base)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/products/aspnetcore?utm_source=npm&utm_campaign=ej2-base)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/products/aspnetcore?utm_source=npm&utm_campaign=ej2-base)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/products/aspnetmvc?utm_source=npm&utm_campaign=ej2-base)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/products/aspnetmvc?utm_source=npm&utm_campaign=ej2-base)&nbsp;&nbsp; | 
+| :-----: | :-----: | :-----: | :-----: | :-----: |
 
 ## Showcase Applications
 

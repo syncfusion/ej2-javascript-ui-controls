@@ -7353,7 +7353,7 @@ export class Selection {
         let renderedChild: ElementBox[] = widget.renderedElements;
         for (let i: number = 0; i < renderedChild.length; i++) {
             element = renderedChild[i];
-            if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox) {
+            if (element instanceof ListTextElementBox) {
                 if (widget.paragraph.paragraphFormat.bidi) {
                     left += element.margin.left;
                     element = undefined;

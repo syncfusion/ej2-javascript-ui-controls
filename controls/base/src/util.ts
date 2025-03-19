@@ -98,7 +98,9 @@ export function setValue(nameSpace: string, value: any, obj: any): any {
 
     for (i = 0; i < length; i++) {
         key = keys[parseInt(i.toString(), 10)];
-
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+            continue;
+        }
         if (i + 1 === length) {
             fromObj[`${key}`] = value === undefined ? {} : value;
         } else if (isNullOrUndefined(fromObj[`${key}`])) {

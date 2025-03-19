@@ -1675,6 +1675,9 @@ export class DataUtil {
             if (ignoreCase) {
                 return DataUtil.toLowerCase(actual) >= DataUtil.toLowerCase(expected);
             }
+            if (isNullOrUndefined(actual)) {
+                actual = undefined;
+            }
             return actual >= expected;
         },
         /**

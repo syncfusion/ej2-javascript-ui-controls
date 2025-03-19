@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 28.2.12 (2025-03-19)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I691095` - Fixed an issue where the `getComments` API returned the same comment ID for both parent and reply comments.
+- `#I695884` - Resolved a browser hanging issue caused by table row splitting when opening an attached document.
+- `#I691853` - Fixed a list numbering issue in the Document Editor that occurred when pasting content multiple times.
+- `#I693444` - Addressed an issue where the toggling of a checkbox content control did not reflect its character format.
+- `#I701050` - Fixed a blob document import issue in the Document Editor when using a Docker container.
+- `#I689203` - Resolved an issue where content deletion with track changes was not functioning correctly.
+- `#I695107` - Fixed a cursor disappearance issue when pressing and holding the arrow button.
+
 ## 28.2.11 (2025-03-11)
 
 ### DocumentEditor

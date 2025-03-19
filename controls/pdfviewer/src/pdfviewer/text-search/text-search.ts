@@ -1261,6 +1261,9 @@ export class TextSearch {
         let linestring: string = '';
         let mergedText: string = pageText.replace(/ \r\n/g, ' ');
         mergedText = mergedText.replace(/\r\n/g, ' ');
+        if (/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/.test(mergedText)) {
+            mergedText = mergedText.replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, ' ');
+        }
         mergedText = mergedText.replace(/[^a-zA-Z0-9 ]/g, '');
         searchString = searchString.replace(/[^a-zA-Z0-9 ]/g, '');
         let result: any = mergedText.match(searchString);
@@ -2552,7 +2555,9 @@ export class TextSearch {
         let height: any = startBound.Height;
         let lastRight: number = 0;
         for (let k: number = 0; k < searchText.length; k++) {
-            const currentBound: any = characterBounds[parseInt((matchIndex + k).toString(), 10)].Bounds;
+            const index: number = matchIndex && !isNullOrUndefined(matchIndex.length) && matchIndex.length > 1 ?
+                matchIndex[0] : matchIndex;
+            const currentBound: any = characterBounds[parseInt((index + k).toString(), 10)].Bounds;
             height = Math.max(height, currentBound.Height);
             if (k === searchText.length - 1){
                 lastRight = currentBound.Right;

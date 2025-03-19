@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType, ContentControlProperties, ContentControlWidgetType, ContentControl } from '../../index'
+import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType, ContentControlProperties, ContentControlWidgetType, ContentControl, ServiceFailureArgs } from '../../index'
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base'
 
@@ -193,7 +193,8 @@ export class CollaborativeEditingHandler {
                             this.handleAcknowledgementReceived(dataObject);
                         }
                     } else {
-                        alert('Failed to save the changes');
+                        const failedArgs: ServiceFailureArgs = { status: (httpRequest.status).toString(), statusText: httpRequest.statusText, url: this.serviceUrl + 'UpdateAction' };
+                        this.documentEditor.fireServiceFailure(failedArgs);
                     }
                 }
             };
@@ -1522,7 +1523,8 @@ export class CollaborativeEditingHandler {
                         this.applyChangesFromServer(httpRequest.responseText);
                     }
                     else {
-                        alert('Fail to load the document');
+                        const failedArgs: ServiceFailureArgs = { status: (httpRequest.status).toString(), statusText: httpRequest.statusText, url: this.serviceUrl + 'GetActionsFromServer' };
+                        this.documentEditor.fireServiceFailure(failedArgs);
                     }
                 }
             };
